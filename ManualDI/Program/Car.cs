@@ -27,7 +27,7 @@
 
     public class Person
     {
-        public void Init(Car car)
+        public Person(Car car)
         {
             this.Car = car;
         }

@@ -1,13 +1,12 @@
 ﻿namespace ManualDI
 {
-    public class TypeSetup<T> : ITypeSetup<T>
+    public class TypeBinding<T> : ITypeBinding<T>
     {
-        public TypeScope TypeScope { get; }
+        public ITypeScope TypeScope { get; }
         public ITypeFactory<T> Factory { get; }
-
         public ITypeInjection<T> TypeInjection { get; }
 
-        public TypeSetup(TypeScope typeScope, ITypeFactory<T> typeFactory, ITypeInjection<T> typeInjection)
+        public TypeBinding(ITypeScope typeScope, ITypeFactory<T> typeFactory, ITypeInjection<T> typeInjection)
         {
             TypeScope = typeScope;
             Factory = typeFactory;

@@ -2,7 +2,7 @@
 {
     public interface IContainer
     {
-        void Bind<T>(ITypeSetup<T> typeSetup);
+        void Bind<T>(ITypeBinding<T> typeSetup);
         T Resolve<T>();
     }
 }

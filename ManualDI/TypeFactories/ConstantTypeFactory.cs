@@ -1,4 +1,4 @@
-﻿namespace ManualDI
+﻿namespace ManualDI.TypeFactories
 {
     public class ConstantTypeFactory<T> : ITypeFactory<T>
     {
@@ -9,7 +9,7 @@
             Constant = constant;
         }
 
-        public T Create(IContainer container)
+        public T Create(IDiContainer container)
         {
             return Constant;
         }

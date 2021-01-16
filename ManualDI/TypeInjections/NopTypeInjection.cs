@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace ManualDI
+﻿namespace ManualDI.TypeInjections
 {
     public class NopTypeInjection<T> : ITypeInjection<T>
     {
@@ -10,7 +8,7 @@ namespace ManualDI
         {
         }
 
-        public void Inject(IContainer container, T instance)
+        public void Inject(T instance, IDiContainer container)
         {
         }
     }

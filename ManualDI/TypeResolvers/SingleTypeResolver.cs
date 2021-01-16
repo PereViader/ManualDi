@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ManualDI.TypeScopes;
+using System;
 using System.Collections.Generic;
 
 namespace ManualDI.TypeResolvers
@@ -12,7 +13,7 @@ namespace ManualDI.TypeResolvers
             return typeBinding.TypeScope is SingleTypeScope;
         }
 
-        public T Resolve<T>(IContainer container, ITypeBinding<T> typeBinding, List<IInjectionCommand> injectionCommands)
+        public T Resolve<T>(IDiContainer container, ITypeBinding<T> typeBinding, List<IInjectionCommand> injectionCommands)
         {
             var type = typeof(T);
             if (Instances.TryGetValue(type, out var singleInstance))
@@ -23,7 +24,10 @@ namespace ManualDI.TypeResolvers
             var instance = typeBinding.Factory.Create(container);
             Instances[type] = instance;
 
-            injectionCommands.Add(new InjectionCommand<T>(typeBinding.TypeInjection, instance));
+            if(typeBinding.TypeInjection != null)
+            {
+                injectionCommands.Add(new InjectionCommand<T>(typeBinding.TypeInjection, instance));
+            }
 
             return instance;
         }

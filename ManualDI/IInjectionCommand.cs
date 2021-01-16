@@ -2,6 +2,6 @@
 {
     public interface IInjectionCommand
     {
-        void Inject(IContainer container);
+        void Inject(IDiContainer container);
     }
 }

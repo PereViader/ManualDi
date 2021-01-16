@@ -1,7 +1,7 @@
-﻿namespace ManualDI
+﻿namespace ManualDI.TypeFactories
 {
     public interface ITypeFactory<T>
     {
-        T Create(IContainer container);
+        T Create(IDiContainer container);
     }
 }

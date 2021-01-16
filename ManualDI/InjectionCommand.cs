@@ -1,4 +1,6 @@
-﻿namespace ManualDI
+﻿using ManualDI.TypeInjections;
+
+namespace ManualDI
 {
     public class InjectionCommand<T> : IInjectionCommand
     {
@@ -11,9 +13,9 @@
             Instance = instance;
         }
 
-        public void Inject(IContainer container)
+        public void Inject(IDiContainer container)
         {
-            TypeInjection.Inject(container, Instance);
+            TypeInjection.Inject(Instance, container);
         }
     }
 }

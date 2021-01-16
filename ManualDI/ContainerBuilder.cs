@@ -4,9 +4,9 @@ namespace ManualDI
 {
     public class ContainerBuilder
     {
-        public IContainer Build()
+        public IDiContainer Build()
         {
-            var container = new Container();
+            var container = new DiContainer();
             container.TypeResolvers.Add(new SingleTypeResolver());
             container.TypeResolvers.Add(new TransientTypeResolver());
             return container;

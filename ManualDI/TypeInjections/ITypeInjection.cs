@@ -1,7 +1,7 @@
-﻿namespace ManualDI
+﻿namespace ManualDI.TypeInjections
 {
     public interface ITypeInjection<T>
     {
-        public void Inject(IContainer container, T instance);
+        public void Inject(T instance, IDiContainer container);
     }
 }

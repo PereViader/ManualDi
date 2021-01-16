@@ -1,4 +1,4 @@
-﻿namespace ManualDI
+﻿namespace ManualDI.TypeScopes
 {
     public interface ITypeScope
     {

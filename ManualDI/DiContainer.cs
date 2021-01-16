@@ -4,15 +4,17 @@ using System.Collections.Generic;
 
 namespace ManualDI
 {
-    public class Container : IContainer
+    public class DiContainer : IDiContainer
     {
         public Dictionary<Type, object> TypeBindings { get; } = new Dictionary<Type, object>();
         public List<ITypeResolver> TypeResolvers { get; } = new List<ITypeResolver>();
         public List<IInjectionCommand> InjectionCommands { get; } = new List<IInjectionCommand>();
 
-        public void Bind<T>(ITypeBinding<T> typeSetup)
+        public void Bind<T>(Action<ITypeBinding<T>> action)
         {
-            TypeBindings[typeof(T)] = typeSetup;
+            var typeBinding = new TypeBinding<T>();
+            action.Invoke(typeBinding);
+            TypeBindings[typeof(T)] = typeBinding;
         }
 
         public T Resolve<T>()

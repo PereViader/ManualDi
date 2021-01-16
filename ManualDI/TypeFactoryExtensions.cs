@@ -1,0 +1,27 @@
+﻿using System;
+using ManualDI.TypeFactories;
+
+namespace ManualDI
+{
+    public static class TypeFactoryExtensions
+    {
+        public static ITypeBinding<T> FromInstance<T>(this ITypeBinding<T> typeBinding, T instance)
+        {
+            typeBinding.Factory = new ConstantTypeFactory<T>(instance);
+            return typeBinding;
+        }
+
+        public static ITypeBinding<T> FromFunc<T>(this ITypeBinding<T> typeBinding, Func<IDiContainer, T> func)
+        {
+            typeBinding.Factory = new FuncTypeFactory<T>(func);
+            return typeBinding;
+        }
+
+        public static ITypeBinding<T> FromFactory<TFactory, T>(this ITypeBinding<T> typeBinding)
+            where TFactory : IFactory<T>
+        {
+            typeBinding.Factory = new FactoryTypeFactory<TFactory, T>();
+            return typeBinding;
+        }
+    }
+}

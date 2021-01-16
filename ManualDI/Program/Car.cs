@@ -1,10 +1,12 @@
-﻿namespace ManualDI
+﻿using ManualDI;
+
+namespace Program
 {
     public class CarFactory : IFactory<Car>
     {
-        public IContainer Container { get; }
+        public IDiContainer Container { get; }
 
-        public CarFactory(IContainer container)
+        public CarFactory(IDiContainer container)
         {
             Container = container;
         }

@@ -1,10 +1,62 @@
-﻿namespace ManualDI
+﻿using System;
+
+namespace ManualDI
 {
     public static class ResolutionExtensions
     {
         public static IResolutionConstraints Id(this IResolutionConstraints resolution, object identifier)
         {
             resolution.Identifier = identifier;
+            return resolution;
+        }
+
+        public static IResolutionConstraints Metadata(this IResolutionConstraints resolution, object flag)
+        {
+            var previous = resolution.TypeMetadata;
+            if (previous == null)
+            {
+                resolution.TypeMetadata = x => x.Has(flag);
+            }
+            else
+            {
+                resolution.TypeMetadata = x => previous.Invoke(x) && x.Has(flag);
+            }
+            return resolution;
+        }
+
+        public static IResolutionConstraints Metadata<T>(this IResolutionConstraints resolution, object key, T value)
+        {
+            var previous = resolution.TypeMetadata;
+            if(previous == null)
+            {
+                resolution.TypeMetadata = x => Check(key, value, x);
+            }
+            else
+            {
+                resolution.TypeMetadata = x => previous.Invoke(x) && Check(key, value, x);
+            }
+            return resolution;
+
+
+            static bool Check<Y>(object key, Y value, ITypeMetadata x)
+            {
+                return x.TryGet<Y>(key, out var objValue) && value.Equals(objValue);
+            }
+        }
+
+        public static IResolutionConstraints Metadata(this IResolutionConstraints resolution, Func<ITypeMetadata, bool> metadata)
+        {
+            var previous = resolution.TypeMetadata;
+            
+            if(previous == null)
+            {
+                resolution.TypeMetadata = metadata;
+            }
+            else
+            {
+                resolution.TypeMetadata = x => previous.Invoke(x) && metadata.Invoke(x);
+            }
+            
             return resolution;
         }
     }

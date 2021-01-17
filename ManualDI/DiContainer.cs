@@ -1,6 +1,7 @@
 ﻿using ManualDI.TypeResolvers;
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 
 namespace ManualDI
 {
@@ -9,10 +10,11 @@ namespace ManualDI
         public Dictionary<Type, object> TypeBindings { get; } = new Dictionary<Type, object>();
         public List<ITypeResolver> TypeResolvers { get; } = new List<ITypeResolver>();
         public List<IInjectionCommand> InjectionCommands { get; } = new List<IInjectionCommand>();
+        public ITypeBindingFactory TypeBindingFactory { get; set; }
 
         public void Bind<T>(Action<ITypeBinding<T>> action)
         {
-            var typeBinding = new TypeBinding<T>();
+            var typeBinding = TypeBindingFactory.Create<T>();
             action.Invoke(typeBinding);
             TypeBindings[typeof(T)] = typeBinding;
         }

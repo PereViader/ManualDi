@@ -10,22 +10,21 @@ namespace Program
             var container = new ContainerBuilder().Build();
             
             container.Bind<Car>(x => x
+                .Id("Potato")
                 .Single()
-                .FromFactory<CarFactory, Car>()
+                .FromFunc(x => new Car())
                 .Inject((o,x) => o.Init(x.Resolve<Person>()))
-                );
-
-            container.Bind<CarFactory>(x => x
-                .Single()
-                .FromFunc(x => new CarFactory(container))
                 );
 
             container.Bind<Person>(x => x
                 .Single()
-                .FromFunc(x => new Person(x.Resolve<Car>()))
+                .FromFunc(x => new Person(x.Resolve<Car>(x => 
+                    x.Id("Potato")
+                    )))
                 );
 
-            var car = container.Resolve<Car>();
+            var car = container.Resolve<Car>(x => x.Id("Potato"));
+
             var person = container.Resolve<Person>();
 
             Console.WriteLine(car.Person == person);

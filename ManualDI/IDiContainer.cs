@@ -6,5 +6,6 @@ namespace ManualDI
     {
         void Bind<T>(Action<ITypeBinding<T>> typeSetup);
         T Resolve<T>();
+        T Resolve<T>(Action<IResolutionConstraints> resolution);
     }
 }

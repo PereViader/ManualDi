@@ -6,6 +6,7 @@ namespace ManualDI
 {
     public class TypeBinding<T> : ITypeBinding<T>
     {
+        public object Identifier { get; set; }
         public ITypeScope TypeScope { get; set; }
         public ITypeFactory<T> Factory { get; set; }
         public ITypeInjection<T> TypeInjection { get; set; }

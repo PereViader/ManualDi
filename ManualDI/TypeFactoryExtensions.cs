@@ -7,7 +7,7 @@ namespace ManualDI
     {
         public static ITypeBinding<T> FromInstance<T>(this ITypeBinding<T> typeBinding, T instance)
         {
-            typeBinding.Factory = new ConstantTypeFactory<T>(instance);
+            typeBinding.Factory = new InstanceTypeFactory<T>(instance);
             return typeBinding;
         }
 

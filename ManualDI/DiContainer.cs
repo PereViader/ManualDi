@@ -1,13 +1,14 @@
 ﻿using ManualDI.TypeResolvers;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 
 namespace ManualDI
 {
     public class DiContainer : IDiContainer
     {
-        public Dictionary<Type, object> TypeBindings { get; } = new Dictionary<Type, object>();
+        public Dictionary<Type, List<object>> TypeBindings { get; } = new Dictionary<Type, List<object>>();
         public List<ITypeResolver> TypeResolvers { get; } = new List<ITypeResolver>();
         public List<IInjectionCommand> InjectionCommands { get; } = new List<IInjectionCommand>();
         public ITypeBindingFactory TypeBindingFactory { get; set; }
@@ -16,27 +17,79 @@ namespace ManualDI
         {
             var typeBinding = TypeBindingFactory.Create<T>();
             action.Invoke(typeBinding);
-            TypeBindings[typeof(T)] = typeBinding;
+
+            if(!TypeBindings.TryGetValue(typeof(T), out var bindings))
+            {
+                bindings = new List<object>();
+                TypeBindings[typeof(T)] = bindings;
+            }
+
+            bindings.Add(typeBinding);
         }
 
         public T Resolve<T>()
         {
-            var typeBinding = (ITypeBinding<T>)TypeBindings[typeof(T)];
-            if (!TryGetResolverFor(typeBinding, out var typeResolver))
-            {
-                throw new InvalidOperationException($"Could not find resolver for type binding of type {typeof(ITypeBinding<T>).FullName}");
-            }
+            var typeBinding= GetTypeForConstraint<T>(null);
+            return Resolve(typeBinding);
+        }
+
+        public T Resolve<T>(Action<IResolutionConstraints> resolution)
+        {
+            var resolutionConstraints = new ResolutionConstraints();
+            resolution.Invoke(resolutionConstraints);
+
+            var typeBinding = GetTypeForConstraint<T>(resolutionConstraints);
+            return Resolve(typeBinding);
+        }
+
+        private T Resolve<T>(ITypeBinding<T> typeBinding)
+        {
+            var typeResolver = GetResolverFor(typeBinding);
 
             var willTriggerInject = InjectionCommands.Count == 0;
 
             var instance = typeResolver.Resolve(this, typeBinding, InjectionCommands);
 
-            if(willTriggerInject)
+            if (willTriggerInject)
             {
                 InjectQueuedInstances();
             }
 
             return instance;
+        }
+
+        private ITypeBinding<T> GetTypeForConstraint<T>(IResolutionConstraints resolutionConstraints)
+        {
+            var bindings = TypeBindings[typeof(T)];
+            if (bindings.Count == 0)
+            {
+                throw new InvalidOperationException($"There are no bindings for type {typeof(T).FullName}");
+            }
+
+            if (resolutionConstraints == null)
+            {
+                return (ITypeBinding<T>)bindings[0];
+            }
+
+            foreach (var binding in bindings)
+            {
+                var typeBinding = (ITypeBinding<T>)binding;
+                if (ResolutionConstraintAccepts(typeBinding, resolutionConstraints))
+                {
+                    return typeBinding;
+                }
+            }
+
+            throw new InvalidOperationException("No binding could satisfy constraint");
+        }
+
+        private bool ResolutionConstraintAccepts<T>(ITypeBinding<T> typeBinding, IResolutionConstraints resolutionConstraints)
+        {
+            if(!typeBinding.Identifier.Equals(resolutionConstraints.Identifier))
+            {
+                return false;
+            }
+            return true;
         }
 
         private void InjectQueuedInstances()
@@ -50,19 +103,17 @@ namespace ManualDI
             }
         }
 
-        private bool TryGetResolverFor<T>(ITypeBinding<T> typeBinding, out ITypeResolver typeResolver)
+        private ITypeResolver GetResolverFor<T>(ITypeBinding<T> typeBinding)
         {
             foreach(var resolver in TypeResolvers)
             {
                 if(resolver.IsResolverFor(typeBinding))
                 {
-                    typeResolver = resolver;
-                    return true;
+                    return resolver;
                 }
             }
 
-            typeResolver = default;
-            return false;
+            throw new InvalidOperationException($"Could not find resolver for type binding of type {typeof(ITypeBinding<T>).FullName}");
         }
     }
 }

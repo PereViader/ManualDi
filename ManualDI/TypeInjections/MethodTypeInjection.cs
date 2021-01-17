@@ -2,11 +2,11 @@
 
 namespace ManualDI.TypeInjections
 {
-    public class ActionTypeInjection<T> : ITypeInjection<T>
+    public class MethodTypeInjection<T> : ITypeInjection<T>
     {
         public Action<T, IDiContainer> Action { get; }
 
-        public ActionTypeInjection(Action<T, IDiContainer> action)
+        public MethodTypeInjection(Action<T, IDiContainer> action)
         {
             Action = action;
         }

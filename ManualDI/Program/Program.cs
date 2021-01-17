@@ -12,19 +12,24 @@ namespace Program
             container.Bind<Car>(x => x
                 .Id("Potato")
                 .Single()
-                .FromFunc(x => new Car())
-                .Inject((o,x) => o.Init(x.Resolve<Person>()))
+                .Metadata("UNITY_EDITOR")
+                .Metadata("Speed", 5)
+                .FromMethod(x => new Car())
+                .Inject((o,x) => 
+                    o.Init(x.Resolve<Person>()
+                    ))
                 );
 
             container.Bind<Person>(x => x
                 .Single()
-                .FromFunc(x => new Person(x.Resolve<Car>(x => 
-                    x.Id("Potato")
+                .FromMethod(x => new Person(x.Resolve<Car>(x => x
+                    .Id("Potato")
+                    .Metadata("UNITY_EDITOR")
+                    .Metadata("Speed",5)
                     )))
                 );
 
-            var car = container.Resolve<Car>(x => x.Id("Potato"));
-
+            var car = container.Resolve<Car>();
             var person = container.Resolve<Person>();
 
             Console.WriteLine(car.Person == person);

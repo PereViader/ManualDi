@@ -74,22 +74,13 @@ namespace ManualDI
             foreach (var binding in bindings)
             {
                 var typeBinding = (ITypeBinding<T>)binding;
-                if (ResolutionConstraintAccepts(typeBinding, resolutionConstraints))
+                if (resolutionConstraints.Accepts(typeBinding))
                 {
                     return typeBinding;
                 }
             }
 
             throw new InvalidOperationException("No binding could satisfy constraint");
-        }
-
-        private bool ResolutionConstraintAccepts<T>(ITypeBinding<T> typeBinding, IResolutionConstraints resolutionConstraints)
-        {
-            if(!typeBinding.Identifier.Equals(resolutionConstraints.Identifier))
-            {
-                return false;
-            }
-            return true;
         }
 
         private void InjectQueuedInstances()

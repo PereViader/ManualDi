@@ -11,9 +11,9 @@ namespace ManualDI
             return typeBinding;
         }
 
-        public static ITypeBinding<T> FromFunc<T>(this ITypeBinding<T> typeBinding, Func<IDiContainer, T> func)
+        public static ITypeBinding<T> FromMethod<T>(this ITypeBinding<T> typeBinding, Func<IDiContainer, T> func)
         {
-            typeBinding.Factory = new FuncTypeFactory<T>(func);
+            typeBinding.Factory = new MethodTypeFactory<T>(func);
             return typeBinding;
         }
 

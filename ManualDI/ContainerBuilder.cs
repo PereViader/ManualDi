@@ -7,8 +7,12 @@ namespace ManualDI
         public IDiContainer Build()
         {
             var container = new DiContainer();
+
             container.TypeResolvers.Add(new SingleTypeResolver());
             container.TypeResolvers.Add(new TransientTypeResolver());
+
+            container.TypeBindingFactory = new TypeBindingFactory();
+
             return container;
         }
     }

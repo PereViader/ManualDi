@@ -2,6 +2,16 @@
 
 namespace Program
 {
+    public class Fruit
+    {
+        public string Name { get; }
+
+        public Fruit(string name)
+        {
+            Name = name;
+        }
+    }
+
     public class CarFactory : IFactory<Car>
     {
         public IDiContainer Container { get; }

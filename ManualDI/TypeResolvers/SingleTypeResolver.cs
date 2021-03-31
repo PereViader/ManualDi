@@ -1,12 +1,11 @@
 ﻿using ManualDI.TypeScopes;
-using System;
 using System.Collections.Generic;
 
 namespace ManualDI.TypeResolvers
 {
     public class SingleTypeResolver : ITypeResolver
     {
-        public Dictionary<Type, object> Instances { get; } = new Dictionary<Type, object>();
+        public Dictionary<object, object> Instances { get; } = new Dictionary<object, object>();
 
         public bool IsResolverFor<T>(ITypeBinding<T> typeBinding)
         {
@@ -15,16 +14,15 @@ namespace ManualDI.TypeResolvers
 
         public T Resolve<T>(IDiContainer container, ITypeBinding<T> typeBinding, List<IInjectionCommand> injectionCommands)
         {
-            var type = typeof(T);
-            if (Instances.TryGetValue(type, out var singleInstance))
+            if (Instances.TryGetValue(typeBinding, out var singleInstance))
             {
                 return (T)singleInstance;
             }
 
             var instance = typeBinding.Factory.Create(container);
-            Instances[type] = instance;
+            Instances[typeBinding] = instance;
 
-            if(typeBinding.TypeInjection != null)
+            if (typeBinding.TypeInjection != null)
             {
                 injectionCommands.Add(new InjectionCommand<T>(typeBinding.TypeInjection, instance));
             }

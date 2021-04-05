@@ -10,22 +10,22 @@ namespace Program
         {
             var container = new ContainerBuilder().Build();
 
-            container.Bind<Fruit>(x => x.FromInstance(new Fruit("Apple")).Metadata("Fruit1"));
-            container.Bind<Fruit>(x => x.FromInstance(new Fruit("Orange")).Metadata("Fruit2"));
-            container.Bind<Fruit>(x => x.FromInstance(new Fruit("Banana")).Metadata("Fruit3"));
-            container.Bind<List<Fruit>>(x => x.FromContainerAll(x => x.Metadata("Fruit3")).Metadata("OnlySomeSpecificFruits"));
-            container.Bind<List<Fruit>>(x => x.FromContainerAll().Metadata("AllFruit"));
+            container.Bind<Fruit>(x => x.FromInstance(new Fruit("Apple")).WithMetadata("Fruit1"));
+            container.Bind<Fruit>(x => x.FromInstance(new Fruit("Orange")).WithMetadata("Fruit2"));
+            container.Bind<Fruit>(x => x.FromInstance(new Fruit("Banana")).WithMetadata("Fruit3"));
+            container.Bind<List<Fruit>>(x => x.FromContainerAll(x => x.WhereMetadata("Fruit3")).WithMetadata("OnlySomeSpecificFruits"));
+            container.Bind<List<Fruit>>(x => x.FromContainerAll().WithMetadata("AllFruit"));
 
-            var boundFilteredFruit = container.Resolve<List<Fruit>>(x => x.Metadata("OnlySomeSpecificFruits"));
+            var boundFilteredFruit = container.Resolve<List<Fruit>>(x => x.WhereMetadata("OnlySomeSpecificFruits"));
             var allFruitLists = container.ResolveAll<List<Fruit>>();
             var allFruit = container.ResolveAll<Fruit>();
-            var fruit1And3 = container.ResolveAll<Fruit>(x => x.Metadata(x => x.Has("Fruit1") || x.Has("Fruit3")));
+            var fruit1And3 = container.ResolveAll<Fruit>(x => x.WhereMetadata(x => x.Has("Fruit1") || x.Has("Fruit3")));
 
             container.Bind<Car>(x => x
-                .Metadata("Potato")
+                .WithMetadata("Potato")
                 .Single()
-                .Metadata("UNITY_EDITOR")
-                .Metadata("Speed", 5)
+                .WithMetadata("UNITY_EDITOR")
+                .WithMetadata("Speed", 5)
                 .FromMethod(x => new Car())
                 .Inject((o, x) =>
                     o.Init(x.Resolve<Person>()
@@ -35,9 +35,9 @@ namespace Program
             container.Bind<Person>(x => x
                 .Single()
                 .FromMethod(x => new Person(x.Resolve<Car>(x => x
-                    .Metadata("Potato")
-                    .Metadata("UNITY_EDITOR")
-                    .Metadata("Speed", 5)
+                    .WhereMetadata("Potato")
+                    .WhereMetadata("UNITY_EDITOR")
+                    .WhereMetadata("Speed", 5)
                     )))
                 );
 

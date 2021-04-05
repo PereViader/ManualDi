@@ -4,7 +4,7 @@ namespace ManualDI
 {
     public static class ResolutionExtensions
     {
-        public static IResolutionConstraints Metadata(this IResolutionConstraints resolution, object flag)
+        public static IResolutionConstraints WhereMetadata(this IResolutionConstraints resolution, object flag)
         {
             var previous = resolution.TypeMetadata;
             if (previous == null)
@@ -18,7 +18,7 @@ namespace ManualDI
             return resolution;
         }
 
-        public static IResolutionConstraints Metadata<T>(this IResolutionConstraints resolution, object key, T value)
+        public static IResolutionConstraints WhereMetadata<T>(this IResolutionConstraints resolution, object key, T value)
         {
             var previous = resolution.TypeMetadata;
             if (previous == null)
@@ -38,7 +38,7 @@ namespace ManualDI
             }
         }
 
-        public static IResolutionConstraints Metadata(this IResolutionConstraints resolution, Func<ITypeMetadata, bool> metadata)
+        public static IResolutionConstraints WhereMetadata(this IResolutionConstraints resolution, Func<ITypeMetadata, bool> metadata)
         {
             var previous = resolution.TypeMetadata;
 

@@ -10,6 +10,8 @@ namespace Program
         {
             var container = new ContainerBuilder().Build();
 
+            container.Bind<IName>(x => x.FromContainer<Fruit, IName>().WithMetadata("Fruit1"));
+
             container.Bind<Fruit>(x => x.FromInstance(new Fruit("Apple")).WithMetadata("Fruit1"));
             container.Bind<Fruit>(x => x.FromInstance(new Fruit("Orange")).WithMetadata("Fruit2"));
             container.Bind<Fruit>(x => x.FromInstance(new Fruit("Banana")).WithMetadata("Fruit3"));
@@ -46,6 +48,8 @@ namespace Program
 
             Console.WriteLine(car.Person == person);
             Console.WriteLine(person.Car == car);
+
+            Console.WriteLine(container.Resolve<IName>().Name);
         }
     }
 }

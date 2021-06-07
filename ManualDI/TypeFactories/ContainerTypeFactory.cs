@@ -1,8 +1,9 @@
 ﻿namespace ManualDI.TypeFactories
 {
-    public class ContainerTypeFactory<T> : ITypeFactory<T>
+    public class ContainerTypeFactory<T, Y> : ITypeFactory<Y>
+        where T : Y
     {
-        public T Create(IDiContainer container)
+        public Y Create(IDiContainer container)
         {
             return container.Resolve<T>();
         }

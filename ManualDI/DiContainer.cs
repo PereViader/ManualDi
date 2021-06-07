@@ -83,8 +83,7 @@ namespace ManualDI
 
         private List<ITypeBinding<T>> GetAllTypeForConstraint<T>(IResolutionConstraints resolutionConstraints)
         {
-            var bindings = TypeBindings[typeof(T)];
-            if (bindings.Count == 0)
+            if (!TypeBindings.TryGetValue(typeof(T), out var bindings) || bindings.Count == 0)
             {
                 throw new InvalidOperationException($"There are no bindings for type {typeof(T).FullName}");
             }

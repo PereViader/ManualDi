@@ -2,7 +2,8 @@
 
 namespace ManualDI.TypeFactories
 {
-    public class ConstraintContainerTypeFactory<T> : ITypeFactory<T>
+    public class ConstraintContainerTypeFactory<T, Y> : ITypeFactory<Y>
+        where T : Y
     {
         public Action<IResolutionConstraints> Constraints { get; }
 
@@ -11,7 +12,7 @@ namespace ManualDI.TypeFactories
             Constraints = constraints;
         }
 
-        public T Create(IDiContainer container)
+        public Y Create(IDiContainer container)
         {
             return container.Resolve<T>(Constraints);
         }

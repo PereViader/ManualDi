@@ -2,7 +2,12 @@
 
 namespace Program
 {
-    public class Fruit
+    public interface IName
+    {
+        string Name { get; }
+    }
+
+    public class Fruit : IName
     {
         public string Name { get; }
 

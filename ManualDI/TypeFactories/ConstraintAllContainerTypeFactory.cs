@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ManualDI.TypeFactories
 {
-    public class ConstraintAllContainerTypeFactory<T> : ITypeFactory<List<T>>
+    public class ConstraintAllContainerTypeFactory<T, Y> : ITypeFactory<List<Y>>
+        where T : Y
     {
         public Action<IResolutionConstraints> Constraints { get; }
 
@@ -12,9 +14,9 @@ namespace ManualDI.TypeFactories
             Constraints = constraints;
         }
 
-        public List<T> Create(IDiContainer container)
+        public List<Y> Create(IDiContainer container)
         {
-            return container.ResolveAll<T>(Constraints);
+            return container.ResolveAll<T>(Constraints).Cast<Y>().ToList();
         }
     }
 }

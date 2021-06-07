@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace ManualDI.TypeFactories
 {
-    public class ContainerAllTypeFactory<T> : ITypeFactory<List<T>>
+    public class ContainerAllTypeFactory<T, Y> : ITypeFactory<List<Y>>
+        where T : Y
     {
-        public List<T> Create(IDiContainer container)
+        public List<Y> Create(IDiContainer container)
         {
-            return container.ResolveAll<T>();
+            return container.ResolveAll<T>().Cast<Y>().ToList();
         }
     }
 }

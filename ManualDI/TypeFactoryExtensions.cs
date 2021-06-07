@@ -6,27 +6,51 @@ namespace ManualDI
 {
     public static class TypeFactoryExtensions
     {
+        public static ITypeBinding<List<Y>> FromContainerAll<T, Y>(this ITypeBinding<List<Y>> typeBinding)
+            where T : Y
+        {
+            typeBinding.Factory = new ContainerAllTypeFactory<T, Y>();
+            return typeBinding;
+        }
+
         public static ITypeBinding<List<T>> FromContainerAll<T>(this ITypeBinding<List<T>> typeBinding)
         {
-            typeBinding.Factory = new ContainerAllTypeFactory<T>();
+            return FromContainerAll<T, T>(typeBinding);
+        }
+
+        public static ITypeBinding<List<Y>> FromContainerAll<T, Y>(this ITypeBinding<List<Y>> typeBinding, Action<IResolutionConstraints> constraints)
+            where T : Y
+        {
+            typeBinding.Factory = new ConstraintAllContainerTypeFactory<T, Y>(constraints);
             return typeBinding;
         }
 
         public static ITypeBinding<List<T>> FromContainerAll<T>(this ITypeBinding<List<T>> typeBinding, Action<IResolutionConstraints> constraints)
         {
-            typeBinding.Factory = new ConstraintAllContainerTypeFactory<T>(constraints);
-            return typeBinding;
+            return FromContainerAll<T, T>(typeBinding, constraints);
         }
 
         public static ITypeBinding<T> FromContainer<T>(this ITypeBinding<T> typeBinding)
         {
-            typeBinding.Factory = new ContainerTypeFactory<T>();
+            return FromContainer<T, T>(typeBinding);
+        }
+
+        public static ITypeBinding<Y> FromContainer<T, Y>(this ITypeBinding<Y> typeBinding)
+            where T : Y
+        {
+            typeBinding.Factory = new ContainerTypeFactory<T, Y>();
             return typeBinding;
         }
 
         public static ITypeBinding<T> FromContainer<T>(this ITypeBinding<T> typeBinding, Action<IResolutionConstraints> constraints)
         {
-            typeBinding.Factory = new ConstraintContainerTypeFactory<T>(constraints);
+            return FromContainer<T, T>(typeBinding, constraints);
+        }
+
+        public static ITypeBinding<Y> FromContainer<T, Y>(this ITypeBinding<Y> typeBinding, Action<IResolutionConstraints> constraints)
+            where T : Y
+        {
+            typeBinding.Factory = new ConstraintContainerTypeFactory<T, Y>(constraints);
             return typeBinding;
         }
 

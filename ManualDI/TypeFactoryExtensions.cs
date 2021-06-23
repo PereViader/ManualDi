@@ -72,5 +72,17 @@ namespace ManualDI
             typeBinding.Factory = new FactoryTypeFactory<TFactory, T>();
             return typeBinding;
         }
+
+        public static ITypeBinding<T> Lazy<T>(this ITypeBinding<T> typeBinding)
+        {
+            typeBinding.IsLazy = true;
+            return typeBinding;
+        }
+
+        public static ITypeBinding<T> NonLazy<T>(this ITypeBinding<T> typeBinding)
+        {
+            typeBinding.IsLazy = false;
+            return typeBinding;
+        }
     }
 }

@@ -13,5 +13,10 @@
         {
             return Constant;
         }
+
+        object ITypeFactory.Create(IDiContainer container)
+        {
+            return Create(container);
+        }
     }
 }

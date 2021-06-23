@@ -6,7 +6,7 @@ namespace ManualDI
 {
     public class DiContainer : IDiContainer
     {
-        public Dictionary<Type, List<object>> TypeBindings { get; } = new Dictionary<Type, List<object>>();
+        public Dictionary<Type, List<ITypeBinding>> TypeBindings { get; } = new Dictionary<Type, List<ITypeBinding>>();
         public List<ITypeResolver> TypeResolvers { get; } = new List<ITypeResolver>();
         public List<IInjectionCommand> InjectionCommands { get; } = new List<IInjectionCommand>();
         public ITypeBindingFactory TypeBindingFactory { get; set; }
@@ -18,7 +18,7 @@ namespace ManualDI
 
             if (!TypeBindings.TryGetValue(typeof(T), out var bindings))
             {
-                bindings = new List<object>();
+                bindings = new List<ITypeBinding>();
                 TypeBindings[typeof(T)] = bindings;
             }
 
@@ -41,6 +41,11 @@ namespace ManualDI
         }
 
         private T Resolve<T>(ITypeBinding<T> typeBinding)
+        { 
+            return (T)ResolveUntyped(typeBinding);
+        }
+
+        private object ResolveUntyped(ITypeBinding typeBinding)
         {
             var typeResolver = GetResolverFor(typeBinding);
 
@@ -127,7 +132,7 @@ namespace ManualDI
             }
         }
 
-        private ITypeResolver GetResolverFor<T>(ITypeBinding<T> typeBinding)
+        private ITypeResolver GetResolverFor(ITypeBinding typeBinding)
         {
             foreach (var resolver in TypeResolvers)
             {
@@ -137,7 +142,7 @@ namespace ManualDI
                 }
             }
 
-            throw new InvalidOperationException($"Could not find resolver for type binding of type {typeof(ITypeBinding<T>).FullName}");
+            throw new InvalidOperationException($"Could not find resolver for type binding of type {typeBinding.GetType().FullName}");
         }
 
         public List<T> ResolveAll<T>()
@@ -163,6 +168,20 @@ namespace ManualDI
                 resolved.Add(Resolve(typeBinding));
             }
             return resolved;
+        }
+
+        public void FinishBinding()
+        {
+            foreach(var bindings in TypeBindings)
+            {
+                foreach(var binding in bindings.Value)
+                {
+                    if(!binding.IsLazy)
+                    {
+                        ResolveUntyped(binding);
+                    }
+                }
+            }
         }
     }
 }

@@ -2,6 +2,14 @@
 
 namespace Program
 {
+    public class SystemStarter
+    {
+        public SystemStarter()
+        {
+            System.Console.WriteLine("System started");
+        }
+    }
+
     public interface IName
     {
         string Name { get; }

@@ -9,5 +9,10 @@
             var value = factory.Create();
             return value;
         }
+
+        object ITypeFactory.Create(IDiContainer container)
+        {
+            return Create(container);
+        }
     }
 }

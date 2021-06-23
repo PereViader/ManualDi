@@ -11,5 +11,9 @@
         public void Inject(T instance, IDiContainer container)
         {
         }
+
+        public void Inject(object instance, IDiContainer container)
+        {
+        }
     }
 }

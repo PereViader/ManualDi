@@ -18,5 +18,10 @@ namespace ManualDI.TypeFactories
         {
             return container.ResolveAll<T>(Constraints).Cast<Y>().ToList();
         }
+
+        object ITypeFactory.Create(IDiContainer container)
+        {
+            return Create(container);
+        }
     }
 }

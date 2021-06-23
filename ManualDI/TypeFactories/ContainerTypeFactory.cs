@@ -7,5 +7,10 @@
         {
             return container.Resolve<T>();
         }
+
+        object ITypeFactory.Create(IDiContainer container)
+        {
+            return Create(container);
+        }
     }
 }

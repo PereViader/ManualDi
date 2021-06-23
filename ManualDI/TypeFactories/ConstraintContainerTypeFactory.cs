@@ -16,5 +16,10 @@ namespace ManualDI.TypeFactories
         {
             return container.Resolve<T>(Constraints);
         }
+
+        object ITypeFactory.Create(IDiContainer container)
+        {
+            return Create(container);
+        }
     }
 }

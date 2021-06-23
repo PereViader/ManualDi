@@ -43,6 +43,10 @@ namespace Program
                     )))
                 );
 
+            container.Bind<SystemStarter>(x => x.FromMethod(x => new SystemStarter()).NonLazy());
+
+            container.FinishBinding();
+
             var car = container.Resolve<Car>();
             var person = container.Resolve<Person>();
 

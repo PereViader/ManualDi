@@ -5,18 +5,18 @@ namespace ManualDI.TypeResolvers
 {
     public class TransientTypeResolver : ITypeResolver
     {
-        public bool IsResolverFor<T>(ITypeBinding<T> typeBinding)
+        public bool IsResolverFor(ITypeBinding typeBinding)
         {
             return typeBinding.TypeScope is TransientTypeScope;
         }
 
-        public T Resolve<T>(IDiContainer container, ITypeBinding<T> typeBinding, List<IInjectionCommand> injectionCommands)
+        public object Resolve(IDiContainer container, ITypeBinding typeBinding, List<IInjectionCommand> injectionCommands)
         {
             var instance = typeBinding.Factory.Create(container);
 
             if (typeBinding.TypeInjection != null)
             {
-                injectionCommands.Add(new InjectionCommand<T>(typeBinding.TypeInjection, instance));
+                injectionCommands.Add(new InjectionCommand(typeBinding.TypeInjection, instance));
             }
 
             return instance;

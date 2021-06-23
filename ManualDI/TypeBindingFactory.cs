@@ -9,7 +9,8 @@ namespace ManualDI
             return new TypeBinding<T>()
             {
                 TypeScope = SingleTypeScope.Instance,
-                TypeMetadata = new TypeMetadata()
+                TypeMetadata = new TypeMetadata(),
+                IsLazy = true
             };
         }
     }

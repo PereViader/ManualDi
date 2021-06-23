@@ -2,12 +2,12 @@
 
 namespace ManualDI
 {
-    public class InjectionCommand<T> : IInjectionCommand
+    public class InjectionCommand : IInjectionCommand
     {
-        public ITypeInjection<T> TypeInjection { get; }
-        public T Instance { get; }
+        public ITypeInjection TypeInjection { get; }
+        public object Instance { get; }
 
-        public InjectionCommand(ITypeInjection<T> typeInjection, T instance)
+        public InjectionCommand(ITypeInjection typeInjection, object instance)
         {
             TypeInjection = typeInjection;
             Instance = instance;

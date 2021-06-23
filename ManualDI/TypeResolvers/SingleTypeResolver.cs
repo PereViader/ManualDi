@@ -7,16 +7,16 @@ namespace ManualDI.TypeResolvers
     {
         public Dictionary<object, object> Instances { get; } = new Dictionary<object, object>();
 
-        public bool IsResolverFor<T>(ITypeBinding<T> typeBinding)
+        public bool IsResolverFor(ITypeBinding typeBinding)
         {
             return typeBinding.TypeScope is SingleTypeScope;
         }
 
-        public T Resolve<T>(IDiContainer container, ITypeBinding<T> typeBinding, List<IInjectionCommand> injectionCommands)
+        public object Resolve(IDiContainer container, ITypeBinding typeBinding, List<IInjectionCommand> injectionCommands)
         {
             if (Instances.TryGetValue(typeBinding, out var singleInstance))
             {
-                return (T)singleInstance;
+                return singleInstance;
             }
 
             var instance = typeBinding.Factory.Create(container);
@@ -24,7 +24,7 @@ namespace ManualDI.TypeResolvers
 
             if (typeBinding.TypeInjection != null)
             {
-                injectionCommands.Add(new InjectionCommand<T>(typeBinding.TypeInjection, instance));
+                injectionCommands.Add(new InjectionCommand(typeBinding.TypeInjection, instance));
             }
 
             return instance;

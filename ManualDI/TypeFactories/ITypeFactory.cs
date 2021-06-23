@@ -1,7 +1,12 @@
 ﻿namespace ManualDI.TypeFactories
 {
-    public interface ITypeFactory<T>
+    public interface ITypeFactory<T> : ITypeFactory
     {
-        T Create(IDiContainer container);
+        new T Create(IDiContainer container);
+    }
+
+    public interface ITypeFactory
+    {
+        object Create(IDiContainer container);
     }
 }

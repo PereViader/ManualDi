@@ -12,5 +12,6 @@ namespace ManualDI
 
         List<T> ResolveAll<T>();
         List<T> ResolveAll<T>(Action<IResolutionConstraints> resolution);
+        void FinishBinding();
     }
 }

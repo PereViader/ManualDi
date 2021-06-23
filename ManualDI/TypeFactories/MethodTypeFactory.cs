@@ -15,5 +15,10 @@ namespace ManualDI.TypeFactories
         {
             return Func.Invoke(container);
         }
+
+        object ITypeFactory.Create(IDiContainer container)
+        {
+            return Create(container);
+        }
     }
 }

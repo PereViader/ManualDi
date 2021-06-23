@@ -15,5 +15,10 @@ namespace ManualDI.TypeInjections
         {
             Action.Invoke(instance, container);
         }
+
+        public void Inject(object instance, IDiContainer container)
+        {
+            Inject((T)instance, container);
+        }
     }
 }

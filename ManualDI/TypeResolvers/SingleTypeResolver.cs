@@ -22,9 +22,12 @@ namespace ManualDI.TypeResolvers
             var instance = typeBinding.Factory.Create(container);
             Instances[typeBinding] = instance;
 
-            if (typeBinding.TypeInjection != null)
+            if (typeBinding.TypeInjections != null)
             {
-                injectionCommands.Add(new InjectionCommand(typeBinding.TypeInjection, instance));
+                foreach(var typeInjection in typeBinding.TypeInjections)
+                {
+                    injectionCommands.Add(new InjectionCommand(typeInjection, instance));
+                }
             }
 
             return instance;

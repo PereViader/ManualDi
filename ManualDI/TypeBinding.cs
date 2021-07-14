@@ -1,6 +1,7 @@
 ﻿using ManualDI.TypeFactories;
 using ManualDI.TypeInjections;
 using ManualDI.TypeScopes;
+using System.Collections.Generic;
 
 namespace ManualDI
 {
@@ -8,20 +9,8 @@ namespace ManualDI
     {
         public ITypeMetadata TypeMetadata { get; set; }
         public ITypeScope TypeScope { get; set; }
-        public ITypeFactory<T> Factory { get; set; }
-        public ITypeInjection<T> TypeInjection { get; set; }
+        public ITypeFactory Factory { get; set; }
+        public List<ITypeInjection> TypeInjections { get; set; }
         public bool IsLazy { get; set; }
-        
-        ITypeFactory ITypeBinding.Factory 
-        {
-            get => Factory; 
-            set => Factory = (ITypeFactory<T>)value; 
-        }
-
-        ITypeInjection ITypeBinding.TypeInjection 
-        { 
-            get => TypeInjection; 
-            set => TypeInjection = (ITypeInjection<T>)value; 
-        }
     }
 }

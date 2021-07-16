@@ -1,4 +1,4 @@
-﻿using ManualDI.TypeResolvers;
+using ManualDI.TypeResolvers;
 using System;
 using System.Collections.Generic;
 
@@ -63,8 +63,7 @@ namespace ManualDI
 
         private ITypeBinding<T> GetTypeForConstraint<T>(IResolutionConstraints resolutionConstraints)
         {
-            var bindings = TypeBindings[typeof(T)];
-            if (bindings.Count == 0)
+            if(!TypeBindings.TryGetValue(typeof(T), out var bindings) || bindings.Count == 0)
             {
                 throw new InvalidOperationException($"There are no bindings for type {typeof(T).FullName}");
             }

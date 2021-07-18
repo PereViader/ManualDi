@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ManualDI.TypeFactories
+namespace ManualDi.TypeFactories
 {
     public class ConstraintAllContainerTypeFactory<T, Y> : ITypeFactory<List<Y>>
         where T : Y

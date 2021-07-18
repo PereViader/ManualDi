@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ManualDI.TypeResolvers
+namespace ManualDi.TypeResolvers
 {
     public interface ITypeResolver
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ManualDI
+namespace ManualDi
 {
     public class ResolutionConstraints : IResolutionConstraints
     {

@@ -1,4 +1,4 @@
-﻿namespace ManualDI.TypeScopes
+﻿namespace ManualDi.TypeScopes
 {
     public class TransientTypeScope : ITypeScope
     {

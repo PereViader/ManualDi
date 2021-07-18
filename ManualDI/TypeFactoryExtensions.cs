@@ -1,9 +1,11 @@
-﻿using ManualDI.TypeFactories;
+﻿using ManualDi.TypeFactories;
 using System;
 using System.Collections.Generic;
 
-namespace ManualDI
+namespace ManualDi
 {
+    public delegate T FactoryMethodDelegate<T>(IDiContainer diContainer);
+
     public static class TypeFactoryExtensions
     {
         public static ITypeBinding<List<Y>> FromContainerAll<T, Y>(this ITypeBinding<List<Y>> typeBinding)
@@ -60,9 +62,9 @@ namespace ManualDI
             return typeBinding;
         }
 
-        public static ITypeBinding<T> FromMethod<T>(this ITypeBinding<T> typeBinding, Func<IDiContainer, T> func)
+        public static ITypeBinding<T> FromMethod<T>(this ITypeBinding<T> typeBinding, FactoryMethodDelegate<T> factoryMethodDelegate)
         {
-            typeBinding.Factory = new MethodTypeFactory<T>(func);
+            typeBinding.Factory = new MethodTypeFactory<T>(factoryMethodDelegate);
             return typeBinding;
         }
 

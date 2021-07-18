@@ -1,7 +1,7 @@
-﻿using ManualDI.TypeScopes;
+﻿using ManualDi.TypeScopes;
 using System.Collections.Generic;
 
-namespace ManualDI.TypeResolvers
+namespace ManualDi.TypeResolvers
 {
     public class TransientTypeResolver : ITypeResolver
     {
@@ -16,7 +16,7 @@ namespace ManualDI.TypeResolvers
 
             if (typeBinding.TypeInjections != null)
             {
-                foreach(var typeInjection in typeBinding.TypeInjections)
+                foreach (var typeInjection in typeBinding.TypeInjections)
                 {
                     injectionCommands.Add(new InjectionCommand(typeInjection, instance));
                 }

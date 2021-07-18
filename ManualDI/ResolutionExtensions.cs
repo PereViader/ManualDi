@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ManualDI
+namespace ManualDi
 {
     public static class ResolutionExtensions
     {

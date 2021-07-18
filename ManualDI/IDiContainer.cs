@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ManualDI
+namespace ManualDi
 {
     public interface IDiContainer
     {
@@ -10,8 +10,12 @@ namespace ManualDI
         T Resolve<T>();
         T Resolve<T>(Action<IResolutionConstraints> resolution);
 
+        bool TryResolve<T>(out T result);
+        bool TryResolve<T>(Action<IResolutionConstraints> resolution, out T result);
+
         List<T> ResolveAll<T>();
         List<T> ResolveAll<T>(Action<IResolutionConstraints> resolution);
+
         void FinishBinding();
     }
 }

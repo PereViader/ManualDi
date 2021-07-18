@@ -1,4 +1,4 @@
-﻿namespace ManualDI
+﻿namespace ManualDi
 {
     public interface IFactory<T>
     {

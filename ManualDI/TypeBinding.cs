@@ -1,9 +1,9 @@
-﻿using ManualDI.TypeFactories;
-using ManualDI.TypeInjections;
-using ManualDI.TypeScopes;
+﻿using ManualDi.TypeFactories;
+using ManualDi.TypeInjections;
+using ManualDi.TypeScopes;
 using System.Collections.Generic;
 
-namespace ManualDI
+namespace ManualDi
 {
     public class TypeBinding<T> : ITypeBinding<T>
     {

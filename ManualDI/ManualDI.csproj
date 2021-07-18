@@ -1,12 +1,18 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <ApplicationIcon />
+    <StartupObject />
+    <AssemblyName>ManualDi</AssemblyName>
+    <RootNamespace>ManualDi</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Constraints\" />
+    <Compile Remove="Constraints\**" />
+    <EmbeddedResource Remove="Constraints\**" />
+    <None Remove="Constraints\**" />
   </ItemGroup>
 
 </Project>

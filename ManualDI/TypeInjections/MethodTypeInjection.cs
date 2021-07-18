@@ -1,19 +1,17 @@
-﻿using System;
-
-namespace ManualDI.TypeInjections
+﻿namespace ManualDi.TypeInjections
 {
     public class MethodTypeInjection<T> : ITypeInjection<T>
     {
-        public Action<T, IDiContainer> Action { get; }
+        public InjectionDelegate<T> InjectionDelegate { get; }
 
-        public MethodTypeInjection(Action<T, IDiContainer> action)
+        public MethodTypeInjection(InjectionDelegate<T> injectionDelegate)
         {
-            Action = action;
+            InjectionDelegate = injectionDelegate;
         }
 
         public void Inject(T instance, IDiContainer container)
         {
-            Action.Invoke(instance, container);
+            InjectionDelegate.Invoke(instance, container);
         }
 
         public void Inject(object instance, IDiContainer container)

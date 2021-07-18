@@ -1,8 +1,8 @@
-using ManualDI.TypeResolvers;
+﻿using ManualDi.TypeResolvers;
 using System;
 using System.Collections.Generic;
 
-namespace ManualDI
+namespace ManualDi
 {
     public class DiContainer : IDiContainer
     {
@@ -10,6 +10,7 @@ namespace ManualDI
         public List<ITypeResolver> TypeResolvers { get; } = new List<ITypeResolver>();
         public List<IInjectionCommand> InjectionCommands { get; } = new List<IInjectionCommand>();
         public ITypeBindingFactory TypeBindingFactory { get; set; }
+        public IDiContainer ParentDiContainer { get; set; }
 
         public void Bind<T>(Action<ITypeBinding<T>> action)
         {
@@ -40,8 +41,18 @@ namespace ManualDI
             return Resolve(typeBinding);
         }
 
+        public bool TryResolve<T>(out T result)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool TryResolve<T>(Action<IResolutionConstraints> resolution, out T result)
+        {
+            throw new NotImplementedException();
+        }
+
         private T Resolve<T>(ITypeBinding<T> typeBinding)
-        { 
+        {
             return (T)ResolveUntyped(typeBinding);
         }
 
@@ -63,7 +74,7 @@ namespace ManualDI
 
         private ITypeBinding<T> GetTypeForConstraint<T>(IResolutionConstraints resolutionConstraints)
         {
-            if(!TypeBindings.TryGetValue(typeof(T), out var bindings) || bindings.Count == 0)
+            if (!TypeBindings.TryGetValue(typeof(T), out var bindings) || bindings.Count == 0)
             {
                 throw new InvalidOperationException($"There are no bindings for type {typeof(T).FullName}");
             }
@@ -171,11 +182,11 @@ namespace ManualDI
 
         public void FinishBinding()
         {
-            foreach(var bindings in TypeBindings)
+            foreach (var bindings in TypeBindings)
             {
-                foreach(var binding in bindings.Value)
+                foreach (var binding in bindings.Value)
                 {
-                    if(!binding.IsLazy)
+                    if (!binding.IsLazy)
                     {
                         ResolveUntyped(binding);
                     }

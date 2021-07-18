@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ManualDI
+namespace ManualDi
 {
     public class TypeMetadata : ITypeMetadata
     {
@@ -13,7 +13,7 @@ namespace ManualDI
 
         public T GetOrDefault<T>(object key, T defaultValue)
         {
-            if(!TryGet<T>(key, out var value))
+            if (!TryGet<T>(key, out var value))
             {
                 return defaultValue;
             }

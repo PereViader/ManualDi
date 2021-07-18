@@ -1,6 +1,6 @@
-﻿using ManualDI.TypeScopes;
+﻿using ManualDi.TypeScopes;
 
-namespace ManualDI
+namespace ManualDi
 {
     public class TypeBindingFactory : ITypeBindingFactory
     {

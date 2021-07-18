@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ManualDI.TypeFactories
+namespace ManualDi.TypeFactories
 {
     public class ConstraintContainerTypeFactory<T, Y> : ITypeFactory<Y>
         where T : Y

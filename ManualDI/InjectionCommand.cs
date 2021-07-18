@@ -1,6 +1,6 @@
-﻿using ManualDI.TypeInjections;
+﻿using ManualDi.TypeInjections;
 
-namespace ManualDI
+namespace ManualDi
 {
     public class InjectionCommand : IInjectionCommand
     {

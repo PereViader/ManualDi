@@ -1,4 +1,4 @@
-﻿namespace ManualDI.TypeInjections
+﻿namespace ManualDi.TypeInjections
 {
     public class NopTypeInjection<T> : ITypeInjection<T>
     {

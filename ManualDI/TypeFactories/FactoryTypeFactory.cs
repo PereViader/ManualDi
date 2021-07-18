@@ -1,7 +1,7 @@
-﻿namespace ManualDI.TypeFactories
+﻿namespace ManualDi.TypeFactories
 {
     public class FactoryTypeFactory<TFactory, TValue> : ITypeFactory<TValue>
-        where TFactory : IFactory<TValue>    
+        where TFactory : IFactory<TValue>
     {
         public TValue Create(IDiContainer container)
         {

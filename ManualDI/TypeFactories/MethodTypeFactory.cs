@@ -1,19 +1,17 @@
-﻿using System;
-
-namespace ManualDI.TypeFactories
+﻿namespace ManualDi.TypeFactories
 {
     public class MethodTypeFactory<T> : ITypeFactory<T>
     {
-        public Func<IDiContainer, T> Func { get; }
+        public FactoryMethodDelegate<T> FactoryMethodDelegate { get; }
 
-        public MethodTypeFactory(Func<IDiContainer, T> func)
+        public MethodTypeFactory(FactoryMethodDelegate<T> factoryMehtodDelegate)
         {
-            Func = func;
+            FactoryMethodDelegate = factoryMehtodDelegate;
         }
 
         public T Create(IDiContainer container)
         {
-            return Func.Invoke(container);
+            return FactoryMethodDelegate.Invoke(container);
         }
 
         object ITypeFactory.Create(IDiContainer container)

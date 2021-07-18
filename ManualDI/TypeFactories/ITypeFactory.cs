@@ -1,4 +1,4 @@
-﻿namespace ManualDI.TypeFactories
+﻿namespace ManualDi.TypeFactories
 {
     public interface ITypeFactory<T> : ITypeFactory
     {

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ManualDI": {
+      "commandName": "Project",
+      "nativeDebugging": false
+    }
+  }
+}

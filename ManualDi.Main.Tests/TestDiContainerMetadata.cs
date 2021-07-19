@@ -24,8 +24,8 @@ namespace ManualDi.Main.Tests
             var resolution1 = container.Resolve<object>(b => b.WhereMetadata(nameof(instance1)));
             var resolution2 = container.Resolve<object>(b => b.WhereMetadata(nameof(instance2)));
 
-            Assert.That(instance1, Is.EqualTo(resolution1));
-            Assert.That(instance2, Is.EqualTo(resolution2));
+            Assert.That(resolution1, Is.EqualTo(instance1));
+            Assert.That(resolution2, Is.EqualTo(instance2));
         }
 
         [Test]
@@ -40,8 +40,8 @@ namespace ManualDi.Main.Tests
             var resolution1 = container.Resolve<object>(b => b.WhereMetadata("Key", 5));
             var resolution2 = container.Resolve<object>(b => b.WhereMetadata("Key", 10));
 
-            Assert.That(instance1, Is.EqualTo(resolution1));
-            Assert.That(instance2, Is.EqualTo(resolution2));
+            Assert.That(resolution1, Is.EqualTo(instance1));
+            Assert.That(resolution2, Is.EqualTo(instance2));
         }
 
         [Test]
@@ -56,8 +56,8 @@ namespace ManualDi.Main.Tests
             var resolution1 = container.Resolve<object>(b => b.WhereMetadata(x => x.Get<int>("Key") < 6));
             var resolution2 = container.Resolve<object>(b => b.WhereMetadata(x => x.Get<int>("Key") > 6));
 
-            Assert.That(instance1, Is.EqualTo(resolution1));
-            Assert.That(instance2, Is.EqualTo(resolution2));
+            Assert.That(resolution1, Is.EqualTo(instance1));
+            Assert.That(resolution2, Is.EqualTo(instance2));
         }
     }
 }

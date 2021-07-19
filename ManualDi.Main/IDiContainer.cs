@@ -8,13 +8,11 @@ namespace ManualDi.Main
         void Bind<T>(Action<ITypeBinding<T>> typeSetup);
 
         T Resolve<T>();
-        T Resolve<T>(Action<IResolutionConstraints> resolution);
-
-        bool TryResolve<T>(out T result);
-        bool TryResolve<T>(Action<IResolutionConstraints> resolution, out T result);
+        T Resolve<T>(IResolutionConstraints resolutionConstraints);
 
         List<T> ResolveAll<T>();
-        List<T> ResolveAll<T>(Action<IResolutionConstraints> resolution);
+        List<T> ResolveAll<T>(IResolutionConstraints resolutionConstraints);
+
 
         void FinishBinding();
     }

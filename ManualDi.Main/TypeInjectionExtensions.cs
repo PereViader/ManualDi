@@ -1,4 +1,4 @@
-﻿using ManualDi.Main.TypeInjections;
+﻿using ManualDi.Main.Injection;
 using System.Collections.Generic;
 
 namespace ManualDi.Main

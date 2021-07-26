@@ -1,4 +1,4 @@
-﻿namespace ManualDi.Main.TypeInjections
+﻿namespace ManualDi.Main.Injection
 {
     public class MethodTypeInjection<T> : ITypeInjection
     {

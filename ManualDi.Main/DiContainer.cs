@@ -1,4 +1,5 @@
 ﻿using ManualDi.Main.Initialization;
+using ManualDi.Main.Injection;
 using ManualDi.Main.TypeResolvers;
 using System;
 using System.Collections.Generic;
@@ -9,10 +10,12 @@ namespace ManualDi.Main
     {
         public Dictionary<Type, List<ITypeBinding>> TypeBindings { get; } = new Dictionary<Type, List<ITypeBinding>>();
         public List<ITypeResolver> TypeResolvers { get; } = new List<ITypeResolver>();
-        public List<IInjectionCommand> InjectionCommands { get; } = new List<IInjectionCommand>();
         public ITypeBindingFactory TypeBindingFactory { get; set; }
         public IDiContainer ParentDiContainer { get; set; }
+        public IBindingInjector BindingInjector { get; set; }
         public IBindingInitializer BindingInitializer { get; set; }
+
+        private bool isRootResolve = true;
 
         public void Bind<T>(Action<ITypeBinding<T>> action)
         {
@@ -53,14 +56,16 @@ namespace ManualDi.Main
         {
             var typeResolver = GetResolverFor(typeBinding);
 
-            var willTriggerInject = InjectionCommands.Count == 0;
+            bool isRootResolve = this.isRootResolve;
+            this.isRootResolve = false;
 
-            var instance = typeResolver.Resolve(this, typeBinding, InjectionCommands, BindingInitializer);
+            var instance = typeResolver.Resolve(this, typeBinding, BindingInjector, BindingInitializer);
 
-            if (willTriggerInject)
+            if (isRootResolve)
             {
-                InjectQueuedInstances();
+                BindingInjector.InjectAllQueued(this);
                 BindingInitializer.InitializeAllQueued();
+                this.isRootResolve = true;
             }
 
             return instance;
@@ -125,16 +130,7 @@ namespace ManualDi.Main
             return new Result<List<ITypeBinding<T>>>(typeBindings);
         }
 
-        private void InjectQueuedInstances()
-        {
-            while (InjectionCommands.Count > 0)
-            {
-                var index = InjectionCommands.Count - 1;
-                var injectionCommand = InjectionCommands[index];
-                injectionCommand.Inject(this);
-                InjectionCommands.RemoveAt(index);
-            }
-        }
+
 
         private ITypeResolver GetResolverFor(ITypeBinding typeBinding)
         {

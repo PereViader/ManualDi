@@ -1,4 +1,5 @@
 ﻿using ManualDi.Main.Initialization;
+using ManualDi.Main.Injection;
 using ManualDi.Main.TypeResolvers;
 
 namespace ManualDi.Main
@@ -23,6 +24,7 @@ namespace ManualDi.Main
             container.TypeResolvers.Add(new TransientTypeResolver());
 
             container.TypeBindingFactory = new TypeBindingFactory();
+            container.BindingInjector = new BindingInjector();
             container.BindingInitializer = new BindingInitializer();
 
             return container;

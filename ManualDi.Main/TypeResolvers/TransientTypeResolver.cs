@@ -1,6 +1,6 @@
 ﻿using ManualDi.Main.Initialization;
+using ManualDi.Main.Injection;
 using ManualDi.Main.TypeScopes;
-using System.Collections.Generic;
 
 namespace ManualDi.Main.TypeResolvers
 {
@@ -11,18 +11,11 @@ namespace ManualDi.Main.TypeResolvers
             return typeBinding.TypeScope is TransientTypeScope;
         }
 
-        public object Resolve(IDiContainer container, ITypeBinding typeBinding, List<IInjectionCommand> injectionCommands, IBindingInitializer bindingInitializer)
+        public object Resolve(IDiContainer container, ITypeBinding typeBinding, IBindingInjector bindingInjector, IBindingInitializer bindingInitializer)
         {
             var instance = typeBinding.Factory.Create(container);
 
-            if (typeBinding.TypeInjections != null)
-            {
-                foreach (var typeInjection in typeBinding.TypeInjections)
-                {
-                    injectionCommands.Add(new InjectionCommand(typeInjection, instance));
-                }
-            }
-
+            bindingInjector.Injest(typeBinding, instance);
             bindingInitializer.Injest(typeBinding, instance);
 
             return instance;

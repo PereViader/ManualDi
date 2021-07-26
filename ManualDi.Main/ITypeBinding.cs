@@ -1,6 +1,6 @@
 ﻿using ManualDi.Main.Initialization;
 using ManualDi.Main.TypeFactories;
-using ManualDi.Main.TypeInjections;
+using ManualDi.Main.Injection;
 using ManualDi.Main.TypeScopes;
 using System.Collections.Generic;
 

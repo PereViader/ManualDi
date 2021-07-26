@@ -20,9 +20,9 @@ namespace ManualDi.Main.Initialization
 
         public void InitializeAllQueued()
         {
-            foreach (var bindingInitialization in bindingInitializationCommands)
+            for (int i = bindingInitializationCommands.Count - 1; i >= 0; i--)
             {
-                bindingInitialization.Invoke();
+                bindingInitializationCommands[i].Invoke();
             }
             bindingInitializationCommands.Clear();
         }

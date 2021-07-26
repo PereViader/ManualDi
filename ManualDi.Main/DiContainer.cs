@@ -15,7 +15,7 @@ namespace ManualDi.Main
         public IBindingInjector BindingInjector { get; set; }
         public IBindingInitializer BindingInitializer { get; set; }
 
-        private bool isRootResolve = true;
+        private bool nextResolveIsRootResolve = true;
 
         public void Bind<T>(Action<ITypeBinding<T>> action)
         {
@@ -56,8 +56,8 @@ namespace ManualDi.Main
         {
             var typeResolver = GetResolverFor(typeBinding);
 
-            bool isRootResolve = this.isRootResolve;
-            this.isRootResolve = false;
+            bool isRootResolve = this.nextResolveIsRootResolve;
+            this.nextResolveIsRootResolve = false;
 
             var instance = typeResolver.Resolve(this, typeBinding, BindingInjector, BindingInitializer);
 
@@ -65,7 +65,7 @@ namespace ManualDi.Main
             {
                 BindingInjector.InjectAllQueued(this);
                 BindingInitializer.InitializeAllQueued();
-                this.isRootResolve = true;
+                this.nextResolveIsRootResolve = true;
             }
 
             return instance;

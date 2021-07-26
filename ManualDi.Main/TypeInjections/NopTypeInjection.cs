@@ -1,14 +1,10 @@
 ﻿namespace ManualDi.Main.TypeInjections
 {
-    public class NopTypeInjection<T> : ITypeInjection<T>
+    public class NopTypeInjection<T> : ITypeInjection
     {
         public static NopTypeInjection<T> Instance { get; } = new NopTypeInjection<T>();
 
         private NopTypeInjection()
-        {
-        }
-
-        public void Inject(T instance, IDiContainer container)
         {
         }
 

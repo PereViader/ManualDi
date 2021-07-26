@@ -1,4 +1,5 @@
-﻿using ManualDi.Main.TypeResolvers;
+﻿using ManualDi.Main.Initialization;
+using ManualDi.Main.TypeResolvers;
 using System;
 using System.Collections.Generic;
 
@@ -11,6 +12,7 @@ namespace ManualDi.Main
         public List<IInjectionCommand> InjectionCommands { get; } = new List<IInjectionCommand>();
         public ITypeBindingFactory TypeBindingFactory { get; set; }
         public IDiContainer ParentDiContainer { get; set; }
+        public IBindingInitializer BindingInitializer { get; set; }
 
         public void Bind<T>(Action<ITypeBinding<T>> action)
         {
@@ -53,11 +55,12 @@ namespace ManualDi.Main
 
             var willTriggerInject = InjectionCommands.Count == 0;
 
-            var instance = typeResolver.Resolve(this, typeBinding, InjectionCommands);
+            var instance = typeResolver.Resolve(this, typeBinding, InjectionCommands, BindingInitializer);
 
             if (willTriggerInject)
             {
                 InjectQueuedInstances();
+                BindingInitializer.InitializeAllQueued();
             }
 
             return instance;

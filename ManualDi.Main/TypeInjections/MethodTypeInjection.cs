@@ -1,6 +1,6 @@
 ﻿namespace ManualDi.Main.TypeInjections
 {
-    public class MethodTypeInjection<T> : ITypeInjection<T>
+    public class MethodTypeInjection<T> : ITypeInjection
     {
         public InjectionDelegate<T> InjectionDelegate { get; }
 
@@ -9,14 +9,10 @@
             InjectionDelegate = injectionDelegate;
         }
 
-        public void Inject(T instance, IDiContainer container)
-        {
-            InjectionDelegate.Invoke(instance, container);
-        }
-
         public void Inject(object instance, IDiContainer container)
         {
-            Inject((T)instance, container);
+            T typedInstance = (T)instance;
+            InjectionDelegate.Invoke(typedInstance, container);
         }
     }
 }

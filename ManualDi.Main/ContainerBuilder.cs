@@ -1,4 +1,5 @@
-﻿using ManualDi.Main.TypeResolvers;
+﻿using ManualDi.Main.Initialization;
+using ManualDi.Main.TypeResolvers;
 
 namespace ManualDi.Main
 {
@@ -22,6 +23,7 @@ namespace ManualDi.Main
             container.TypeResolvers.Add(new TransientTypeResolver());
 
             container.TypeBindingFactory = new TypeBindingFactory();
+            container.BindingInitializer = new BindingInitializer();
 
             return container;
         }

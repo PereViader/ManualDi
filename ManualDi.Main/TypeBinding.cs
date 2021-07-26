@@ -1,4 +1,5 @@
-﻿using ManualDi.Main.TypeFactories;
+﻿using ManualDi.Main.Initialization;
+using ManualDi.Main.TypeFactories;
 using ManualDi.Main.TypeInjections;
 using ManualDi.Main.TypeScopes;
 using System.Collections.Generic;
@@ -11,6 +12,7 @@ namespace ManualDi.Main
         public ITypeScope TypeScope { get; set; }
         public ITypeFactory Factory { get; set; }
         public List<ITypeInjection> TypeInjections { get; set; }
+        public IBindingInitialization BindingInitialization { get; set; }
         public bool IsLazy { get; set; }
     }
 }

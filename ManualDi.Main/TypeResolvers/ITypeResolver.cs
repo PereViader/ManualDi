@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using ManualDi.Main.Initialization;
+using System.Collections.Generic;
 
 namespace ManualDi.Main.TypeResolvers
 {
     public interface ITypeResolver
     {
         bool IsResolverFor(ITypeBinding typeBinding);
-        object Resolve(IDiContainer container, ITypeBinding typeBinding, List<IInjectionCommand> injectionCommands);
+        object Resolve(IDiContainer container, ITypeBinding typeBinding, List<IInjectionCommand> injectionCommands, IBindingInitializer bindingInitializer);
     }
 }

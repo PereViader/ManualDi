@@ -1,6 +1,6 @@
 ﻿namespace ManualDi.Main.Initialization
 {
-    public delegate void InitializationDelegate<T>(T instance);
+    public delegate void InitializationDelegate<T>(T instance, IDiContainer container);
 
     public class BindingInitialization<T> : IBindingInitialization
     {
@@ -11,10 +11,10 @@
             InitializationDelegate = initializationDelegate;
         }
 
-        public void Initialize(object instance)
+        public void Initialize(object instance, IDiContainer container)
         {
             T typedInstance = (T)instance;
-            InitializationDelegate.Invoke(typedInstance);
+            InitializationDelegate.Invoke(typedInstance, container);
         }
     }
 }

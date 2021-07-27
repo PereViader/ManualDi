@@ -64,7 +64,7 @@ namespace ManualDi.Main
             if (isRootResolve)
             {
                 BindingInjector.InjectAllQueued(this);
-                BindingInitializer.InitializeAllQueued();
+                BindingInitializer.InitializeAllQueued(this);
                 this.nextResolveIsRootResolve = true;
             }
 

@@ -1,6 +1,6 @@
 ﻿using ManualDi.Main.Initialization;
-using ManualDi.Main.TypeFactories;
 using ManualDi.Main.Injection;
+using ManualDi.Main.TypeFactories;
 using ManualDi.Main.TypeScopes;
 using System.Collections.Generic;
 
@@ -14,5 +14,12 @@ namespace ManualDi.Main
         public List<ITypeInjection> TypeInjections { get; set; }
         public IBindingInitialization BindingInitialization { get; set; }
         public bool IsLazy { get; set; }
+
+        public RegisterDisposeDelegate RegisterDisposeDelegate { get; }
+
+        public TypeBinding(RegisterDisposeDelegate registerDisposeDelegate)
+        {
+            RegisterDisposeDelegate = registerDisposeDelegate;
+        }
     }
 }

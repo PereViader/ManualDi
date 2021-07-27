@@ -1,11 +1,14 @@
 ﻿using ManualDi.Main.Initialization;
-using ManualDi.Main.TypeFactories;
 using ManualDi.Main.Injection;
+using ManualDi.Main.TypeFactories;
 using ManualDi.Main.TypeScopes;
+using System;
 using System.Collections.Generic;
 
 namespace ManualDi.Main
 {
+    public delegate void RegisterDisposeDelegate(Action disposeAction);
+
     public interface ITypeBinding
     {
         ITypeMetadata TypeMetadata { get; set; }
@@ -14,6 +17,7 @@ namespace ManualDi.Main
         List<ITypeInjection> TypeInjections { get; set; }
         IBindingInitialization BindingInitialization { get; set; }
         bool IsLazy { get; set; }
+        RegisterDisposeDelegate RegisterDisposeDelegate { get; }
     }
 
     public interface ITypeBinding<T> : ITypeBinding

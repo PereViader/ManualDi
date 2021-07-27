@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ManualDi.Main
 {
-    public interface IDiContainer
+    public interface IDiContainer : IDisposable
     {
         void Bind<T>(Action<ITypeBinding<T>> typeSetup);
 

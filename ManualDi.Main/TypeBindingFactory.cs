@@ -4,9 +4,9 @@ namespace ManualDi.Main
 {
     public class TypeBindingFactory : ITypeBindingFactory
     {
-        public ITypeBinding<T> Create<T>()
+        public ITypeBinding<T> Create<T>(RegisterDisposeDelegate registerDisposeDelegate)
         {
-            return new TypeBinding<T>()
+            return new TypeBinding<T>(registerDisposeDelegate)
             {
                 TypeScope = SingleTypeScope.Instance,
                 TypeMetadata = new TypeMetadata(),

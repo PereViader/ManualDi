@@ -1,4 +1,5 @@
-﻿using ManualDi.Main.Initialization;
+﻿using ManualDi.Main.Disposing;
+using ManualDi.Main.Initialization;
 using ManualDi.Main.Injection;
 using ManualDi.Main.TypeResolvers;
 using System;
@@ -14,12 +15,14 @@ namespace ManualDi.Main
         public IDiContainer ParentDiContainer { get; set; }
         public IBindingInjector BindingInjector { get; set; }
         public IBindingInitializer BindingInitializer { get; set; }
+        public IBindingDisposer BindingDisposer { get; set; }
 
         private bool nextResolveIsRootResolve = true;
+        private bool disposedValue;
 
         public void Bind<T>(Action<ITypeBinding<T>> action)
         {
-            var typeBinding = TypeBindingFactory.Create<T>();
+            var typeBinding = TypeBindingFactory.Create<T>(BindingDisposer.RegisterDispose);
             action.Invoke(typeBinding);
 
             if (!TypeBindings.TryGetValue(typeof(T), out var bindings))
@@ -186,6 +189,25 @@ namespace ManualDi.Main
                     }
                 }
             }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    BindingDisposer.DisposeAll();
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

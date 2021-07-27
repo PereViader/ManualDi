@@ -3,6 +3,6 @@
     public interface IBindingInitializer
     {
         void Injest(ITypeBinding typeBinding, object instance);
-        void InitializeAllQueued();
+        void InitializeAllQueued(IDiContainer container);
     }
 }

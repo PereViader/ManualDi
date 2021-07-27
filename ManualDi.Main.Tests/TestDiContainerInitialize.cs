@@ -23,7 +23,7 @@ namespace ManualDi.Main.Tests
                 .FromInstance(instance)
                 .Initialize(initializationDelegate)
                 );
-            initializationDelegate.Received(1).Invoke(Arg.Is(instance));
+            initializationDelegate.Received(1).Invoke(Arg.Is(instance), Arg.Is(container));
         }
     }
 }

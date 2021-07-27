@@ -2,6 +2,6 @@
 {
     public interface IBindingInitialization
     {
-        void Initialize(object instance);
+        void Initialize(object instance, IDiContainer container);
     }
 }

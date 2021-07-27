@@ -5,7 +5,7 @@ namespace ManualDi.Main.Initialization
 {
     public class BindingInitializer : IBindingInitializer
     {
-        private readonly List<Action> bindingInitializationCommands = new List<Action>();
+        private readonly List<Action<IDiContainer>> bindingInitializationCommands = new List<Action<IDiContainer>>();
 
         public void Injest(ITypeBinding typeBinding, object instance)
         {
@@ -15,14 +15,14 @@ namespace ManualDi.Main.Initialization
                 return;
             }
 
-            bindingInitializationCommands.Add(() => bindingInitialization.Initialize(instance));
+            bindingInitializationCommands.Add((IDiContainer container) => bindingInitialization.Initialize(instance, container));
         }
 
-        public void InitializeAllQueued()
+        public void InitializeAllQueued(IDiContainer container)
         {
             for (int i = bindingInitializationCommands.Count - 1; i >= 0; i--)
             {
-                bindingInitializationCommands[i].Invoke();
+                bindingInitializationCommands[i].Invoke(container);
             }
             bindingInitializationCommands.Clear();
         }

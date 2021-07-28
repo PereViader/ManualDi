@@ -5,11 +5,11 @@ using ManualDi.Main.TypeResolvers;
 
 namespace ManualDi.Main
 {
-    public class ContainerBuilder
+    public class ContainerBuilder : IContainerBuilder
     {
         private IDiContainer parentDiContainer;
 
-        public ContainerBuilder WithParentContainer(IDiContainer diContainer)
+        public IContainerBuilder WithParentContainer(IDiContainer diContainer)
         {
             this.parentDiContainer = diContainer;
             return this;

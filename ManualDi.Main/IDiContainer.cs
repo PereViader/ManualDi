@@ -15,5 +15,7 @@ namespace ManualDi.Main
 
 
         void FinishBinding();
+
+        void QueueDispose(Action disposeAction);
     }
 }

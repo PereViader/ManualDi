@@ -4,7 +4,7 @@ namespace ManualDi.Main.Disposing
 {
     public interface IBindingDisposer
     {
-        void RegisterDispose(Action disposeAction);
+        void QueueDispose(Action disposeAction);
         void DisposeAll();
     }
 }

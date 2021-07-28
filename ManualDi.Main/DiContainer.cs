@@ -22,7 +22,7 @@ namespace ManualDi.Main
 
         public void Bind<T>(Action<ITypeBinding<T>> action)
         {
-            var typeBinding = TypeBindingFactory.Create<T>(BindingDisposer.RegisterDispose);
+            var typeBinding = TypeBindingFactory.Create<T>();
             action.Invoke(typeBinding);
 
             if (!TypeBindings.TryGetValue(typeof(T), out var bindings))
@@ -189,6 +189,11 @@ namespace ManualDi.Main
                     }
                 }
             }
+        }
+
+        public void QueueDispose(Action disposeAction)
+        {
+            BindingDisposer.QueueDispose(disposeAction);
         }
 
         protected virtual void Dispose(bool disposing)

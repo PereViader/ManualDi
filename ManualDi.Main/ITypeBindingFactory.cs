@@ -2,6 +2,6 @@
 {
     public interface ITypeBindingFactory
     {
-        public ITypeBinding<T> Create<T>(RegisterDisposeDelegate registerDisposeDelegate);
+        public ITypeBinding<T> Create<T>();
     }
 }

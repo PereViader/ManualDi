@@ -17,7 +17,6 @@ namespace ManualDi.Main
         List<ITypeInjection> TypeInjections { get; set; }
         IBindingInitialization BindingInitialization { get; set; }
         bool IsLazy { get; set; }
-        RegisterDisposeDelegate RegisterDisposeDelegate { get; }
     }
 
     public interface ITypeBinding<T> : ITypeBinding

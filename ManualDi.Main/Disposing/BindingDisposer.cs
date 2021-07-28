@@ -9,7 +9,7 @@ namespace ManualDi.Main.Disposing
 
         private bool disposing = false;
 
-        public void RegisterDispose(Action disposeAction)
+        public void QueueDispose(Action disposeAction)
         {
             if (disposing)
             {

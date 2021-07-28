@@ -19,8 +19,7 @@ namespace ManualDi.Main
 
         public static ITypeBinding<T> RegisterDispose<T>(this ITypeBinding<T> typeBinding, GetDisposeDelegate<T> getDisposeDelegate)
         {
-            var registerDisposeDelegate = typeBinding.RegisterDisposeDelegate;
-            typeBinding.Inject((o, c) => registerDisposeDelegate.Invoke(getDisposeDelegate.Invoke(o)));
+            typeBinding.Inject((o, c) => c.QueueDispose(getDisposeDelegate.Invoke(o)));
             return typeBinding;
         }
     }

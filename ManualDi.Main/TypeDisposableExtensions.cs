@@ -2,7 +2,7 @@
 
 namespace ManualDi.Main
 {
-    public delegate Action GetDisposeDelegate<T>(T instance);
+    public delegate Action GetDisposeDelegate<T>(T instance, IDiContainer container);
 
     public static class TypeDisposableExtensions
     {
@@ -12,14 +12,14 @@ namespace ManualDi.Main
             return RegisterDispose(typeBinding, GetDispose);
         }
 
-        private static Action GetDispose<T>(T instance) where T : IDisposable
+        private static Action GetDispose<T>(T instance, IDiContainer container) where T : IDisposable
         {
             return instance.Dispose;
         }
 
         public static ITypeBinding<T> RegisterDispose<T>(this ITypeBinding<T> typeBinding, GetDisposeDelegate<T> getDisposeDelegate)
         {
-            typeBinding.Inject((o, c) => c.QueueDispose(getDisposeDelegate.Invoke(o)));
+            typeBinding.Inject((o, c) => c.QueueDispose(getDisposeDelegate.Invoke(o, c)));
             return typeBinding;
         }
     }

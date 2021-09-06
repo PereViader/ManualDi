@@ -1,0 +1,18 @@
+{
+  "AssamblyConfigurations" : [
+    { 
+      "Assambly": "ManualDi.Main",
+      "AssamblyDependencies" : [
+      ],
+      "Guid" : "2831785f1fa04efeb10b7d72b2e32628"
+    }
+  ],
+  "IgnorePaths" : [
+    "[Bb]in/",
+    "[Oo]bj/",
+    ".git/",
+    ".vs/",
+    "ManualDi.Main.Tests/",
+    "ManualDi.Main/Properties/"
+  ]
+}

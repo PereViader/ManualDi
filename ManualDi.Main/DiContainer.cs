@@ -47,7 +47,12 @@ namespace ManualDi.Main
                 return ResolveTyped(typeBinding.Value);
             }
 
-            return ParentDiContainer.Resolve<T>();
+            if (ParentDiContainer != null)
+            {
+                return ParentDiContainer.Resolve<T>();
+            }
+
+            throw new InvalidOperationException($"There was no binding with requested constraints for {typeof(T).FullName}");
         }
 
         private T ResolveTyped<T>(ITypeBinding<T> typeBinding)

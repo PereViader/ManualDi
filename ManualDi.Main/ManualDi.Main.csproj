@@ -7,6 +7,12 @@
     <StartupObject />
     <AssemblyName>ManualDi.Main</AssemblyName>
     <RootNamespace>ManualDi.Main</RootNamespace>
+    <Version>1.0.0</Version>
+    <Authors>Pere Viader</Authors>
+    <RepositoryUrl>https://github.com/PereViader/ManualDi.Main</RepositoryUrl>
+    <Product>ManualDi.Main</Product>
+    <Description>Dependency injection library for C#</Description>
+    <PackageProjectUrl>https://github.com/PereViader/ManualDi.Main</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>

@@ -6,8 +6,10 @@ namespace ManualDi.Main
 
     public static class TypeDisposableExtensions
     {
-        public static ITypeBinding<T> RegisterDispose<T>(this ITypeBinding<T> typeBinding)
-            where T : IDisposable
+        public static ITypeBinding<TInterface, TConcrete> RegisterDispose<TInterface, TConcrete>(
+            this ITypeBinding<TInterface, TConcrete> typeBinding
+            )
+            where TConcrete : IDisposable
         {
             return RegisterDispose(typeBinding, GetDispose);
         }
@@ -17,7 +19,10 @@ namespace ManualDi.Main
             return instance.Dispose;
         }
 
-        public static ITypeBinding<T> RegisterDispose<T>(this ITypeBinding<T> typeBinding, GetDisposeDelegate<T> getDisposeDelegate)
+        public static ITypeBinding<TInterface, TConcrete> RegisterDispose<TInterface, TConcrete>(
+            this ITypeBinding<TInterface, TConcrete> typeBinding,
+            GetDisposeDelegate<TConcrete> getDisposeDelegate
+            )
         {
             typeBinding.Inject((o, c) => c.QueueDispose(getDisposeDelegate.Invoke(o, c)));
             return typeBinding;

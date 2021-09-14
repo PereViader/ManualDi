@@ -8,80 +8,85 @@ namespace ManualDi.Main
 
     public static class TypeFactoryExtensions
     {
-        public static ITypeBinding<List<Y>> FromContainerAll<T, Y>(this ITypeBinding<List<Y>> typeBinding)
-            where T : Y
+        public static ITypeBinding<List<TInterface>, List<TConcrete>> FromContainerAll<TInterface, TConcrete>(
+            this ITypeBinding<List<TInterface>, List<TConcrete>> typeBinding
+            )
+            where TConcrete : TInterface
         {
-            typeBinding.Factory = new ContainerAllTypeFactory<T, Y>();
+            typeBinding.Factory = new ContainerAllTypeFactory<TConcrete, TInterface>();
             return typeBinding;
         }
 
-        public static ITypeBinding<List<T>> FromContainerAll<T>(this ITypeBinding<List<T>> typeBinding)
+        public static ITypeBinding<List<TInterface>, List<TConcrete>> FromContainerAll<TInterface, TConcrete>(
+            this ITypeBinding<List<TInterface>, List<TConcrete>> typeBinding,
+            Action<IResolutionConstraints> constraints
+            )
+            where TConcrete : TInterface
         {
-            return FromContainerAll<T, T>(typeBinding);
-        }
-
-        public static ITypeBinding<List<Y>> FromContainerAll<T, Y>(this ITypeBinding<List<Y>> typeBinding, Action<IResolutionConstraints> constraints)
-            where T : Y
-        {
-            typeBinding.Factory = new ConstraintAllContainerTypeFactory<T, Y>(constraints);
+            typeBinding.Factory = new ConstraintAllContainerTypeFactory<TConcrete, TInterface>(constraints);
             return typeBinding;
         }
 
-        public static ITypeBinding<List<T>> FromContainerAll<T>(this ITypeBinding<List<T>> typeBinding, Action<IResolutionConstraints> constraints)
+        public static ITypeBinding<TInterface, TConcrete> FromContainer<TInterface, TConcrete>(
+            this ITypeBinding<TInterface, TConcrete> typeBinding
+            )
+            where TConcrete : TInterface
         {
-            return FromContainerAll<T, T>(typeBinding, constraints);
-        }
-
-        public static ITypeBinding<T> FromContainer<T>(this ITypeBinding<T> typeBinding)
-        {
-            return FromContainer<T, T>(typeBinding);
-        }
-
-        public static ITypeBinding<Y> FromContainer<T, Y>(this ITypeBinding<Y> typeBinding)
-            where T : Y
-        {
-            typeBinding.Factory = new ContainerTypeFactory<T, Y>();
+            typeBinding.Factory = new ContainerTypeFactory<TConcrete, TInterface>();
             return typeBinding;
         }
 
-        public static ITypeBinding<T> FromContainer<T>(this ITypeBinding<T> typeBinding, Action<IResolutionConstraints> constraints)
+        public static ITypeBinding<TInterface, TConcrete> FromContainer<TInterface, TConcrete>(
+            this ITypeBinding<TInterface, TConcrete> typeBinding,
+            Action<IResolutionConstraints> constraints
+            )
+            where TConcrete : TInterface
         {
-            return FromContainer<T, T>(typeBinding, constraints);
-        }
-
-        public static ITypeBinding<Y> FromContainer<T, Y>(this ITypeBinding<Y> typeBinding, Action<IResolutionConstraints> constraints)
-            where T : Y
-        {
-            typeBinding.Factory = new ConstraintContainerTypeFactory<T, Y>(constraints);
+            typeBinding.Factory = new ConstraintContainerTypeFactory<TConcrete, TInterface>(constraints);
             return typeBinding;
         }
 
-        public static ITypeBinding<T> FromInstance<T>(this ITypeBinding<T> typeBinding, T instance)
+        public static ITypeBinding<TInterface, TConcrete> FromInstance<TInterface, TConcrete>(
+            this ITypeBinding<TInterface, TConcrete> typeBinding,
+            TConcrete instance
+            )
+            where TConcrete : TInterface
         {
-            typeBinding.Factory = new InstanceTypeFactory<T>(instance);
+            typeBinding.Factory = new InstanceTypeFactory<TInterface>(instance);
             return typeBinding;
         }
 
-        public static ITypeBinding<T> FromMethod<T>(this ITypeBinding<T> typeBinding, FactoryMethodDelegate<T> factoryMethodDelegate)
+        public static ITypeBinding<TInterface, TConcrete> FromMethod<TInterface, TConcrete>(
+            this ITypeBinding<TInterface, TConcrete> typeBinding,
+            FactoryMethodDelegate<TConcrete> factoryMethodDelegate
+            )
+            where TConcrete : TInterface
         {
-            typeBinding.Factory = new MethodTypeFactory<T>(factoryMethodDelegate);
+            typeBinding.Factory = new MethodTypeFactory<TInterface, TConcrete>(factoryMethodDelegate);
             return typeBinding;
         }
 
-        public static ITypeBinding<T> FromFactory<TFactory, T>(this ITypeBinding<T> typeBinding)
-            where TFactory : IFactory<T>
+        public static ITypeBinding<TInterface, TConcrete> FromFactory<TFactory, TInterface, TConcrete>(
+            this ITypeBinding<TInterface, TConcrete> typeBinding
+            )
+            where TFactory : IFactory<TConcrete>
+            where TConcrete : TInterface
         {
-            typeBinding.Factory = new FactoryTypeFactory<TFactory, T>();
+            typeBinding.Factory = new FactoryTypeFactory<TFactory, TInterface, TConcrete>();
             return typeBinding;
         }
 
-        public static ITypeBinding<T> Lazy<T>(this ITypeBinding<T> typeBinding)
+        public static ITypeBinding<TInterface, TConcrete> Lazy<TInterface, TConcrete>(
+            this ITypeBinding<TInterface, TConcrete> typeBinding
+            )
         {
             typeBinding.IsLazy = true;
             return typeBinding;
         }
 
-        public static ITypeBinding<T> NonLazy<T>(this ITypeBinding<T> typeBinding)
+        public static ITypeBinding<TInterface, TConcrete> NonLazy<TInterface, TConcrete>(
+            this ITypeBinding<TInterface, TConcrete> typeBinding
+            )
         {
             typeBinding.IsLazy = false;
             return typeBinding;

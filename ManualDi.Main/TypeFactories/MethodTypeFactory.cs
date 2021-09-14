@@ -1,15 +1,16 @@
 ﻿namespace ManualDi.Main.TypeFactories
 {
-    public class MethodTypeFactory<T> : ITypeFactory<T>
+    public class MethodTypeFactory<TInterface, TConcrete> : ITypeFactory<TInterface>
+        where TConcrete : TInterface
     {
-        public FactoryMethodDelegate<T> FactoryMethodDelegate { get; }
+        public FactoryMethodDelegate<TConcrete> FactoryMethodDelegate { get; }
 
-        public MethodTypeFactory(FactoryMethodDelegate<T> factoryMehtodDelegate)
+        public MethodTypeFactory(FactoryMethodDelegate<TConcrete> factoryMehtodDelegate)
         {
             FactoryMethodDelegate = factoryMehtodDelegate;
         }
 
-        public T Create(IDiContainer container)
+        public TInterface Create(IDiContainer container)
         {
             return FactoryMethodDelegate.Invoke(container);
         }

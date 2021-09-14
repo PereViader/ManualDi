@@ -1,12 +1,13 @@
 ﻿namespace ManualDi.Main.TypeFactories
 {
-    public class FactoryTypeFactory<TFactory, TValue> : ITypeFactory<TValue>
-        where TFactory : IFactory<TValue>
+    public class FactoryTypeFactory<TFactory, TInterface, TConcrete> : ITypeFactory<TInterface>
+        where TFactory : IFactory<TConcrete>
+        where TConcrete : TInterface
     {
-        public TValue Create(IDiContainer container)
+        public TInterface Create(IDiContainer container)
         {
-            var factory = container.Resolve<TFactory>();
-            var value = factory.Create();
+            IFactory<TConcrete> factory = container.Resolve<TFactory>();
+            TConcrete value = factory.Create();
             return value;
         }
 

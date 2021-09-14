@@ -20,19 +20,26 @@ namespace ManualDi.Main
         private bool nextResolveIsRootResolve = true;
         private bool disposedValue;
 
-        public void Bind<T>(Action<ITypeBinding<T>> action)
+        public void Bind<T>(Action<ITypeBinding<T, T>> action)
         {
-            var typeBinding = TypeBindingFactory.Create<T>();
+            Bind<T, T>(action);
+        }
+
+        public void Bind<TInterface, TConcrete>(Action<ITypeBinding<TInterface, TConcrete>> action)
+        {
+            ITypeBinding<TInterface, TConcrete> typeBinding = TypeBindingFactory.Create<TInterface, TConcrete>();
             action.Invoke(typeBinding);
 
-            if (!TypeBindings.TryGetValue(typeof(T), out var bindings))
+            Type type = typeof(TInterface);
+            if (!TypeBindings.TryGetValue(type, out var bindings))
             {
                 bindings = new List<ITypeBinding>();
-                TypeBindings[typeof(T)] = bindings;
+                TypeBindings[type] = bindings;
             }
 
             bindings.Add(typeBinding);
         }
+
 
         public T Resolve<T>()
         {

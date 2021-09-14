@@ -19,7 +19,11 @@ namespace ManualDi.Main
         bool IsLazy { get; set; }
     }
 
-    public interface ITypeBinding<T> : ITypeBinding
+    public interface ITypeBinding<TInterface> : ITypeBinding
+    {
+    }
+
+    public interface ITypeBinding<TInterface, TConcrete> : ITypeBinding<TInterface>
     {
     }
 }

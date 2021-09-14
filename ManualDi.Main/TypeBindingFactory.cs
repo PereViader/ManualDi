@@ -4,9 +4,9 @@ namespace ManualDi.Main
 {
     public class TypeBindingFactory : ITypeBindingFactory
     {
-        public ITypeBinding<T> Create<T>()
+        public ITypeBinding<TInterface, TConcrete> Create<TInterface, TConcrete>()
         {
-            return new TypeBinding<T>()
+            return new TypeBinding<TInterface, TConcrete>()
             {
                 TypeScope = SingleTypeScope.Instance,
                 TypeMetadata = new TypeMetadata(),

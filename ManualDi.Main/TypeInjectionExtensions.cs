@@ -7,14 +7,14 @@ namespace ManualDi.Main
 
     public static class TypeInjectionExtensions
     {
-        public static ITypeBinding<T> Inject<T>(this ITypeBinding<T> typeBinding, InjectionDelegate<T> injectionDelegate)
+        public static ITypeBinding<T, Y> Inject<T, Y>(this ITypeBinding<T, Y> typeBinding, InjectionDelegate<Y> injectionDelegate)
         {
             if (typeBinding.TypeInjections == null)
             {
                 typeBinding.TypeInjections = new List<ITypeInjection>();
             }
 
-            typeBinding.TypeInjections.Add(new MethodTypeInjection<T>(injectionDelegate));
+            typeBinding.TypeInjections.Add(new MethodTypeInjection<Y>(injectionDelegate));
             return typeBinding;
         }
     }

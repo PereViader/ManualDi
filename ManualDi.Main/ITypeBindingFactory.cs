@@ -2,6 +2,6 @@
 {
     public interface ITypeBindingFactory
     {
-        public ITypeBinding<T> Create<T>();
+        ITypeBinding<TInterface, TConcrete> Create<TInterface, TConcrete>();
     }
 }

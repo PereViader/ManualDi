@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace ManualDi.Main
 {
-    public class TypeBinding<T> : ITypeBinding<T>
+    public class TypeBinding<TInterface, TConcrete> : ITypeBinding<TInterface, TConcrete>
     {
         public ITypeMetadata TypeMetadata { get; set; }
         public ITypeScope TypeScope { get; set; }

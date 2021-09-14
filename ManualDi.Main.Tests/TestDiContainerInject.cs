@@ -18,7 +18,13 @@ namespace ManualDi.Main.Tests
         {
             var instance = new object();
             var injectMethod = Substitute.For<InjectionDelegate<object>>();
-            container.BindFinishAndResolve<object>(b => b.FromInstance(instance).Inject(injectMethod).Inject(injectMethod));
+
+            container.Bind<object>()
+                .FromInstance(instance)
+                .Inject(injectMethod)
+                .Inject(injectMethod);
+
+            _ = container.FinishAndResolve<object>();
 
             injectMethod.Received(2).Invoke(Arg.Is(instance), Arg.Is(container));
         }

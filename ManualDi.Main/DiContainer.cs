@@ -11,7 +11,6 @@ namespace ManualDi.Main
     {
         public Dictionary<Type, List<ITypeBinding>> TypeBindings { get; } = new Dictionary<Type, List<ITypeBinding>>();
         public List<ITypeResolver> TypeResolvers { get; } = new List<ITypeResolver>();
-        public ITypeBindingFactory TypeBindingFactory { get; set; }
         public IDiContainer ParentDiContainer { get; set; }
         public IBindingInjector BindingInjector { get; set; }
         public IBindingInitializer BindingInitializer { get; set; }
@@ -20,16 +19,8 @@ namespace ManualDi.Main
         private bool nextResolveIsRootResolve = true;
         private bool disposedValue;
 
-        public void Bind<T>(Action<ITypeBinding<T, T>> action)
+        public ITypeBinding<TInterface, TConcrete> Bind<TInterface, TConcrete>(ITypeBinding<TInterface, TConcrete> typeBinding)
         {
-            Bind<T, T>(action);
-        }
-
-        public void Bind<TInterface, TConcrete>(Action<ITypeBinding<TInterface, TConcrete>> action)
-        {
-            ITypeBinding<TInterface, TConcrete> typeBinding = TypeBindingFactory.Create<TInterface, TConcrete>();
-            action.Invoke(typeBinding);
-
             Type type = typeof(TInterface);
             if (!TypeBindings.TryGetValue(type, out var bindings))
             {
@@ -38,6 +29,8 @@ namespace ManualDi.Main
             }
 
             bindings.Add(typeBinding);
+
+            return typeBinding;
         }
 
 

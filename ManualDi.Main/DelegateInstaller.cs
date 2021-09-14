@@ -12,11 +12,16 @@ namespace ManualDi.Main
             containerDelegates.Add(action);
         }
 
-        public void Add<T>(Action<ITypeBinding<T>> action)
+        public void Add<T>(Action<ITypeBinding<T, T>> action)
+        {
+            Add<T, T>(action);
+        }
+
+        public void Add<T, Y>(Action<ITypeBinding<T, Y>> action)
         {
             void TypeBindingToContainerAdapter(IDiContainer container)
             {
-                container.Bind<T>(action);
+                action.Invoke(container.Bind<T, Y>());
             }
 
             containerDelegates.Add(TypeBindingToContainerAdapter);

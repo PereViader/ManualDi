@@ -11,7 +11,7 @@ namespace ManualDi.Main.Tests
             var childContainer = new ContainerBuilder().WithParentContainer(parentContainer).Build();
 
             var instance = new object();
-            parentContainer.Bind<object>(b => b.FromInstance(instance));
+            parentContainer.Bind<object>().FromInstance(instance);
 
             var resolution = childContainer.Resolve<object>();
 
@@ -25,11 +25,11 @@ namespace ManualDi.Main.Tests
             var childContainer = new ContainerBuilder().WithParentContainer(parentContainer).Build();
 
             var instanceParent = new object();
-            parentContainer.Bind<object>(b => b.FromInstance(instanceParent));
+            parentContainer.Bind<object>().FromInstance(instanceParent);
 
 
             var instanceChild = new object();
-            childContainer.Bind<object>(b => b.FromInstance(instanceChild));
+            childContainer.Bind<object>().FromInstance(instanceChild);
 
             var resolution = childContainer.ResolveAll<object>();
 

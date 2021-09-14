@@ -24,7 +24,6 @@ namespace ManualDi.Main
             container.TypeResolvers.Add(new SingleTypeResolver());
             container.TypeResolvers.Add(new TransientTypeResolver());
 
-            container.TypeBindingFactory = new TypeBindingFactory();
             container.BindingInjector = new BindingInjector();
             container.BindingInitializer = new BindingInitializer();
             container.BindingDisposer = new BindingDisposer();

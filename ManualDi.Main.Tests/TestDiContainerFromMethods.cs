@@ -17,7 +17,9 @@ namespace ManualDi.Main.Tests
         public void TestFromInstance()
         {
             var instance = new object();
-            var resolved = container.BindFinishAndResolve<object>(b => b.FromInstance(instance));
+            container.Bind<object>().FromInstance(instance);
+
+            var resolved = container.FinishAndResolve<object>();
             Assert.That(resolved, Is.EqualTo(instance));
         }
 
@@ -25,7 +27,9 @@ namespace ManualDi.Main.Tests
         public void TestFromMethod()
         {
             var instance = new object();
-            var resolved = container.BindFinishAndResolve<object>(b => b.FromMethod(c => instance));
+            container.Bind<object>().FromMethod(c => instance);
+
+            var resolved = container.FinishAndResolve<object>();
             Assert.That(resolved, Is.EqualTo(instance));
         }
 
@@ -33,19 +37,21 @@ namespace ManualDi.Main.Tests
         public void TestFromContainer()
         {
             int instance = 5;
-            container.Bind<int>(b => b.FromInstance(instance));
-            var resolved = container.BindFinishAndResolve<object, int>(b => b.FromContainer());
+            container.Bind<int>().FromInstance(instance);
+            container.Bind<object, int>().FromContainer();
+
+            var resolved = container.FinishAndResolve<object>();
             Assert.That(resolved, Is.EqualTo(instance));
         }
 
         [Test]
         public void TestFromContainerAll()
         {
-            container.Bind<int>(b => b.FromInstance(1));
-            container.Bind<int>(b => b.FromInstance(2));
+            container.Bind<int>().FromInstance(1);
+            container.Bind<int>().FromInstance(2);
+            container.Bind<List<object>, List<int>>().FromContainerAll();
 
-            List<object> resolved = container.BindFinishAndResolve<List<object>, List<int>>(b => b.FromContainerAll());
-
+            var resolved = container.FinishAndResolve<List<object>>();
             Assert.That(resolved, Is.EquivalentTo(new[] { 1, 2 }));
         }
     }

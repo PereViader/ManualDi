@@ -5,8 +5,7 @@ namespace ManualDi.Main
 {
     public interface IDiContainer : IDisposable
     {
-        void Bind<T>(Action<ITypeBinding<T, T>> typeSetup);
-        void Bind<T, Y>(Action<ITypeBinding<T, Y>> typeSetup);
+        ITypeBinding<T, Y> Bind<T, Y>(ITypeBinding<T, Y> typeBinding);
 
         T Resolve<T>();
         T Resolve<T>(IResolutionConstraints resolutionConstraints);

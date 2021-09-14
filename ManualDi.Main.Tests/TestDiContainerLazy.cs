@@ -18,7 +18,9 @@ namespace ManualDi.Main.Tests
         {
             var builderFunc = Substitute.For<FactoryMethodDelegate<object>>();
 
-            container.BindAndFinish<object>(b => b.FromMethod(builderFunc).Lazy());
+            container.Bind<object>().FromMethod(builderFunc).Lazy();
+
+            container.FinishBinding();
 
             builderFunc.DidNotReceive().Invoke(Arg.Any<IDiContainer>());
         }
@@ -28,7 +30,9 @@ namespace ManualDi.Main.Tests
         {
             var builderFunc = Substitute.For<FactoryMethodDelegate<object>>();
 
-            container.BindAndFinish<object>(b => b.FromMethod(builderFunc).NonLazy());
+            container.Bind<object>().FromMethod(builderFunc).NonLazy();
+
+            container.FinishBinding();
 
             builderFunc.Received(1).Invoke(Arg.Any<IDiContainer>());
         }

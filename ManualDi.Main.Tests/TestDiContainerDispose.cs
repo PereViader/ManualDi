@@ -13,7 +13,11 @@ namespace ManualDi.Main.Tests
             var instance = new object();
             var disposeAction = Substitute.For<Action>();
 
-            _ = container.BindFinishAndResolve<object>(b => b.FromInstance(instance).RegisterDispose((o, c) => disposeAction));
+            container.Bind<object>()
+                .FromInstance(instance)
+                .RegisterDispose((o, c) => disposeAction);
+
+            _ = container.FinishAndResolve<object>();
 
             disposeAction.DidNotReceive().Invoke();
 

@@ -21,7 +21,9 @@ namespace ManualDi.Main.Tests
 
             factoryMethodDelegate.Invoke(Arg.Any<IDiContainer>()).Returns(c => new object());
 
-            container.BindAndFinish<object>(b => b.FromMethod(factoryMethodDelegate).Inject(injectionDelegate).Single());
+            container.Bind<object>().FromMethod(factoryMethodDelegate).Inject(injectionDelegate).Single();
+
+            container.FinishBinding();
 
             var resolution1 = container.Resolve<object>();
             var resolution2 = container.Resolve<object>();
@@ -40,8 +42,9 @@ namespace ManualDi.Main.Tests
 
             factoryMethodDelegate.Invoke(Arg.Any<IDiContainer>()).Returns(c => new object());
 
-            container.BindAndFinish<object>(b => b.FromMethod(factoryMethodDelegate).Inject(injectionDelegate).Transient());
+            container.Bind<object>().FromMethod(factoryMethodDelegate).Inject(injectionDelegate).Transient();
 
+            container.FinishBinding();
             var resolution1 = container.Resolve<object>();
             var resolution2 = container.Resolve<object>();
 

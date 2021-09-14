@@ -19,10 +19,11 @@ namespace ManualDi.Main.Tests
         {
             var instance = new object();
             var initializationDelegate = Substitute.For<InitializationDelegate<object>>();
-            _ = container.BindFinishAndResolve<object>(b => b
+            container.Bind<object>()
                 .FromInstance(instance)
-                .Initialize(initializationDelegate)
-                );
+                .Initialize(initializationDelegate);
+
+            _ = container.FinishAndResolve<object>();
             initializationDelegate.Received(1).Invoke(Arg.Is(instance), Arg.Is(container));
         }
     }

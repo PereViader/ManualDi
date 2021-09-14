@@ -66,6 +66,15 @@ namespace ManualDi.Main
             return typeBinding;
         }
 
+        public static ITypeBinding<TInterface, TConcrete> FromMethodUnsafe<TInterface, TConcrete>(
+            this ITypeBinding<TInterface, TConcrete> typeBinding,
+            FactoryMethodDelegate<TConcrete> factoryMethodDelegate
+            )
+        {
+            typeBinding.Factory = new MethodUnsafeTypeFactory<TInterface, TConcrete>(factoryMethodDelegate);
+            return typeBinding;
+        }
+
         public static ITypeBinding<TInterface, TConcrete> FromFactory<TFactory, TInterface, TConcrete>(
             this ITypeBinding<TInterface, TConcrete> typeBinding
             )

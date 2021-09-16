@@ -13,6 +13,7 @@
     ".git/",
     ".vs/",
     "ManualDi.Main.Tests/",
-    "ManualDi.Main/Properties/"
+    "ManualDi.Main/Properties/",
+    ".github/"
   ]
 }

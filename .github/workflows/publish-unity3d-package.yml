@@ -1,0 +1,43 @@
+name: Publish Unity3d Package
+on:
+  push:
+    branches:
+      - main
+jobs:
+  publish:
+    name: build, pack & publish
+    runs-on: ubuntu-latest
+    env:
+      REPO_ROOT: 'repo/'
+      PKG_ROOT: 'upmOutput/'
+      PUBLISH_BRANCH: 'upm'
+      COMMIT_MESSAGE: Update UPM branch
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: ${{ env.REPO_ROOT }}
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '3.1.x'
+
+      - name: CSharp Project To Unity3d Package
+        uses: PereViader/CSharpProjectToUnity3dPackage@v1.0.1
+        with:
+          inputPath: ${{ env.REPO_ROOT }}
+          outputPath: ${{ env.PKG_ROOT }}
+
+      - name: Publish to repo branch
+        run: |
+          cd $REPO_ROOT
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git checkout --orphan $PUBLISH_BRANCH || git checkout $PUBLISH_BRANCH
+          git rm -rf .
+          sudo mv .git ../$PKG_ROOT.git
+          cd ../$PKG_ROOT
+          git add *
+          git commit -m "$COMMIT_MESSAGE"
+          git push -u origin $PUBLISH_BRANCH

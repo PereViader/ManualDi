@@ -5,26 +5,21 @@ namespace ManualDi.Main.Tests
 {
     public class TestDiContainerInject
     {
-        private IDiContainer container;
-
-        [SetUp]
-        public void SetUp()
-        {
-            container = new ContainerBuilder().Build();
-        }
-
         [Test]
         public void TestInject()
         {
             var instance = new object();
             var injectMethod = Substitute.For<InjectionDelegate<object>>();
 
-            container.Bind<object>()
-                .FromInstance(instance)
-                .Inject(injectMethod)
-                .Inject(injectMethod);
+            var container = new DiContainerBuilder().WithInstallDelegate(x =>
+            {
+                x.Bind<object>()
+                    .FromInstance(instance)
+                    .Inject(injectMethod)
+                    .Inject(injectMethod);
+            }).Build();
 
-            _ = container.FinishAndResolve<object>();
+            _ = container.Resolve<object>();
 
             injectMethod.Received(2).Invoke(Arg.Is(instance), Arg.Is(container));
         }

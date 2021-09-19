@@ -9,15 +9,17 @@ namespace ManualDi.Main.Tests
         [Test]
         public void TestDispose()
         {
-            var container = new ContainerBuilder().Build();
             var instance = new object();
             var disposeAction = Substitute.For<Action>();
 
-            container.Bind<object>()
-                .FromInstance(instance)
-                .RegisterDispose((o, c) => disposeAction);
+            IDiContainer container = new DiContainerBuilder().WithInstallDelegate(x =>
+            {
+                x.Bind<object>()
+                    .FromInstance(instance)
+                    .RegisterDispose((o, c) => disposeAction);
+            }).Build();
 
-            _ = container.FinishAndResolve<object>();
+            _ = container.Resolve<object>();
 
             disposeAction.DidNotReceive().Invoke();
 

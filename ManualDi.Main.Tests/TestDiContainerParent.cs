@@ -7,11 +7,18 @@ namespace ManualDi.Main.Tests
         [Test]
         public void TestResolve()
         {
-            var parentContainer = new ContainerBuilder().Build();
-            var childContainer = new ContainerBuilder().WithParentContainer(parentContainer).Build();
-
             var instance = new object();
-            parentContainer.Bind<object>().FromInstance(instance);
+
+            var parentContainer = new DiContainerBuilder()
+                .WithInstallDelegate(x =>
+                {
+                    x.Bind<object>().FromInstance(instance);
+                })
+                .Build();
+
+            var childContainer = new DiContainerBuilder()
+                .WithParentContainer(parentContainer)
+                .Build();
 
             var resolution = childContainer.Resolve<object>();
 
@@ -21,15 +28,23 @@ namespace ManualDi.Main.Tests
         [Test]
         public void TestResolveAll()
         {
-            var parentContainer = new ContainerBuilder().Build();
-            var childContainer = new ContainerBuilder().WithParentContainer(parentContainer).Build();
-
             var instanceParent = new object();
-            parentContainer.Bind<object>().FromInstance(instanceParent);
-
-
             var instanceChild = new object();
-            childContainer.Bind<object>().FromInstance(instanceChild);
+
+            var parentContainer = new DiContainerBuilder()
+                .WithInstallDelegate(x =>
+                {
+                    x.Bind<object>().FromInstance(instanceParent);
+                })
+                .Build();
+
+            var childContainer = new DiContainerBuilder()
+                .WithParentContainer(parentContainer)
+                .WithInstallDelegate(x =>
+                {
+                    x.Bind<object>().FromInstance(instanceChild);
+                })
+                .Build();
 
             var resolution = childContainer.ResolveAll<object>();
 

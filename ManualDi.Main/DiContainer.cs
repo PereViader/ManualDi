@@ -7,21 +7,13 @@ using System.Collections.Generic;
 
 namespace ManualDi.Main
 {
-    public class DiContainer : IDiContainer
+    public class DiContainerBindings : IDiContainerBindings
     {
         public Dictionary<Type, List<ITypeBinding>> TypeBindings { get; } = new Dictionary<Type, List<ITypeBinding>>();
-        public List<ITypeResolver> TypeResolvers { get; } = new List<ITypeResolver>();
-        public IDiContainer ParentDiContainer { get; set; }
-        public IBindingInjector BindingInjector { get; set; }
-        public IBindingInitializer BindingInitializer { get; set; }
-        public IBindingDisposer BindingDisposer { get; set; }
 
-        private bool nextResolveIsRootResolve = true;
-        private bool disposedValue;
-
-        public ITypeBinding<TInterface, TConcrete> Bind<TInterface, TConcrete>(ITypeBinding<TInterface, TConcrete> typeBinding)
+        public void AddBinding<T>(ITypeBinding<T> typeBinding)
         {
-            Type type = typeof(TInterface);
+            Type type = typeof(T);
             if (!TypeBindings.TryGetValue(type, out var bindings))
             {
                 bindings = new List<ITypeBinding>();
@@ -29,10 +21,42 @@ namespace ManualDi.Main
             }
 
             bindings.Add(typeBinding);
-
-            return typeBinding;
         }
+    }
 
+    public sealed class DiContainer : IDiContainer
+    {
+        public Dictionary<Type, List<ITypeBinding>> TypeBindings { get; set; }
+        public List<ITypeResolver> TypeResolvers { get; set; }
+        public IDiContainer ParentDiContainer { get; set; }
+        public IBindingInjector BindingInjector { get; set; }
+        public IBindingInitializer BindingInitializer { get; set; }
+        public IBindingDisposer BindingDisposer { get; set; }
+
+        private bool nextResolveIsRootResolve = true;
+        private bool hasBeenInitialized = false;
+        private bool disposedValue;
+
+        public void Init()
+        {
+            if (hasBeenInitialized)
+            {
+                throw new InvalidOperationException("Container has already finished binding. Make sure you bind everything only when creating it");
+            }
+
+            hasBeenInitialized = true;
+
+            foreach (var bindings in TypeBindings)
+            {
+                foreach (var binding in bindings.Value)
+                {
+                    if (!binding.IsLazy)
+                    {
+                        ResolveUntyped(binding);
+                    }
+                }
+            }
+        }
 
         public T Resolve<T>()
         {
@@ -182,42 +206,20 @@ namespace ManualDi.Main
             return resolved;
         }
 
-        public void FinishBinding()
-        {
-            foreach (var bindings in TypeBindings)
-            {
-                foreach (var binding in bindings.Value)
-                {
-                    if (!binding.IsLazy)
-                    {
-                        ResolveUntyped(binding);
-                    }
-                }
-            }
-        }
+
 
         public void QueueDispose(Action disposeAction)
         {
             BindingDisposer.QueueDispose(disposeAction);
         }
 
-        protected virtual void Dispose(bool disposing)
+        public void Dispose()
         {
             if (!disposedValue)
             {
-                if (disposing)
-                {
-                    BindingDisposer.DisposeAll();
-                }
-
+                BindingDisposer.DisposeAll();
                 disposedValue = true;
             }
-        }
-
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
         }
     }
 }

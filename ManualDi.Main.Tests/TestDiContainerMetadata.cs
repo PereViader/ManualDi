@@ -4,22 +4,17 @@ namespace ManualDi.Main.Tests
 {
     public class TestDiContainerMetadata
     {
-        private IDiContainer container;
-
-        [SetUp]
-        public void SetUp()
-        {
-            container = new ContainerBuilder().Build();
-        }
-
         [Test]
         public void TestOnlyKeyMetadata()
         {
             var instance1 = new object();
             var instance2 = new object();
 
-            container.Bind<object>().FromInstance(instance1).WithMetadata(nameof(instance1));
-            container.Bind<object>().FromInstance(instance2).WithMetadata(nameof(instance2));
+            var container = new DiContainerBuilder().WithInstallDelegate(x =>
+            {
+                x.Bind<object>().FromInstance(instance1).WithMetadata(nameof(instance1));
+                x.Bind<object>().FromInstance(instance2).WithMetadata(nameof(instance2));
+            }).Build();
 
             var resolution1 = container.Resolve<object>(b => b.WhereMetadata(nameof(instance1)));
             var resolution2 = container.Resolve<object>(b => b.WhereMetadata(nameof(instance2)));
@@ -34,8 +29,11 @@ namespace ManualDi.Main.Tests
             var instance1 = new object();
             var instance2 = new object();
 
-            container.Bind<object>().FromInstance(instance1).WithMetadata("Key", 5);
-            container.Bind<object>().FromInstance(instance2).WithMetadata("Key", 10);
+            var container = new DiContainerBuilder().WithInstallDelegate(x =>
+            {
+                x.Bind<object>().FromInstance(instance1).WithMetadata("Key", 5);
+                x.Bind<object>().FromInstance(instance2).WithMetadata("Key", 10);
+            }).Build();
 
             var resolution1 = container.Resolve<object>(b => b.WhereMetadata("Key", 5));
             var resolution2 = container.Resolve<object>(b => b.WhereMetadata("Key", 10));
@@ -50,8 +48,11 @@ namespace ManualDi.Main.Tests
             var instance1 = new object();
             var instance2 = new object();
 
-            container.Bind<object>().FromInstance(instance1).WithMetadata("Key", 5);
-            container.Bind<object>().FromInstance(instance2).WithMetadata("Key", 10);
+            var container = new DiContainerBuilder().WithInstallDelegate(x =>
+            {
+                x.Bind<object>().FromInstance(instance1).WithMetadata("Key", 5);
+                x.Bind<object>().FromInstance(instance2).WithMetadata("Key", 10);
+            }).Build();
 
             var resolution1 = container.Resolve<object>(b => b.WhereMetadata(x => x.Get<int>("Key") < 6));
             var resolution2 = container.Resolve<object>(b => b.WhereMetadata(x => x.Get<int>("Key") > 6));

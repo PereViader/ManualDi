@@ -6,24 +6,21 @@ namespace ManualDi.Main.Tests
 {
     public class TestDiContainerInitialize
     {
-        private IDiContainer container;
-
-        [SetUp]
-        public void SetUp()
-        {
-            container = new ContainerBuilder().Build();
-        }
-
         [Test]
         public void TestInitialize()
         {
             var instance = new object();
             var initializationDelegate = Substitute.For<InitializationDelegate<object>>();
-            container.Bind<object>()
-                .FromInstance(instance)
-                .Initialize(initializationDelegate);
 
-            _ = container.FinishAndResolve<object>();
+            var container = new DiContainerBuilder().WithInstallDelegate(x =>
+            {
+                x.Bind<object>()
+                    .FromInstance(instance)
+                    .Initialize(initializationDelegate);
+            }).Build();
+
+            _ = container.Resolve<object>();
+
             initializationDelegate.Received(1).Invoke(Arg.Is(instance), Arg.Is(container));
         }
     }

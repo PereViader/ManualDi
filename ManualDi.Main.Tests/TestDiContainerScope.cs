@@ -5,14 +5,6 @@ namespace ManualDi.Main.Tests
 {
     public class TestDiContainerScope
     {
-        private IDiContainer container;
-
-        [SetUp]
-        public void SetUp()
-        {
-            container = new ContainerBuilder().Build();
-        }
-
         [Test]
         public void TestSingle()
         {
@@ -21,9 +13,10 @@ namespace ManualDi.Main.Tests
 
             factoryMethodDelegate.Invoke(Arg.Any<IDiContainer>()).Returns(c => new object());
 
-            container.Bind<object>().FromMethod(factoryMethodDelegate).Inject(injectionDelegate).Single();
-
-            container.FinishBinding();
+            var container = new DiContainerBuilder().WithInstallDelegate(x =>
+            {
+                x.Bind<object>().FromMethod(factoryMethodDelegate).Inject(injectionDelegate).Single();
+            }).Build();
 
             var resolution1 = container.Resolve<object>();
             var resolution2 = container.Resolve<object>();
@@ -42,9 +35,11 @@ namespace ManualDi.Main.Tests
 
             factoryMethodDelegate.Invoke(Arg.Any<IDiContainer>()).Returns(c => new object());
 
-            container.Bind<object>().FromMethod(factoryMethodDelegate).Inject(injectionDelegate).Transient();
+            var container = new DiContainerBuilder().WithInstallDelegate(x =>
+            {
+                x.Bind<object>().FromMethod(factoryMethodDelegate).Inject(injectionDelegate).Transient();
+            }).Build();
 
-            container.FinishBinding();
             var resolution1 = container.Resolve<object>();
             var resolution2 = container.Resolve<object>();
 

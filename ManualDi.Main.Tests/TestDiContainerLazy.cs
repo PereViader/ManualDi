@@ -5,22 +5,15 @@ namespace ManualDi.Main.Tests
 {
     public class TestDiContainerLazy
     {
-        private IDiContainer container;
-
-        [SetUp]
-        public void SetUp()
-        {
-            container = new ContainerBuilder().Build();
-        }
-
         [Test]
         public void TestLazy()
         {
             var builderFunc = Substitute.For<FactoryMethodDelegate<object>>();
 
-            container.Bind<object>().FromMethod(builderFunc).Lazy();
-
-            container.FinishBinding();
+            var container = new DiContainerBuilder().WithInstallDelegate(x =>
+            {
+                x.Bind<object>().FromMethod(builderFunc).Lazy();
+            }).Build();
 
             builderFunc.DidNotReceive().Invoke(Arg.Any<IDiContainer>());
         }
@@ -30,9 +23,10 @@ namespace ManualDi.Main.Tests
         {
             var builderFunc = Substitute.For<FactoryMethodDelegate<object>>();
 
-            container.Bind<object>().FromMethod(builderFunc).NonLazy();
-
-            container.FinishBinding();
+            var container = new DiContainerBuilder().WithInstallDelegate(x =>
+            {
+                x.Bind<object>().FromMethod(builderFunc).NonLazy();
+            }).Build();
 
             builderFunc.Received(1).Invoke(Arg.Any<IDiContainer>());
         }

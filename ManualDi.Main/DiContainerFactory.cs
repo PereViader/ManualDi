@@ -1,6 +1,5 @@
 ﻿using ManualDi.Main.Disposing;
 using ManualDi.Main.Initialization;
-using ManualDi.Main.Injection;
 using ManualDi.Main.TypeResolvers;
 using System.Collections.Generic;
 
@@ -20,7 +19,6 @@ namespace ManualDi.Main
                     new TransientTypeResolver()
                 },
 
-                BindingInjector = new BindingInjector(),
                 BindingInitializer = new BindingInitializer(),
                 BindingDisposer = new BindingDisposer(),
             };

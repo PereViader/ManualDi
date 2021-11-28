@@ -1,6 +1,5 @@
 ﻿using ManualDi.Main.Disposing;
 using ManualDi.Main.Initialization;
-using ManualDi.Main.Injection;
 using ManualDi.Main.TypeResolvers;
 using System;
 using System.Collections.Generic;
@@ -29,11 +28,11 @@ namespace ManualDi.Main
         public Dictionary<Type, List<ITypeBinding>> TypeBindings { get; set; }
         public List<ITypeResolver> TypeResolvers { get; set; }
         public IDiContainer ParentDiContainer { get; set; }
-        public IBindingInjector BindingInjector { get; set; }
         public IBindingInitializer BindingInitializer { get; set; }
         public IBindingDisposer BindingDisposer { get; set; }
 
-        private bool nextResolveIsRootResolve = true;
+        private bool isResolving = false;
+
         private bool hasBeenInitialized = false;
         private bool disposedValue;
 
@@ -88,16 +87,33 @@ namespace ManualDi.Main
         {
             var typeResolver = GetResolverFor(typeBinding);
 
-            bool isRootResolve = this.nextResolveIsRootResolve;
-            this.nextResolveIsRootResolve = false;
+            bool wasResolving = this.isResolving;
+            isResolving = true;
 
-            var instance = typeResolver.Resolve(this, typeBinding, BindingInjector, BindingInitializer);
+            var resolvedInstance = typeResolver.Resolve(this, typeBinding);
+            var instance = resolvedInstance.Instance;
 
-            if (isRootResolve)
+            if (!resolvedInstance.IsNew)
             {
-                BindingInjector.InjectAllQueued(this);
+                isResolving = wasResolving;
+                return instance;
+            }
+
+            if (typeBinding.TypeInjections != null)
+            {
+                foreach (var typeInjection in typeBinding.TypeInjections)
+                {
+                    typeInjection.Inject(instance, this);
+                }
+            }
+
+            BindingInitializer.Injest(typeBinding, instance);
+
+            isResolving = wasResolving;
+
+            if (!isResolving)
+            {
                 BindingInitializer.InitializeAllQueued(this);
-                this.nextResolveIsRootResolve = true;
             }
 
             return instance;

@@ -7,7 +7,7 @@
     <StartupObject />
     <AssemblyName>ManualDi.Main</AssemblyName>
     <RootNamespace>ManualDi.Main</RootNamespace>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
     <Authors>Pere Viader</Authors>
     <RepositoryUrl>https://github.com/PereViader/ManualDi.Main</RepositoryUrl>
     <Product>ManualDi.Main</Product>

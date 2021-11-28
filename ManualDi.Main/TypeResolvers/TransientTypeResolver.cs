@@ -11,7 +11,7 @@ namespace ManualDi.Main.TypeResolvers
 
         public ResolvedInstance Resolve(IDiContainer container, ITypeBinding typeBinding)
         {
-            var instance = typeBinding.Factory.Create(container);
+            var instance = typeBinding.TypeFactory.Create(container);
 
             return ResolvedInstance.New(instance);
         }

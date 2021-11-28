@@ -99,14 +99,7 @@ namespace ManualDi.Main
                 return instance;
             }
 
-            if (typeBinding.TypeInjections != null)
-            {
-                foreach (var typeInjection in typeBinding.TypeInjections)
-                {
-                    typeInjection.Inject(instance, this);
-                }
-            }
-
+            typeBinding.TypeInjection?.Invoke(instance, this);
             BindingInitializer.Injest(typeBinding, instance);
 
             isResolving = wasResolving;

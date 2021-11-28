@@ -19,7 +19,7 @@ namespace ManualDi.Main.TypeResolvers
                 return ResolvedInstance.Reused(singleInstance);
             }
 
-            var instance = typeBinding.Factory.Create(container);
+            var instance = typeBinding.TypeFactory.Create(container);
             Instances[typeBinding] = instance;
 
             return ResolvedInstance.New(instance);

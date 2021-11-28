@@ -15,14 +15,14 @@ namespace ManualDi.Main.Initialization
                 bindingInitializationCommands.Push(new List<Action<IDiContainer>>());
             }
 
-            var bindingInitialization = typeBinding.BindingInitialization;
+            var bindingInitialization = typeBinding.TypeInitialization;
             if (bindingInitialization == null)
             {
                 return;
             }
 
             var commands = bindingInitializationCommands.Peek();
-            commands.Add((IDiContainer container) => bindingInitialization.Initialize(instance, container));
+            commands.Add((IDiContainer container) => bindingInitialization.Invoke(instance, container));
         }
 
         public void InitializeAllQueued(IDiContainer container)

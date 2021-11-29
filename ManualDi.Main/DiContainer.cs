@@ -8,6 +8,9 @@ namespace ManualDi.Main
 {
     public class DiContainerBindings : IDiContainerBindings
     {
+        private List<Action> disposeActions = new List<Action>();
+
+        public IReadOnlyList<Action> DisposeActions => disposeActions;
         public Dictionary<Type, List<ITypeBinding>> TypeBindings { get; } = new Dictionary<Type, List<ITypeBinding>>();
 
         public void AddBinding<T>(ITypeBinding<T> typeBinding)
@@ -20,6 +23,11 @@ namespace ManualDi.Main
             }
 
             bindings.Add(typeBinding);
+        }
+
+        public void QueueDispose(Action action)
+        {
+            disposeActions.Add(action);
         }
     }
 

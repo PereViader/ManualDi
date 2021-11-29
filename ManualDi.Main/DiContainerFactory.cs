@@ -23,6 +23,11 @@ namespace ManualDi.Main
                 BindingDisposer = new BindingDisposer(),
             };
 
+            foreach (var action in diContainerBindings.DisposeActions)
+            {
+                diContainer.QueueDispose(action);
+            }
+
             diContainer.Init();
 
             return diContainer;

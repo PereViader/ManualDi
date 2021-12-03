@@ -6,31 +6,6 @@ using System.Collections.Generic;
 
 namespace ManualDi.Main
 {
-    public class DiContainerBindings : IDiContainerBindings
-    {
-        private List<Action> disposeActions = new List<Action>();
-
-        public IReadOnlyList<Action> DisposeActions => disposeActions;
-        public Dictionary<Type, List<ITypeBinding>> TypeBindings { get; } = new Dictionary<Type, List<ITypeBinding>>();
-
-        public void AddBinding<T>(ITypeBinding<T> typeBinding)
-        {
-            Type type = typeof(T);
-            if (!TypeBindings.TryGetValue(type, out var bindings))
-            {
-                bindings = new List<ITypeBinding>();
-                TypeBindings[type] = bindings;
-            }
-
-            bindings.Add(typeBinding);
-        }
-
-        public void QueueDispose(Action action)
-        {
-            disposeActions.Add(action);
-        }
-    }
-
     public sealed class DiContainer : IDiContainer
     {
         public Dictionary<Type, List<ITypeBinding>> TypeBindings { get; set; }
@@ -59,39 +34,34 @@ namespace ManualDi.Main
                 {
                     if (!binding.IsLazy)
                     {
-                        ResolveUntyped(binding);
+                        ResolveBinding(binding);
                     }
                 }
             }
         }
 
-        public T Resolve<T>()
-        {
-            return Resolve<T>(resolutionConstraints: null);
-        }
-
         public T Resolve<T>(IResolutionConstraints resolutionConstraints)
         {
-            var typeBinding = GetTypeForConstraint<T>(resolutionConstraints);
+            return (T)Resolve(typeof(T), resolutionConstraints);
+        }
+
+        public object Resolve(Type type, IResolutionConstraints resolutionConstraints)
+        {
+            var typeBinding = GetTypeForConstraint(type, resolutionConstraints);
             if (!typeBinding.IsError)
             {
-                return ResolveTyped(typeBinding.Value);
+                return ResolveBinding(typeBinding.Value);
             }
 
             if (ParentDiContainer != null)
             {
-                return ParentDiContainer.Resolve<T>();
+                return ParentDiContainer.Resolve(type, resolutionConstraints);
             }
 
-            throw new InvalidOperationException($"There was no binding with requested constraints for {typeof(T).FullName}");
+            throw new InvalidOperationException($"There was no binding with requested constraints for {type.FullName}");
         }
 
-        private T ResolveTyped<T>(ITypeBinding<T> typeBinding)
-        {
-            return (T)ResolveUntyped(typeBinding);
-        }
-
-        private object ResolveUntyped(ITypeBinding typeBinding)
+        private object ResolveBinding(ITypeBinding typeBinding)
         {
             var typeResolver = GetResolverFor(typeBinding);
 
@@ -120,66 +90,62 @@ namespace ManualDi.Main
             return instance;
         }
 
-        private Result<ITypeBinding<T>> GetTypeForConstraint<T>(IResolutionConstraints resolutionConstraints)
+        private Result<ITypeBinding> GetTypeForConstraint(Type type, IResolutionConstraints resolutionConstraints)
         {
-            if (!TypeBindings.TryGetValue(typeof(T), out var bindings) || bindings.Count == 0)
+            if (!TypeBindings.TryGetValue(type, out var bindings) || bindings.Count == 0)
             {
-                return new Result<ITypeBinding<T>>(new InvalidOperationException($"There are no bindings for type {typeof(T).FullName}"));
+                return new Result<ITypeBinding>(new InvalidOperationException($"There are no bindings for type {type.FullName}"));
             }
 
             if (resolutionConstraints == null)
             {
-                return new Result<ITypeBinding<T>>((ITypeBinding<T>)bindings[0]);
+                return new Result<ITypeBinding>(bindings[0]);
             }
 
             foreach (var binding in bindings)
             {
-                var typeBinding = (ITypeBinding<T>)binding;
-                if (resolutionConstraints.Accepts(typeBinding))
+                if (resolutionConstraints.Accepts(binding))
                 {
-                    return new Result<ITypeBinding<T>>(typeBinding);
+                    return new Result<ITypeBinding>(binding);
                 }
             }
 
-            return new Result<ITypeBinding<T>>(new InvalidOperationException("No binding could satisfy constraint"));
+            return new Result<ITypeBinding>(new InvalidOperationException("No binding could satisfy constraint"));
         }
 
-        private Result<List<ITypeBinding<T>>> GetAllTypeForConstraint<T>(IResolutionConstraints resolutionConstraints)
+        private Result<List<ITypeBinding>> GetAllTypeForConstraint(Type type, IResolutionConstraints resolutionConstraints)
         {
-            if (!TypeBindings.TryGetValue(typeof(T), out var bindings) || bindings.Count == 0)
+            if (!TypeBindings.TryGetValue(type, out var bindings) || bindings.Count == 0)
             {
-                return new Result<List<ITypeBinding<T>>>(new InvalidOperationException($"There are no bindings for type {typeof(T).FullName}"));
+                return new Result<List<ITypeBinding>>(new InvalidOperationException($"There are no bindings for type {type.FullName}"));
             }
 
-            var typeBindings = new List<ITypeBinding<T>>();
+            var typeBindings = new List<ITypeBinding>();
 
             if (resolutionConstraints == null)
             {
                 foreach (var typeBinding in bindings)
                 {
-                    typeBindings.Add((ITypeBinding<T>)typeBinding);
+                    typeBindings.Add(typeBinding);
                 }
-                return new Result<List<ITypeBinding<T>>>(typeBindings);
+                return new Result<List<ITypeBinding>>(typeBindings);
             }
 
             foreach (var binding in bindings)
             {
-                var typeBinding = (ITypeBinding<T>)binding;
-                if (resolutionConstraints.Accepts(typeBinding))
+                if (resolutionConstraints.Accepts(binding))
                 {
-                    typeBindings.Add(typeBinding);
+                    typeBindings.Add(binding);
                 }
             }
 
             if (typeBindings.Count == 0)
             {
-                new Result<List<ITypeBinding<T>>>(new InvalidOperationException("No binding could satisfy constraint"));
+                return new Result<List<ITypeBinding>>(new InvalidOperationException("No binding could satisfy constraint"));
             }
 
-            return new Result<List<ITypeBinding<T>>>(typeBindings);
+            return new Result<List<ITypeBinding>>(typeBindings);
         }
-
-
 
         private ITypeResolver GetResolverFor(ITypeBinding typeBinding)
         {
@@ -194,36 +160,31 @@ namespace ManualDi.Main
             throw new InvalidOperationException($"Could not find resolver for type binding of type {typeBinding.GetType().FullName}");
         }
 
-        public List<T> ResolveAll<T>()
+        public void ResolveAll<T>(IResolutionConstraints resolutionConstraints, List<T> resolutions)
         {
-            return ResolveAll<T>(resolutionConstraints: null);
+            DoResolveAll(typeof(T), resolutionConstraints, resolutions);
         }
 
-        public List<T> ResolveAll<T>(IResolutionConstraints resolutionConstraints)
+        public void ResolveAll(Type type, IResolutionConstraints resolutionConstraints, List<object> resolutions)
         {
-            var typeBindings = GetAllTypeForConstraint<T>(resolutionConstraints).GetValueOrThrowIfError();
-            var resolutions = ResolveAll(typeBindings);
+            DoResolveAll(type, resolutionConstraints, resolutions);
+        }
+
+        private void DoResolveAll<T>(Type type, IResolutionConstraints resolutionConstraints, List<T> resolutions)
+        {
+            var typeBindings = GetAllTypeForConstraint(type, resolutionConstraints).GetValueOrThrowIfError();
+
+            foreach (var typeBinding in typeBindings)
+            {
+                var resolved = ResolveBinding(typeBinding);
+                resolutions.Add((T)resolved);
+            }
 
             if (ParentDiContainer != null)
             {
-                var parentResolutions = ParentDiContainer.ResolveAll<T>(resolutionConstraints);
-                resolutions.AddRange(parentResolutions);
+                ParentDiContainer.ResolveAll(resolutionConstraints, resolutions);
             }
-
-            return resolutions;
         }
-
-        private List<T> ResolveAll<T>(List<ITypeBinding<T>> typeBindings)
-        {
-            var resolved = new List<T>();
-            foreach (var typeBinding in typeBindings)
-            {
-                resolved.Add(ResolveTyped(typeBinding));
-            }
-            return resolved;
-        }
-
-
 
         public void QueueDispose(Action disposeAction)
         {
@@ -232,11 +193,13 @@ namespace ManualDi.Main
 
         public void Dispose()
         {
-            if (!disposedValue)
+            if (disposedValue)
             {
-                BindingDisposer.DisposeAll();
-                disposedValue = true;
+                return;
             }
+            disposedValue = true;
+
+            BindingDisposer.DisposeAll();
         }
     }
 }

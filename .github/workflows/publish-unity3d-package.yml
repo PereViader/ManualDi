@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       REPO_ROOT: 'repo/'
+      REPO_UPM: 'repoUpm/'
       PKG_ROOT: 'upmOutput/'
       PUBLISH_BRANCH: 'upm'
       COMMIT_MESSAGE: Update UPM branch
@@ -29,15 +30,24 @@ jobs:
           inputPath: ${{ env.REPO_ROOT }}
           outputPath: ${{ env.PKG_ROOT }}
 
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ env.PUBLISH_BRANCH }}
+          path: ${{ env.REPO_UPM }}
+
       - name: Publish to repo branch
         run: |
-          cd $REPO_ROOT
+          cd $REPO_UPM
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git checkout --orphan $PUBLISH_BRANCH || git checkout $PUBLISH_BRANCH
-          git rm -rf .
           sudo mv .git ../$PKG_ROOT.git
+          echo Move git folder to the new built folder
           cd ../$PKG_ROOT
-          git add *
-          git commit -m "$COMMIT_MESSAGE"
+          git add -Af  # add untracked files to the index
+          git commit -v -m "$COMMIT_MESSAGE"
+          echo Commit changed files
+          git status
+          echo Status
+          git log
+          echo Reflog
           git push -u origin $PUBLISH_BRANCH

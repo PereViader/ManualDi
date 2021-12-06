@@ -30,6 +30,11 @@ namespace ManualDi.Main
 
             diContainer.Init();
 
+            foreach (var initializationDelegate in diContainerBindings.InitializationDelegates)
+            {
+                initializationDelegate.Invoke(diContainer);
+            }
+
             return diContainer;
         }
     }

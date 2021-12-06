@@ -21,5 +21,17 @@ namespace ManualDi.Main.Tests
 
             action.Received(1).Invoke();
         }
+
+        [Test]
+        public void TestQueueInitialization()
+        {
+            var initializationDelegate = Substitute.For<InitializationDelegate>();
+
+            var container = new DiContainerBuilder()
+                .WithInstallDelegate(x => x.QueueInitialization(initializationDelegate))
+                .Build();
+
+            initializationDelegate.Received(1).Invoke(Arg.Is<IDiContainer>(container));
+        }
     }
 }

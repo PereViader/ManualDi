@@ -33,7 +33,7 @@ To get to the action, please visit the automated tests of the project found on h
 
 In order to create the container, the project offers a fluent Builder `ContainerBuilder`. Let's see how that would look like:
 
-```
+```csharp
     IDiContainer container = new ContainerBuilder()
         .WithInstallDelegate(b => 
         {
@@ -62,7 +62,8 @@ For startes, you may only bind to the container during it's creation.
 This is a syncronous process.
 
 Binding data to the container is performed on the type `IDiContainerBindings`. This type exposes a dictionary with all the bindings performed on it and a method to add a new binding to it.
-```
+
+```csharp
 public interface IDiContainerBindings
 {
     Dictionary<Type, List<ITypeBinding>> TypeBindings { get; }
@@ -75,7 +76,7 @@ Although it only has these methods, the type is ment to be used through extensio
 
 In order to bind to the container, we have 3 `Bind` methods. We will concentrate on only 2 as they will be the most used ones.
 
-```
+```csharp
 ITypeBinding<T, T> Bind<T>(this IDiContainerBindings diContainerBindings)
 ITypeBinding<T, Y> Bind<T, Y>(this IDiContainerBindings diContainerBindings)
 ```
@@ -87,14 +88,15 @@ The second one is meant to be used to bind an instance of some type Y but expose
 Examples:
 
 Binding the instance and exposed interface as the same one
-```
+
+```csharp
 b.Bind<SomeType>()
 c.Resolve<SomeType>() // Success
 ```
 
 Binding the instance and the exposed interface as different types
 
-```
+```csharp
 b.Bind<ISomeType, SomeType>()
 c.Resolve<SomeType>() // Runtime error
 c.Resolve<ISomeType>() // Success
@@ -111,7 +113,7 @@ We can get data from the container in two ways
 
 We get a single registered instance from the container
 
-```
+```csharp
 SomeService service = container.Resolve<SomeService>();
 ```
 
@@ -119,7 +121,7 @@ SomeService service = container.Resolve<SomeService>();
 
 If we registered multiple instances of the same type to the container this method will return all of them.
 
-```
+```csharp
 List<SomeService> services = container.ResolveAll<SomeService>();
 ```
 
@@ -130,7 +132,7 @@ We have seen on the previous section how to start binding, but we've not actuall
 There are several extension methods for the `ITypeBinding<T, Y>` that will allow you to actually make the binding do something.
 Although there is nothing preventing you from calling these methods in another order, the convention this library recommends is to call them in this order.
 
-```
+```csharp
 Bind<T>()
     .[Single|Transient]
     .From[Instance|Method|Container|ContainerAll]
@@ -168,7 +170,7 @@ If this is used in conjunction with the transient scope, even though one would e
 
 Example:
 
-```
+```csharp
 b.Bind<T>().FromInstance(new T())
 ```
 
@@ -177,7 +179,7 @@ b.Bind<T>().FromInstance(new T())
 A delegate to creates instances of the type is provided to the container.
 The delegate provides the fully resolved container as a parameter in order to be able to inject services to the type on the constructor.
 
-```
+```csharp
 b.Bind<T>().FromMethod((c) => new T(
     c.Resolve<SomeService>()
     ))
@@ -187,11 +189,11 @@ b.Bind<T>().FromMethod((c) => new T(
 
 Useful for exposing other interfaces of types on the container
 
-```
+```csharp
 b.Bind<int>().FromInstance(1);
 b.Bind<object, int>().FromContainer();
 
-...
+// ...
 
 System.Console.WriteLine(c.Resolve<object>()); // Outputs "1"
 ```
@@ -201,7 +203,7 @@ Because we did this, when we request the object, the container will end up resol
 
 This is just a shorthand for calling Resolve on the container for the type. 
 
-```
+```csharp
 b.Bind<object, int>().FromMethod(c => c.Resolve<int>());
 ```
 
@@ -209,12 +211,12 @@ b.Bind<object, int>().FromMethod(c => c.Resolve<int>());
 
 Just like `FromContainer` binds all the instances to the container
 
-```
+```csharp
 b.Bind<int>().FromInstance(1);
 b.Bind<int>().FromInstance(5);
 b.Bind<List<object>, List<int>>().FromContainerAll();
 
-...
+// ...
 
 foreach(var value in container.Resolve<List<object>>())
 {
@@ -224,7 +226,7 @@ foreach(var value in container.Resolve<List<object>>())
 
 As seen before this is just a shorthand for ResolveAll
 
-```
+```csharp
 b.Bind<List<object>, List<int>>().FromMethod(c => c.ResolveAll<int>());
 ```
 
@@ -246,11 +248,11 @@ Service B: Depends on A
 
 Naive solution that won't work
 
-```
+```csharp
 b.Bind<A>().FromMethod(c => new A(c.Resolve<B>()));
 b.Bind<B>().FromMethod(c => new B(c.Resolve<A>()));
 
-...
+// ...
 
 c.Resolve<A>();
 ```
@@ -269,11 +271,11 @@ c.Resolve<A>();
 
 Actual solution that works
 
-```
+```csharp
 b.Bind<A>().FromMethod(c => new A())).Inject((o,c) => o.B = c.Resolve<B>());
 b.Bind<B>().FromMethod(c => new B(c.Resolve<A>()));
 
-...
+// ...
 
 c.Resolve<A>();
 ```
@@ -294,7 +296,7 @@ Similar to the Inject method, the initialize method defines a delegate to be cal
 Also similarly to the Inject method, newly created instances are added to a queue and initialized.
 The Initialize method will be called once for every new type depending on the scope.
 
-```
+```csharp
 b.Bind<A>().FromInstance(new A()).Initialize((o,c) => o.Init());
 
 c.Resolve<A>()
@@ -310,8 +312,7 @@ c.Resolve<A>()
 Objects may implement the IDisposable interface or may need some other custom teardown logic. The RegisterDispose extension method allows defining some behaviour that will be run when the object is disposed of by the container.
 The container will dispose when itself is disposed.
 
-
-```
+```csharp
 Given A does not implement IDisposable
 and B implements IDisposable
 
@@ -326,15 +327,14 @@ c.Dispose(); // A and B disposed if they were created
 
 These extension methods allow registering some key or key/values  that allow to filter elements when resolving them
 
-
-```
+```csharp
 Given A does not implement IDisposable
 and B implements IDisposable
 
 b.Bind<int>().FromInstance(1).WithMetadata("Potato");
 b.Bind<int>().FromInstance(5).WithMetadata("Banana");
 
-...
+// ...
 
 c.Resolve<int>(b => b.WhereMetadata("Potato")); // returns 1
 c.Resolve<int>(b => b.WhereMetadata("Banana")); // returns 5

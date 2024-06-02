@@ -7,7 +7,7 @@ namespace ManualDi.Main.Tests
         [Test]
         public void TestTryResolveGenericSuccess()
         {
-            var container = new DiContainerBuilder().WithInstallDelegate(x =>
+            var container = new DiContainerBuilder().Install(x =>
             {
                 x.Bind<int>().FromInstance(1);
             }).Build();
@@ -29,7 +29,7 @@ namespace ManualDi.Main.Tests
         [Test]
         public void TestTryResolveNonGenericSuccess()
         {
-            var container = new DiContainerBuilder().WithInstallDelegate(x =>
+            var container = new DiContainerBuilder().Install(x =>
             {
                 x.Bind<int>().FromInstance(1);
             }).Build();

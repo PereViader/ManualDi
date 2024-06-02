@@ -8,12 +8,12 @@ namespace ManualDi.Main.Tests
         [Test]
         public void TestSingle()
         {
-            var factoryMethodDelegate = Substitute.For<FactoryMethodDelegate<object>>();
+            var factoryMethodDelegate = Substitute.For<CreateDelegate<object>>();
             var injectionDelegate = Substitute.For<InjectionDelegate<object>>();
 
             factoryMethodDelegate.Invoke(Arg.Any<IDiContainer>()).Returns(c => new object());
 
-            var container = new DiContainerBuilder().WithInstallDelegate(x =>
+            var container = new DiContainerBuilder().Install(x =>
             {
                 x.Bind<object>().FromMethod(factoryMethodDelegate).Inject(injectionDelegate).Single();
             }).Build();
@@ -30,12 +30,12 @@ namespace ManualDi.Main.Tests
         [Test]
         public void TestTransient()
         {
-            var factoryMethodDelegate = Substitute.For<FactoryMethodDelegate<object>>();
+            var factoryMethodDelegate = Substitute.For<CreateDelegate<object>>();
             var injectionDelegate = Substitute.For<InjectionDelegate<object>>();
 
             factoryMethodDelegate.Invoke(Arg.Any<IDiContainer>()).Returns(c => new object());
 
-            var container = new DiContainerBuilder().WithInstallDelegate(x =>
+            var container = new DiContainerBuilder().Install(x =>
             {
                 x.Bind<object>().FromMethod(factoryMethodDelegate).Inject(injectionDelegate).Transient();
             }).Build();

@@ -8,7 +8,7 @@ namespace ManualDi.Main.Tests
         [Test]
         public void TestResolveWithoutConstraint()
         {
-            var container = new DiContainerBuilder().WithInstallDelegate(b =>
+            var container = new DiContainerBuilder().Install(b =>
             {
                 b.Bind<int>().FromInstance(5);
             }).Build();
@@ -21,7 +21,7 @@ namespace ManualDi.Main.Tests
         [Test]
         public void TestResolveWithConstraint()
         {
-            var container = new DiContainerBuilder().WithInstallDelegate(b =>
+            var container = new DiContainerBuilder().Install(b =>
             {
                 b.Bind<int>().FromInstance(2).WithMetadata("A");
                 b.Bind<int>().FromInstance(5).WithMetadata("B");
@@ -35,7 +35,7 @@ namespace ManualDi.Main.Tests
         [Test]
         public void TestResolveAllWithoutConstraint()
         {
-            var container = new DiContainerBuilder().WithInstallDelegate(b =>
+            var container = new DiContainerBuilder().Install(b =>
             {
                 b.Bind<int>().FromInstance(2);
                 b.Bind<int>().FromInstance(5);
@@ -49,7 +49,7 @@ namespace ManualDi.Main.Tests
         [Test]
         public void TestResolveAllWithConstraint()
         {
-            var container = new DiContainerBuilder().WithInstallDelegate(b =>
+            var container = new DiContainerBuilder().Install(b =>
             {
                 b.Bind<int>().FromInstance(2).WithMetadata("A");
                 b.Bind<int>().FromInstance(5).WithMetadata("B");

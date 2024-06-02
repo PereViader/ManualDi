@@ -34,22 +34,22 @@ To get to the action, please visit the automated tests of the project found on h
 In order to create the container, the project offers a fluent Builder `ContainerBuilder`. Let's see how that would look like:
 
 ```csharp
-    IDiContainer container = new ContainerBuilder()
-        .WithInstallDelegate(b => 
+    IDiContainer container = new DiContainerBuilder()
+        .Install(b => 
         {
             b.InstallSomeFunctionality();
         })
-        .WithInstaller(new SomeOtherInstaller());
+        .Install(new SomeOtherInstaller());
         .Build();
 ```
 
 Let's analize this snippet:
 
 - Declare the container variable of type `IDiContainer` called container.
-- Create the `ContainerBuilder`
-- Use the `WithInstallDelegate` function to start binding data to the container
+- Create the `DiContainerBuilder`
+- Use the `Install` function to start binding data to the container
 - Call the static extension method `InstallSomeFunctionality` which will bind services to the container
-- Use the `WithInstaller` function to bind an installer of type `SomeOtherInstaller`. This does the same as the extension method, but with an object instead of a static function call
+- Use the `Install` function to bind an installer of type `SomeOtherInstaller`. This does the same as the extension method, but with an object instead of a static function call
 - Actually build the container with the contents we gave to the Builder 
 
 
@@ -61,28 +61,17 @@ Let's understand now how to bind anything to the container.
 For startes, you may only bind to the container during it's creation.
 This is a syncronous process.
 
-Binding data to the container is performed on the type `IDiContainerBindings`. This type exposes a dictionary with all the bindings performed on it and a method to add a new binding to it.
+Binding data to the container is performed on the type `DiContainerBindings`. It offers its functionality also through extension methods.
+
+In order to bind to the container, there are 3 `Bind` methods. Let's concentrate on the two most common ones.
 
 ```csharp
-public interface IDiContainerBindings
-{
-    Dictionary<Type, List<ITypeBinding>> TypeBindings { get; }
-
-    void AddBinding<T>(ITypeBinding<T> typeBinding);
-}
+ITypeBinding<TConcrete, TConcrete> Bind<TConcrete>(this IDiContainerBindings diContainerBindings)
+ITypeBinding<TInterface, TConcrete> Bind<TInterface, TConcrete>(this IDiContainerBindings diContainerBindings)
 ```
 
-Although it only has these methods, the type is ment to be used through extension methods instead. Please only use these if you understand how the container works.
-
-In order to bind to the container, we have 3 `Bind` methods. We will concentrate on only 2 as they will be the most used ones.
-
-```csharp
-ITypeBinding<T, T> Bind<T>(this IDiContainerBindings diContainerBindings)
-ITypeBinding<T, Y> Bind<T, Y>(this IDiContainerBindings diContainerBindings)
-```
-
-The first one is meant to be used to bind an instance of some type T and expose the same type T as the interface type when resolving
-The second one is meant to be used to bind an instance of some type Y but expose a different type T as the interface when resolving
+The first, is meant to be used to bind an instance of some type T and expose the same type T as the interface type when resolving
+The second is meant to be used to bind an instance of some type Y but expose a different type T as the interface when resolving
 
 
 Examples:
@@ -129,7 +118,7 @@ List<SomeService> services = container.ResolveAll<SomeService>();
 ### Populating the bindings
 
 We have seen on the previous section how to start binding, but we've not actually bound anything.
-There are several extension methods for the `ITypeBinding<T, Y>` that will allow you to actually make the binding do something.
+There are several extension methods for the `TypeBinding<T, Y>` that will allow you to actually make the binding do something.
 Although there is nothing preventing you from calling these methods in another order, the convention this library recommends is to call them in this order.
 
 ```csharp
@@ -138,7 +127,7 @@ Bind<T>()
     .From[Instance|Method|Container|ContainerAll]
     .Inject
     .Initialize
-    .RegisterDispose
+    .Dispose
     .WithMetadata
     .[Lazy|NonLazy]
 ```
@@ -147,16 +136,15 @@ We will now go over each one of them
 
 ### Scope
 
-The scope of a binding defines under what circumstances a new instance defined by the binding is returned.
-The container currently supports 2 of the 3 possible (usual) scope types.
+The scope of a binding defines the rules of creation of instances of the binding.
 
 #### Single
 
-Similar to the dreaded `Singleton` but not globally accessible. The container will generate a single instance of the type and always return the same when asked to resolve it
+The container will generate a single instance of the type and always return the same when asked to resolve it. Similar to the dreaded `Singleton` but not globally accessible. 
 
 #### Transient
 
-The container will generate and return a new instance of the type (as defined by the creation strategy explained in the next section) when asked to resolve it 
+The container will generate a new instance of the type when requested to resolve it.
 
 
 ### From
@@ -165,8 +153,8 @@ The creation strategy for the binding
 
 #### Instance
 
-An instance of the type is provided to the container as is. The container will then return it.
-If this is used in conjunction with the transient scope, even though one would expect to get different instances, the container will return the same instance because the creation strategy is to always return the same instance.
+An instance of the type is directly supplied to the container, which will subsequently return it.
+Note: When used with the transient scope, the container will still return the same instance instead of different ones as one may expect, due to the creation strategy always providing the same instance.
 
 Example:
 
@@ -176,13 +164,12 @@ b.Bind<T>().FromInstance(new T())
 
 #### Method
 
-A delegate to creates instances of the type is provided to the container.
-The delegate provides the fully resolved container as a parameter in order to be able to inject services to the type on the constructor.
+A delegate to create instances of the type is provided to the container. This delegate accepts the fully resolved container as a parameter, enabling it to inject services into the type's constructor.
+
+Note: Given this is the most common use case, the container optimizes for this use case in terms of GC 
 
 ```csharp
-b.Bind<T>().FromMethod((c) => new T(
-    c.Resolve<SomeService>()
-    ))
+b.Bind<T>().FromMethod((c) => new T(c.Resolve<SomeService>()))
 ```
 
 #### Container
@@ -198,10 +185,9 @@ b.Bind<object, int>().FromContainer();
 System.Console.WriteLine(c.Resolve<object>()); // Outputs "1"
 ```
 
-In this snippet you can see that you register an integer with a value of 1 and then bind an object with the contents of the container for the integer.
-Because we did this, when we request the object, the container will end up resolving the contents of the integer and return a 1.
+In this snippet, an integer with a value of 1 is registered. Then an object is bound to the container by redirecting the integer binding to it. As a result, when the object is requested, the container resolves the integer and returns 1.
 
-This is just a shorthand for calling Resolve on the container for the type. 
+This is a shorthand for calling Resolve on the container for the type:
 
 ```csharp
 b.Bind<object, int>().FromMethod(c => c.Resolve<int>());
@@ -227,17 +213,17 @@ foreach(var value in container.Resolve<List<object>>())
 As seen before this is just a shorthand for ResolveAll
 
 ```csharp
-b.Bind<List<object>, List<int>>().FromMethod(c => c.ResolveAll<int>());
+b.Bind<List<object>, List<int>>().FromMethod(c => c.ResolveAll<int>().Cast<object>().ToList());
 ```
 
 
 ### Inject
 
-There might be situations where it is not possible to inject everything for some type at the time of its creation. This might be due to many reasons.
-When this happens, the Inject method allows injecting after the object has been constructed.
-The object is not injected right after constructing it however, but it is added to a queue for it to be injected later.
-This is done like this in order to allow all the dependant services to be also created and injected in the correct order.
-The inject method will be called once for every new type, depending on the scope.
+In some situations, it might not be possible to inject all dependencies for a type at the time of its creation due to various reasons. When this occurs, the Inject method allows for post-construction injection.
+
+Instead of injecting the object immediately after construction, it is added to a queue to be injected later. This ensures that all dependent services are created and injected in the correct order.
+
+The Inject method will be called once for every new type, depending on the scope.
 
 Example:
 
@@ -292,9 +278,11 @@ c.Resolve<A>();
 
 #### Initialize
 
-Similar to the Inject method, the initialize method defines a delegate to be called for newly constructed instances before they are resolved.
-Also similarly to the Inject method, newly created instances are added to a queue and initialized.
-The Initialize method will be called once for every new type depending on the scope.
+Similar to the Inject method, the Initialize method defines a delegate to be called for newly constructed instances before they are resolved.
+
+Like the Inject method, newly created instances are added to a queue for initialization.
+
+The Initialize method will be called once for every new type, depending on the scope.
 
 ```csharp
 b.Bind<A>().FromInstance(new A()).Initialize((o,c) => o.Init());
@@ -307,17 +295,16 @@ c.Resolve<A>()
 - The initialize method calls the Init method on A
 
 
-#### RegisterDispose
+#### Dispose
 
-Objects may implement the IDisposable interface or may need some other custom teardown logic. The RegisterDispose extension method allows defining some behaviour that will be run when the object is disposed of by the container.
-The container will dispose when itself is disposed.
+Objects may implement the IDisposable interface or require custom teardown logic. The RegisterDispose extension method allows defining behavior that will run when the object is disposed of by the container. The container will handle disposal when it itself is disposed.
 
 ```csharp
 Given A does not implement IDisposable
 and B implements IDisposable
 
-b.Bind<A>().FromInstance(new A()).RegisterDispose((o,c) => o.DoCleanup);
-b.Bind<B>().FromInstance(new B()).RegisterDispose();
+b.Bind<A>().FromInstance(new A()).Dispose((o,c) => o.DoCleanup);
+b.Bind<B>().FromInstance(new B()).Dispose();
 
 c.Dispose(); // A and B disposed if they were created
 ```
@@ -325,7 +312,7 @@ c.Dispose(); // A and B disposed if they were created
 
 #### With Metadata
 
-These extension methods allow registering some key or key/values  that allow to filter elements when resolving them
+These extension methods allow registering keys or key/value pairs, enabling the filtering of elements during resolution.
 
 ```csharp
 Given A does not implement IDisposable
@@ -345,8 +332,8 @@ c.Resolve<int>(b => b.WhereMetadata("Banana")); // returns 5
 
 ##### Lazy
 
-The object from method will not be called until the object is actually resolved
+The FromMethod delegate will not be called until the object is actually resolved.
 
 ##### NonLazy
 
-The object will be build at the same time with the container.
+The object will be built simultaneously with the container.

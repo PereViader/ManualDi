@@ -12,7 +12,7 @@ namespace ManualDi.Main.Tests
             var action = Substitute.For<Action>();
 
             var container = new DiContainerBuilder()
-                .WithInstallDelegate(x => x.QueueDispose(action))
+                .Install(x => x.QueueDispose(action))
                 .Build();
 
             action.DidNotReceive().Invoke();
@@ -25,10 +25,10 @@ namespace ManualDi.Main.Tests
         [Test]
         public void TestQueueInitialization()
         {
-            var initializationDelegate = Substitute.For<InitializationDelegate>();
+            var initializationDelegate = Substitute.For<ContainerDelegate>();
 
             var container = new DiContainerBuilder()
-                .WithInstallDelegate(x => x.QueueInitialization(initializationDelegate))
+                .Install(x => x.QueueInitialization(initializationDelegate))
                 .Build();
 
             initializationDelegate.Received(1).Invoke(Arg.Is<IDiContainer>(container));

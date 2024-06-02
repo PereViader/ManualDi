@@ -26,7 +26,7 @@ namespace ManualDi.Main.Tests
         public void TestResolveAllDifferentTypeList()
         {
             var child = new Child();
-            var container = new DiContainerBuilder().WithInstallDelegate(b =>
+            var container = new DiContainerBuilder().Install(b =>
             {
                 b.Bind<Child>().FromInstance(child);
             }).Build();

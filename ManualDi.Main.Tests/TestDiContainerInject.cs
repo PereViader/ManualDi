@@ -11,7 +11,7 @@ namespace ManualDi.Main.Tests
             var instance = new object();
             var injectMethod = Substitute.For<InjectionDelegate<object>>();
 
-            var container = new DiContainerBuilder().WithInstallDelegate(x =>
+            var container = new DiContainerBuilder().Install(x =>
             {
                 x.Bind<object>()
                     .FromInstance(instance)

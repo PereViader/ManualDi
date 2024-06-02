@@ -8,9 +8,9 @@ namespace ManualDi.Main.Tests
         [Test]
         public void TestLazy()
         {
-            var builderFunc = Substitute.For<FactoryMethodDelegate<object>>();
+            var builderFunc = Substitute.For<CreateDelegate<object>>();
 
-            var container = new DiContainerBuilder().WithInstallDelegate(x =>
+            var container = new DiContainerBuilder().Install(x =>
             {
                 x.Bind<object>().FromMethod(builderFunc).Lazy();
             }).Build();
@@ -21,9 +21,9 @@ namespace ManualDi.Main.Tests
         [Test]
         public void TestNonLazy()
         {
-            var builderFunc = Substitute.For<FactoryMethodDelegate<object>>();
+            var builderFunc = Substitute.For<CreateDelegate<object>>();
 
-            var container = new DiContainerBuilder().WithInstallDelegate(x =>
+            var container = new DiContainerBuilder().Install(x =>
             {
                 x.Bind<object>().FromMethod(builderFunc).NonLazy();
             }).Build();

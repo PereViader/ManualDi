@@ -12,11 +12,11 @@ namespace ManualDi.Main.Tests
             var instance = new object();
             var disposeAction = Substitute.For<Action>();
 
-            IDiContainer container = new DiContainerBuilder().WithInstallDelegate(x =>
+            IDiContainer container = new DiContainerBuilder().Install(x =>
             {
                 x.Bind<object>()
                     .FromInstance(instance)
-                    .RegisterDispose((o, c) => disposeAction);
+                    .Dispose((o, c) => disposeAction);
             }).Build();
 
             _ = container.Resolve<object>();

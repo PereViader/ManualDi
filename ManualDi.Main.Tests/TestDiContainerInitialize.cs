@@ -1,5 +1,4 @@
-﻿using ManualDi.Main.Initialization;
-using NSubstitute;
+﻿using NSubstitute;
 using NUnit.Framework;
 
 namespace ManualDi.Main.Tests
@@ -12,7 +11,7 @@ namespace ManualDi.Main.Tests
             var instance = new object();
             var initializationDelegate = Substitute.For<InitializationDelegate<object>>();
 
-            var container = new DiContainerBuilder().WithInstallDelegate(x =>
+            var container = new DiContainerBuilder().Install(x =>
             {
                 x.Bind<object>()
                     .FromInstance(instance)

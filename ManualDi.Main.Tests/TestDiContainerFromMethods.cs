@@ -10,7 +10,7 @@ namespace ManualDi.Main.Tests
         {
             var instance = new object();
 
-            var container = new DiContainerBuilder().WithInstallDelegate(x =>
+            var container = new DiContainerBuilder().Install(x =>
             {
 
                 x.Bind<object>().FromInstance(instance);
@@ -24,7 +24,7 @@ namespace ManualDi.Main.Tests
         public void TestFromMethod()
         {
             var instance = new object();
-            var container = new DiContainerBuilder().WithInstallDelegate(x =>
+            var container = new DiContainerBuilder().Install(x =>
             {
                 x.Bind<object>().FromMethod(c => instance);
             }).Build();
@@ -37,7 +37,7 @@ namespace ManualDi.Main.Tests
         public void TestFromContainer()
         {
             int instance = 5;
-            var container = new DiContainerBuilder().WithInstallDelegate(x =>
+            var container = new DiContainerBuilder().Install(x =>
             {
                 x.Bind<int>().FromInstance(instance);
                 x.Bind<object, int>().FromContainer();
@@ -50,7 +50,7 @@ namespace ManualDi.Main.Tests
         [Test]
         public void TestFromContainerAll()
         {
-            var container = new DiContainerBuilder().WithInstallDelegate(x =>
+            var container = new DiContainerBuilder().Install(x =>
             {
                 x.Bind<int>().FromInstance(1);
                 x.Bind<int>().FromInstance(2);

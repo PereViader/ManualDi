@@ -10,7 +10,7 @@ namespace ManualDi.Main.Tests
             var instance = new object();
 
             var parentContainer = new DiContainerBuilder()
-                .WithInstallDelegate(x =>
+                .Install(x =>
                 {
                     x.Bind<object>().FromInstance(instance);
                 })
@@ -32,7 +32,7 @@ namespace ManualDi.Main.Tests
             var instanceChild = new object();
 
             var parentContainer = new DiContainerBuilder()
-                .WithInstallDelegate(x =>
+                .Install(x =>
                 {
                     x.Bind<object>().FromInstance(instanceParent);
                 })
@@ -40,7 +40,7 @@ namespace ManualDi.Main.Tests
 
             var childContainer = new DiContainerBuilder()
                 .WithParentContainer(parentContainer)
-                .WithInstallDelegate(x =>
+                .Install(x =>
                 {
                     x.Bind<object>().FromInstance(instanceChild);
                 })

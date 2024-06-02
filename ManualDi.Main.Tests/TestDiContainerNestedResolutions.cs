@@ -30,7 +30,7 @@ namespace ManualDi.Main.Tests
             var childInject = Substitute.For<IChildInject>();
             var childInit = Substitute.For<IChildInit>();
 
-            var container = new DiContainerBuilder().WithInstallDelegate(x =>
+            var container = new DiContainerBuilder().Install(x =>
             {
                 x.Bind<IParent>()
                     .FromInstance(parent)

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <LangVersion>12</LangVersion>
     <IsPackable>false</IsPackable>
     <RootNamespace>ManualDi.Main.Tests</RootNamespace>
@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ManualDi.Main.Generators\ManualDi.Main.Generators.csproj"/>
     <ProjectReference Include="..\ManualDi.Main\ManualDi.Main.csproj" />
   </ItemGroup>
 

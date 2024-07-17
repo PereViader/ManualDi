@@ -12,8 +12,11 @@
     "[Oo]bj/",
     ".git/",
     ".vs/",
+    ".github/",
+    ".idea/",
     "ManualDi.Main.Tests/",
     "ManualDi.Main/Properties/",
-    ".github/"
+    "ManualDi.Main.Generators/",
+    "ManualDi.Main.Playground/"
   ]
 }

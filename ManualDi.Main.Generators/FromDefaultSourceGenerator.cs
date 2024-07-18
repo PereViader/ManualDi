@@ -37,17 +37,15 @@ namespace ManualDi.Main.Generators
                     continue;
 
                 var constructor = publicConstructors.Single();
-                var arguments = string.Join(", ", constructor.Parameters.Select(p => $"c.Resolve<{FullyQualifyType(p.Type)}>()"));
+                var arguments = string.Join(",\n", constructor.Parameters.Select(p => $"c.Resolve<{FullyQualifyType(p.Type)}>()"));
                 var className = FullyQualifyType(classSymbol);
 
                 var methodSource = $@"
-        public static TypeBinding<{className}, {className}> FromDefault(
-            this TypeBinding<{className}, {className}> typeBinding
-            )
+        public static TypeBinding<T, {className}> FromDefault<T>(this TypeBinding<T, {className}> typeBinding)
+            where {className} : T
         {{
             typeBinding.FromMethod(static c => new {className}(
-                {arguments}
-                ));
+                {arguments}));
             return typeBinding;
         }}
 ";
@@ -56,8 +54,8 @@ namespace ManualDi.Main.Generators
             }
 
             var methodsSource = string.Join("", methods);
-
-            var formattedAssemblyName = Regex.Replace(context.Compilation.AssemblyName ?? string.Empty, @"[^A-Za-z0-9_]", "");
+            
+            var formattedAssemblyName = Regex.Replace(context.Compilation.AssemblyName ?? string.Empty, "[^A-Za-z0-9_]", "");
             var source = $@"
 using ManualDi.Main;
 

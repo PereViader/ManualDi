@@ -22,7 +22,7 @@ public class MyClass
     public MyClass(OtherClass otherClass) { }
 }
 
-public class OtherClass
+public class OtherClass 
 {
 }
 ";
@@ -49,22 +49,18 @@ namespace ManualDi.Main
     public static class ManualDiFromDefaultExtensions_TestAssembly34
     {
 
-        public static TypeBinding<SomeNamespace.MyClass, SomeNamespace.MyClass> FromDefault(
-            this TypeBinding<SomeNamespace.MyClass, SomeNamespace.MyClass> typeBinding
-            )
+        public static TypeBinding<T, SomeNamespace.MyClass> FromDefault<T>(this TypeBinding<T, SomeNamespace.MyClass> typeBinding)
+            where SomeNamespace.MyClass : T
         {
             typeBinding.FromMethod(static c => new SomeNamespace.MyClass(
-                c.Resolve<SomeNamespace.OtherClass>()
-                ));
+                c.Resolve<SomeNamespace.OtherClass>()));
             return typeBinding;
         }
 
-        public static TypeBinding<SomeNamespace.OtherClass, SomeNamespace.OtherClass> FromDefault(
-            this TypeBinding<SomeNamespace.OtherClass, SomeNamespace.OtherClass> typeBinding
-            )
+        public static TypeBinding<T, SomeNamespace.OtherClass> FromDefault<T>(this TypeBinding<T, SomeNamespace.OtherClass> typeBinding)
+            where SomeNamespace.OtherClass : T
         {
             typeBinding.FromMethod(static c => new SomeNamespace.OtherClass(
-                
                 ));
             return typeBinding;
         }

@@ -1,1 +1,3 @@
-﻿Console.WriteLine("ManualDi Playground");
+﻿using ManualDi.Main;
+
+Console.WriteLine("ManualDi Playground");

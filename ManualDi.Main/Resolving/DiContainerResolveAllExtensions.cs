@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using ManualDi.Main;
 
 namespace ManualDi.Main
 {
@@ -76,3 +77,4 @@ namespace ManualDi.Main
         }
     }
 }
+

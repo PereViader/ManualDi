@@ -14,7 +14,7 @@ namespace ManualDi.Main
         public CreateDelegate<TInterface>? CreateInterfaceDelegate { get; set; }
         public InjectionDelegate<TConcrete>? InjectionDelegates { get; set; }
         public InitializationDelegate<TConcrete>? InitializationDelegate { get; set; }
-        public bool ShouldTryToDispose { get; set; } = true; 
+        public bool TryToDispose { get; set; } = true; 
         public bool IsLazy { get; set; } = true;
 
         public object Create(IDiContainer container)
@@ -33,14 +33,14 @@ namespace ManualDi.Main
                 $"Could not create object for type binding {nameof(TypeBinding<TInterface, TConcrete>)}");
         }
         
-        public void Inject(object instance, IDiContainer container)
+        public void InjectObject(object instance, IDiContainer container)
         {
             InjectionDelegates?.Invoke((TConcrete)instance, container);
         }
 
         public bool NeedsInitialize => InitializationDelegate is not null;
         
-        public void Initialize(object instance, IDiContainer container)
+        public void InitializeObject(object instance, IDiContainer container)
         {
             InitializationDelegate?.Invoke((TConcrete)instance, container);
         }

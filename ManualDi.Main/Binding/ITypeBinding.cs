@@ -14,12 +14,12 @@ namespace ManualDi.Main
         Type ConcreteType { get; }
         ITypeScope TypeScope { get; set; }
         bool IsLazy { get; set; }
-        bool ShouldTryToDispose { get; set; }
+        bool TryToDispose { get; set; }
         public Dictionary<object, object>? Metadata { get; set; }
 
         object Create(IDiContainer container);
         public bool NeedsInitialize { get; }
-        void Initialize(object instance, IDiContainer container);
-        void Inject(object instance, IDiContainer container);
+        void InitializeObject(object instance, IDiContainer container);
+        void InjectObject(object instance, IDiContainer container);
     }
 }

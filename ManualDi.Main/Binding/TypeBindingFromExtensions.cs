@@ -1,34 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace ManualDi.Main
 {
     public static class TypeBindingFromExtensions
     {
-        public static TypeBinding<List<TInterface>, List<TConcrete>> FromContainerAll<TInterface, TConcrete>(
-            this TypeBinding<List<TInterface>, List<TConcrete>> typeBinding
-            )
-            where TConcrete : TInterface
-        {
-            typeBinding.CreateInterfaceDelegate = c => c.ResolveAll<TConcrete>().Cast<TInterface>().ToList();
-            return typeBinding;
-        }
-
-        public static TypeBinding<List<TInterface>, List<TConcrete>> FromContainerAll<TInterface, TConcrete>(
-            this TypeBinding<List<TInterface>, List<TConcrete>> typeBinding,
-            Action<IResolutionConstraints> constraints
-            )
-            where TConcrete : TInterface
-        {
-            typeBinding.CreateInterfaceDelegate = c => c.ResolveAll<TConcrete>(constraints).Cast<TInterface>().ToList();
-            return typeBinding;
-        }
-
         public static TypeBinding<TInterface, TConcrete> FromContainer<TInterface, TConcrete>(
             this TypeBinding<TInterface, TConcrete> typeBinding
             )
-            where TConcrete : TInterface
         {
             typeBinding.CreateConcreteDelegate = c => c.Resolve<TConcrete>();
             return typeBinding;
@@ -38,7 +16,6 @@ namespace ManualDi.Main
             this TypeBinding<TInterface, TConcrete> typeBinding,
             Action<IResolutionConstraints> constraints
             )
-            where TConcrete : TInterface
         {
             typeBinding.CreateConcreteDelegate = c => c.Resolve<TConcrete>(constraints);
             return typeBinding;
@@ -48,7 +25,6 @@ namespace ManualDi.Main
             this TypeBinding<TInterface, TConcrete> typeBinding,
             TConcrete instance
             )
-            where TConcrete : TInterface
         {
             typeBinding.CreateConcreteDelegate = _ => instance;
             return typeBinding;
@@ -57,8 +33,7 @@ namespace ManualDi.Main
         public static TypeBinding<TInterface, TConcrete> FromMethod<TInterface, TConcrete>(
             this TypeBinding<TInterface, TConcrete> typeBinding,
             CreateDelegate<TConcrete> createDelegate
-        )
-            where TConcrete : TInterface
+            )
         {
             typeBinding.CreateConcreteDelegate = createDelegate;
             return typeBinding;

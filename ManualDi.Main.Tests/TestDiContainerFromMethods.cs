@@ -1,5 +1,4 @@
 ﻿using NUnit.Framework;
-using System.Collections.Generic;
 
 namespace ManualDi.Main.Tests
 {
@@ -12,7 +11,6 @@ namespace ManualDi.Main.Tests
 
             var container = new DiContainerBuilder().Install(x =>
             {
-
                 x.Bind<object>().FromInstance(instance);
             }).Build();
 
@@ -45,20 +43,6 @@ namespace ManualDi.Main.Tests
 
             var resolved = container.Resolve<object>();
             Assert.That(resolved, Is.EqualTo(instance));
-        }
-
-        [Test]
-        public void TestFromContainerAll()
-        {
-            var container = new DiContainerBuilder().Install(x =>
-            {
-                x.Bind<int>().FromInstance(1);
-                x.Bind<int>().FromInstance(2);
-                x.Bind<List<object>, List<int>>().FromContainerAll();
-            }).Build();
-
-            var resolved = container.Resolve<List<object>>();
-            Assert.That(resolved, Is.EquivalentTo(new[] { 1, 2 }));
         }
     }
 }

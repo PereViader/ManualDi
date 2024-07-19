@@ -21,7 +21,7 @@ namespace ManualDi.Main
             }
 
             var commands = bindingInitializationCommands.Peek();
-            commands.Add(c => typeBinding.Initialize(instance, c));
+            commands.Add(c => typeBinding.InitializeObject(instance, c));
         }
 
         public void InitializeAllQueued(IDiContainer container)

@@ -10,7 +10,7 @@ namespace ManualDi.Main
             this TypeBinding<TInterface, TConcrete> typeBinding
             )
         {
-            typeBinding.ShouldTryToDispose = true;
+            typeBinding.TryToDispose = true;
             return typeBinding;
         }
 
@@ -18,7 +18,7 @@ namespace ManualDi.Main
             this TypeBinding<TInterface, TConcrete> typeBinding
         )
         {
-            typeBinding.ShouldTryToDispose = false;
+            typeBinding.TryToDispose = false;
             return typeBinding;
         }
 
@@ -27,7 +27,7 @@ namespace ManualDi.Main
             GetDisposeDelegate<TConcrete> getDisposeDelegate
             )
         {
-            typeBinding.ShouldTryToDispose = false;
+            typeBinding.TryToDispose = false;
             typeBinding.Inject((o, c) => c.QueueDispose(getDisposeDelegate.Invoke(o, c)));
             return typeBinding;
         }

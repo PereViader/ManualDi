@@ -77,8 +77,8 @@ namespace ManualDi.Main
                 return instance;
             }
 
-            typeBinding.Inject(instance, this);
-            if (typeBinding.ShouldTryToDispose && instance is IDisposable disposable)
+            typeBinding.InjectObject(instance, this);
+            if (typeBinding.TryToDispose && instance is IDisposable disposable)
             {
                 QueueDispose(disposable);
             }

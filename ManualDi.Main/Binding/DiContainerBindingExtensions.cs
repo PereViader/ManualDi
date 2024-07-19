@@ -10,6 +10,7 @@
         }
 
         public static TypeBinding<TInterface, TConcrete> Bind<TInterface, TConcrete>(this DiContainerBindings diContainerBindings)
+            where TConcrete : TInterface
         {
             TypeBinding<TInterface, TConcrete> typeBinding = new();
             diContainerBindings.AddBinding(typeBinding);
@@ -17,6 +18,7 @@
         }
 
         public static TypeBinding<TInterface, TConcrete> Bind<TInterface, TConcrete>(this DiContainerBindings diContainerBindings, TypeBinding<TInterface, TConcrete> typeBinding)
+            where TConcrete : TInterface
         {
             diContainerBindings.AddBinding(typeBinding);
             return typeBinding;

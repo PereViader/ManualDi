@@ -21,8 +21,18 @@ namespace ManualDi.Main.Generators
             if (context.SyntaxReceiver is not SyntaxReceiver receiver)
                 return;
 
-            var methods = new List<string>();
 
+            var stringBuilder = new StringBuilder();
+
+            stringBuilder.Append(@"
+using ManualDi.Main;
+
+namespace ManualDi.Main
+{
+    public static partial class ManualDiGeneratedExtensions
+    {
+");
+            
             foreach (var classDeclaration in receiver.CandidateClasses)
             {
                 var model = context.Compilation.GetSemanticModel(classDeclaration.SyntaxTree);
@@ -40,7 +50,9 @@ namespace ManualDi.Main.Generators
                 var arguments = string.Join(",\n", constructor.Parameters.Select(p => $"c.Resolve<{FullyQualifyType(p.Type)}>()"));
                 var className = FullyQualifyType(classSymbol);
 
-                var methodSource = $@"
+
+
+                stringBuilder.Append($@"
         public static TypeBinding<T, {className}> FromDefault<T>(this TypeBinding<T, {className}> typeBinding)
             where {className} : T
         {{
@@ -48,27 +60,15 @@ namespace ManualDi.Main.Generators
                 {arguments}));
             return typeBinding;
         }}
-";
-
-                methods.Add(methodSource);
+");
             }
-
-            var methodsSource = string.Join("", methods);
             
-            var formattedAssemblyName = Regex.Replace(context.Compilation.AssemblyName ?? string.Empty, "[^A-Za-z0-9_]", "");
-            var source = $@"
-using ManualDi.Main;
-
-namespace ManualDi.Main
-{{
-    public static class ManualDiFromDefaultExtensions_{formattedAssemblyName}
-    {{
-{methodsSource}
-    }}
-}}
-";
-
-            context.AddSource($"ManualDiFromDefaultExtensions.g.cs", SourceText.From(source, Encoding.UTF8));
+            stringBuilder.Append(@"
+    }
+}
+");
+            
+            context.AddSource($"ManualDiGeneratedExtensions.g.cs", SourceText.From(stringBuilder.ToString(), Encoding.UTF8));
         }
 
         private static string FullyQualifyType(ITypeSymbol typeSymbol)

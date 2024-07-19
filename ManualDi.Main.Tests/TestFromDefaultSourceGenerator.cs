@@ -46,7 +46,7 @@ using ManualDi.Main;
 
 namespace ManualDi.Main
 {
-    public static class ManualDiFromDefaultExtensions_TestAssembly34
+    public static partial class ManualDiGeneratedExtensions
     {
 
         public static TypeBinding<T, SomeNamespace.MyClass> FromDefault<T>(this TypeBinding<T, SomeNamespace.MyClass> typeBinding)

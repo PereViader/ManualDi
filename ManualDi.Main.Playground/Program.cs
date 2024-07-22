@@ -4,6 +4,7 @@ Console.WriteLine("ManualDi Playground");
 
 var container = new DiContainerBuilder().Install(b =>
 {
+    
     b.Bind<PublicClass>().Default();
     b.Bind<InternalClass>().Default();
     b.Bind<InternalClass2>().Default();
@@ -16,6 +17,18 @@ public class PublicClass { }
 internal class InternalClass { }
 class InternalClass2 { }
 class GenericClass<T> { }
+
+class ConstructorWithGenericArgument
+{
+    public ConstructorWithGenericArgument(Func<int> func) { }
+}
+
+[Obsolete]
+class ObsoleteClass
+{
+    public void Inject() { }
+    public void Initialize() { }
+}
 
 static class StaticClass 
 {

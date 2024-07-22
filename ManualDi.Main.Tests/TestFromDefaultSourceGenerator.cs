@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using System.Text;
 
-public class SourceGeneratorTests
+public class ManualDiSourceGeneratorTests
 {
     [Test]
     public void TestFromDefaultSourceGenerator()
@@ -160,7 +160,7 @@ namespace ManualDi.Main
             new[] { MetadataReference.CreateFromFile(typeof(object).Assembly.Location) },
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        var generator = new SourceGenerator();
+        var generator = new ManualDiSourceGenerator();
         var driver = CSharpGeneratorDriver.Create(generator);
         driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out _);
         return outputCompilation;

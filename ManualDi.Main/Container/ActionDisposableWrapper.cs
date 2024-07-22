@@ -2,7 +2,7 @@
 
 namespace ManualDi.Main
 {
-    internal class ActionDisposableWrapper : IDisposable
+    internal sealed class ActionDisposableWrapper : IDisposable
     {
         private Action? action;
 

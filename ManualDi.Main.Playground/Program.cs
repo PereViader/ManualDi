@@ -2,6 +2,8 @@
 
 Console.WriteLine("ManualDi Playground");
 
+//Missing feature: a nullable argument should use TryResolve instead of Resolve
+
 var container = new DiContainerBuilder().Install(b =>
 {
     b.Bind<Public>().Default();
@@ -20,14 +22,15 @@ internal class Internal { }
 class Internal2 { }
 class Generic<T> { }
 
-class InternalInitialize
+public class InternalInitialize
 {
     internal void Initialize() { }
 }
 
-class PublicInitialize
+public class PublicInitialize
 {
     public void Initialize() { }
+    internal void Inject() { }
 }
 
 class StaticInitialize
@@ -57,23 +60,23 @@ class ConstructorWithGenericArgument
 
 class InjectPropertyAndMethod
 {
-    [Inject] public object Object { get; set; }
+    [Inject] public object Object { get; set; } = default!;
 
     public void Inject(object obj)
     {
     }
 }
 
-class InjectPropertyClass
+public class InjectPropertyClass
 {
-    [Inject] public object Object1 { get; set; }
-    [Inject] internal object Object2 { get; set; }
-    [Inject] private object Object3 { get; set; }
-    [Inject] protected object Object4 { get; set; }
-    [Inject] public object Object5 { get; internal set; }
-    [Inject] public object Object6 { get; private set; }
-    [Inject] public object Object7 { get; protected set; }
-    [Inject] public static object Object8 { get; set; }
+    [Inject] public object Object1 { get; set; } = default!;
+    [Inject] internal object Object2 { get; set; } = default!;
+    [Inject] private object Object3 { get; set; } = default!;
+    [Inject] protected object Object4 { get; set; } = default!;
+    [Inject] public object Object5 { get; internal set; } = default!;
+    [Inject] public object Object6 { get; private set; } = default!;
+    [Inject] public object Object7 { get; protected set; } = default!;
+    [Inject] public static object Object8 { get; set; } = default!;
 }
 
 [Obsolete]
@@ -100,7 +103,7 @@ namespace UnityEngine
 
     public class MonoBeheviour : Object
     {
-        [Inject] public Object Something { get; set; }
+        [Inject] public Object Something { get; set; } = default!;
         
         public void Initialize() { }
     }

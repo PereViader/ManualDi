@@ -117,15 +117,17 @@ namespace ManualDi.Main
 
                 var accessibilityString = GetAccessibilityString(accessibility);
                 var className = FullyQualifyType(classSymbol);
-                var obsoleteText = IsClassObsolete(classSymbol)
+                var obsoleteText = IsSymbolObsolete(classSymbol)
                     ? "[System.Obsolete]\r\n        " 
                     : "";
                 
                 bool hasConstructor = AddFromConstructor(stringBuilder, className, classSymbol, accessibilityString, obsoleteText);
                 bool hasInitialize = AddInitialize(stringBuilder, className, classSymbol, accessibilityString, obsoleteText);
                 bool hasInject = AddInject(stringBuilder, className, classSymbol, accessibilityString, obsoleteText);
-                AddDefault(stringBuilder, hasConstructor, hasInitialize, hasInject, className, accessibilityString, obsoleteText);
-                
+                AddDefaultConstructor(stringBuilder, hasConstructor, hasInitialize, hasInject, className, accessibilityString, obsoleteText);
+                AddDefaultInstance(stringBuilder, hasConstructor, hasInitialize, hasInject, className, accessibilityString, obsoleteText);
+                AddDefaultMethod(stringBuilder, hasConstructor, hasInitialize, hasInject, className, accessibilityString, obsoleteText);
+
                 stringBuilder.Append(@"
     }
 }
@@ -134,10 +136,33 @@ namespace ManualDi.Main
             }
         }
         
-        private static bool IsClassObsolete(INamedTypeSymbol typeSymbol)
+        private static bool IsSymbolObsolete(ISymbol typeSymbol)
         {
             return typeSymbol.GetAttributes()
                 .Any(x => x.AttributeClass?.ToDisplayString() == typeof(ObsoleteAttribute).FullName);
+        }
+        
+        private static bool IsSymbolInjectValid(IPropertySymbol propertySymbol)
+        {
+            // Check if the property has the Inject attribute
+            bool hasInjectAttribute = propertySymbol.GetAttributes()
+                .Any(x => x.AttributeClass?.ToDisplayString() == "ManualDi.Main.InjectAttribute");
+
+            if (!hasInjectAttribute)
+            {
+                return false;
+            }
+
+            // Check if the property is public or internal
+            bool isPropertyAccessible = propertySymbol.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal;
+
+            if (!isPropertyAccessible)
+            {
+                return false;
+            }
+
+            // Check if the setter is public or internal
+            return propertySymbol.SetMethod?.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal;
         }
 
         private string GetAccessibilityString(Accessibility accessibility)
@@ -211,24 +236,42 @@ namespace ManualDi.Main
                 .OfType<IMethodSymbol>()
                 .SingleOrDefault(m => m is { Name: "Inject", DeclaredAccessibility: Accessibility.Public, IsStatic: false });
 
-            if (injectMethod is null)
+            var injectProperties = classSymbol
+                .GetMembers()
+                .OfType<IPropertySymbol>()
+                .Where(IsSymbolInjectValid)
+                .ToArray();
+
+            if (injectMethod is null && injectProperties.Length == 0)
             {
                 return false;
             }
-
-            var arguments = string.Join(",\r\n                ", injectMethod.Parameters.Select(p => $"c.Resolve<{FullyQualifyType(p.Type)}>()"));
-
-            stringBuilder.Append($@"
+            
+            stringBuilder.AppendLine($@"
         {obsoleteText}{accessibilityString} static TypeBinding<T, {className}> Inject<T>(this TypeBinding<T, {className}> typeBinding)
         {{
-            typeBinding.Inject(static (o, c) => o.Inject({arguments}));
+            typeBinding.Inject(static (o, c) => 
+            {{");
+
+            foreach (var injectProperty in injectProperties)
+            {
+                stringBuilder.AppendLine($"                o.{injectProperty.Name} = c.Resolve<{FullyQualifyType(injectProperty.Type)}>();");
+            }
+            
+            if (injectMethod is not null)
+            {
+                var arguments = string.Join(",\r\n                ", injectMethod.Parameters.Select(p => $"c.Resolve<{FullyQualifyType(p.Type)}>()"));
+                stringBuilder.AppendLine($"                o.Inject({arguments});");
+            }
+            
+            stringBuilder.Append(@"            });
             return typeBinding;
-        }}
+        }
 ");
             return true;
         }
 
-        private static void AddDefault(StringBuilder stringBuilder, bool hasConstructor, bool hasInitialize,
+        private static void AddDefaultConstructor(StringBuilder stringBuilder, bool hasConstructor, bool hasInitialize,
             bool hasInject, string className, string accessibilityString, string obsoleteText)
         {
             stringBuilder.AppendLine($@"
@@ -238,6 +281,56 @@ namespace ManualDi.Main
             if (hasConstructor)
             {
                 stringBuilder.AppendLine("            typeBinding.FromConstructor();");
+            }
+
+            if (hasInitialize)
+            {
+                stringBuilder.AppendLine("            typeBinding.Initialize();");
+            }
+
+            if (hasInject)
+            {
+                stringBuilder.AppendLine("            typeBinding.Inject();");
+            }
+
+            stringBuilder.AppendLine("            return typeBinding;\r\n        }");
+        }
+        
+        private static void AddDefaultInstance(StringBuilder stringBuilder, bool hasConstructor, bool hasInitialize,
+            bool hasInject, string className, string accessibilityString, string obsoleteText)
+        {
+            stringBuilder.AppendLine($@"
+        {obsoleteText}{accessibilityString} static TypeBinding<T, {className}> Default<T>(this TypeBinding<T, {className}> typeBinding, {className} instance)
+        {{");
+
+            if (hasConstructor)
+            {
+                stringBuilder.AppendLine("            typeBinding.FromInstance(instance);");
+            }
+
+            if (hasInitialize)
+            {
+                stringBuilder.AppendLine("            typeBinding.Initialize();");
+            }
+
+            if (hasInject)
+            {
+                stringBuilder.AppendLine("            typeBinding.Inject();");
+            }
+
+            stringBuilder.AppendLine("            return typeBinding;\r\n        }");
+        }
+        
+        private static void AddDefaultMethod(StringBuilder stringBuilder, bool hasConstructor, bool hasInitialize,
+            bool hasInject, string className, string accessibilityString, string obsoleteText)
+        {
+            stringBuilder.AppendLine($@"
+        {obsoleteText}{accessibilityString} static TypeBinding<T, {className}> Default<T>(this TypeBinding<T, {className}> typeBinding, CreateDelegate<{className}> func)
+        {{");
+
+            if (hasConstructor)
+            {
+                stringBuilder.AppendLine("            typeBinding.FromMethod(func);");
             }
 
             if (hasInitialize)

@@ -12,6 +12,38 @@ using System.Text;
 public class ManualDiSourceGeneratorTests
 {
     [Test]
+    public void TestInjectProperty()
+    {
+        var code = @"
+class InjectAttributeClass
+{
+    [Inject] public InjectAttributeClass InjectAttributeClass { get; set; }
+    public void Inject() { }
+}
+";
+
+        var output = Generate(code);
+
+        var generatedTrees = output.SyntaxTrees.ToList();
+        Assert.AreEqual(2, generatedTrees.Count); // Original + generated
+
+        var generatedCode = generatedTrees.ElementAt(1).ToString();
+        var expectedCode = @"
+using ManualDi.Main;
+
+namespace ManualDi.Main
+{
+    public static partial class ManualDiGeneratedExtensions
+    {
+
+    }
+}
+";
+        
+        Assert.AreEqual(expectedCode.Trim(), generatedCode.Trim());
+    }
+    
+    [Test]
     public void TestFromDefaultSourceGenerator()
     {
         var code = @"
@@ -73,6 +105,7 @@ namespace ManualDi.Main
         
         Assert.AreEqual(expectedCode.Trim(), generatedCode.Trim());
     }
+    
     
     [Test]
     public void TestInitializeGenerator()

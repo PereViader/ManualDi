@@ -55,4 +55,64 @@ namespace ManualDi.Main
             return diContainer.TryResolveContainer(type, resolutionConstraints, out resolution);
         }
     }
+    
+    public static class DiContainerResolveNullableExtensions
+    {
+        public static T? ResolveNullable<T>(this IDiContainer diContainer)
+            where T : class
+        {
+            diContainer.TryResolve<T>(out var res);
+            return res;
+        }
+        
+        public static T? ResolveNullableValue<T>(this IDiContainer diContainer)
+            where T : struct
+        {
+            return diContainer.TryResolve<T>(out var res) ? res : null;
+        }
+
+        public static T? ResolveNullable<T>(this IDiContainer diContainer, Action<IResolutionConstraints> configureReslutionConstraints)
+            where T : class
+        {
+            diContainer.TryResolve<T>(configureReslutionConstraints, out var res);
+            return res;
+        }
+        
+        public static T? ResolveNullableValue<T>(this IDiContainer diContainer, Action<IResolutionConstraints> configureReslutionConstraints)
+            where T : struct
+        {
+            return diContainer.TryResolve<T>(configureReslutionConstraints, out var res) ? res : null;
+        }
+
+        public static T? ResolveNullable<T>(this IDiContainer diContainer, IResolutionConstraints resolutionConstraints)
+            where T : class
+        {
+            diContainer.TryResolve<T>(resolutionConstraints, out var res);
+            return res;
+        }
+        
+        public static T? ResolveNullableValue<T>(this IDiContainer diContainer, IResolutionConstraints resolutionConstraints)
+            where T : struct
+        {
+            return diContainer.TryResolve<T>(resolutionConstraints, out var res) ? res : null;
+        }
+        
+        public static object? ResolveNullable(this IDiContainer diContainer, Type type)
+        {
+            diContainer.TryResolve(type, out var res);
+            return res;
+        }
+
+        public static object? ResolveNullable(this IDiContainer diContainer, Type type, Action<IResolutionConstraints> configureResolutionConstraints)
+        {
+            diContainer.TryResolve(type, configureResolutionConstraints, out var res);
+            return res;
+        }
+
+        public static object? ResolveNullable(this IDiContainer diContainer, Type type, IResolutionConstraints resolutionConstraints)
+        {
+            diContainer.TryResolve(type, resolutionConstraints, out var res);
+            return res;
+        }
+    }
 }

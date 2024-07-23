@@ -244,7 +244,7 @@ namespace ManualDi.Main
 
             var accessibility = GetSymbolAccessibility(constructor);
             var accessibilityString = GetAccessibilityString(accessibility);
-            var arguments = string.Join(",\r\n                ", constructor.Parameters.Select(p => $"c.Resolve<{FullyQualifyType(p.Type)}>()"));
+            var arguments = CreateArgumentsResolution(constructor);
 
             context.StringBuilder.Append($@"
         {context.ObsoleteText}{accessibilityString} static TypeBinding<T, {context.ClassName}> FromConstructor<T>(this TypeBinding<T, {context.ClassName}> typeBinding)
@@ -254,6 +254,26 @@ namespace ManualDi.Main
         }}
 ");
             return accessibility;
+        }
+
+        private static string CreateArgumentsResolution(IMethodSymbol constructor)
+        {
+            return string.Join(",\r\n                ", constructor.Parameters.Select(p => $"c.{CreateArgumentResolutionMethod(p.Type)}<{FullyQualifyType(p.Type)}>()"));
+        }
+
+        private static string CreateArgumentResolutionMethod(ITypeSymbol typeSymbol)
+        {
+            if (typeSymbol.NullableAnnotation is not NullableAnnotation.Annotated)
+            {
+                return "Resolve";
+            }
+
+            if (typeSymbol.IsValueType)
+            {
+                return "ResolveNullableValue";
+            }
+
+            return "ResolveNullable";
         }
 
         private static Accessibility? AddInitialize(GenerationClassContext context)
@@ -270,7 +290,7 @@ namespace ManualDi.Main
 
             var accessibility = GetSymbolAccessibility(initializeMethod);
             var accessibilityString = GetAccessibilityString(accessibility);
-            var arguments = string.Join(",\r\n                ", initializeMethod.Parameters.Select(p => $"c.Resolve<{FullyQualifyType(p.Type)}>()"));
+            var arguments = CreateArgumentsResolution(initializeMethod);
 
             context.StringBuilder.Append($@"
         {context.ObsoleteText}{accessibilityString} static TypeBinding<T, {context.ClassName}> Initialize<T>(this TypeBinding<T, {context.ClassName}> typeBinding)
@@ -322,12 +342,12 @@ namespace ManualDi.Main
 
             foreach (var injectProperty in injectProperties)
             {
-                generationClassContext.StringBuilder.AppendLine($"                o.{injectProperty.Name} = c.Resolve<{FullyQualifyType(injectProperty.Type)}>();");
+                generationClassContext.StringBuilder.AppendLine($"                o.{injectProperty.Name} = c.{CreateArgumentResolutionMethod(injectProperty.Type)}<{FullyQualifyType(injectProperty.Type)}>();");
             }
             
             if (injectMethod is not null)
             {
-                var arguments = string.Join(",\r\n                ", injectMethod.Parameters.Select(p => $"c.Resolve<{FullyQualifyType(p.Type)}>()"));
+                var arguments = CreateArgumentsResolution(injectMethod);
                 generationClassContext.StringBuilder.AppendLine($"                o.Inject({arguments});");
             }
             
@@ -475,6 +495,15 @@ namespace ManualDi.Main
         
         private static string FullyQualifyType(ITypeSymbol typeSymbol)
         {
+            //I don't like that we cast this, but I could not find a way to do this without casting
+            if (typeSymbol is INamedTypeSymbol namedTypeSymbol &&
+              namedTypeSymbol.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T)
+            {
+                // Get the underlying non-nullable type (the first type argument of the nullable type)
+                var underlyingType = namedTypeSymbol.TypeArguments[0];
+                return underlyingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            }
+            
             return typeSymbol.ToDisplayString(FullyQualifyTypeSymbolDisplayFormat);
         }
     }

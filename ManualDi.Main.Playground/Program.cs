@@ -2,8 +2,6 @@
 
 Console.WriteLine("ManualDi Playground");
 
-//Missing feature: a nullable argument should use TryResolve instead of Resolve
-
 var container = new DiContainerBuilder().Install(b =>
 {
     b.Bind<Public>().Default();
@@ -84,6 +82,15 @@ class Obsolete
 {
     public void Inject() { }
     public void Initialize() { }
+}
+
+public class NullableDependency
+{
+    [Inject] public object? Object { get; set; }
+    [Inject] public int? Int { get; set; }
+    public NullableDependency(object? obj, Nullable<int> value) { }
+    public void Inject(object? obj, int? value) { }
+    public void Initialize(object? obj, int? value) { }
 }
 
 static class Static 

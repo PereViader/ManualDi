@@ -234,7 +234,7 @@ namespace ManualDi.Main
         {
             var constructor = context.ClassSymbol
                 .Constructors
-                .SingleOrDefault(c => c.DeclaredAccessibility == Accessibility.Public);
+                .SingleOrDefault(c => c.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal);
 
             if (constructor is null)
             {

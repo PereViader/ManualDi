@@ -59,3 +59,18 @@ static class Static
     private class PrivateNested { }
     static class StaticNested { }
 }
+
+
+namespace UnityEngine
+{
+    public class Object
+    {
+    }
+
+    public class MonoBeheviour : Object
+    {
+        [Inject] public Object Something { get; set; }
+        
+        public void Initialize() { }
+    }
+}

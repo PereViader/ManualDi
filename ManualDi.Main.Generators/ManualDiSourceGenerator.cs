@@ -34,6 +34,151 @@ namespace ManualDi.Main.Generators
             context.RegisterSourceOutput(providers, Generate);
         }
 
+        public readonly struct GenerationClassContext
+        {
+            public StringBuilder StringBuilder { get; }
+            public string ClassName { get; }
+            public INamedTypeSymbol ClassSymbol { get; }
+            public string AccessibilityString { get; }
+            public string ObsoleteText { get; }
+
+            public GenerationClassContext(StringBuilder stringBuilder, string className, INamedTypeSymbol classSymbol, string accessibilityString, string obsoleteText)
+            {
+                StringBuilder = stringBuilder;
+                ClassName = className;
+                ClassSymbol = classSymbol;
+                AccessibilityString = accessibilityString;
+                ObsoleteText = obsoleteText;
+            }
+        }
+        
+        private void Generate(SourceProductionContext context, ((Compilation, ImmutableArray<ModuleInfo>), ImmutableArray<ClassDeclarationSyntax>) arg)
+        {
+            var ((compilation, moduleInfos), classDeclarations) = arg;
+
+            //We don't generate if the ManualDi reference is not there
+            if (moduleInfos.Length == 0)
+            {
+                return;
+            }
+            
+            var unityEngineObjectSymbol = compilation.GetTypeByMetadataName("UnityEngine.Object");
+
+            foreach (var classDeclaration in classDeclarations)
+            {
+                var stringBuilder = new StringBuilder();
+
+                stringBuilder.Append(@"
+using ManualDi.Main;
+
+namespace ManualDi.Main
+{
+    public static partial class ManualDiGeneratedExtensions
+    {
+");
+                
+                var model = compilation.GetSemanticModel(classDeclaration.SyntaxTree);
+                var classSymbol = ModelExtensions.GetDeclaredSymbol(model, classDeclaration) as INamedTypeSymbol;
+                
+                if (classSymbol is null)
+                {
+                    continue;
+                }
+                
+                var accessibility = GetTypeVisibility(classSymbol);
+                if (accessibility is not (Accessibility.Public or Accessibility.Internal))
+                {
+                    continue;
+                }
+
+                var accessibilityString = GetAccessibilityString(accessibility);
+                bool inheritsUnityObject = InheritsFromSymbol(classSymbol, unityEngineObjectSymbol);
+                var className = FullyQualifyType(classSymbol);
+                var obsoleteText = IsSymbolObsolete(classSymbol)
+                    ? "[System.Obsolete]\r\n        " 
+                    : "";
+
+                var generationContext = new GenerationClassContext(stringBuilder, className, classSymbol, accessibilityString,
+                    obsoleteText);
+                
+                bool hasConstructor = !inheritsUnityObject && AddFromConstructor(generationContext);
+                bool hasInitialize = AddInitialize(generationContext);
+                bool hasInject = AddInject(generationContext);
+                if (hasConstructor)
+                {
+                    AddDefaultConstructor(generationContext, hasConstructor, hasInitialize, hasInject);
+                }
+                AddDefaultInstance(generationContext, hasConstructor, hasInitialize, hasInject);
+                AddDefaultMethod(generationContext, hasConstructor, hasInitialize, hasInject);
+
+                stringBuilder.Append(@"
+    }
+}
+");
+                context.AddSource($"ManualDiGeneratedExtensions.{className}.cs", SourceText.From(stringBuilder.ToString(), Encoding.UTF8));
+            }
+        }
+        
+        private static bool InheritsFromSymbol(INamedTypeSymbol namedTypeSymbol, INamedTypeSymbol? inheritedNameTypeSymbol)
+        {
+            if (inheritedNameTypeSymbol == null)
+            {
+                return false;
+            }
+
+            var baseType = namedTypeSymbol;
+            while (baseType != null)
+            {
+                if (SymbolEqualityComparer.Default.Equals(baseType, inheritedNameTypeSymbol))
+                {
+                    return true;
+                }
+                baseType = baseType.BaseType;
+            }
+            return false;
+        }
+        
+        private static bool IsSymbolObsolete(ISymbol typeSymbol)
+        {
+            return typeSymbol.GetAttributes()
+                .Any(x => x.AttributeClass?.ToDisplayString() == typeof(ObsoleteAttribute).FullName);
+        }
+        
+        private static bool IsSymbolInjectValid(IPropertySymbol propertySymbol)
+        {
+            // Check if the property has the Inject attribute
+            bool hasInjectAttribute = propertySymbol.GetAttributes()
+                .Any(x => x.AttributeClass?.ToDisplayString() == "ManualDi.Main.InjectAttribute");
+
+            if (!hasInjectAttribute)
+            {
+                return false;
+            }
+
+            // Check if the property is public or internal
+            bool isPropertyAccessible = propertySymbol.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal;
+
+            if (!isPropertyAccessible)
+            {
+                return false;
+            }
+
+            // Check if the setter is public or internal
+            return propertySymbol.SetMethod?.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal;
+        }
+
+        private string GetAccessibilityString(Accessibility accessibility)
+        {
+            return accessibility switch
+            {
+                Accessibility.Internal => "internal",
+                Accessibility.Protected => "protected",
+                Accessibility.Private => "private",
+                Accessibility.Public => "public",
+                _ => throw new ArgumentOutOfRangeException(nameof(accessibility), accessibility, null),
+            };
+        }
+        
         private static bool IsSyntaxNodeValid(SyntaxNode node, CancellationToken ct)
         {
             if (node is not ClassDeclarationSyntax classDeclarationSyntax)
@@ -78,109 +223,9 @@ namespace ManualDi.Main.Generators
             return (ClassDeclarationSyntax)context.Node;
         }
 
-        private void Generate(SourceProductionContext context, ((Compilation, ImmutableArray<ModuleInfo>), ImmutableArray<ClassDeclarationSyntax>) arg)
+        private static bool AddFromConstructor(GenerationClassContext context)
         {
-            var ((compilation, moduleInfos), classDeclarations) = arg;
-
-            //We don't generate if the ManualDi reference is not there
-            if (moduleInfos.Length == 0)
-            {
-                return;
-            }
-
-            foreach (var classDeclaration in classDeclarations)
-            {
-                var stringBuilder = new StringBuilder();
-
-                stringBuilder.Append(@"
-using ManualDi.Main;
-
-namespace ManualDi.Main
-{
-    public static partial class ManualDiGeneratedExtensions
-    {
-");
-                
-                var model = compilation.GetSemanticModel(classDeclaration.SyntaxTree);
-                var classSymbol = ModelExtensions.GetDeclaredSymbol(model, classDeclaration) as INamedTypeSymbol;
-                
-                if (classSymbol is null)
-                {
-                    continue;
-                }
-                
-                var accessibility = GetTypeVisibility(classSymbol);
-                if (accessibility is not (Accessibility.Public or Accessibility.Internal))
-                {
-                    continue;
-                }
-
-                var accessibilityString = GetAccessibilityString(accessibility);
-                var className = FullyQualifyType(classSymbol);
-                var obsoleteText = IsSymbolObsolete(classSymbol)
-                    ? "[System.Obsolete]\r\n        " 
-                    : "";
-                
-                bool hasConstructor = AddFromConstructor(stringBuilder, className, classSymbol, accessibilityString, obsoleteText);
-                bool hasInitialize = AddInitialize(stringBuilder, className, classSymbol, accessibilityString, obsoleteText);
-                bool hasInject = AddInject(stringBuilder, className, classSymbol, accessibilityString, obsoleteText);
-                AddDefaultConstructor(stringBuilder, hasConstructor, hasInitialize, hasInject, className, accessibilityString, obsoleteText);
-                AddDefaultInstance(stringBuilder, hasConstructor, hasInitialize, hasInject, className, accessibilityString, obsoleteText);
-                AddDefaultMethod(stringBuilder, hasConstructor, hasInitialize, hasInject, className, accessibilityString, obsoleteText);
-
-                stringBuilder.Append(@"
-    }
-}
-");
-                context.AddSource($"ManualDiGeneratedExtensions.{className}.cs", SourceText.From(stringBuilder.ToString(), Encoding.UTF8));
-            }
-        }
-        
-        private static bool IsSymbolObsolete(ISymbol typeSymbol)
-        {
-            return typeSymbol.GetAttributes()
-                .Any(x => x.AttributeClass?.ToDisplayString() == typeof(ObsoleteAttribute).FullName);
-        }
-        
-        private static bool IsSymbolInjectValid(IPropertySymbol propertySymbol)
-        {
-            // Check if the property has the Inject attribute
-            bool hasInjectAttribute = propertySymbol.GetAttributes()
-                .Any(x => x.AttributeClass?.ToDisplayString() == "ManualDi.Main.InjectAttribute");
-
-            if (!hasInjectAttribute)
-            {
-                return false;
-            }
-
-            // Check if the property is public or internal
-            bool isPropertyAccessible = propertySymbol.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal;
-
-            if (!isPropertyAccessible)
-            {
-                return false;
-            }
-
-            // Check if the setter is public or internal
-            return propertySymbol.SetMethod?.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal;
-        }
-
-        private string GetAccessibilityString(Accessibility accessibility)
-        {
-            return accessibility switch
-            {
-                Accessibility.Internal => "internal",
-                Accessibility.Protected => "protected",
-                Accessibility.Private => "private",
-                Accessibility.Public => "public",
-                _ => throw new ArgumentOutOfRangeException(nameof(accessibility), accessibility, null),
-            };
-        }
-
-        private static bool AddFromConstructor(StringBuilder stringBuilder, string className,
-            INamedTypeSymbol classSymbol, string accessibilityString, string obsoleteText)
-        {
-            var constructor = classSymbol
+            var constructor = context.ClassSymbol
                 .Constructors
                 .SingleOrDefault(c => c.DeclaredAccessibility == Accessibility.Public);
 
@@ -191,21 +236,19 @@ namespace ManualDi.Main
 
             var arguments = string.Join(",\r\n                ", constructor.Parameters.Select(p => $"c.Resolve<{FullyQualifyType(p.Type)}>()"));
 
-            stringBuilder.Append($@"
-        {obsoleteText}{accessibilityString} static TypeBinding<T, {className}> FromConstructor<T>(this TypeBinding<T, {className}> typeBinding)
+            context.StringBuilder.Append($@"
+        {context.ObsoleteText}{context.AccessibilityString} static TypeBinding<T, {context.ClassName}> FromConstructor<T>(this TypeBinding<T, {context.ClassName}> typeBinding)
         {{
-            typeBinding.FromMethod(static c => new {className}({arguments}));
+            typeBinding.FromMethod(static c => new {context.ClassName}({arguments}));
             return typeBinding;
         }}
 ");
             return true;
         }
 
-        private static bool AddInitialize(StringBuilder stringBuilder, string className, INamedTypeSymbol classSymbol,
-            string accessibilityString,
-            string obsoleteText)
+        private static bool AddInitialize(GenerationClassContext context)
         {
-            var initializeMethod = classSymbol
+            var initializeMethod = context.ClassSymbol
                 .GetMembers()
                 .OfType<IMethodSymbol>()
                 .SingleOrDefault(m => m is { Name: "Initialize", DeclaredAccessibility: Accessibility.Public, IsStatic: false });
@@ -217,8 +260,8 @@ namespace ManualDi.Main
 
             var arguments = string.Join(",\r\n                ", initializeMethod.Parameters.Select(p => $"c.Resolve<{FullyQualifyType(p.Type)}>()"));
 
-            stringBuilder.Append($@"
-        {obsoleteText}{accessibilityString} static TypeBinding<T, {className}> Initialize<T>(this TypeBinding<T, {className}> typeBinding)
+            context.StringBuilder.Append($@"
+        {context.ObsoleteText}{context.AccessibilityString} static TypeBinding<T, {context.ClassName}> Initialize<T>(this TypeBinding<T, {context.ClassName}> typeBinding)
         {{
             typeBinding.Initialize(static (o, c) => o.Initialize({arguments}));
             return typeBinding;
@@ -227,16 +270,14 @@ namespace ManualDi.Main
             return true;
         }
 
-        private static bool AddInject(StringBuilder stringBuilder, string className, INamedTypeSymbol classSymbol,
-            string accessibilityString,
-            string obsoleteText)
+        private static bool AddInject(GenerationClassContext generationClassContext)
         {
-            var injectMethod = classSymbol
+            var injectMethod = generationClassContext.ClassSymbol
                 .GetMembers()
                 .OfType<IMethodSymbol>()
                 .SingleOrDefault(m => m is { Name: "Inject", DeclaredAccessibility: Accessibility.Public, IsStatic: false });
 
-            var injectProperties = classSymbol
+            var injectProperties = generationClassContext.ClassSymbol
                 .GetMembers()
                 .OfType<IPropertySymbol>()
                 .Where(IsSymbolInjectValid)
@@ -247,103 +288,103 @@ namespace ManualDi.Main
                 return false;
             }
             
-            stringBuilder.AppendLine($@"
-        {obsoleteText}{accessibilityString} static TypeBinding<T, {className}> Inject<T>(this TypeBinding<T, {className}> typeBinding)
+            generationClassContext.StringBuilder.AppendLine($@"
+        {generationClassContext.ObsoleteText}{generationClassContext.AccessibilityString} static TypeBinding<T, {generationClassContext.ClassName}> Inject<T>(this TypeBinding<T, {generationClassContext.ClassName}> typeBinding)
         {{
             typeBinding.Inject(static (o, c) => 
             {{");
 
             foreach (var injectProperty in injectProperties)
             {
-                stringBuilder.AppendLine($"                o.{injectProperty.Name} = c.Resolve<{FullyQualifyType(injectProperty.Type)}>();");
+                generationClassContext.StringBuilder.AppendLine($"                o.{injectProperty.Name} = c.Resolve<{FullyQualifyType(injectProperty.Type)}>();");
             }
             
             if (injectMethod is not null)
             {
                 var arguments = string.Join(",\r\n                ", injectMethod.Parameters.Select(p => $"c.Resolve<{FullyQualifyType(p.Type)}>()"));
-                stringBuilder.AppendLine($"                o.Inject({arguments});");
+                generationClassContext.StringBuilder.AppendLine($"                o.Inject({arguments});");
             }
             
-            stringBuilder.Append(@"            });
+            generationClassContext.StringBuilder.Append(@"            });
             return typeBinding;
         }
 ");
             return true;
         }
 
-        private static void AddDefaultConstructor(StringBuilder stringBuilder, bool hasConstructor, bool hasInitialize,
-            bool hasInject, string className, string accessibilityString, string obsoleteText)
+        private static void AddDefaultConstructor(GenerationClassContext generationClassContext, bool hasConstructor, bool hasInitialize,
+            bool hasInject)
         {
-            stringBuilder.AppendLine($@"
-        {obsoleteText}{accessibilityString} static TypeBinding<T, {className}> Default<T>(this TypeBinding<T, {className}> typeBinding)
+            generationClassContext.StringBuilder.AppendLine($@"
+        {generationClassContext.ObsoleteText}{generationClassContext.AccessibilityString} static TypeBinding<T, {generationClassContext.ClassName}> Default<T>(this TypeBinding<T, {generationClassContext.ClassName}> typeBinding)
         {{");
 
             if (hasConstructor)
             {
-                stringBuilder.AppendLine("            typeBinding.FromConstructor();");
+                generationClassContext.StringBuilder.AppendLine("            typeBinding.FromConstructor();");
             }
 
             if (hasInitialize)
             {
-                stringBuilder.AppendLine("            typeBinding.Initialize();");
+                generationClassContext.StringBuilder.AppendLine("            typeBinding.Initialize();");
             }
 
             if (hasInject)
             {
-                stringBuilder.AppendLine("            typeBinding.Inject();");
+                generationClassContext.StringBuilder.AppendLine("            typeBinding.Inject();");
             }
 
-            stringBuilder.AppendLine("            return typeBinding;\r\n        }");
+            generationClassContext.StringBuilder.AppendLine("            return typeBinding;\r\n        }");
         }
         
-        private static void AddDefaultInstance(StringBuilder stringBuilder, bool hasConstructor, bool hasInitialize,
-            bool hasInject, string className, string accessibilityString, string obsoleteText)
+        private static void AddDefaultInstance(GenerationClassContext generationClassContext, bool hasConstructor, bool hasInitialize,
+            bool hasInject)
         {
-            stringBuilder.AppendLine($@"
-        {obsoleteText}{accessibilityString} static TypeBinding<T, {className}> Default<T>(this TypeBinding<T, {className}> typeBinding, {className} instance)
+            generationClassContext.StringBuilder.AppendLine($@"
+        {generationClassContext.ObsoleteText}{generationClassContext.AccessibilityString} static TypeBinding<T, {generationClassContext.ClassName}> Default<T>(this TypeBinding<T, {generationClassContext.ClassName}> typeBinding, {generationClassContext.ClassName} instance)
         {{");
 
             if (hasConstructor)
             {
-                stringBuilder.AppendLine("            typeBinding.FromInstance(instance);");
+                generationClassContext.StringBuilder.AppendLine("            typeBinding.FromInstance(instance);");
             }
 
             if (hasInitialize)
             {
-                stringBuilder.AppendLine("            typeBinding.Initialize();");
+                generationClassContext.StringBuilder.AppendLine("            typeBinding.Initialize();");
             }
 
             if (hasInject)
             {
-                stringBuilder.AppendLine("            typeBinding.Inject();");
+                generationClassContext.StringBuilder.AppendLine("            typeBinding.Inject();");
             }
 
-            stringBuilder.AppendLine("            return typeBinding;\r\n        }");
+            generationClassContext.StringBuilder.AppendLine("            return typeBinding;\r\n        }");
         }
         
-        private static void AddDefaultMethod(StringBuilder stringBuilder, bool hasConstructor, bool hasInitialize,
-            bool hasInject, string className, string accessibilityString, string obsoleteText)
+        private static void AddDefaultMethod(GenerationClassContext generationClassContext, bool hasConstructor, bool hasInitialize,
+            bool hasInject)
         {
-            stringBuilder.AppendLine($@"
-        {obsoleteText}{accessibilityString} static TypeBinding<T, {className}> Default<T>(this TypeBinding<T, {className}> typeBinding, CreateDelegate<{className}> func)
+            generationClassContext.StringBuilder.AppendLine($@"
+        {generationClassContext.ObsoleteText}{generationClassContext.AccessibilityString} static TypeBinding<T, {generationClassContext.ClassName}> Default<T>(this TypeBinding<T, {generationClassContext.ClassName}> typeBinding, CreateDelegate<{generationClassContext.ClassName}> func)
         {{");
 
             if (hasConstructor)
             {
-                stringBuilder.AppendLine("            typeBinding.FromMethod(func);");
+                generationClassContext.StringBuilder.AppendLine("            typeBinding.FromMethod(func);");
             }
 
             if (hasInitialize)
             {
-                stringBuilder.AppendLine("            typeBinding.Initialize();");
+                generationClassContext.StringBuilder.AppendLine("            typeBinding.Initialize();");
             }
 
             if (hasInject)
             {
-                stringBuilder.AppendLine("            typeBinding.Inject();");
+                generationClassContext.StringBuilder.AppendLine("            typeBinding.Inject();");
             }
 
-            stringBuilder.AppendLine("            return typeBinding;\r\n        }");
+            generationClassContext.StringBuilder.AppendLine("            return typeBinding;\r\n        }");
         }
 
         private static readonly SymbolDisplayFormat FullyQualifyTypeSymbolDisplayFormat = new(

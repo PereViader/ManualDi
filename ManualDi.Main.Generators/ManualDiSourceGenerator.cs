@@ -146,25 +146,32 @@ namespace ManualDi.Main
         
         private static bool IsSymbolInjectValid(IPropertySymbol propertySymbol)
         {
-            // Check if the property has the Inject attribute
-            bool hasInjectAttribute = propertySymbol.GetAttributes()
-                .Any(x => x.AttributeClass?.ToDisplayString() == "ManualDi.Main.InjectAttribute");
-
-            if (!hasInjectAttribute)
+            if (propertySymbol.IsStatic)
             {
                 return false;
             }
-
-            // Check if the property is public or internal
+            
             bool isPropertyAccessible = propertySymbol.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal;
-
             if (!isPropertyAccessible)
             {
                 return false;
             }
 
-            // Check if the setter is public or internal
-            return propertySymbol.SetMethod?.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal;
+            bool isSetterAccessible = propertySymbol.SetMethod?.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal;
+            if (!isSetterAccessible)
+            {
+                return false;
+            }
+            
+            bool hasInjectAttribute = propertySymbol
+                .GetAttributes()
+                .Any(x => x.AttributeClass?.ToDisplayString() == "ManualDi.Main.InjectAttribute");
+            if (!hasInjectAttribute)
+            {
+                return false;
+            }
+            
+            return true;
         }
 
         private string GetAccessibilityString(Accessibility accessibility)

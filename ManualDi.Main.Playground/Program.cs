@@ -43,6 +43,7 @@ class InjectPropertyClass
     [Inject] public object Object5 { get; internal set; }
     [Inject] public object Object6 { get; private set; }
     [Inject] public object Object7 { get; protected set; }
+    [Inject] public static object Object8 { get; set; }
 }
 
 [Obsolete]

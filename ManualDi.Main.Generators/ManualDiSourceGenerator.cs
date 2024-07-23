@@ -11,6 +11,24 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace ManualDi.Main.Generators
 {
+    public readonly struct GenerationClassContext
+    {
+        public StringBuilder StringBuilder { get; }
+        public string ClassName { get; }
+        public INamedTypeSymbol ClassSymbol { get; }
+        public string AccessibilityString { get; }
+        public string ObsoleteText { get; }
+
+        public GenerationClassContext(StringBuilder stringBuilder, string className, INamedTypeSymbol classSymbol, string accessibilityString, string obsoleteText)
+        {
+            StringBuilder = stringBuilder;
+            ClassName = className;
+            ClassSymbol = classSymbol;
+            AccessibilityString = accessibilityString;
+            ObsoleteText = obsoleteText;
+        }
+    }
+    
     [Generator]
     public class ManualDiSourceGenerator : IIncrementalGenerator
     {
@@ -32,24 +50,6 @@ namespace ManualDi.Main.Generators
                 .Combine(classDeclarations);
 
             context.RegisterSourceOutput(providers, Generate);
-        }
-
-        public readonly struct GenerationClassContext
-        {
-            public StringBuilder StringBuilder { get; }
-            public string ClassName { get; }
-            public INamedTypeSymbol ClassSymbol { get; }
-            public string AccessibilityString { get; }
-            public string ObsoleteText { get; }
-
-            public GenerationClassContext(StringBuilder stringBuilder, string className, INamedTypeSymbol classSymbol, string accessibilityString, string obsoleteText)
-            {
-                StringBuilder = stringBuilder;
-                ClassName = className;
-                ClassSymbol = classSymbol;
-                AccessibilityString = accessibilityString;
-                ObsoleteText = obsoleteText;
-            }
         }
         
         private void Generate(SourceProductionContext context, ((Compilation, ImmutableArray<ModuleInfo>), ImmutableArray<ClassDeclarationSyntax>) arg)
@@ -258,7 +258,7 @@ namespace ManualDi.Main
             var initializeMethod = context.ClassSymbol
                 .GetMembers()
                 .OfType<IMethodSymbol>()
-                .SingleOrDefault(m => m is { Name: "Initialize", DeclaredAccessibility: Accessibility.Public, IsStatic: false });
+                .SingleOrDefault(m => m is { Name: "Initialize", DeclaredAccessibility: Accessibility.Public or Accessibility.Internal, IsStatic: false });
 
             if (initializeMethod is null)
             {
@@ -282,7 +282,7 @@ namespace ManualDi.Main
             var injectMethod = generationClassContext.ClassSymbol
                 .GetMembers()
                 .OfType<IMethodSymbol>()
-                .SingleOrDefault(m => m is { Name: "Inject", DeclaredAccessibility: Accessibility.Public, IsStatic: false });
+                .SingleOrDefault(m => m is { Name: "Inject", DeclaredAccessibility: Accessibility.Public or Accessibility.Internal, IsStatic: false });
 
             var injectProperties = generationClassContext.ClassSymbol
                 .GetMembers()

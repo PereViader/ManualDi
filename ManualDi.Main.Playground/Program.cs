@@ -20,6 +20,36 @@ internal class Internal { }
 class Internal2 { }
 class Generic<T> { }
 
+class InternalInitialize
+{
+    internal void Initialize() { }
+}
+
+class PublicInitialize
+{
+    public void Initialize() { }
+}
+
+class StaticInitialize
+{
+    public static void Initialize() { }
+}
+
+class InternalInject
+{
+    internal void Inject() { }
+}
+
+class PublicInject
+{
+    public void Inject() { }
+}
+
+class StaticInject
+{
+    public static void Inject() { }
+}
+
 class ConstructorWithGenericArgument
 {
     public ConstructorWithGenericArgument(Func<int> func) { }

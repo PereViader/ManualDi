@@ -36,7 +36,7 @@ class InjectPropertyAndMethod
 
 class InjectPropertyClass
 {
-    [Inject] public object Object { get; set; }
+    [Inject] public object Object1 { get; set; }
     [Inject] internal object Object2 { get; set; }
     [Inject] private object Object3 { get; set; }
     [Inject] protected object Object4 { get; set; }

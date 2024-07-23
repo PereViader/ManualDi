@@ -141,7 +141,7 @@ namespace ManualDi.Main
         private static bool IsSymbolObsolete(ISymbol typeSymbol)
         {
             return typeSymbol.GetAttributes()
-                .Any(x => x.AttributeClass?.ToDisplayString() == typeof(ObsoleteAttribute).FullName);
+                .Any(x => x.AttributeClass?.ToDisplayString() == "System.ObsoleteAttribute");
         }
         
         private static bool IsSymbolInjectValid(IPropertySymbol propertySymbol)

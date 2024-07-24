@@ -30,7 +30,7 @@ namespace ManualDi.Main
             }
 
             throw new InvalidOperationException(
-                $"Could not create object for type binding {nameof(TypeBinding<TInterface, TConcrete>)}");
+                $"Could not create object for TypeBinding with apparent type {typeof(TInterface).FullName} and concrete type {typeof(TConcrete).FullName}");
         }
         
         public void InjectObject(object instance, IDiContainer container)

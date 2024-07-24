@@ -17,6 +17,18 @@ var container = new DiContainerBuilder().Install(b =>
 
 public class Public { }
 internal class Internal { }
+
+internal class InternalPrivateConstructor
+{
+    private InternalPrivateConstructor() { }
+}
+
+public class PublicAndPrivateConstructor
+{
+    public PublicAndPrivateConstructor(int x) : this() { }
+    private PublicAndPrivateConstructor() { }
+}
+
 class Internal2 { }
 class Generic<T> { }
 

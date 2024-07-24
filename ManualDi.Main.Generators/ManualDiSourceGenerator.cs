@@ -64,6 +64,11 @@ namespace ManualDi.Main.Generators
 
             foreach (var classDeclaration in classDeclarations)
             {
+                if (context.CancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+                
                 var stringBuilder = new StringBuilder();
 
                 stringBuilder.Append(@"

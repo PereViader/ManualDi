@@ -102,20 +102,14 @@ namespace ManualDi.Main
 
                 var generationContext = new GenerationClassContext(stringBuilder, className, classSymbol, obsoleteText);
 
-                Accessibility? constructor = null;
                 if (!inheritsUnityObject)
                 {
-                    constructor = AddFromConstructor(generationContext);
+                    AddFromConstructor(generationContext);
                 }
                 var initialize = AddInitialize(generationContext);
                 var inject = AddInject(generationContext);
                 
-                if (constructor.HasValue)
-                {
-                    AddDefaultConstructor(generationContext, constructor, initialize, inject, accessibility);
-                }
-                AddDefaultInstance(generationContext, initialize, inject, accessibility);
-                AddDefaultMethod(generationContext, initialize, inject, accessibility);
+                AddDefault(generationContext, initialize, inject, accessibility);
 
                 stringBuilder.Append(@"
     }
@@ -363,15 +357,10 @@ namespace ManualDi.Main
             return accessibility;
         }
 
-        private static void AddDefaultConstructor(GenerationClassContext generationClassContext, Accessibility? constructor, Accessibility? initialize,
+        private static void AddDefault(GenerationClassContext generationClassContext, Accessibility? initialize,
             Accessibility? inject, Accessibility typeAccessibility)
         {
             var accessibility = typeAccessibility;
-            if (constructor.HasValue && constructor.Value < accessibility)
-            {
-                accessibility = constructor.Value;
-            }
-            
             if (initialize.HasValue && initialize.Value < accessibility)
             {
                 accessibility = initialize.Value;
@@ -388,11 +377,6 @@ namespace ManualDi.Main
         {generationClassContext.ObsoleteText}{accessibiliyString} static TypeBinding<T, {generationClassContext.ClassName}> Default<T>(this TypeBinding<T, {generationClassContext.ClassName}> typeBinding)
         {{");
 
-            if (constructor.HasValue)
-            {
-                generationClassContext.StringBuilder.AppendLine("            typeBinding.FromConstructor();");
-            }
-
             if (initialize.HasValue)
             {
                 generationClassContext.StringBuilder.AppendLine("            typeBinding.Initialize();");
@@ -401,76 +385,6 @@ namespace ManualDi.Main
             if (inject.HasValue)
             {
                 generationClassContext.StringBuilder.AppendLine("            typeBinding.Inject();");
-            }
-
-            generationClassContext.StringBuilder.AppendLine("            return typeBinding;\r\n        }");
-        }
-        
-        private static void AddDefaultInstance(GenerationClassContext generationClassContext, Accessibility? initialize,
-            Accessibility? inject, Accessibility typeAccessibility)
-        {
-            var accessibility = typeAccessibility;
-            if (initialize.HasValue && initialize.Value < accessibility)
-            {
-                accessibility = initialize.Value;
-            }
-            
-            if (inject.HasValue && inject.Value < accessibility)
-            {
-                accessibility = inject.Value;
-            }
-
-            var accessibiliyString = GetAccessibilityString(accessibility);
-            
-            generationClassContext.StringBuilder.AppendLine($@"
-        {generationClassContext.ObsoleteText}{accessibiliyString} static TypeBinding<T, {generationClassContext.ClassName}> Default<T>(this TypeBinding<T, {generationClassContext.ClassName}> typeBinding, {generationClassContext.ClassName} instance)
-        {{");
-            
-            generationClassContext.StringBuilder.AppendLine("            typeBinding.FromInstance(instance);");
-
-            if (initialize.HasValue)
-            {
-                generationClassContext.StringBuilder.AppendLine("            typeBinding.Initialize();");
-            }
-
-            if (inject.HasValue)
-            {
-                generationClassContext.StringBuilder.AppendLine("            typeBinding.Inject();");
-            }
-
-            generationClassContext.StringBuilder.AppendLine("            return typeBinding;\r\n        }");
-        }
-        
-        private static void AddDefaultMethod(GenerationClassContext generationClassContext, Accessibility? initialize,
-            Accessibility? inject, Accessibility typeAccessibility)
-        {
-            var accessibility = typeAccessibility;
-            if (initialize.HasValue && initialize.Value < accessibility)
-            {
-                accessibility = initialize.Value;
-            }
-            
-            if (inject.HasValue && inject.Value < accessibility)
-            {
-                accessibility = inject.Value;
-            }
-
-            var accessibiliyString = GetAccessibilityString(accessibility);
-
-            generationClassContext.StringBuilder.AppendLine($@"
-        {generationClassContext.ObsoleteText}{accessibiliyString} static TypeBinding<T, {generationClassContext.ClassName}> Default<T>(this TypeBinding<T, {generationClassContext.ClassName}> typeBinding, CreateDelegate<{generationClassContext.ClassName}> func)
-        {{");
-            
-            generationClassContext.StringBuilder.AppendLine("            typeBinding.FromMethod(func);");
-
-            if (inject.HasValue)
-            {
-                generationClassContext.StringBuilder.AppendLine("            typeBinding.Inject();");
-            }
-
-            if (initialize.HasValue)
-            {
-                generationClassContext.StringBuilder.AppendLine("            typeBinding.Initialize();");
             }
 
             generationClassContext.StringBuilder.AppendLine("            return typeBinding;\r\n        }");

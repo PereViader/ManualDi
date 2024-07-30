@@ -1,15 +1,17 @@
 ﻿using ManualDi.Main;
+using UnityEngine;
 
 Console.WriteLine("ManualDi Playground");
 
 var container = new DiContainerBuilder().Install(b =>
 {
-    b.Bind<Public>().Default();
-    b.Bind<Internal>().Default();
-    b.Bind<Internal2>().Default();
-    b.Bind<Static.PublicNested>().Default();
-    b.Bind<Static.InternalNested>().Default();
-    b.Bind<Public>().Default(new Public());
+    b.Bind<UnityEngine.Object, MonoBeheviour>().Default().FromInstance(new MonoBeheviour());
+    b.Bind<Public>().Default().FromConstructor();
+    b.Bind<Internal>().Default().FromConstructor();
+    b.Bind<Internal2>().Default().FromConstructor();
+    b.Bind<Static.PublicNested>().Default().FromConstructor();
+    b.Bind<Static.InternalNested>().Default().FromConstructor();
+    b.Bind<Public>().Default().FromInstance(new Public());
 #pragma warning disable CS0612 // Type or member is obsolete
     b.Bind<Obsolete>().Default();
 #pragma warning restore CS0612 // Type or member is obsolete

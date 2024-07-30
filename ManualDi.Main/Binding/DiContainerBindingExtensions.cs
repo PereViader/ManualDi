@@ -2,9 +2,9 @@
 {
     public static class DiContainerBindingExtensions
     {
-        public static TypeBinding<TInterface, TInterface> Bind<TInterface>(this DiContainerBindings diContainerBindings)
+        public static TypeBinding<TConcrete, TConcrete> Bind<TConcrete>(this DiContainerBindings diContainerBindings)
         {
-            TypeBinding<TInterface, TInterface> typeBinding = new();
+            TypeBinding<TConcrete, TConcrete> typeBinding = new();
             diContainerBindings.AddBinding(typeBinding);
             return typeBinding;
         }

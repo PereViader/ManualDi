@@ -23,6 +23,17 @@ Install the package from [nuget](https://www.nuget.org/packages/ManualDi.Main/)
 ## Unity3d
 See instructions on https://github.com/PereViader/ManualDi.Unity3d
 
+# Source Generator
+
+The project aims to provide a great user experience by encapsulating common tasks in a source generator.
+The source generator helps by generating methods that require a lot of boilerplate that always looks the same.
+The source generator is the way we can have a nice API while at the same time not using reflexion.
+Methods that are source generated are:
+- FromConstructor
+- Initialize
+- Inject 
+- Default
+
 # API
 
 ## Examples
@@ -123,10 +134,11 @@ Although there is nothing preventing you from calling these methods in another o
 
 ```csharp
 Bind<T>()
+    .Default   // Source generated
     .[Single|Transient]
-    .From[Instance|Method|Container|ContainerAll]
-    .Inject
-    .Initialize
+    .From[Constructor|Instance|Method|Container|ContainerAll]  //Constructor is source generated
+    .Inject   //Empty overload is source generated
+    .Initialize  //Empty overload is source generated
     .Dispose
     .WithMetadata
     .[Lazy|NonLazy]
@@ -150,6 +162,15 @@ The container will generate a new instance of the type when requested to resolve
 ### From
 
 The creation strategy for the binding
+
+#### Constructor
+
+Will be source generated ONLY if there is a single public/internal accessible constructor.
+It will call that constructor of the type and resolve all the dependencies it requires from the container.
+
+```csharp
+b.Bind<T>().FromConstructor()
+```
 
 #### Instance
 
@@ -219,6 +240,8 @@ b.Bind<List<object>, List<int>>().FromMethod(c => c.ResolveAll<int>().Cast<objec
 
 ### Inject
 
+#### Theory
+
 In some situations, it might not be possible to inject all dependencies for a type at the time of its creation due to various reasons. When this occurs, the Inject method allows for post-construction injection.
 
 Instead of injecting the object immediately after construction, it is added to a queue to be injected later. This ensures that all dependent services are created and injected in the correct order.
@@ -254,7 +277,6 @@ c.Resolve<A>();
 - The from method of B defines we call the constructor, but first we have to get an instance of A
 ... this never ends and will fail when the stack is full
 
-
 Actual solution that works
 
 ```csharp
@@ -275,8 +297,23 @@ c.Resolve<A>();
 - A's inject method finishes
 - A finishes being resolved
 
+#### Source Generator
 
-#### Initialize
+An empty overload of the Inject method will be generated if the type has a public/internal accessible Inject method. The generated method will call the inject method with all the dependencies that are requested as parameters (it may have no parameters).
+
+```csharp
+public class A
+{
+    public void Inject(B b, C c) { }
+}
+
+b.Bind<A>().Inject();
+```
+
+
+### Initialize
+
+#### Theory
 
 Similar to the Inject method, the Initialize method defines a delegate to be called for newly constructed instances before they are resolved.
 
@@ -294,23 +331,37 @@ c.Resolve<A>()
 - The from method of A defines we return the instance provided
 - The initialize method calls the Init method on A
 
+#### Source Generation
 
-#### Dispose
-
-Objects may implement the IDisposable interface or require custom teardown logic. The RegisterDispose extension method allows defining behavior that will run when the object is disposed of by the container. The container will handle disposal when it itself is disposed.
+An empty overload of the Initialize method will be generated if the type has a public/internal accessible Initialize method. The generated method will call the Initialize method with all the dependencies that are requested as parameters (it may have no parameters). 
 
 ```csharp
-Given A does not implement IDisposable
-and B implements IDisposable
+public class A
+{
+    public void Initialize() { }
+}
 
-b.Bind<A>().FromInstance(new A()).Dispose((o,c) => o.DoCleanup);
-b.Bind<B>().FromInstance(new B()).Dispose();
+b.Bind<A>().Initialize();
+```
 
-c.Dispose(); // A and B disposed if they were created
+### Dispose
+
+Objects may implement the IDisposable interface or require custom teardown logic. The Dispose extension method allows defining behavior that will run when the object is disposed. The container will handle disposal when itself is disposed.
+
+If an object implements the IDisposable interface, it doesn't need to call Dispose, it will be Disposed automatically.
+
+```csharp
+// Given A implements IDisposable
+// Given B does not implement IDisposable
+
+b.Bind<A>().FromInstance(new A());
+b.Bind<B>().FromInstance(new B()).Dispose((o,c) => o.DoCleanup);
+
+container.Dispose(); // A and B disposed if they were created
 ```
 
 
-#### With Metadata
+### With Metadata
 
 These extension methods allow registering keys or key/value pairs, enabling the filtering of elements during resolution.
 
@@ -328,12 +379,40 @@ c.Resolve<int>(b => b.WhereMetadata("Banana")); // returns 5
 ```
 
 
-#### Laziness
+### Laziness
 
-##### Lazy
+#### Lazy
 
 The FromMethod delegate will not be called until the object is actually resolved.
 
-##### NonLazy
+#### NonLazy
 
 The object will be built simultaneously with the container.
+
+### Default
+
+This source generated method is a shorthand for calling Inject and Initialize when they are available without needing to manually update the container bindings.
+
+This means that
+
+```csharp
+public class A { }
+public class B { 
+    void Inject(A a) { }
+}
+public class C { 
+    void Initialize(A a) { }
+}
+public class D {
+    void Inject(A a) { }
+    void Initialize(A a) { }
+}
+
+
+b.Bind<A>().Default().FromConstructor(); // Default does not call anything
+b.Bind<B>().Default().FromConstructor(); // Default calls Inject
+b.Bind<C>().Default().FromConstructor(); // Default calls Initialize
+b.Bind<D>().Default().FromConstructor(); // Default calls Inject and Initialize
+```
+
+Using default is not mandatory in any way, but it is a way to speed up development because the source generator will update bindings as the type is changed.

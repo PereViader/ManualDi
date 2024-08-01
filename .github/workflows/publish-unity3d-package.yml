@@ -3,51 +3,44 @@ on:
   push:
     branches:
       - main
+
+env:
+  version_file: ManualDi.Main/ManualDi.Main.csproj
+
 jobs:
-  publish:
-    name: build, pack & publish
+  PublishUnity3dPackage:
+    permissions:
+      contents: write
+
     runs-on: ubuntu-latest
-    env:
-      REPO_ROOT: 'repo/'
-      REPO_UPM: 'repoUpm/'
-      PKG_ROOT: 'upmOutput/'
-      PUBLISH_BRANCH: 'upm'
-      COMMIT_MESSAGE: Update UPM branch
-
+    
     steps:
-      - uses: actions/checkout@v2
-        with:
-          path: ${{ env.REPO_ROOT }}
+      - uses: actions/checkout@v4.1.4
 
-      - name: Setup .NET Core
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '3.1.x'
-
-      - name: CSharp Project To Unity3d Package
-        uses: PereViader/CSharpProjectToUnity3dPackage@v1.0.1
-        with:
-          inputPath: ${{ env.REPO_ROOT }}
-          outputPath: ${{ env.PKG_ROOT }}
-
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ env.PUBLISH_BRANCH }}
-          path: ${{ env.REPO_UPM }}
-
-      - name: Publish to repo branch
+      - id: get-version
         run: |
-          cd $REPO_UPM
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          sudo mv .git ../$PKG_ROOT.git
-          echo Move git folder to the new built folder
-          cd ../$PKG_ROOT
-          git add -Af  # add untracked files to the index
-          git commit -v -m "$COMMIT_MESSAGE"
-          echo Commit changed files
-          git status
-          echo Status
-          git log
-          echo Reflog
-          git push -u origin $PUBLISH_BRANCH
+          version=$(grep -oP '(?<=<Version>)[^<]+' "${{ env.version_file }}")
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Check if release exists
+        id: release-exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          release_exists=$(gh release view "Unity3d/${{ steps.get-version.outputs.version }}" &> /dev/null && echo "true" || echo "false")
+          echo "Release exists $release_exists"
+          echo "exists=$release_exists" >> $GITHUB_OUTPUT
+
+      - name: Create Package
+        if: ${{ steps.release-exists.outputs.exists == 'false' }}
+        run: |
+          sh ./GenerateUnityPackage/GeneratePackage.sh
+
+      - name: Create github release
+        if: ${{ steps.release-exists.outputs.exists == 'false' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: Unity3d/${{ steps.get-version.outputs.version }}
+          name: Unity3d ManualDi.Main ${{ steps.get-version.outputs.version }}
+          files: |
+            UnityPackageRelease/me.pereviader.manualdi.main-${{ steps.get-version.outputs.version }}.tgz

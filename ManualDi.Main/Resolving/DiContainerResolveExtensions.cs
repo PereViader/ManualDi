@@ -9,7 +9,7 @@ namespace ManualDi.Main
             return (T)diContainer.Resolve(typeof(T), resolutionConstraints: null);
         }
 
-        public static T Resolve<T>(this IDiContainer diContainer, Action<IResolutionConstraints> resolution)
+        public static T Resolve<T>(this IDiContainer diContainer, Action<ResolutionConstraints> resolution)
         {
             var resolutionConstraints = new ResolutionConstraints();
             resolution.Invoke(resolutionConstraints);
@@ -17,7 +17,7 @@ namespace ManualDi.Main
             return diContainer.Resolve<T>(resolutionConstraints);
         }
 
-        public static T Resolve<T>(this IDiContainer diContainer, IResolutionConstraints resolutionConstraints)
+        public static T Resolve<T>(this IDiContainer diContainer, ResolutionConstraints resolutionConstraints)
         {
             return (T)diContainer.Resolve(typeof(T), resolutionConstraints);
         }
@@ -27,7 +27,7 @@ namespace ManualDi.Main
             return diContainer.Resolve(type, resolutionConstraints: null);
         }
 
-        public static object Resolve(this IDiContainer diContainer, Type type, Action<IResolutionConstraints> resolution)
+        public static object Resolve(this IDiContainer diContainer, Type type, Action<ResolutionConstraints> resolution)
         {
             var resolutionConstraints = new ResolutionConstraints();
             resolution.Invoke(resolutionConstraints);
@@ -35,7 +35,7 @@ namespace ManualDi.Main
             return diContainer.Resolve(type, resolutionConstraints);
         }
 
-        public static object Resolve(this IDiContainer diContainer, Type type, IResolutionConstraints? resolutionConstraints)
+        public static object Resolve(this IDiContainer diContainer, Type type, ResolutionConstraints? resolutionConstraints)
         {
             if (!diContainer.TryResolveContainer(type, resolutionConstraints, out object resolution))
             {

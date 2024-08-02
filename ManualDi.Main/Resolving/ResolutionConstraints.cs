@@ -2,7 +2,7 @@
 
 namespace ManualDi.Main
 {
-    public sealed class ResolutionConstraints : IResolutionConstraints
+    public sealed class ResolutionConstraints
     {
         public Func<ITypeBinding, bool>? ResolutionConstraintDelegate { get; set; }
 

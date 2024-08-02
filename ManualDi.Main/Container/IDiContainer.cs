@@ -12,7 +12,7 @@ namespace ManualDi.Main
         /// <param name="type">The type of the binding to resolve</param>
         /// <param name="resolutionConstraints">Filter bindings to resolve according to these constraints. May be null</param>
         /// <returns>The resolved instance for the binding</returns>
-        bool TryResolveContainer(Type type, IResolutionConstraints? resolutionConstraints, out object resolution);
+        bool TryResolveContainer(Type type, ResolutionConstraints? resolutionConstraints, out object resolution);
 
         /// <summary>
         /// Non generic resolution of all bindings for their registered instances
@@ -22,7 +22,7 @@ namespace ManualDi.Main
         /// <param name="resolutionConstraints">Filter bindings to resolve according to these constraints. May be null</param>
         /// <param name="resolutions">The list of resolutions to be populated from the operations done inside. Resolutions are added at the end of the list</param>
         /// <returns>The resolved instances for the binding</returns>
-        void ResolveAllContainer<TResolutionList>(Type type, IResolutionConstraints? resolutionConstraints, List<TResolutionList> resolutions);
+        void ResolveAllContainer<TResolutionList>(Type type, ResolutionConstraints? resolutionConstraints, List<TResolutionList> resolutions);
 
         /// <summary>
         /// Queues for disposal a disposable. They will be called in order when disposing the container.

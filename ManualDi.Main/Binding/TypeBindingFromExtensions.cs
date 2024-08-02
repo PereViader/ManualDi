@@ -14,7 +14,7 @@ namespace ManualDi.Main
 
         public static TypeBinding<TInterface, TConcrete> FromContainer<TInterface, TConcrete>(
             this TypeBinding<TInterface, TConcrete> typeBinding,
-            Action<IResolutionConstraints> constraints
+            Action<ResolutionConstraints> constraints
             )
         {
             typeBinding.CreateConcreteDelegate = c => c.Resolve<TConcrete>(constraints);

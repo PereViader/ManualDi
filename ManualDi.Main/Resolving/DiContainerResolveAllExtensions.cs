@@ -16,26 +16,26 @@ namespace ManualDi.Main
             return diContainer.ResolveAll<TInterface, TConcrete>(resolutionConstraints: null);
         }
 
-        public static List<TInterface> ResolveAll<TInterface>(this IDiContainer diContainer, Action<IResolutionConstraints> resolution)
+        public static List<TInterface> ResolveAll<TInterface>(this IDiContainer diContainer, Action<ResolutionConstraints> resolution)
         {
             var resolutionConstraints = new ResolutionConstraints();
             resolution.Invoke(resolutionConstraints);
             return diContainer.ResolveAll<TInterface>(resolutionConstraints);
         }
 
-        public static List<TConcrete> ResolveAll<TInterface, TConcrete>(this IDiContainer diContainer, Action<IResolutionConstraints> resolution)
+        public static List<TConcrete> ResolveAll<TInterface, TConcrete>(this IDiContainer diContainer, Action<ResolutionConstraints> resolution)
         {
             var resolutionConstraints = new ResolutionConstraints();
             resolution.Invoke(resolutionConstraints);
             return diContainer.ResolveAll<TInterface, TConcrete>(resolutionConstraints);
         }
 
-        public static List<TConcrete> ResolveAll<TConcrete>(this IDiContainer diContainer, IResolutionConstraints? resolutionConstraints)
+        public static List<TConcrete> ResolveAll<TConcrete>(this IDiContainer diContainer, ResolutionConstraints? resolutionConstraints)
         {
             return diContainer.ResolveAll<TConcrete>(typeof(TConcrete), resolutionConstraints);
         }
 
-        public static List<TConcrete> ResolveAll<TInterface, TConcrete>(this IDiContainer diContainer, IResolutionConstraints? resolutionConstraints)
+        public static List<TConcrete> ResolveAll<TInterface, TConcrete>(this IDiContainer diContainer, ResolutionConstraints? resolutionConstraints)
         {
             return diContainer.ResolveAll<TConcrete>(typeof(TInterface), resolutionConstraints);
         }
@@ -50,26 +50,26 @@ namespace ManualDi.Main
             return diContainer.ResolveAll<T>(type, resolutionConstraints: null);
         }
 
-        public static List<object> ResolveAll(this IDiContainer diContainer, Type type, Action<IResolutionConstraints> configureResolutionConstraints)
+        public static List<object> ResolveAll(this IDiContainer diContainer, Type type, Action<ResolutionConstraints> configureResolutionConstraints)
         {
             var resolutionConstraints = new ResolutionConstraints();
             configureResolutionConstraints.Invoke(resolutionConstraints);
             return diContainer.ResolveAll<object>(type, resolutionConstraints);
         }
 
-        public static List<T> ResolveAll<T>(this IDiContainer diContainer, Type type, Action<IResolutionConstraints> configureResolutionConstraints)
+        public static List<T> ResolveAll<T>(this IDiContainer diContainer, Type type, Action<ResolutionConstraints> configureResolutionConstraints)
         {
             var resolutionConstraints = new ResolutionConstraints();
             configureResolutionConstraints.Invoke(resolutionConstraints);
             return diContainer.ResolveAll<T>(type, resolutionConstraints);
         }
 
-        public static List<object> ResolveAll(this IDiContainer diContainer, Type type, IResolutionConstraints? resolutionConstraints)
+        public static List<object> ResolveAll(this IDiContainer diContainer, Type type, ResolutionConstraints? resolutionConstraints)
         {
             return diContainer.ResolveAll<object>(type, resolutionConstraints);
         }
 
-        public static List<T> ResolveAll<T>(this IDiContainer diContainer, Type type, IResolutionConstraints? resolutionConstraints)
+        public static List<T> ResolveAll<T>(this IDiContainer diContainer, Type type, ResolutionConstraints? resolutionConstraints)
         {
             var resolutions = new List<T>();
             diContainer.ResolveAllContainer<T>(type, resolutionConstraints, resolutions);

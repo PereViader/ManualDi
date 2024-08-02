@@ -44,7 +44,7 @@ namespace ManualDi.Main
             }
         }
 
-        public bool TryResolveContainer(Type type, IResolutionConstraints? resolutionConstraints, out object resolution)
+        public bool TryResolveContainer(Type type, ResolutionConstraints? resolutionConstraints, out object resolution)
         {
             if (TryGetTypeForConstraint(type, resolutionConstraints, out ITypeBinding typeBinding))
             {
@@ -94,7 +94,7 @@ namespace ManualDi.Main
             return instance;
         }
 
-        private bool TryGetTypeForConstraint(Type type, IResolutionConstraints? resolutionConstraints, out ITypeBinding typeBinding)
+        private bool TryGetTypeForConstraint(Type type, ResolutionConstraints? resolutionConstraints, out ITypeBinding typeBinding)
         {
             if (!TypeBindings.TryGetValue(type, out var bindings) || bindings.Count == 0)
             {
@@ -121,7 +121,7 @@ namespace ManualDi.Main
             return false;
         }
 
-        private bool TryGetAllTypeForConstraint(Type type, IResolutionConstraints? resolutionConstraints, out List<ITypeBinding> typeBindings)
+        private bool TryGetAllTypeForConstraint(Type type, ResolutionConstraints? resolutionConstraints, out List<ITypeBinding> typeBindings)
         {
             if (!TypeBindings.TryGetValue(type, out var bindings) || bindings.Count == 0)
             {
@@ -147,7 +147,7 @@ namespace ManualDi.Main
             return typeBindings.Count > 0;
         }
 
-        public void ResolveAllContainer<TResolutionList>(Type type, IResolutionConstraints? resolutionConstraints, List<TResolutionList> resolutions)
+        public void ResolveAllContainer<TResolutionList>(Type type, ResolutionConstraints? resolutionConstraints, List<TResolutionList> resolutions)
         {
             if (TryGetAllTypeForConstraint(type, resolutionConstraints, out var typeBindings))
             {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using ManualDi.Main.Scopes;
 using System.Collections.Generic;
 
@@ -147,18 +148,18 @@ namespace ManualDi.Main
             return typeBindings.Count > 0;
         }
 
-        public void ResolveAllContainer<TResolutionList>(Type type, ResolutionConstraints? resolutionConstraints, List<TResolutionList> resolutions)
+        public void ResolveAllContainer(Type type, ResolutionConstraints? resolutionConstraints, IList resolutions)
         {
             if (TryGetAllTypeForConstraint(type, resolutionConstraints, out var typeBindings))
             {
                 foreach (var typeBinding in typeBindings)
                 {
                     var resolved = ResolveBinding(typeBinding);
-                    resolutions.Add((TResolutionList)resolved);
+                    resolutions.Add(resolved);
                 }
             }
 
-            ParentDiContainer?.ResolveAllContainer<TResolutionList>(type, resolutionConstraints, resolutions);
+            ParentDiContainer?.ResolveAllContainer(type, resolutionConstraints, resolutions);
         }
 
         public void QueueDispose(IDisposable disposable)

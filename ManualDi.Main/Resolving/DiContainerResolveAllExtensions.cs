@@ -72,7 +72,7 @@ namespace ManualDi.Main
         public static List<T> ResolveAll<T>(this IDiContainer diContainer, Type type, ResolutionConstraints? resolutionConstraints)
         {
             var resolutions = new List<T>();
-            diContainer.ResolveAllContainer<T>(type, resolutionConstraints, resolutions);
+            diContainer.ResolveAllContainer(type, resolutionConstraints, resolutions);
             return resolutions;
         }
     }

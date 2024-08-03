@@ -12,6 +12,7 @@
     <RepositoryUrl>https://github.com/PereViader/ManualDi.Main</RepositoryUrl>
     <Product>ManualDi.Main</Product>
     <Description>Dependency injection library for C#</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/PereViader/ManualDi.Main</PackageProjectUrl>
   </PropertyGroup>
 

@@ -16,9 +16,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Constraints\**" />
-    <EmbeddedResource Remove="Constraints\**" />
-    <None Remove="Constraints\**" />
+    <None Include="..\ManualDi.Main.Generators\bin\$(Configuration)\netstandard2.0\ManualDi.Main.Generators.dll"
+          Pack="true"
+          PackagePath="analyzers/dotnet/cs"
+          Visible="false" />
   </ItemGroup>
 
 </Project>

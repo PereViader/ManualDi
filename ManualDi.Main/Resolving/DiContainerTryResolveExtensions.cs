@@ -7,7 +7,7 @@ namespace ManualDi.Main
     {
         public static bool TryResolve<T>(this IDiContainer diContainer, [MaybeNullWhen(false)] out T resolution)
         {
-            if (!diContainer.TryResolveContainer(typeof(T), resolutionConstraints: null, out object result))
+            if (!diContainer.TryResolveContainer(typeof(T), resolutionConstraints: null, out var result))
             {
                 resolution = default;
                 return false;

@@ -2,6 +2,7 @@
 using System.Collections;
 using ManualDi.Main.Scopes;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ManualDi.Main
 {
@@ -45,9 +46,9 @@ namespace ManualDi.Main
             }
         }
 
-        public bool TryResolveContainer(Type type, ResolutionConstraints? resolutionConstraints, out object resolution)
+        public bool TryResolveContainer(Type type, ResolutionConstraints? resolutionConstraints, [MaybeNullWhen(false)] out object resolution)
         {
-            if (TryGetTypeForConstraint(type, resolutionConstraints, out ITypeBinding typeBinding))
+            if (TryGetTypeForConstraint(type, resolutionConstraints, out var typeBinding))
             {
                 resolution = ResolveBinding(typeBinding);
                 return true;
@@ -58,7 +59,7 @@ namespace ManualDi.Main
                 return ParentDiContainer.TryResolveContainer(type, resolutionConstraints, out resolution);
             }
 
-            resolution = default!;
+            resolution = default;
             return false;
         }
 
@@ -95,11 +96,11 @@ namespace ManualDi.Main
             return instance;
         }
 
-        private bool TryGetTypeForConstraint(Type type, ResolutionConstraints? resolutionConstraints, out ITypeBinding typeBinding)
+        private bool TryGetTypeForConstraint(Type type, ResolutionConstraints? resolutionConstraints, [MaybeNullWhen(false)] out ITypeBinding typeBinding)
         {
             if (!TypeBindings.TryGetValue(type, out var bindings) || bindings.Count == 0)
             {
-                typeBinding = default!;
+                typeBinding = default;
                 return false;
             }
 
@@ -118,15 +119,15 @@ namespace ManualDi.Main
                 }
             }
 
-            typeBinding = default!;
+            typeBinding = default;
             return false;
         }
 
-        private bool TryGetAllTypeForConstraint(Type type, ResolutionConstraints? resolutionConstraints, out List<ITypeBinding> typeBindings)
+        private bool TryGetAllTypeForConstraint(Type type, ResolutionConstraints? resolutionConstraints, [MaybeNullWhen(false)] out List<ITypeBinding> typeBindings)
         {
             if (!TypeBindings.TryGetValue(type, out var bindings) || bindings.Count == 0)
             {
-                typeBindings = default!;
+                typeBindings = default;
                 return false;
             }
 

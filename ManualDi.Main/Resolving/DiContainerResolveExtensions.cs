@@ -37,7 +37,7 @@ namespace ManualDi.Main
 
         public static object Resolve(this IDiContainer diContainer, Type type, ResolutionConstraints? resolutionConstraints)
         {
-            if (!diContainer.TryResolveContainer(type, resolutionConstraints, out object resolution))
+            if (!diContainer.TryResolveContainer(type, resolutionConstraints, out var resolution))
             {
                 throw new InvalidOperationException($"Could not resolve {type.FullName}");
             }

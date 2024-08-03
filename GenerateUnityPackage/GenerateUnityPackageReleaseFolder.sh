@@ -9,10 +9,14 @@ mkdir -p "UnityPackageRelease/ManualDi.Main/"
 echo Copy Main folder
 cp -r "ManualDi.Main/." "UnityPackageRelease/ManualDi.Main/"
 
+echo Copy License
+cp "LICENSE.md" "UnityPackageRelease/LICENSE.md"
+
 echo Delete unnecesary files from common
 rm "UnityPackageRelease/ManualDi.Main/ManualDi.Main.csproj"
 rm -rf "UnityPackageRelease/ManualDi.Main/bin"
 rm -rf "UnityPackageRelease/ManualDi.Main/obj"
+rm -rf "UnityPackageRelease/ManualDi.Main/Properties"
 
 # Path to the .csproj file and package.json
 CSPROJ_FILE="ManualDi.Main/ManualDi.Main.csproj"

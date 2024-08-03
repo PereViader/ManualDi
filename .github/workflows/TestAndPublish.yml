@@ -1,0 +1,23 @@
+name: Test and publish
+on: 
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+    TestCommon:
+      uses: ./.github/workflows/Test.yml
+      secrets: inherit
+    
+    PublishNugetPackage:
+      needs: [TestCommon]
+      uses: ./.github/workflows/PublishNugetPackage.yml
+      secrets: inherit
+    
+    PublishUnity3dPackage:
+      needs: [TestCommon]
+      uses: ./.github/workflows/PublishUnity3dPackage.yml
+      secrets: inherit
+      permissions:
+        contents: write

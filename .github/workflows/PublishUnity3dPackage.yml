@@ -1,8 +1,6 @@
 name: Publish Unity3d Package
-on:
-  push:
-    branches:
-      - main
+on: 
+  workflow_call:
 
 env:
   version_file: ManualDi.Main/ManualDi.Main.csproj

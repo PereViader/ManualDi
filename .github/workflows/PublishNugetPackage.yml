@@ -1,0 +1,25 @@
+name: Publish Nuget Package
+
+on: 
+  workflow_call:
+    
+jobs:
+  PublishNugetPackage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4.1.4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '6.0'
+          
+      - name: Build Common Project
+        run: dotnet build --configuration Release
+      
+      - name: Publish Common
+        uses: tedd/publish-nuget-neo@v1
+        with:
+          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+          PROJECT_FILE_PATH: ManualDi.Main/ManualDi.Main.csproj
+          REBUILD_PROJECT: false

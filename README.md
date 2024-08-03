@@ -77,8 +77,8 @@ Binding data to the container is performed on the type `DiContainerBindings`. It
 In order to bind to the container, there are 3 `Bind` methods. Let's concentrate on the two most common ones.
 
 ```csharp
-ITypeBinding<TConcrete, TConcrete> Bind<TConcrete>(this IDiContainerBindings diContainerBindings)
-ITypeBinding<TInterface, TConcrete> Bind<TInterface, TConcrete>(this IDiContainerBindings diContainerBindings)
+ITypeBinding<TConcrete, TConcrete> Bind<TConcrete>(this DicontainerBindings diContainerBindings)
+ITypeBinding<TInterface, TConcrete> Bind<TInterface, TConcrete>(this DicontainerBindings diContainerBindings)
 ```
 
 The first, is meant to be used to bind an instance of some type T and expose the same type T as the interface type when resolving

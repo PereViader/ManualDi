@@ -1,26 +1,25 @@
 ﻿using NSubstitute;
 using NUnit.Framework;
 
-namespace ManualDi.Main.Tests
+namespace ManualDi.Main.Tests;
+
+public class TestDiContainerInitialize
 {
-    public class TestDiContainerInitialize
+    [Test]
+    public void TestInitialize()
     {
-        [Test]
-        public void TestInitialize()
+        var instance = new object();
+        var initializationDelegate = Substitute.For<InitializationDelegate<object>>();
+
+        var container = new DiContainerBuilder().Install(x =>
         {
-            var instance = new object();
-            var initializationDelegate = Substitute.For<InitializationDelegate<object>>();
+            x.Bind<object>()
+                .FromInstance(instance)
+                .Initialize(initializationDelegate);
+        }).Build();
 
-            var container = new DiContainerBuilder().Install(x =>
-            {
-                x.Bind<object>()
-                    .FromInstance(instance)
-                    .Initialize(initializationDelegate);
-            }).Build();
+        _ = container.Resolve<object>();
 
-            _ = container.Resolve<object>();
-
-            initializationDelegate.Received(1).Invoke(Arg.Is(instance), Arg.Is(container));
-        }
+        initializationDelegate.Received(1).Invoke(Arg.Is(instance), Arg.Is(container));
     }
 }

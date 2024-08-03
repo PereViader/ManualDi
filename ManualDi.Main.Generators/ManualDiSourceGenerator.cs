@@ -28,7 +28,7 @@ namespace ManualDi.Main.Generators
     }
     
     [Generator]
-    public class ManualDiSourceGenerator : IIncrementalGenerator
+    public class TestsSourceGenerator : IIncrementalGenerator
     {
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
@@ -72,8 +72,6 @@ namespace ManualDi.Main.Generators
                 var stringBuilder = new StringBuilder();
 
                 stringBuilder.AppendLine("""
-                using ManualDi.Main;
-
                 namespace ManualDi.Main
                 {
                     public static partial class ManualDiGeneratedExtensions

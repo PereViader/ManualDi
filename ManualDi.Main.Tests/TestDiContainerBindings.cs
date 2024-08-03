@@ -2,36 +2,35 @@
 using NUnit.Framework;
 using System;
 
-namespace ManualDi.Main.Tests
+namespace ManualDi.Main.Tests;
+
+public class TestDiContainerBindings
 {
-    public class TestDiContainerBindings
+    [Test]
+    public void TestQueueDispose()
     {
-        [Test]
-        public void TestQueueDispose()
-        {
-            var action = Substitute.For<Action>();
+        var action = Substitute.For<Action>();
 
-            var container = new DiContainerBuilder()
-                .Install(x => x.QueueDispose(action))
-                .Build();
+        var container = new DiContainerBuilder()
+            .Install(x => x.QueueDispose(action))
+            .Build();
 
-            action.DidNotReceive().Invoke();
+        action.DidNotReceive().Invoke();
 
-            container.Dispose();
+        container.Dispose();
 
-            action.Received(1).Invoke();
-        }
+        action.Received(1).Invoke();
+    }
 
-        [Test]
-        public void TestQueueInitialization()
-        {
-            var initializationDelegate = Substitute.For<ContainerDelegate>();
+    [Test]
+    public void TestQueueInitialization()
+    {
+        var initializationDelegate = Substitute.For<ContainerDelegate>();
 
-            var container = new DiContainerBuilder()
-                .Install(x => x.QueueInitialization(initializationDelegate))
-                .Build();
+        var container = new DiContainerBuilder()
+            .Install(x => x.QueueInitialization(initializationDelegate))
+            .Build();
 
-            initializationDelegate.Received(1).Invoke(Arg.Is<IDiContainer>(container));
-        }
+        initializationDelegate.Received(1).Invoke(Arg.Is<IDiContainer>(container));
     }
 }

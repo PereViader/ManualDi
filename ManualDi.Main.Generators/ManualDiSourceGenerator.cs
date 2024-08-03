@@ -71,14 +71,14 @@ namespace ManualDi.Main.Generators
                 
                 var stringBuilder = new StringBuilder();
 
-                stringBuilder.Append(@"
-using ManualDi.Main;
+                stringBuilder.AppendLine("""
+                using ManualDi.Main;
 
-namespace ManualDi.Main
-{
-    public static partial class ManualDiGeneratedExtensions
-    {
-");
+                namespace ManualDi.Main
+                {
+                    public static partial class ManualDiGeneratedExtensions
+                    {
+                """);
                 
                 var model = compilation.GetSemanticModel(classDeclaration.SyntaxTree);
                 var classSymbol = ModelExtensions.GetDeclaredSymbol(model, classDeclaration) as INamedTypeSymbol;
@@ -111,10 +111,11 @@ namespace ManualDi.Main
                 
                 AddDefault(generationContext, initialize, inject, accessibility);
 
-                stringBuilder.Append(@"
-    }
-}
-");
+                stringBuilder.AppendLine("""
+                    }
+                }
+                """);
+                
                 context.AddSource($"ManualDiGeneratedExtensions.{className}.cs", SourceText.From(stringBuilder.ToString(), Encoding.UTF8));
             }
         }
@@ -244,14 +245,14 @@ namespace ManualDi.Main
             var accessibility = GetSymbolAccessibility(constructor);
             var accessibilityString = GetAccessibilityString(accessibility);
             var arguments = CreateArgumentsResolution(constructor);
-
-            context.StringBuilder.Append($@"
-        {context.ObsoleteText}{accessibilityString} static TypeBinding<T, {context.ClassName}> FromConstructor<T>(this TypeBinding<T, {context.ClassName}> typeBinding)
-        {{
-            typeBinding.FromMethod(static c => new {context.ClassName}({arguments}));
-            return typeBinding;
-        }}
-");
+            
+            context.StringBuilder.AppendLine($$"""
+                    {{context.ObsoleteText}}{{accessibilityString}} static TypeBinding<T, {{context.ClassName}}> FromConstructor<T>(this TypeBinding<T, {{context.ClassName}}> typeBinding)
+                    {
+                        return typeBinding.FromMethod(static c => new {{context.ClassName}}({{arguments}}));
+                    }
+                    
+            """);
             return accessibility;
         }
 
@@ -291,13 +292,13 @@ namespace ManualDi.Main
             var accessibilityString = GetAccessibilityString(accessibility);
             var arguments = CreateArgumentsResolution(initializeMethod);
 
-            context.StringBuilder.Append($@"
-        {context.ObsoleteText}{accessibilityString} static TypeBinding<T, {context.ClassName}> Initialize<T>(this TypeBinding<T, {context.ClassName}> typeBinding)
-        {{
-            typeBinding.Initialize(static (o, c) => o.Initialize({arguments}));
-            return typeBinding;
-        }}
-");
+            context.StringBuilder.AppendLine($$"""
+                    {{context.ObsoleteText}}{{accessibilityString}} static TypeBinding<T, {{context.ClassName}}> Initialize<T>(this TypeBinding<T, {{context.ClassName}}> typeBinding)
+                    {
+                        return typeBinding.Initialize(static (o, c) => o.Initialize({{arguments}}));
+                    }
+                    
+            """);
             return accessibility;
         }
 
@@ -333,11 +334,12 @@ namespace ManualDi.Main
             
             var accessibilityString = GetAccessibilityString(accessibility);
             
-            generationClassContext.StringBuilder.AppendLine($@"
-        {generationClassContext.ObsoleteText}{accessibilityString} static TypeBinding<T, {generationClassContext.ClassName}> Inject<T>(this TypeBinding<T, {generationClassContext.ClassName}> typeBinding)
-        {{
-            typeBinding.Inject(static (o, c) => 
-            {{");
+            generationClassContext.StringBuilder.AppendLine($$"""
+                    {{generationClassContext.ObsoleteText}}{{accessibilityString}} static TypeBinding<T, {{generationClassContext.ClassName}}> Inject<T>(this TypeBinding<T, {{generationClassContext.ClassName}}> typeBinding)
+                    {
+                        return typeBinding.Inject(static (o, c) => 
+                        { 
+            """);
 
             foreach (var injectProperty in injectProperties)
             {
@@ -349,11 +351,12 @@ namespace ManualDi.Main
                 var arguments = CreateArgumentsResolution(injectMethod);
                 generationClassContext.StringBuilder.AppendLine($"                o.Inject({arguments});");
             }
-            
-            generationClassContext.StringBuilder.Append(@"            });
-            return typeBinding;
-        }
-");
+                        
+            generationClassContext.StringBuilder.AppendLine("""
+                        });
+                    }
+                    
+            """);
             return accessibility;
         }
 
@@ -373,21 +376,26 @@ namespace ManualDi.Main
 
             var accessibiliyString = GetAccessibilityString(accessibility);
             
-            generationClassContext.StringBuilder.AppendLine($@"
-        {generationClassContext.ObsoleteText}{accessibiliyString} static TypeBinding<T, {generationClassContext.ClassName}> Default<T>(this TypeBinding<T, {generationClassContext.ClassName}> typeBinding)
-        {{");
+            generationClassContext.StringBuilder.Append($$"""
+                    {{generationClassContext.ObsoleteText}}{{accessibiliyString}} static TypeBinding<T, {{generationClassContext.ClassName}}> Default<T>(this TypeBinding<T, {{generationClassContext.ClassName}}> typeBinding)
+                    {
+                        return typeBinding
+            """);
 
             if (initialize.HasValue)
             {
-                generationClassContext.StringBuilder.AppendLine("            typeBinding.Initialize();");
+                generationClassContext.StringBuilder.Append(".Initialize()");
             }
 
             if (inject.HasValue)
             {
-                generationClassContext.StringBuilder.AppendLine("            typeBinding.Inject();");
+                generationClassContext.StringBuilder.Append(".Inject()");
             }
 
-            generationClassContext.StringBuilder.AppendLine("            return typeBinding;\r\n        }");
+            generationClassContext.StringBuilder.AppendLine("""
+            ;
+                    }
+            """);
         }
 
         private static readonly SymbolDisplayFormat FullyQualifyTypeSymbolDisplayFormat = new(

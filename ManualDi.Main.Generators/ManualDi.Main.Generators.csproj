@@ -5,7 +5,7 @@
         <RootNamespace>ManualDi.Main.Generators</RootNamespace>
         <AssemblyName>ManualDi.Main.Generators</AssemblyName>
         <IsRoslynComponent>true</IsRoslynComponent>
-        <LangVersion>9</LangVersion>
+        <LangVersion>12</LangVersion>
         <Nullable>enable</Nullable>
         <WarningsAsErrors>Nullable</WarningsAsErrors>
         <IsPackable>false</IsPackable>

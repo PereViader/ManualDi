@@ -79,16 +79,29 @@ class InjectPropertyAndMethod
     }
 }
 
-public class InjectPropertyClass
+public class InjectReferencePropertyClass
 {
     [Inject] public object Object1 { get; set; } = default!;
     [Inject] internal object Object2 { get; set; } = default!;
     [Inject] private object Object3 { get; set; } = default!;
     [Inject] protected object Object4 { get; set; } = default!;
+    
     [Inject] public object Object5 { get; internal set; } = default!;
     [Inject] public object Object6 { get; private set; } = default!;
     [Inject] public object Object7 { get; protected set; } = default!;
     [Inject] public static object Object8 { get; set; } = default!;
+}
+
+public class InjectValueNullablePropertyClass
+{
+    [Inject] public int Int1 { get; set; } = default!;
+    [Inject] internal int Int2 { get; set; } = default!;
+    [Inject] private int Int3 { get; set; } = default!;
+    [Inject] protected int Int4 { get; set; } = default!;
+    [Inject] public int? Int5 { get; set; } = default!;
+    [Inject] internal int? Int6 { get; set; } = default!;
+    [Inject] private int? Int7 { get; set; } = default!;
+    [Inject] protected int? Int8 { get; set; } = default!;
 }
 
 [Obsolete]

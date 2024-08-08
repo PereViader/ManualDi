@@ -1,4 +1,4 @@
-[![Run Tests](https://github.com/PereViader/ManualDi.Main/actions/workflows/run-tests.yml/badge.svg)](https://github.com/PereViader/ManualDi.Main/actions/workflows/run-tests.yml) [![Publish Nuget Package](https://github.com/PereViader/ManualDi.Main/actions/workflows/publish-nuget-package.yml/badge.svg)](https://github.com/PereViader/ManualDi.Main/actions/workflows/publish-nuget-package.yml) [![Publish Unity3d Package](https://github.com/PereViader/ManualDi.Main/actions/workflows/publish-unity3d-package.yml/badge.svg)](https://github.com/PereViader/ManualDi.Main/actions/workflows/publish-unity3d-package.yml)
+[![Test and publish](https://github.com/PereViader/ManualDi.Main/actions/workflows/TestAndPublish.yml/badge.svg)](https://github.com/PereViader/ManualDi.Main/actions/workflows/TestAndPublish.yml)
 
 # Introduction
 

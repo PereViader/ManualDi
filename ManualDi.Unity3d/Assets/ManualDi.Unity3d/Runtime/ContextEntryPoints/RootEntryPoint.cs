@@ -6,7 +6,7 @@ namespace ManualDi.Unity3d
 {
     public abstract class RootEntryPoint : MonoBehaviour, IInstaller, IDisposable
     {
-        [field: SerializeField] public bool InitializeOnStart { get; set; } = true;
+        [field: SerializeField] public bool InitializeOnStart { get; set; }
         
         public bool IsInitialized => Container is not null;
         public IDiContainer? Container { get; private set; }

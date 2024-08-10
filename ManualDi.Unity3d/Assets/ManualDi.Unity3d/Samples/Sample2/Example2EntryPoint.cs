@@ -9,9 +9,8 @@ namespace ManualDi.Unity3d.Examples.Example2
 
         public override void Install(DiContainerBindings b)
         {
-            b.Bind<Example2Context>()
-                .FromInstance(context)
-                .Inject((o, c) => o.Inject(Data));
+            b.Bind<Example2Context>().Default().FromInstance(context);
+            b.Bind<PrimitiveType>().FromInstance(Data);
         }
     }
 }

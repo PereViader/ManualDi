@@ -9,9 +9,9 @@ namespace ManualDi.Unity3d.Examples.Example1
 
         public override void Install(DiContainerBindings b)
         {
-            b.Bind<Example1Context>()
-                .FromInstance(context)
-                .Initialize((o, c) => o.Inject(Data, configuration));
+            b.Bind<Example1Context>().Default().FromInstance(context);
+            b.Bind<Example1Configuration>().FromInstance(configuration);
+            b.Bind<int>().FromInstance(Data);
 
             b.QueueDispose(() => UnityEngine.Debug.Log("Dispose " + Data));
         }

@@ -16,7 +16,7 @@
         {
             "displayName": "Samples",
             "description": "Samples for ManualDi",
-            "path": "Samples~"
+            "path": "ManualDi.Unity3d/Samples~"
         }
     ]
   }

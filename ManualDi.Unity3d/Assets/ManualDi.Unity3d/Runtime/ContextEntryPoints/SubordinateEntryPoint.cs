@@ -1,29 +1,38 @@
-﻿using ManualDi.Main;
+﻿using System;
+using ManualDi.Main;
 using UnityEngine;
 
 namespace ManualDi.Unity3d
 {
-    public abstract class BaseContextEntryPoint<TData, TContext> : MonoBehaviour, IContextEntryPoint<TData, TContext>, IInstaller
+    public abstract class SubordinateEntryPoint<TData, TContext> : MonoBehaviour, IInstaller
         where TContext : MonoBehaviour
     {
-        private bool disposedValue;
-
+        public bool IsInitialized => Container is not null;
         public IDiContainer? Container { get; private set; }
-
         public TContext? Context { get; private set; }
         public TData? Data { get; private set; }
 
         public GameObject GameObject => gameObject;
 
-        public TContext Initiate(IDiContainer? parentDiContainer, TData data)
+        public TContext Initiate(TData data, IDiContainer? parentDiContainer = null)
         {
-            disposedValue = false;
-
+            if (IsInitialized)
+            {
+                throw new InvalidOperationException("Context is already initialized");
+            }
+            
             Data = data;
 
             Container = new DiContainerBuilder()
                 .WithParentContainer(parentDiContainer)
-                .Install(this)
+                .Install(b =>
+                {
+                    if (Data is IInstaller dataInstaller)
+                    {
+                        dataInstaller.Install(b);
+                    }
+                    Install(b);
+                })
                 .Build();
 
             Context = Container.Resolve<TContext>();
@@ -43,13 +52,7 @@ namespace ManualDi.Unity3d
 
         public void Dispose()
         {
-            if (disposedValue)
-            {
-                return;
-            }
-            disposedValue = true;
-
-            if (Container == null)
+            if (Container is null)
             {
                 return;
             }
@@ -61,6 +64,6 @@ namespace ManualDi.Unity3d
             Context = default;
         }
 
-        public abstract void Install(DiContainerBindings bindings);
+        public abstract void Install(DiContainerBindings b);
     }
 }

@@ -4,7 +4,6 @@
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "ManualDi.Unity3d.Runtime",
         "ManualDi.Main"
     ],
     "includePlatforms": [],

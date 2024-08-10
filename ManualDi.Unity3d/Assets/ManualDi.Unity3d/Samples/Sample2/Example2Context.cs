@@ -2,7 +2,7 @@
 
 namespace ManualDi.Unity3d.Examples.Example2
 {
-    public class Example2Context : MonoBehaviour
+    internal class Example2Context : MonoBehaviour
     {
         private PrimitiveType primitiveType;
 

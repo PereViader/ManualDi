@@ -3,13 +3,13 @@ using UnityEngine;
 
 namespace ManualDi.Unity3d.Examples.Example2
 {
-    public class Example2ContextEntryPoint : BaseContextEntryPoint<PrimitiveType, Example2Context>
+    internal class Example2EntryPoint : SubordinateEntryPoint<PrimitiveType, Example2Context>
     {
         public Example2Context context;
 
-        public override void Install(DiContainerBindings bindings)
+        public override void Install(DiContainerBindings b)
         {
-            bindings.Bind<Example2Context>()
+            b.Bind<Example2Context>()
                 .FromInstance(context)
                 .Inject((o, c) => o.Inject(Data));
         }

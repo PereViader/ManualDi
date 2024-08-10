@@ -2,18 +2,18 @@
 
 namespace ManualDi.Unity3d.Examples.Example1
 {
-    public class Example1ContextEntryPoint : BaseContextEntryPoint<int, Example1Context>
+    internal class Example1EntryPoint : SubordinateEntryPoint<int, Example1Context>
     {
         public Example1Configuration configuration;
         public Example1Context context;
 
-        public override void Install(DiContainerBindings bindings)
+        public override void Install(DiContainerBindings b)
         {
-            bindings.Bind<Example1Context>()
+            b.Bind<Example1Context>()
                 .FromInstance(context)
                 .Initialize((o, c) => o.Inject(Data, configuration));
 
-            bindings.QueueDispose(() => UnityEngine.Debug.Log("Dispose " + Data));
+            b.QueueDispose(() => UnityEngine.Debug.Log("Dispose " + Data));
         }
     }
 }

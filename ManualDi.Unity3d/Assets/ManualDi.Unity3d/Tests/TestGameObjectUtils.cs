@@ -9,7 +9,7 @@ namespace ManualDi.Unity3d.Tests.PlayMode
         public static TestContext Instantiate(InstallDelegate installDelegate = null, IDiContainer parentDiContainer = null)
         {
             var gameObject = new GameObject();
-            var contextEntryPoint = gameObject.AddComponent<TestContextEntryPoint>();
+            var contextEntryPoint = gameObject.AddComponent<TestSubEntryPoint>();
 
             contextEntryPoint.InstallDelegate = b =>
             {
@@ -23,7 +23,7 @@ namespace ManualDi.Unity3d.Tests.PlayMode
                 installDelegate?.Invoke(b);
             };
 
-            return contextEntryPoint.Initiate(parentDiContainer, new object());
+            return contextEntryPoint.Initiate(new object(), parentDiContainer);
         }
     }
 }

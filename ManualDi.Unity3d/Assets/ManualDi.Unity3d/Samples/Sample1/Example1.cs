@@ -2,22 +2,22 @@
 
 namespace ManualDi.Unity3d.Examples.Example1
 {
-    public class Example1 : MonoBehaviour
+    internal class Example1 : MonoBehaviour
     {
-        public Example1ContextEntryPoint contextPrefab;
+        public Example1EntryPoint entryPointPrefab;
 
         private void Start()
         {
-            // Instantiates the prefab, installs all the container bindings
-            // and sets up the object graph
-            var facade = GameObjectManualDi.Instantiate(contextPrefab, 5, RootContextInitiator.Instance);
+            var entryPointInstance = Object.Instantiate(entryPointPrefab);
+            
+            var facade = entryPointInstance.Initiate(5);
 
             // You can now start using the gameobject system throught the facade
             facade.DoStuff();
 
             // Once the system is not needed, destroying the gameobject
             // Will dispose of everything
-            GameObject.Destroy(facade.gameObject);
+            Object.Destroy(entryPointInstance.gameObject);
         }
     }
 }

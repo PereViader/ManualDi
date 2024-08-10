@@ -6,9 +6,8 @@ using UnityEngine;
 
 namespace ManualDi.Unity3d
 {
-    public static class TypeBindingGameObjectExtensions
+    public static class TypeBindingUnity3dExtensions
     {
-
         #region From GameObject
         
         public static TypeBinding<TInterface, TConcrete> FromGameObjectGetComponentInParent<TInterface, TConcrete>(

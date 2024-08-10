@@ -2,7 +2,7 @@
 
 namespace ManualDi.Unity3d.Examples.Example1
 {
-    public class Example1Context : MonoBehaviour
+    internal class Example1Context : MonoBehaviour
     {
         private int number;
         private Example1Configuration configuration;

@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 
 namespace ManualDi.Unity3d.Examples.Example2
 {
-    public class Example2 : MonoBehaviour
+    internal class Example2 : MonoBehaviour
     {
         public PrimitiveType primitiveType;
 
@@ -17,16 +17,12 @@ namespace ManualDi.Unity3d.Examples.Example2
         {
             // Load a scene that has a context
             yield return SceneManager.LoadSceneAsync("Example2Context", LoadSceneMode.Additive);
-
-            // Get a reference to the scene that was loaded
-            Scene scene = SceneManager.GetSceneByName("Example2Context");
-
-            // Initiate the scene context giving it the data it needs
-            Example2Context context = SceneManualDi.Initiate<Example2ContextEntryPoint, PrimitiveType, Example2Context>(
-                scene,
-                primitiveType,
-                RootContextInitiator.Instance
-                );
+            
+            // Get the entry point that was loaded from the scene, do this in any way you want
+            var entryPoint = Object.FindObjectOfType<Example2EntryPoint>();
+            
+            //Create the container and get the context object out
+            var context = entryPoint.Initiate(primitiveType);
 
             // Start using the scene context
             context.Run();

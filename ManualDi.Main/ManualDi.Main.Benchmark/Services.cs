@@ -1,6 +1,7 @@
 ﻿using ManualDi.Main;
 using Microsoft.Extensions.DependencyInjection;
 
+#pragma warning disable 9113
 public class Service1();
 public class Service2(Service1 service1);
 public class Service3(Service2 service2);
@@ -101,6 +102,8 @@ public class Service97(Service96 service96);
 public class Service98(Service97 service97);
 public class Service99(Service98 service98);
 public class Service100(Service99 service99);
+#pragma warning restore 9113
+
 
 public static class ServiceCollectionExtensions
 {

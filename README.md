@@ -31,7 +31,7 @@ The source generator is the way we can have a nice API while at the same time no
 Methods that are source generated are:
 - FromConstructor
 - Initialize
-- Inject 
+- Inject
 - Default
 
 # API
@@ -45,11 +45,8 @@ To get to the action, please visit the automated tests of the project found on h
 In order to create the container, the project offers a fluent Builder `ContainerBuilder`. Let's see how that would look like:
 
 ```csharp
-    IDiContainer container = new DiContainerBuilder()
-        .Install(b => 
-        {
-            b.InstallSomeFunctionality();
-        })
+    IDiContainer container = new DiContainerBindings()
+        .InstallSomeFunctionality()
         .Install(new SomeOtherInstaller());
         .Build();
 ```
@@ -57,7 +54,7 @@ In order to create the container, the project offers a fluent Builder `Container
 Let's analize this snippet:
 
 - Declare the container variable of type `IDiContainer` called container.
-- Create the `DiContainerBuilder`
+- Create the `DiContainerBindings`
 - Use the `Install` function to start binding data to the container
 - Call the static extension method `InstallSomeFunctionality` which will bind services to the container
 - Use the `Install` function to bind an installer of type `SomeOtherInstaller`. This does the same as the extension method, but with an object instead of a static function call

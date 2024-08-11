@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
 {
     public static class TypeBindingFromExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<TInterface, TConcrete> FromContainer<TInterface, TConcrete>(
             this TypeBinding<TInterface, TConcrete> typeBinding
             )
@@ -12,6 +14,7 @@ namespace ManualDi.Main
             return typeBinding;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<TInterface, TConcrete> FromContainer<TInterface, TConcrete>(
             this TypeBinding<TInterface, TConcrete> typeBinding,
             Action<ResolutionConstraints> constraints
@@ -21,6 +24,7 @@ namespace ManualDi.Main
             return typeBinding;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<TInterface, TConcrete> FromInstance<TInterface, TConcrete>(
             this TypeBinding<TInterface, TConcrete> typeBinding,
             TConcrete instance
@@ -30,6 +34,7 @@ namespace ManualDi.Main
             return typeBinding;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<TInterface, TConcrete> FromMethod<TInterface, TConcrete>(
             this TypeBinding<TInterface, TConcrete> typeBinding,
             CreateDelegate<TConcrete> createDelegate
@@ -39,6 +44,7 @@ namespace ManualDi.Main
             return typeBinding;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<TInterface, TConcrete> Lazy<TInterface, TConcrete>(
             this TypeBinding<TInterface, TConcrete> typeBinding
             )
@@ -47,6 +53,7 @@ namespace ManualDi.Main
             return typeBinding;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<TInterface, TConcrete> NonLazy<TInterface, TConcrete>(
             this TypeBinding<TInterface, TConcrete> typeBinding
             )

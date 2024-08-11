@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
 {
@@ -6,6 +7,7 @@ namespace ManualDi.Main
 
     public static class TypeBindingDisposableExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<TInterface, TConcrete> Dispose<TInterface, TConcrete>(
             this TypeBinding<TInterface, TConcrete> typeBinding
             )
@@ -14,6 +16,7 @@ namespace ManualDi.Main
             return typeBinding;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<TInterface, TConcrete> DontDispose<TInterface, TConcrete>(
             this TypeBinding<TInterface, TConcrete> typeBinding
         )
@@ -22,6 +25,7 @@ namespace ManualDi.Main
             return typeBinding;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<TInterface, TConcrete> Dispose<TInterface, TConcrete>(
             this TypeBinding<TInterface, TConcrete> typeBinding,
             GetDisposeDelegate<TConcrete> getDisposeDelegate

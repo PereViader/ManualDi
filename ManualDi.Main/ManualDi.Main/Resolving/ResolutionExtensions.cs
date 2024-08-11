@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
 {
     public static class ResolutionExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ResolutionConstraints Where(this ResolutionConstraints resolution, Func<TypeBinding, bool> typeBindingFunc)
         {
             var previous = resolution.ResolutionConstraintDelegate;
@@ -19,6 +21,7 @@ namespace ManualDi.Main
             return resolution;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ResolutionConstraints WhereMetadata(this ResolutionConstraints resolution, object flag)
         {
             var previous = resolution.ResolutionConstraintDelegate;
@@ -33,6 +36,7 @@ namespace ManualDi.Main
             return resolution;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ResolutionConstraints WhereMetadata<T>(this ResolutionConstraints resolution, object key, T value)
         {
             var previous = resolution.ResolutionConstraintDelegate;
@@ -57,6 +61,7 @@ namespace ManualDi.Main
             }
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ResolutionConstraints WhereMetadata<T>(this ResolutionConstraints resolution, object key, Func<T, bool> predicate)
         {
             var previous = resolution.ResolutionConstraintDelegate;

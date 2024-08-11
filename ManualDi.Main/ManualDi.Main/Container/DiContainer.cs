@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections;
-using ManualDi.Main.Scopes;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
 {
@@ -44,6 +44,7 @@ namespace ManualDi.Main
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryResolveContainer(Type type, ResolutionConstraints? resolutionConstraints, [MaybeNullWhen(false)] out object resolution)
         {
             if (TryGetTypeForConstraint(type, resolutionConstraints, out var typeBinding))
@@ -61,20 +62,14 @@ namespace ManualDi.Main
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private object ResolveBinding(TypeBinding typeBinding)
         {
             bool wasResolving = this.isResolving;
             isResolving = true;
 
-            var resolvedInstance = typeBinding.TypeScope switch
-            {
-                TypeScope.Single => ResolveSingle(typeBinding),
-                TypeScope.Transient => ResolveTransient(typeBinding),
-                _ => throw new ArgumentOutOfRangeException(nameof(typeBinding.TypeScope))
-            };
-            var instance = resolvedInstance.Instance;
-
-            if (!resolvedInstance.IsNew)
+            var (instance, isNew) = typeBinding.Create(this);
+            if (!isNew)
             {
                 isResolving = wasResolving;
                 return instance;
@@ -96,27 +91,8 @@ namespace ManualDi.Main
 
             return instance;
         }
-        
-        private ResolvedInstance ResolveSingle(TypeBinding typeBinding)
-        {
-            var instance = typeBinding.SingleInstance;
-            if (instance is not null)
-            {
-                return ResolvedInstance.Reused(instance);
-            }
 
-            instance = typeBinding.Create(this);
-            typeBinding.SingleInstance = instance;
-
-            return ResolvedInstance.New(instance);
-        }
-        
-        private ResolvedInstance ResolveTransient(TypeBinding typeBinding)
-        {
-            var instance = typeBinding.Create(this);
-            return ResolvedInstance.New(instance);
-        }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool TryGetTypeForConstraint(Type type, ResolutionConstraints? resolutionConstraints, [MaybeNullWhen(false)] out TypeBinding typeBinding)
         {
             if (!allTypeBindings.TryGetValue(type, out var bindings) || bindings.Count == 0)
@@ -144,6 +120,7 @@ namespace ManualDi.Main
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool TryGetAllTypeForConstraint(Type type, ResolutionConstraints? resolutionConstraints, [MaybeNullWhen(false)] out List<TypeBinding> typeBindings)
         {
             if (!this.allTypeBindings.TryGetValue(type, out var bindings) || bindings.Count == 0)
@@ -158,7 +135,7 @@ namespace ManualDi.Main
                 return true;
             }
 
-            typeBindings = new List<TypeBinding>();
+            typeBindings = new List<TypeBinding>(bindings.Count);
             foreach (var binding in bindings)
             {
                 if (resolutionConstraints.Accepts(binding))
@@ -170,6 +147,7 @@ namespace ManualDi.Main
             return typeBindings.Count > 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ResolveAllContainer(Type type, ResolutionConstraints? resolutionConstraints, IList resolutions)
         {
             if (TryGetAllTypeForConstraint(type, resolutionConstraints, out var typeBindings))
@@ -184,11 +162,13 @@ namespace ManualDi.Main
             parentDiContainer?.ResolveAllContainer(type, resolutionConstraints, resolutions);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void QueueDispose(IDisposable disposable)
         {
             disposableActionQueue.QueueDispose(disposable);
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void QueueDispose(Action disposableAction)
         {
             disposableActionQueue.QueueDispose(disposableAction);

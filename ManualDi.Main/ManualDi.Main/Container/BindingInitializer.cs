@@ -23,7 +23,7 @@ namespace ManualDi.Main
         
             if (nestedCount >= bindingInitializationCommands.Count)
             {
-                commands = new List<Action<IDiContainer>>();
+                commands = new List<Action<IDiContainer>>(1);
                 bindingInitializationCommands.Add(commands);
             }
             else
@@ -31,7 +31,7 @@ namespace ManualDi.Main
                 commands = bindingInitializationCommands[nestedCount];
                 if (commands is null)
                 {
-                    commands = new List<Action<IDiContainer>>();
+                    commands = new List<Action<IDiContainer>>(1);
                     bindingInitializationCommands[nestedCount] = commands;
                 }
             }

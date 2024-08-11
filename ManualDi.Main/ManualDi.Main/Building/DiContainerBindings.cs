@@ -7,20 +7,32 @@ namespace ManualDi.Main
     
     public sealed class DiContainerBindings
     {
-        private readonly Dictionary<Type, List<TypeBinding>> typeBindings = new();
-        private readonly List<Action> disposeActions = new();
-        private readonly List<ContainerDelegate> initializationDelegates = new();
-        private readonly List<ContainerDelegate> injectDelegates = new();
+        private readonly Dictionary<Type, List<TypeBinding>> typeBindings;
+        private readonly List<ContainerDelegate> injectDelegates;
+        private readonly List<ContainerDelegate> initializationDelegates;
+        private readonly List<Action> disposeActions;
 
         private IDiContainer? parentDiContainer;
 
+        public DiContainerBindings(
+            int? bindingsCapacity = null, 
+            int? injectCapacity = null,
+            int? initializationCapacity = null,
+            int? disposeCapacity = null
+            )
+        {
+            typeBindings = bindingsCapacity.HasValue ? new(bindingsCapacity.Value) : new();
+            injectDelegates = injectCapacity.HasValue ? new(injectCapacity.Value) : new();
+            initializationDelegates = initializationCapacity.HasValue ? new(initializationCapacity.Value) : new();
+            disposeActions = disposeCapacity.HasValue ? new(disposeCapacity.Value) : new();
+        }
+        
         public void AddBinding<TInterface, TConcrete>(TypeBinding<TInterface, TConcrete> typeBinding)
         {
-            Type type = typeof(TInterface);
-            if (!typeBindings.TryGetValue(type, out var bindings))
+            if (!typeBindings.TryGetValue(typeof(TInterface), out var bindings))
             {
-                bindings = new List<TypeBinding>();
-                typeBindings[type] = bindings;
+                bindings = new List<TypeBinding>(1);
+                typeBindings[typeof(TInterface)] = bindings;
             }
 
             bindings.Add(typeBinding);

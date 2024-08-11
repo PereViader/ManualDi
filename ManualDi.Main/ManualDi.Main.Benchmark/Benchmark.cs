@@ -2,7 +2,7 @@
 using ManualDi.Main;
 using Microsoft.Extensions.DependencyInjection;
 
-//[BenchmarkDotNet.Diagnostics.dotTrace.DotTraceDiagnoser]
+[BenchmarkDotNet.Diagnostics.dotTrace.DotTraceDiagnoser]
 [MemoryDiagnoser]
 public class Benchmark
 {
@@ -25,7 +25,7 @@ public class Benchmark
 
     private void SetupManualDi()
     {
-        _manualDiContainer = new DiContainerBindings()
+        _manualDiContainer = new DiContainerBindings(bindingsCapacity: 100)
             .InstallServices()
             .Build();
     }
@@ -36,33 +36,33 @@ public class Benchmark
         SetupManualDi();
     }
     
-    [Benchmark]
-    public void MicrosoftDi_Setup()
-    {
-        SetupMicrosoft();
-    }
+    // [Benchmark]
+    // public void MicrosoftDi_Setup()
+    // {
+    //     SetupMicrosoft();
+    // }
     
-    [Benchmark]
-    public void ManualDi_Dispose()
-    {
-        _manualDiContainer.Dispose();
-    }
-    
-    [Benchmark]
-    public void MicrosoftDi_Dispose()
-    {
-        _microsoftDiContainer.Dispose();
-    }
+    // [Benchmark]
+    // public void ManualDi_Dispose()
+    // {
+    //     _manualDiContainer.Dispose();
+    // }
+    //
+    // [Benchmark]
+    // public void MicrosoftDi_Dispose()
+    // {
+    //     _microsoftDiContainer.Dispose();
+    // }
 
-    [Benchmark]
-    public void ManualDi_Resolve_Service()
-    {
-        _manualDiContainer.Resolve<Service100>();
-    }
+    // [Benchmark]
+    // public void ManualDi_Resolve_Service()
+    // {
+    //     _manualDiContainer.Resolve<Service100>();
+    // }
     
-    [Benchmark]
-    public void MicrosoftDi_Resolve_Service()
-    {
-        _microsoftDiContainer.GetRequiredService<Service100>();
-    }
+    // [Benchmark]
+    // public void MicrosoftDi_Resolve_Service()
+    // {
+    //     _microsoftDiContainer.GetRequiredService<Service100>();
+    // }
 }

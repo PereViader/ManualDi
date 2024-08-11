@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
 {
@@ -6,14 +7,10 @@ namespace ManualDi.Main
     {
         public Func<TypeBinding, bool>? ResolutionConstraintDelegate { get; set; }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Accepts(TypeBinding typeBinding)
         {
-            if (ResolutionConstraintDelegate is null)
-            {
-                return true;
-            }
-
-            return ResolutionConstraintDelegate.Invoke(typeBinding);
+            return ResolutionConstraintDelegate?.Invoke(typeBinding) == true;
         }
     }
 }

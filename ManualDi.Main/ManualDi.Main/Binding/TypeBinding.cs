@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
 {
@@ -26,7 +27,7 @@ namespace ManualDi.Main
         
         internal object? SingleInstance { get; set; }
 
-        public abstract object Create(IDiContainer container);
+        public abstract (object instance, bool isNew) Create(IDiContainer container);
         
         public abstract bool NeedsInitialize { get; }
         public abstract void InitializeObject(object instance, IDiContainer container);
@@ -42,11 +43,12 @@ namespace ManualDi.Main
         public InjectionDelegate<TConcrete>? InjectionDelegates { get; set; }
         public InitializationDelegate<TConcrete>? InitializationDelegate { get; set; }
         
-        public override object Create(IDiContainer container)
+        public override (object instance, bool isNew) Create(IDiContainer container)
         {
-            if (TryCreate(container, out var invoke))
+            var result = TryCreate(container);
+            if (result.HasValue)
             {
-                return invoke;
+                return result.Value;
             }
 
             throw new InvalidOperationException(
@@ -55,22 +57,47 @@ namespace ManualDi.Main
 
         public override bool NeedsInitialize => InitializationDelegate is not null;
 
-        private bool TryCreate(IDiContainer container, [MaybeNullWhen(false)] out object invoke)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private (object instance, bool isNew)? TryCreate(IDiContainer container)
+        {
+            if (TypeScope is TypeScope.Single)
+            {
+                if (SingleInstance is not null)
+                {
+                    return (SingleInstance, false);
+                }
+
+                SingleInstance = CreateNew(container);
+                if (SingleInstance is null)
+                {
+                    return null;
+                }
+                
+                return (SingleInstance, true);
+            }
+            
+            var instance = CreateNew(container);
+            if (instance is null)
+            {
+                return null;
+            }
+            return (instance, true);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private object? CreateNew(IDiContainer container)
         {
             if (CreateConcreteDelegate is not null)
             {
-                invoke = CreateConcreteDelegate.Invoke(container);
-                return invoke is not null;
+                return CreateConcreteDelegate.Invoke(container);
             }
 
             if (CreateInterfaceDelegate is not null)
             {
-                invoke = CreateInterfaceDelegate.Invoke(container);
-                return invoke is not null;
+                return CreateInterfaceDelegate.Invoke(container);
             }
 
-            invoke = false;
-            return false;
+            return null;
         }
 
         public override void InjectObject(object instance, IDiContainer container)

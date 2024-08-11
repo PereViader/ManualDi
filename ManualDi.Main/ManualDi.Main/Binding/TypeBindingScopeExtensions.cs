@@ -1,9 +1,10 @@
-﻿using ManualDi.Main.Scopes;
+﻿using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
 {
     public static class TypeBindingScopeExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<TInterface, TConcrete> Transient<TInterface, TConcrete>(
             this TypeBinding<TInterface, TConcrete> typeBinding
             )
@@ -12,6 +13,7 @@ namespace ManualDi.Main
             return typeBinding;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<TInterface, TConcrete> Single<TInterface, TConcrete>(
             this TypeBinding<TInterface, TConcrete> typeBinding
             )

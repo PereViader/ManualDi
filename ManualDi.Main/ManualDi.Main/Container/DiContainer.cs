@@ -10,7 +10,6 @@ namespace ManualDi.Main
     {
         private readonly BindingInitializer bindingInitializer = new();
         private readonly DisposableActionQueue disposableActionQueue = new();
-        private readonly Dictionary<object, object> singleInstances = new();
         private readonly Dictionary<Type, List<TypeBinding>> allTypeBindings;
         private readonly IDiContainer? parentDiContainer;
 
@@ -100,13 +99,14 @@ namespace ManualDi.Main
         
         private ResolvedInstance ResolveSingle(TypeBinding typeBinding)
         {
-            if (singleInstances.TryGetValue(typeBinding, out var singleInstance))
+            var instance = typeBinding.SingleInstance;
+            if (instance is not null)
             {
-                return ResolvedInstance.Reused(singleInstance);
+                return ResolvedInstance.Reused(instance);
             }
 
-            var instance = typeBinding.Create(this);
-            singleInstances[typeBinding] = instance;
+            instance = typeBinding.Create(this);
+            typeBinding.SingleInstance = instance;
 
             return ResolvedInstance.New(instance);
         }

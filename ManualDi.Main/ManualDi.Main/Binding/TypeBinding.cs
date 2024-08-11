@@ -23,6 +23,8 @@ namespace ManualDi.Main
         public bool IsLazy { get; set; } = true;
         public bool TryToDispose { get; set; } = true;
         public Dictionary<object, object>? Metadata { get; set; }
+        
+        internal object? SingleInstance { get; set; }
 
         public abstract object Create(IDiContainer container);
         

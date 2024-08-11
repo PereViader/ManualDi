@@ -39,9 +39,9 @@ namespace ManualDi.Main
         public override Type InterfaceType => typeof(TInterface);
         public override Type ConcreteType => typeof(TConcrete);
         public CreateDelegate<TConcrete>? CreateConcreteDelegate { get; set; }
-        public CreateDelegate<TInterface>? CreateInterfaceDelegate { get; set; }
         public InjectionDelegate<TConcrete>? InjectionDelegates { get; set; }
         public InitializationDelegate<TConcrete>? InitializationDelegate { get; set; }
+        public override bool NeedsInitialize => InitializationDelegate is not null;
         
         public override (object instance, bool isNew) Create(IDiContainer container)
         {
@@ -54,9 +54,7 @@ namespace ManualDi.Main
             throw new InvalidOperationException(
                 $"Could not create object for TypeBinding with apparent type {typeof(TInterface).FullName} and concrete type {typeof(TConcrete).FullName}");
         }
-
-        public override bool NeedsInitialize => InitializationDelegate is not null;
-
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private (object instance, bool isNew)? TryCreate(IDiContainer container)
         {
@@ -90,11 +88,6 @@ namespace ManualDi.Main
             if (CreateConcreteDelegate is not null)
             {
                 return CreateConcreteDelegate.Invoke(container);
-            }
-
-            if (CreateInterfaceDelegate is not null)
-            {
-                return CreateInterfaceDelegate.Invoke(container);
             }
 
             return null;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
 {
@@ -8,6 +9,7 @@ namespace ManualDi.Main
         private readonly List<List<Action<IDiContainer>>?> bindingInitializationCommands = new();
         private int nestedCount;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Queue(TypeBinding typeBinding, object instance)
         {
             if (!typeBinding.NeedsInitialize)
@@ -39,6 +41,7 @@ namespace ManualDi.Main
             commands.Add(c => typeBinding.InitializeObject(instance, c));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void InitializeCurrentLevelQueued(IDiContainer container)
         {
             nestedCount++;

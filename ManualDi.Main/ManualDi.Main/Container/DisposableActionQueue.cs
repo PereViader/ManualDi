@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
 {
@@ -8,6 +9,7 @@ namespace ManualDi.Main
         private readonly List<IDisposable> disposables = new();
         private bool disposing = false;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void QueueDispose(IDisposable disposable)
         {
             if (disposing)
@@ -20,11 +22,13 @@ namespace ManualDi.Main
             disposables.Add(disposable);
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void QueueDispose(Action disposableAction)
         {
             QueueDispose(new ActionDisposableWrapper(disposableAction));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DisposeAll()
         {
             disposing = true;

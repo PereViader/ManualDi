@@ -47,7 +47,8 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryResolveContainer(Type type, ResolutionConstraints? resolutionConstraints, [MaybeNullWhen(false)] out object resolution)
         {
-            if (TryGetTypeForConstraint(type, resolutionConstraints, out var typeBinding))
+            var typeBinding = GetTypeForConstraint(type, resolutionConstraints);
+            if (typeBinding is not null)
             {
                 resolution = ResolveBinding(typeBinding);
                 return true;
@@ -93,31 +94,27 @@ namespace ManualDi.Main
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool TryGetTypeForConstraint(Type type, ResolutionConstraints? resolutionConstraints, [MaybeNullWhen(false)] out TypeBinding typeBinding)
+        private TypeBinding? GetTypeForConstraint(Type type, ResolutionConstraints? resolutionConstraints)
         {
-            if (!allTypeBindings.TryGetValue(type, out var bindings) || bindings.Count == 0)
+            if (!allTypeBindings.TryGetValue(type, out var bindings))
             {
-                typeBinding = default;
-                return false;
+                return null;
             }
 
             if (resolutionConstraints is null)
             {
-                typeBinding = bindings[0];
-                return true;
+                return bindings[0];
             }
 
             foreach (var binding in bindings)
             {
                 if (resolutionConstraints.Accepts(binding))
                 {
-                    typeBinding = binding;
-                    return true;
+                    return binding;
                 }
             }
-
-            typeBinding = default;
-            return false;
+            
+            return null;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

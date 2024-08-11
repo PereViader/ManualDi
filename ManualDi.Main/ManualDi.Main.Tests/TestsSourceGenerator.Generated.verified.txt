@@ -1,13 +1,17 @@
 ﻿[  
+using System.Runtime.CompilerServices;
+
 namespace ManualDi.Main
 {
     public static partial class ManualDiGeneratedExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<T, Public> FromConstructor<T>(this TypeBinding<T, Public> typeBinding)
         {
             return typeBinding.FromMethod(static c => new Public());
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<T, Public> Default<T>(this TypeBinding<T, Public> typeBinding)
         {
             return typeBinding;
@@ -16,15 +20,19 @@ namespace ManualDi.Main
 }
 
   
+using System.Runtime.CompilerServices;
+
 namespace ManualDi.Main
 {
     public static partial class ManualDiGeneratedExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, Internal> FromConstructor<T>(this TypeBinding<T, Internal> typeBinding)
         {
             return typeBinding.FromMethod(static c => new Internal());
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, Internal> Default<T>(this TypeBinding<T, Internal> typeBinding)
         {
             return typeBinding;
@@ -33,10 +41,13 @@ namespace ManualDi.Main
 }
 
   
+using System.Runtime.CompilerServices;
+
 namespace ManualDi.Main
 {
     public static partial class ManualDiGeneratedExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, InternalPrivateConstructor> Default<T>(this TypeBinding<T, InternalPrivateConstructor> typeBinding)
         {
             return typeBinding;
@@ -45,15 +56,19 @@ namespace ManualDi.Main
 }
 
   
+using System.Runtime.CompilerServices;
+
 namespace ManualDi.Main
 {
     public static partial class ManualDiGeneratedExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<T, PublicAndPrivateConstructor> FromConstructor<T>(this TypeBinding<T, PublicAndPrivateConstructor> typeBinding)
         {
             return typeBinding.FromMethod(static c => new PublicAndPrivateConstructor(c.Resolve<System.Int32>()));
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<T, PublicAndPrivateConstructor> Default<T>(this TypeBinding<T, PublicAndPrivateConstructor> typeBinding)
         {
             return typeBinding;
@@ -62,15 +77,19 @@ namespace ManualDi.Main
 }
 
   
+using System.Runtime.CompilerServices;
+
 namespace ManualDi.Main
 {
     public static partial class ManualDiGeneratedExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, Internal2> FromConstructor<T>(this TypeBinding<T, Internal2> typeBinding)
         {
             return typeBinding.FromMethod(static c => new Internal2());
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, Internal2> Default<T>(this TypeBinding<T, Internal2> typeBinding)
         {
             return typeBinding;
@@ -79,20 +98,25 @@ namespace ManualDi.Main
 }
 
   
+using System.Runtime.CompilerServices;
+
 namespace ManualDi.Main
 {
     public static partial class ManualDiGeneratedExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<T, InternalInitialize> FromConstructor<T>(this TypeBinding<T, InternalInitialize> typeBinding)
         {
             return typeBinding.FromMethod(static c => new InternalInitialize());
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, InternalInitialize> Initialize<T>(this TypeBinding<T, InternalInitialize> typeBinding)
         {
             return typeBinding.Initialize(static (o, c) => o.Initialize());
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, InternalInitialize> Default<T>(this TypeBinding<T, InternalInitialize> typeBinding)
         {
             return typeBinding.Initialize();
@@ -101,20 +125,25 @@ namespace ManualDi.Main
 }
 
   
+using System.Runtime.CompilerServices;
+
 namespace ManualDi.Main
 {
     public static partial class ManualDiGeneratedExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<T, PublicInitialize> FromConstructor<T>(this TypeBinding<T, PublicInitialize> typeBinding)
         {
             return typeBinding.FromMethod(static c => new PublicInitialize());
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<T, PublicInitialize> Initialize<T>(this TypeBinding<T, PublicInitialize> typeBinding)
         {
             return typeBinding.Initialize(static (o, c) => o.Initialize());
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, PublicInitialize> Inject<T>(this TypeBinding<T, PublicInitialize> typeBinding)
         {
             return typeBinding.Inject(static (o, c) => 
@@ -123,6 +152,7 @@ namespace ManualDi.Main
             });
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, PublicInitialize> Default<T>(this TypeBinding<T, PublicInitialize> typeBinding)
         {
             return typeBinding.Initialize().Inject();
@@ -131,15 +161,19 @@ namespace ManualDi.Main
 }
 
   
+using System.Runtime.CompilerServices;
+
 namespace ManualDi.Main
 {
     public static partial class ManualDiGeneratedExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, StaticInitialize> FromConstructor<T>(this TypeBinding<T, StaticInitialize> typeBinding)
         {
             return typeBinding.FromMethod(static c => new StaticInitialize());
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, StaticInitialize> Default<T>(this TypeBinding<T, StaticInitialize> typeBinding)
         {
             return typeBinding;
@@ -148,15 +182,19 @@ namespace ManualDi.Main
 }
 
   
+using System.Runtime.CompilerServices;
+
 namespace ManualDi.Main
 {
     public static partial class ManualDiGeneratedExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, InternalInject> FromConstructor<T>(this TypeBinding<T, InternalInject> typeBinding)
         {
             return typeBinding.FromMethod(static c => new InternalInject());
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, InternalInject> Inject<T>(this TypeBinding<T, InternalInject> typeBinding)
         {
             return typeBinding.Inject(static (o, c) => 
@@ -165,6 +203,7 @@ namespace ManualDi.Main
             });
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, InternalInject> Default<T>(this TypeBinding<T, InternalInject> typeBinding)
         {
             return typeBinding.Inject();
@@ -173,15 +212,19 @@ namespace ManualDi.Main
 }
 
   
+using System.Runtime.CompilerServices;
+
 namespace ManualDi.Main
 {
     public static partial class ManualDiGeneratedExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, PublicInject> FromConstructor<T>(this TypeBinding<T, PublicInject> typeBinding)
         {
             return typeBinding.FromMethod(static c => new PublicInject());
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, PublicInject> Inject<T>(this TypeBinding<T, PublicInject> typeBinding)
         {
             return typeBinding.Inject(static (o, c) => 
@@ -190,6 +233,7 @@ namespace ManualDi.Main
             });
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, PublicInject> Default<T>(this TypeBinding<T, PublicInject> typeBinding)
         {
             return typeBinding.Inject();
@@ -198,15 +242,19 @@ namespace ManualDi.Main
 }
 
   
+using System.Runtime.CompilerServices;
+
 namespace ManualDi.Main
 {
     public static partial class ManualDiGeneratedExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, StaticInject> FromConstructor<T>(this TypeBinding<T, StaticInject> typeBinding)
         {
             return typeBinding.FromMethod(static c => new StaticInject());
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, StaticInject> Default<T>(this TypeBinding<T, StaticInject> typeBinding)
         {
             return typeBinding;
@@ -215,15 +263,19 @@ namespace ManualDi.Main
 }
 
   
+using System.Runtime.CompilerServices;
+
 namespace ManualDi.Main
 {
     public static partial class ManualDiGeneratedExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, ConstructorWithGenericArgument> FromConstructor<T>(this TypeBinding<T, ConstructorWithGenericArgument> typeBinding)
         {
             return typeBinding.FromMethod(static c => new ConstructorWithGenericArgument(c.Resolve<Func<System.Int32>>()));
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, ConstructorWithGenericArgument> Default<T>(this TypeBinding<T, ConstructorWithGenericArgument> typeBinding)
         {
             return typeBinding;
@@ -232,15 +284,19 @@ namespace ManualDi.Main
 }
 
   
+using System.Runtime.CompilerServices;
+
 namespace ManualDi.Main
 {
     public static partial class ManualDiGeneratedExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, InjectPropertyAndMethod> FromConstructor<T>(this TypeBinding<T, InjectPropertyAndMethod> typeBinding)
         {
             return typeBinding.FromMethod(static c => new InjectPropertyAndMethod());
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, InjectPropertyAndMethod> Inject<T>(this TypeBinding<T, InjectPropertyAndMethod> typeBinding)
         {
             return typeBinding.Inject(static (o, c) => 
@@ -250,6 +306,7 @@ namespace ManualDi.Main
             });
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, InjectPropertyAndMethod> Default<T>(this TypeBinding<T, InjectPropertyAndMethod> typeBinding)
         {
             return typeBinding.Inject();
@@ -258,15 +315,19 @@ namespace ManualDi.Main
 }
 
   
+using System.Runtime.CompilerServices;
+
 namespace ManualDi.Main
 {
     public static partial class ManualDiGeneratedExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<T, InjectReferencePropertyClass> FromConstructor<T>(this TypeBinding<T, InjectReferencePropertyClass> typeBinding)
         {
             return typeBinding.FromMethod(static c => new InjectReferencePropertyClass());
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, InjectReferencePropertyClass> Inject<T>(this TypeBinding<T, InjectReferencePropertyClass> typeBinding)
         {
             return typeBinding.Inject(static (o, c) => 
@@ -277,6 +338,7 @@ namespace ManualDi.Main
             });
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, InjectReferencePropertyClass> Default<T>(this TypeBinding<T, InjectReferencePropertyClass> typeBinding)
         {
             return typeBinding.Inject();
@@ -285,15 +347,19 @@ namespace ManualDi.Main
 }
 
   
+using System.Runtime.CompilerServices;
+
 namespace ManualDi.Main
 {
     public static partial class ManualDiGeneratedExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<T, InjectValueNullablePropertyClass> FromConstructor<T>(this TypeBinding<T, InjectValueNullablePropertyClass> typeBinding)
         {
             return typeBinding.FromMethod(static c => new InjectValueNullablePropertyClass());
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, InjectValueNullablePropertyClass> Inject<T>(this TypeBinding<T, InjectValueNullablePropertyClass> typeBinding)
         {
             return typeBinding.Inject(static (o, c) => 
@@ -305,6 +371,7 @@ namespace ManualDi.Main
             });
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, InjectValueNullablePropertyClass> Default<T>(this TypeBinding<T, InjectValueNullablePropertyClass> typeBinding)
         {
             return typeBinding.Inject();
@@ -313,20 +380,25 @@ namespace ManualDi.Main
 }
 
   
+using System.Runtime.CompilerServices;
+
 namespace ManualDi.Main
 {
     public static partial class ManualDiGeneratedExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, Obsolete> FromConstructor<T>(this TypeBinding<T, Obsolete> typeBinding)
         {
             return typeBinding.FromMethod(static c => new Obsolete());
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, Obsolete> Initialize<T>(this TypeBinding<T, Obsolete> typeBinding)
         {
             return typeBinding.Initialize(static (o, c) => o.Initialize());
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, Obsolete> Inject<T>(this TypeBinding<T, Obsolete> typeBinding)
         {
             return typeBinding.Inject(static (o, c) => 
@@ -335,6 +407,7 @@ namespace ManualDi.Main
             });
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, Obsolete> Default<T>(this TypeBinding<T, Obsolete> typeBinding)
         {
             return typeBinding.Initialize().Inject();
@@ -343,22 +416,27 @@ namespace ManualDi.Main
 }
 
   
+using System.Runtime.CompilerServices;
+
 namespace ManualDi.Main
 {
     public static partial class ManualDiGeneratedExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<T, NullableDependency> FromConstructor<T>(this TypeBinding<T, NullableDependency> typeBinding)
         {
             return typeBinding.FromMethod(static c => new NullableDependency(c.ResolveNullable<System.Object>(),
                 c.Resolve<Nullable<System.Int32>>()));
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<T, NullableDependency> Initialize<T>(this TypeBinding<T, NullableDependency> typeBinding)
         {
             return typeBinding.Initialize(static (o, c) => o.Initialize(c.ResolveNullable<System.Object>(),
                 c.ResolveNullableValue<int>()));
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<T, NullableDependency> Inject<T>(this TypeBinding<T, NullableDependency> typeBinding)
         {
             return typeBinding.Inject(static (o, c) => 
@@ -370,6 +448,7 @@ namespace ManualDi.Main
             });
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<T, NullableDependency> Default<T>(this TypeBinding<T, NullableDependency> typeBinding)
         {
             return typeBinding.Initialize().Inject();
@@ -378,15 +457,19 @@ namespace ManualDi.Main
 }
 
   
+using System.Runtime.CompilerServices;
+
 namespace ManualDi.Main
 {
     public static partial class ManualDiGeneratedExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, Static.PublicNested> FromConstructor<T>(this TypeBinding<T, Static.PublicNested> typeBinding)
         {
             return typeBinding.FromMethod(static c => new Static.PublicNested());
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, Static.PublicNested> Default<T>(this TypeBinding<T, Static.PublicNested> typeBinding)
         {
             return typeBinding;
@@ -395,15 +478,19 @@ namespace ManualDi.Main
 }
 
   
+using System.Runtime.CompilerServices;
+
 namespace ManualDi.Main
 {
     public static partial class ManualDiGeneratedExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, Static.InternalNested> FromConstructor<T>(this TypeBinding<T, Static.InternalNested> typeBinding)
         {
             return typeBinding.FromMethod(static c => new Static.InternalNested());
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, Static.InternalNested> Default<T>(this TypeBinding<T, Static.InternalNested> typeBinding)
         {
             return typeBinding;
@@ -412,10 +499,13 @@ namespace ManualDi.Main
 }
 
   
+using System.Runtime.CompilerServices;
+
 namespace ManualDi.Main
 {
     public static partial class ManualDiGeneratedExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<T, UnityEngine.Object> Default<T>(this TypeBinding<T, UnityEngine.Object> typeBinding)
         {
             return typeBinding;
@@ -424,15 +514,19 @@ namespace ManualDi.Main
 }
 
   
+using System.Runtime.CompilerServices;
+
 namespace ManualDi.Main
 {
     public static partial class ManualDiGeneratedExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<T, UnityEngine.MonoBeheviour> Initialize<T>(this TypeBinding<T, UnityEngine.MonoBeheviour> typeBinding)
         {
             return typeBinding.Initialize(static (o, c) => o.Initialize());
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<T, UnityEngine.MonoBeheviour> Inject<T>(this TypeBinding<T, UnityEngine.MonoBeheviour> typeBinding)
         {
             return typeBinding.Inject(static (o, c) => 
@@ -441,6 +535,7 @@ namespace ManualDi.Main
             });
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<T, UnityEngine.MonoBeheviour> Default<T>(this TypeBinding<T, UnityEngine.MonoBeheviour> typeBinding)
         {
             return typeBinding.Initialize().Inject();

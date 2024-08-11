@@ -72,6 +72,8 @@ namespace ManualDi.Main.Generators
                 var stringBuilder = new StringBuilder();
 
                 stringBuilder.AppendLine("""
+                using System.Runtime.CompilerServices;
+                
                 namespace ManualDi.Main
                 {
                     public static partial class ManualDiGeneratedExtensions
@@ -245,6 +247,7 @@ namespace ManualDi.Main.Generators
             var arguments = CreateArgumentsResolution(constructor);
             
             context.StringBuilder.AppendLine($$"""
+                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
                     {{context.ObsoleteText}}{{accessibilityString}} static TypeBinding<T, {{context.ClassName}}> FromConstructor<T>(this TypeBinding<T, {{context.ClassName}}> typeBinding)
                     {
                         return typeBinding.FromMethod(static c => new {{context.ClassName}}({{arguments}}));
@@ -291,6 +294,7 @@ namespace ManualDi.Main.Generators
             var arguments = CreateArgumentsResolution(initializeMethod);
 
             context.StringBuilder.AppendLine($$"""
+                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
                     {{context.ObsoleteText}}{{accessibilityString}} static TypeBinding<T, {{context.ClassName}}> Initialize<T>(this TypeBinding<T, {{context.ClassName}}> typeBinding)
                     {
                         return typeBinding.Initialize(static (o, c) => o.Initialize({{arguments}}));
@@ -333,6 +337,7 @@ namespace ManualDi.Main.Generators
             var accessibilityString = GetAccessibilityString(accessibility);
             
             generationClassContext.StringBuilder.AppendLine($$"""
+                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
                     {{generationClassContext.ObsoleteText}}{{accessibilityString}} static TypeBinding<T, {{generationClassContext.ClassName}}> Inject<T>(this TypeBinding<T, {{generationClassContext.ClassName}}> typeBinding)
                     {
                         return typeBinding.Inject(static (o, c) => 
@@ -375,6 +380,7 @@ namespace ManualDi.Main.Generators
             var accessibiliyString = GetAccessibilityString(accessibility);
             
             generationClassContext.StringBuilder.Append($$"""
+                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
                     {{generationClassContext.ObsoleteText}}{{accessibiliyString}} static TypeBinding<T, {{generationClassContext.ClassName}}> Default<T>(this TypeBinding<T, {{generationClassContext.ClassName}}> typeBinding)
                     {
                         return typeBinding

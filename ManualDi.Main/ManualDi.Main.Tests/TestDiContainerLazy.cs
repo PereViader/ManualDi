@@ -22,6 +22,7 @@ public class TestDiContainerLazy
     public void TestNonLazy()
     {
         var builderFunc = Substitute.For<CreateDelegate<object>>();
+        builderFunc.Invoke(Arg.Any<IDiContainer>()).Returns(new object());
 
         var container = new DiContainerBuilder().Install(x =>
         {

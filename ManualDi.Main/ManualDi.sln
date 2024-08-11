@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManualDi.Main.Generators", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManualDi.Main.Playground", "ManualDi.Main.Playground\ManualDi.Main.Playground.csproj", "{F8143E65-AC5A-45A1-9202-D62AAC0280F9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManualDi.Main.Benchmark", "ManualDi.Main.Benchmark\ManualDi.Main.Benchmark.csproj", "{1ED51D6F-43ED-4F13-8770-6320AF0C78A1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{F8143E65-AC5A-45A1-9202-D62AAC0280F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F8143E65-AC5A-45A1-9202-D62AAC0280F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F8143E65-AC5A-45A1-9202-D62AAC0280F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1ED51D6F-43ED-4F13-8770-6320AF0C78A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1ED51D6F-43ED-4F13-8770-6320AF0C78A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1ED51D6F-43ED-4F13-8770-6320AF0C78A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1ED51D6F-43ED-4F13-8770-6320AF0C78A1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

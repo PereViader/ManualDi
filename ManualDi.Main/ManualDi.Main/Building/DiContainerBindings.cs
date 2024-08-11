@@ -14,9 +14,9 @@ namespace ManualDi.Main
 
         private IDiContainer? parentDiContainer;
 
-        public void AddBinding(TypeBinding typeBinding)
+        public void AddBinding<TInterface, TConcrete>(TypeBinding<TInterface, TConcrete> typeBinding)
         {
-            Type type = typeBinding.InterfaceType;
+            Type type = typeof(TInterface);
             if (!typeBindings.TryGetValue(type, out var bindings))
             {
                 bindings = new List<TypeBinding>();

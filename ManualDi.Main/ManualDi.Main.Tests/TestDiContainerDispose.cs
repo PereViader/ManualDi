@@ -12,9 +12,9 @@ public class TestDiContainerDispose
     [Test]
     public void TestDisposeCalledByDefault()
     {
-        IDiContainer container = new DiContainerBindings().Install(x =>
+        IDiContainer container = new DiContainerBindings().Install(b =>
         {
-            x.Bind<IDisposable>().FromInstance(Substitute.For<IDisposable>());
+            b.Bind<IDisposable>().FromInstance(Substitute.For<IDisposable>());
         }).Build();
 
         var disposable = container.Resolve<IDisposable>();
@@ -27,9 +27,9 @@ public class TestDiContainerDispose
     [Test]
     public void TestDontDisposePreventsDispose()
     {
-        IDiContainer container = new DiContainerBindings().Install(x =>
+        IDiContainer container = new DiContainerBindings().Install(b =>
         {
-            x.Bind<IDisposable>().FromInstance(Substitute.For<IDisposable>()).DontDispose();
+            b.Bind<IDisposable>().FromInstance(Substitute.For<IDisposable>()).DontDispose();
         }).Build();
 
         var disposable = container.Resolve<IDisposable>();
@@ -45,15 +45,15 @@ public class TestDiContainerDispose
         var disposable1 = Substitute.For<IA>();
         var disposable2 = Substitute.For<IB>();
             
-        IDiContainer container = new DiContainerBindings().Install(x =>
+        IDiContainer container = new DiContainerBindings().Install(b =>
         {
-            x.Bind<IA>().FromMethod(c =>
+            b.Bind<IA>().FromMethod(c =>
             {
                 _ = c.Resolve<IB>();
                 return disposable1;
             });
 
-            x.Bind<IB>().FromInstance(disposable2);
+            b.Bind<IB>().FromInstance(disposable2);
         }).Build();
 
         _ = container.Resolve<IA>();
@@ -72,9 +72,9 @@ public class TestDiContainerDispose
         var instance = new object();
         var disposeAction = Substitute.For<Action>();
 
-        IDiContainer container = new DiContainerBindings().Install(x =>
+        IDiContainer container = new DiContainerBindings().Install(b =>
         {
-            x.Bind<object>()
+            b.Bind<object>()
                 .FromInstance(instance)
                 .Dispose((_, _) => disposeAction);
         }).Build();

@@ -26,10 +26,7 @@ public class Benchmark
     private void SetupManualDi()
     {
         _manualDiContainer = new DiContainerBindings()
-            .Install(b =>
-            {
-                b.InstallServices();
-            })
+            .InstallServices()
             .Build();
     }
 

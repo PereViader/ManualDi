@@ -9,9 +9,9 @@ public class TestDiContainerFromMethods
     {
         var instance = new object();
 
-        var container = new DiContainerBindings().Install(x =>
+        var container = new DiContainerBindings().Install(b =>
         {
-            x.Bind<object>().FromInstance(instance);
+            b.Bind<object>().FromInstance(instance);
         }).Build();
 
         var resolved = container.Resolve<object>();
@@ -22,9 +22,9 @@ public class TestDiContainerFromMethods
     public void TestFromMethod()
     {
         var instance = new object();
-        var container = new DiContainerBindings().Install(x =>
+        var container = new DiContainerBindings().Install(b =>
         {
-            x.Bind<object>().FromMethod(c => instance);
+            b.Bind<object>().FromMethod(c => instance);
         }).Build();
 
         var resolved = container.Resolve<object>();
@@ -35,10 +35,10 @@ public class TestDiContainerFromMethods
     public void TestFromContainer()
     {
         int instance = 5;
-        var container = new DiContainerBindings().Install(x =>
+        var container = new DiContainerBindings().Install(b =>
         {
-            x.Bind<int>().FromInstance(instance);
-            x.Bind<object, int>().FromContainer();
+            b.Bind<int>().FromInstance(instance);
+            b.Bind<object, int>().FromContainer();
         }).Build();
 
         var resolved = container.Resolve<object>();

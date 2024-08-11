@@ -7,9 +7,9 @@ public class TestDiContianerTryResolve
     [Test]
     public void TestTryResolveGenericSuccess()
     {
-        var container = new DiContainerBindings().Install(x =>
+        var container = new DiContainerBindings().Install(b =>
         {
-            x.Bind<int>().FromInstance(1);
+            b.Bind<int>().FromInstance(1);
         }).Build();
 
         var success = container.TryResolve<int>(out int resolution);
@@ -29,9 +29,9 @@ public class TestDiContianerTryResolve
     [Test]
     public void TestTryResolveNonGenericSuccess()
     {
-        var container = new DiContainerBindings().Install(x =>
+        var container = new DiContainerBindings().Install(b =>
         {
-            x.Bind<int>().FromInstance(1);
+            b.Bind<int>().FromInstance(1);
         }).Build();
 
         var success = container.TryResolve(typeof(int), out object resolution);

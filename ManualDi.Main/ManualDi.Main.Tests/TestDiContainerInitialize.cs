@@ -11,9 +11,9 @@ public class TestDiContainerInitialize
         var instance = new object();
         var initializationDelegate = Substitute.For<InitializationDelegate<object>>();
 
-        var container = new DiContainerBindings().Install(x =>
+        var container = new DiContainerBindings().Install(b =>
         {
-            x.Bind<object>()
+            b.Bind<object>()
                 .FromInstance(instance)
                 .Initialize(initializationDelegate);
         }).Build();

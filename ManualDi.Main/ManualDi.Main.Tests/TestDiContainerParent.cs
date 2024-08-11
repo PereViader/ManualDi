@@ -10,9 +10,9 @@ public class TestDiContainerParent
         var instance = new object();
 
         var parentContainer = new DiContainerBindings()
-            .Install(x =>
+            .Install(b =>
             {
-                x.Bind<object>().FromInstance(instance);
+                b.Bind<object>().FromInstance(instance);
             })
             .Build();
 
@@ -32,17 +32,17 @@ public class TestDiContainerParent
         var instanceChild = new object();
 
         var parentContainer = new DiContainerBindings()
-            .Install(x =>
+            .Install(b =>
             {
-                x.Bind<object>().FromInstance(instanceParent);
+                b.Bind<object>().FromInstance(instanceParent);
             })
             .Build();
 
         var childContainer = new DiContainerBindings()
             .WithParentContainer(parentContainer)
-            .Install(x =>
+            .Install(b =>
             {
-                x.Bind<object>().FromInstance(instanceChild);
+                b.Bind<object>().FromInstance(instanceChild);
             })
             .Build();
 

@@ -13,9 +13,9 @@ namespace ManualDi.Main.Tests
 
             factoryMethodDelegate.Invoke(Arg.Any<IDiContainer>()).Returns(c => new object());
 
-            var container = new DiContainerBindings().Install(x =>
+            var container = new DiContainerBindings().Install(b =>
             {
-                x.Bind<object>().FromMethod(factoryMethodDelegate).Inject(injectionDelegate).Single();
+                b.Bind<object>().FromMethod(factoryMethodDelegate).Inject(injectionDelegate).Single();
             }).Build();
 
             var resolution1 = container.Resolve<object>();
@@ -35,9 +35,9 @@ namespace ManualDi.Main.Tests
 
             factoryMethodDelegate.Invoke(Arg.Any<IDiContainer>()).Returns(c => new object());
 
-            var container = new DiContainerBindings().Install(x =>
+            var container = new DiContainerBindings().Install(b =>
             {
-                x.Bind<object>().FromMethod(factoryMethodDelegate).Inject(injectionDelegate).Transient();
+                b.Bind<object>().FromMethod(factoryMethodDelegate).Inject(injectionDelegate).Transient();
             }).Build();
 
             var resolution1 = container.Resolve<object>();

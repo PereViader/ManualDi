@@ -12,7 +12,7 @@ public class TestDiContainerDispose
     [Test]
     public void TestDisposeCalledByDefault()
     {
-        IDiContainer container = new DiContainerBuilder().Install(x =>
+        IDiContainer container = new DiContainerBindings().Install(x =>
         {
             x.Bind<IDisposable>().FromInstance(Substitute.For<IDisposable>());
         }).Build();
@@ -27,7 +27,7 @@ public class TestDiContainerDispose
     [Test]
     public void TestDontDisposePreventsDispose()
     {
-        IDiContainer container = new DiContainerBuilder().Install(x =>
+        IDiContainer container = new DiContainerBindings().Install(x =>
         {
             x.Bind<IDisposable>().FromInstance(Substitute.For<IDisposable>()).DontDispose();
         }).Build();
@@ -45,7 +45,7 @@ public class TestDiContainerDispose
         var disposable1 = Substitute.For<IA>();
         var disposable2 = Substitute.For<IB>();
             
-        IDiContainer container = new DiContainerBuilder().Install(x =>
+        IDiContainer container = new DiContainerBindings().Install(x =>
         {
             x.Bind<IA>().FromMethod(c =>
             {
@@ -72,7 +72,7 @@ public class TestDiContainerDispose
         var instance = new object();
         var disposeAction = Substitute.For<Action>();
 
-        IDiContainer container = new DiContainerBuilder().Install(x =>
+        IDiContainer container = new DiContainerBindings().Install(x =>
         {
             x.Bind<object>()
                 .FromInstance(instance)

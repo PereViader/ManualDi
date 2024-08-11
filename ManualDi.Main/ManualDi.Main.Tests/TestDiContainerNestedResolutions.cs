@@ -30,7 +30,7 @@ public class TestDiContainerNestedResolutions
         var childInject = Substitute.For<IChildInject>();
         var childInit = Substitute.For<IChildInit>();
 
-        var container = new DiContainerBuilder().Install(x =>
+        var container = new DiContainerBindings().Install(x =>
         {
             x.Bind<IParent>()
                 .FromInstance(parent)

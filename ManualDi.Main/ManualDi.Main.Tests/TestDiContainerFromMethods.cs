@@ -9,7 +9,7 @@ public class TestDiContainerFromMethods
     {
         var instance = new object();
 
-        var container = new DiContainerBuilder().Install(x =>
+        var container = new DiContainerBindings().Install(x =>
         {
             x.Bind<object>().FromInstance(instance);
         }).Build();
@@ -22,7 +22,7 @@ public class TestDiContainerFromMethods
     public void TestFromMethod()
     {
         var instance = new object();
-        var container = new DiContainerBuilder().Install(x =>
+        var container = new DiContainerBindings().Install(x =>
         {
             x.Bind<object>().FromMethod(c => instance);
         }).Build();
@@ -35,7 +35,7 @@ public class TestDiContainerFromMethods
     public void TestFromContainer()
     {
         int instance = 5;
-        var container = new DiContainerBuilder().Install(x =>
+        var container = new DiContainerBindings().Install(x =>
         {
             x.Bind<int>().FromInstance(instance);
             x.Bind<object, int>().FromContainer();

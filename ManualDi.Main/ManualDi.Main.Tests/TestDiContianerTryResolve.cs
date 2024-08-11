@@ -7,7 +7,7 @@ public class TestDiContianerTryResolve
     [Test]
     public void TestTryResolveGenericSuccess()
     {
-        var container = new DiContainerBuilder().Install(x =>
+        var container = new DiContainerBindings().Install(x =>
         {
             x.Bind<int>().FromInstance(1);
         }).Build();
@@ -20,7 +20,7 @@ public class TestDiContianerTryResolve
     [Test]
     public void TestTryResolveGenericFailure()
     {
-        var container = new DiContainerBuilder().Build();
+        var container = new DiContainerBindings().Build();
 
         var success = container.TryResolve<int>(out _);
         Assert.That(success, Is.False);
@@ -29,7 +29,7 @@ public class TestDiContianerTryResolve
     [Test]
     public void TestTryResolveNonGenericSuccess()
     {
-        var container = new DiContainerBuilder().Install(x =>
+        var container = new DiContainerBindings().Install(x =>
         {
             x.Bind<int>().FromInstance(1);
         }).Build();
@@ -42,7 +42,7 @@ public class TestDiContianerTryResolve
     [Test]
     public void TestTryResolveNonGenericFailure()
     {
-        var container = new DiContainerBuilder().Build();
+        var container = new DiContainerBindings().Build();
 
         var success = container.TryResolve(typeof(int), out _);
         Assert.That(success, Is.False);

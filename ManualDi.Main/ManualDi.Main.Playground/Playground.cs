@@ -3,7 +3,7 @@ using UnityEngine;
 
 Console.WriteLine("ManualDi Playground");
 
-var container = new DiContainerBuilder().Install(b =>
+var container = new DiContainerBindings().Install(b =>
 {
 }).Build();
 

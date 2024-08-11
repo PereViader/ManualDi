@@ -11,7 +11,7 @@ public class TestDiContainerInject
         var instance = new object();
         var injectMethod = Substitute.For<InjectionDelegate<object>>();
 
-        var container = new DiContainerBuilder().Install(x =>
+        var container = new DiContainerBindings().Install(x =>
         {
             x.Bind<object>()
                 .FromInstance(instance)

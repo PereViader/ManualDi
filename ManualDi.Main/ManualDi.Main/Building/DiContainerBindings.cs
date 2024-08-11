@@ -11,6 +11,7 @@ namespace ManualDi.Main
         private readonly List<ContainerDelegate> initializationDelegates = new();
         private readonly List<ContainerDelegate> injectDelegates = new();
         
+        public IDiContainer? ParentDiContainer { get; private set; }
         public Dictionary<Type, List<ITypeBinding>> TypeBindings { get; } = new();
         public IReadOnlyList<Action> DisposeActions => disposeActions;
         public IReadOnlyList<ContainerDelegate> InitializationDelegates => initializationDelegates;
@@ -41,6 +42,40 @@ namespace ManualDi.Main
         public void QueueDispose(Action action)
         {
             disposeActions.Add(action);
+        }
+        
+        public DiContainerBindings WithParentContainer(IDiContainer? diContainer)
+        {
+            ParentDiContainer = diContainer;
+            return this;
+        }
+        
+        public IDiContainer Build()
+        {
+            var diContainer = new DiContainer()
+            {
+                TypeBindings = TypeBindings,
+                ParentDiContainer = ParentDiContainer,
+            };
+
+            foreach (var action in disposeActions)
+            {
+                diContainer.QueueDispose(action);
+            }
+
+            diContainer.Init();
+            
+            foreach (var injectDelegate in injectDelegates)
+            {
+                injectDelegate.Invoke(diContainer);
+            }
+
+            foreach (var initializationDelegate in initializationDelegates)
+            {
+                initializationDelegate.Invoke(diContainer);
+            }
+
+            return diContainer;
         }
     }
 }

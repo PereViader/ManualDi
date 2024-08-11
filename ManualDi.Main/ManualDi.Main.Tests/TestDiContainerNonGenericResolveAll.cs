@@ -15,7 +15,7 @@ public class TestDiContainerNonGenericResolveAll
     [Test]
     public void TestResolveAllEmptyReturnsEmpty()
     {
-        var container = new DiContainerBuilder().Build();
+        var container = new DiContainerBindings().Build();
 
         List<object> resolved = container.ResolveAll(typeof(int));
 
@@ -26,7 +26,7 @@ public class TestDiContainerNonGenericResolveAll
     public void TestResolveAllDifferentTypeList()
     {
         var child = new Child();
-        var container = new DiContainerBuilder().Install(b =>
+        var container = new DiContainerBindings().Install(b =>
         {
             b.Bind<Child>().FromInstance(child);
         }).Build();

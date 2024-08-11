@@ -10,7 +10,7 @@ public class TestDiContainerMetadata
         var instance1 = new object();
         var instance2 = new object();
 
-        var container = new DiContainerBuilder().Install(x =>
+        var container = new DiContainerBindings().Install(x =>
         {
             x.Bind<object>().FromInstance(instance1).WithMetadata(nameof(instance1));
             x.Bind<object>().FromInstance(instance2).WithMetadata(nameof(instance2));
@@ -29,7 +29,7 @@ public class TestDiContainerMetadata
         var instance1 = new object();
         var instance2 = new object();
 
-        var container = new DiContainerBuilder().Install(x =>
+        var container = new DiContainerBindings().Install(x =>
         {
             x.Bind<object>().FromInstance(instance1).WithMetadata("Key", 5);
             x.Bind<object>().FromInstance(instance2).WithMetadata("Key", 10);
@@ -48,7 +48,7 @@ public class TestDiContainerMetadata
         var instance1 = new object();
         var instance2 = new object();
 
-        var container = new DiContainerBuilder().Install(x =>
+        var container = new DiContainerBindings().Install(x =>
         {
             x.Bind<object>().FromInstance(instance1).WithMetadata("Key", 5);
             x.Bind<object>().FromInstance(instance2).WithMetadata("Key", 10);
@@ -67,7 +67,7 @@ public class TestDiContainerMetadata
         var instance1 = new object();
         var instance2 = new object();
 
-        var container = new DiContainerBuilder().Install(x =>
+        var container = new DiContainerBindings().Install(x =>
         {
             x.Bind<object>().FromInstance(instance1).WithMetadata("Key", 5);
             x.Bind<object>().FromInstance(instance2).WithMetadata("Key", 10);

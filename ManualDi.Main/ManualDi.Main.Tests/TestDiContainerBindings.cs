@@ -11,7 +11,7 @@ public class TestDiContainerBindings
     {
         var action = Substitute.For<Action>();
 
-        var container = new DiContainerBuilder()
+        var container = new DiContainerBindings()
             .Install(x => x.QueueDispose(action))
             .Build();
 
@@ -27,7 +27,7 @@ public class TestDiContainerBindings
     {
         var initializationDelegate = Substitute.For<ContainerDelegate>();
 
-        var container = new DiContainerBuilder()
+        var container = new DiContainerBindings()
             .Install(x => x.QueueInitialization(initializationDelegate))
             .Build();
 

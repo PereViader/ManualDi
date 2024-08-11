@@ -10,7 +10,7 @@ public class TestDiContainerLazy
     {
         var builderFunc = Substitute.For<CreateDelegate<object>>();
 
-        var container = new DiContainerBuilder().Install(x =>
+        var container = new DiContainerBindings().Install(x =>
         {
             x.Bind<object>().FromMethod(builderFunc).Lazy();
         }).Build();
@@ -24,7 +24,7 @@ public class TestDiContainerLazy
         var builderFunc = Substitute.For<CreateDelegate<object>>();
         builderFunc.Invoke(Arg.Any<IDiContainer>()).Returns(new object());
 
-        var container = new DiContainerBuilder().Install(x =>
+        var container = new DiContainerBindings().Install(x =>
         {
             x.Bind<object>().FromMethod(builderFunc).NonLazy();
         }).Build();

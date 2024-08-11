@@ -317,7 +317,7 @@ public static class ManualDiInstallerExtensions
         b.Bind<Service97>().Default().Transient().FromConstructor();
         b.Bind<Service98>().Default().Transient().FromConstructor();
         b.Bind<Service99>().Default().Transient().FromConstructor();
-        b.Bind<Service100>().Default().Transient().FromConstructor();
+        b.Bind<Service100>().Default().Single().FromConstructor();
         return b;
     }
 }

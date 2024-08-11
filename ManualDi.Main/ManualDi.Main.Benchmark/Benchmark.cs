@@ -6,30 +6,27 @@ using Microsoft.Extensions.DependencyInjection;
 [MemoryDiagnoser]
 public class Benchmark
 {
-    private ServiceProvider _microsoftDiContainer = default!;
-    private IDiContainer _manualDiContainer = default!;
-
-    [GlobalSetup]
-    public void Setup()
+    private ServiceProvider microsoftDiContainer = default!;
+    private IDiContainer manualDiContainer = default!;
+    
+    [IterationSetup(Targets = new[] { nameof(MicrosoftDi_Dispose), nameof(MicrosoftDi_Resolve_Service) })]
+    public void SetupMicrosoft()
     {
-        SetupMicrosoft();
-        SetupManualDi();
-    }
-
-    private void SetupMicrosoft()
-    {
-        _microsoftDiContainer = new ServiceCollection()
+        microsoftDiContainer = new ServiceCollection()
             .AddServices()
             .BuildServiceProvider();
     }
 
-    private void SetupManualDi()
+    [IterationSetup(Targets = new [] { nameof(ManualDi_Dispose), nameof(ManualDi_Resolve_Service)})]
+    public void SetupManualDi()
     {
-        _manualDiContainer = new DiContainerBindings(bindingsCapacity: 100)
+        manualDiContainer = new DiContainerBindings(bindingsCapacity: 100)
             .InstallServices()
             .Build();
     }
 
+    #region Setup
+    
     [Benchmark]
     public void ManualDi_Setup()
     {
@@ -42,27 +39,67 @@ public class Benchmark
         SetupMicrosoft();
     }
     
+    #endregion
+
+    #region Dispose
+    
     [Benchmark]
     public void ManualDi_Dispose()
     {
-        _manualDiContainer.Dispose();
+        manualDiContainer.Dispose();
     }
     
     [Benchmark]
     public void MicrosoftDi_Dispose()
     {
-        _microsoftDiContainer.Dispose();
+        microsoftDiContainer.Dispose();
     }
-
+    
+    #endregion
+    
+    #region Service
+    
     [Benchmark]
     public void ManualDi_Resolve_Service()
     {
-        _manualDiContainer.Resolve<Service100>();
+        manualDiContainer.Resolve<Service100>();
     }
     
     [Benchmark]
     public void MicrosoftDi_Resolve_Service()
     {
-        _microsoftDiContainer.GetRequiredService<Service100>();
+        microsoftDiContainer.GetRequiredService<Service100>();
     }
+    
+    #endregion
+
+    #region ServiceTwice
+
+    [IterationSetup(Target = nameof(ManualDi_Resolve_ServiceTwice))]
+    public void Setup_ManualDi_Resolve_ServiceTwice()
+    {
+        SetupManualDi();
+        manualDiContainer.Resolve<Service100>();
+    }
+    
+    [Benchmark]
+    public void ManualDi_Resolve_ServiceTwice()
+    {
+        manualDiContainer.Resolve<Service100>();
+    }
+    
+    [IterationSetup(Target = nameof(MicrosoftDi_Resolve_ServiceTwice))]
+    public void Setup_MicrosoftDi_Resolve_ServiceTwice()
+    {
+        SetupMicrosoft();
+        microsoftDiContainer.GetRequiredService<Service100>();
+    }
+    
+    [Benchmark]
+    public void MicrosoftDi_Resolve_ServiceTwice()
+    {
+        microsoftDiContainer.GetRequiredService<Service100>();
+    }
+    
+    #endregion
 }

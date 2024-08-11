@@ -2,7 +2,7 @@
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
 
-BenchmarkRunner.Run<Benchmark>(new FastAndDirtyConfig());
+BenchmarkRunner.Run<Benchmark>();
 
 public class FastAndDirtyConfig : ManualConfig
 {

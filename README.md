@@ -15,6 +15,28 @@ The principles this project is based on are:
  - Pluggable:  Users of the container should be able to customize the container from the outside as they wish
  - Generic: The container should not assume the needs of the user and should be usable on any project
 
+# Benchmark
+
+```
+BenchmarkDotNet v0.14.0, Windows 11 (10.0.22631.3958/23H2/2023Update/SunValley3)
+AMD Ryzen 7 7800X3D, 1 CPU, 16 logical and 8 physical cores
+.NET SDK 8.0.100
+  [Host]     : .NET 6.0.20 (6.0.2023.32017), X64 RyuJIT AVX2
+  DefaultJob : .NET 6.0.20 (6.0.2023.32017), X64 RyuJIT AVX2
+  Job-ZKMUXI : .NET 6.0.20 (6.0.2023.32017), X64 RyuJIT AVX2
+
+| Method                           | Job        | InvocationCount | UnrollFactor | Mean         | Error        | StdDev       | Median       | Gen0   | Gen1   | Allocated |
+|--------------------------------- |----------- |---------------- |------------- |-------------:|-------------:|-------------:|-------------:|-------:|-------:|----------:|
+| ManualDi_Setup                   | DefaultJob | Default         | 16           |   4,758.9 ns |     94.40 ns |    152.44 ns |   4,689.2 ns | 0.3204 | 0.0305 |   16264 B |
+| MicrosoftDi_Setup                | DefaultJob | Default         | 16           |   5,727.8 ns |    106.86 ns |     99.96 ns |   5,704.1 ns | 0.5951 | 0.1450 |   30232 B |
+| ManualDi_Dispose                 | Job-ZKMUXI | 1               | 1            |     100.0 ns |      0.00 ns |      0.00 ns |     100.0 ns |      - |      - |     640 B |
+| MicrosoftDi_Dispose              | Job-ZKMUXI | 1               | 1            |     774.2 ns |     39.60 ns |    116.14 ns |     750.0 ns |      - |      - |     640 B |
+| ManualDi_Resolve_Service         | Job-ZKMUXI | 1               | 1            |  18,997.0 ns |    686.05 ns |  2,012.08 ns |  17,600.0 ns |      - |      - |    6296 B |
+| MicrosoftDi_Resolve_Service      | Job-ZKMUXI | 1               | 1            | 159,666.2 ns | 10,122.36 ns | 29,687.13 ns | 143,650.0 ns |      - |      - |  135160 B |
+| ManualDi_Resolve_ServiceTwice    | Job-ZKMUXI | 1               | 1            |     938.4 ns |     28.29 ns |     76.95 ns |     900.0 ns |      - |      - |     640 B |
+| MicrosoftDi_Resolve_ServiceTwice | Job-ZKMUXI | 1               | 1            |  18,422.7 ns |    280.03 ns |    343.90 ns |  18,350.0 ns |      - |      - |   13328 B |
+```
+
 # Installation
 
 ## Nuget

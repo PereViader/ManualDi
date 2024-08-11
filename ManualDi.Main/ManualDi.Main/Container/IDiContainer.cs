@@ -14,7 +14,7 @@ namespace ManualDi.Main
         /// <param name="resolutionConstraints">Filter bindings to resolve according to these constraints. May be null</param>
         /// <param name="resolution">Resolved instance from the container</param>
         /// <returns>The resolved instance for the binding</returns>
-        bool TryResolveContainer(Type type, ResolutionConstraints? resolutionConstraints, [MaybeNullWhen(false)] out object resolution);
+        object? ResolveContainer(Type type, ResolutionConstraints? resolutionConstraints);
 
         /// <summary>
         /// Non generic resolution of all bindings for their registered instances

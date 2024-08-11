@@ -45,22 +45,20 @@ namespace ManualDi.Main
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryResolveContainer(Type type, ResolutionConstraints? resolutionConstraints, [MaybeNullWhen(false)] out object resolution)
+        public object? ResolveContainer(Type type, ResolutionConstraints? resolutionConstraints)
         {
             var typeBinding = GetTypeForConstraint(type, resolutionConstraints);
             if (typeBinding is not null)
             {
-                resolution = ResolveBinding(typeBinding);
-                return true;
+                return ResolveBinding(typeBinding);
             }
 
             if (parentDiContainer != null)
             {
-                return parentDiContainer.TryResolveContainer(type, resolutionConstraints, out resolution);
+                return parentDiContainer.ResolveContainer(type, resolutionConstraints);
             }
 
-            resolution = default;
-            return false;
+            return null;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

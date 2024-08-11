@@ -9,66 +9,58 @@ namespace ManualDi.Main
         public static T? ResolveNullable<T>(this IDiContainer diContainer)
             where T : class
         {
-            diContainer.TryResolve<T>(out var res);
-            return res;
+            var result = diContainer.ResolveContainer(typeof(T), resolutionConstraints: null);
+            if (result is null)
+            {
+                return null;
+            }
+
+            return (T)result;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T? ResolveNullableValue<T>(this IDiContainer diContainer)
             where T : struct
         {
-            return diContainer.TryResolve<T>(out var res) ? res : null;
+            var result = diContainer.ResolveContainer(typeof(T), resolutionConstraints: null);
+            if (result is null)
+            {
+                return null;
+            }
+
+            return (T)result;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T? ResolveNullable<T>(this IDiContainer diContainer, Action<ResolutionConstraints> configureReslutionConstraints)
             where T : class
         {
-            diContainer.TryResolve<T>(configureReslutionConstraints, out var res);
-            return res;
+            var resolutionConstraints = new ResolutionConstraints();
+            configureReslutionConstraints.Invoke(resolutionConstraints);
+
+            var result = diContainer.ResolveContainer(typeof(T), resolutionConstraints);
+            if (result is null)
+            {
+                return null;
+            }
+
+            return (T)result;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T? ResolveNullableValue<T>(this IDiContainer diContainer, Action<ResolutionConstraints> configureReslutionConstraints)
             where T : struct
         {
-            return diContainer.TryResolve<T>(configureReslutionConstraints, out var res) ? res : null;
-        }
+            var resolutionConstraints = new ResolutionConstraints();
+            configureReslutionConstraints.Invoke(resolutionConstraints);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T? ResolveNullable<T>(this IDiContainer diContainer, ResolutionConstraints resolutionConstraints)
-            where T : class
-        {
-            diContainer.TryResolve<T>(resolutionConstraints, out var res);
-            return res;
-        }
-       
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T? ResolveNullableValue<T>(this IDiContainer diContainer, ResolutionConstraints resolutionConstraints)
-            where T : struct
-        {
-            return diContainer.TryResolve<T>(resolutionConstraints, out var res) ? res : null;
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static object? ResolveNullable(this IDiContainer diContainer, Type type)
-        {
-            diContainer.TryResolve(type, out var res);
-            return res;
-        }
+            var result = diContainer.ResolveContainer(typeof(T), resolutionConstraints);
+            if (result is null)
+            {
+                return null;
+            }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static object? ResolveNullable(this IDiContainer diContainer, Type type, Action<ResolutionConstraints> configureResolutionConstraints)
-        {
-            diContainer.TryResolve(type, configureResolutionConstraints, out var res);
-            return res;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static object? ResolveNullable(this IDiContainer diContainer, Type type, ResolutionConstraints resolutionConstraints)
-        {
-            diContainer.TryResolve(type, resolutionConstraints, out var res);
-            return res;
+            return (T)result;
         }
     }
 }

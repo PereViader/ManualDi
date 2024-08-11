@@ -8,48 +8,26 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Resolve<T>(this IDiContainer diContainer)
         {
-            return (T)diContainer.Resolve(typeof(T), resolutionConstraints: null);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T Resolve<T>(this IDiContainer diContainer, Action<ResolutionConstraints> resolution)
-        {
-            var resolutionConstraints = new ResolutionConstraints();
-            resolution.Invoke(resolutionConstraints);
-
-            return diContainer.Resolve<T>(resolutionConstraints);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T Resolve<T>(this IDiContainer diContainer, ResolutionConstraints resolutionConstraints)
-        {
-            return (T)diContainer.Resolve(typeof(T), resolutionConstraints);
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static object Resolve(this IDiContainer diContainer, Type type)
-        {
-            return diContainer.Resolve(type, resolutionConstraints: null);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static object Resolve(this IDiContainer diContainer, Type type, Action<ResolutionConstraints> resolution)
-        {
-            var resolutionConstraints = new ResolutionConstraints();
-            resolution.Invoke(resolutionConstraints);
-
-            return diContainer.Resolve(type, resolutionConstraints);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static object Resolve(this IDiContainer diContainer, Type type, ResolutionConstraints? resolutionConstraints)
-        {
-            if (!diContainer.TryResolveContainer(type, resolutionConstraints, out var resolution))
+            var resolution = diContainer.ResolveContainer(typeof(T), resolutionConstraints: null);
+            if (resolution is null)
             {
-                throw new InvalidOperationException($"Could not resolve {type.FullName}");
+                throw new InvalidOperationException($"Could not resolve element of type {typeof(T).FullName}");
             }
+            return (T)resolution;
+        }
 
-            return resolution;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T Resolve<T>(this IDiContainer diContainer, Action<ResolutionConstraints> configureReslutionConstraints)
+        {
+            var resolutionConstraints = new ResolutionConstraints();
+            configureReslutionConstraints.Invoke(resolutionConstraints);
+
+            var resolution = diContainer.ResolveContainer(typeof(T), resolutionConstraints: resolutionConstraints);
+            if (resolution is null)
+            {
+                throw new InvalidOperationException($"Could not resolve element of type {typeof(T).FullName}");
+            }
+            return (T)resolution;
         }
     }
 }

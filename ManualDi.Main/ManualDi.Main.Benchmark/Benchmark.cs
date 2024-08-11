@@ -30,29 +30,29 @@ public class Benchmark
             .Build();
     }
 
-    // [Benchmark]
-    // public void ManualDi_Setup()
-    // {
-    //     SetupManualDi();
-    // }
-    //
-    // [Benchmark]
-    // public void MicrosoftDi_Setup()
-    // {
-    //     SetupMicrosoft();
-    // }
-    //
-    // [Benchmark]
-    // public void ManualDi_Dispose()
-    // {
-    //     _manualDiContainer.Dispose();
-    // }
-    //
-    // [Benchmark]
-    // public void MicrosoftDi_Dispose()
-    // {
-    //     _microsoftDiContainer.Dispose();
-    // }
+    [Benchmark]
+    public void ManualDi_Setup()
+    {
+        SetupManualDi();
+    }
+    
+    [Benchmark]
+    public void MicrosoftDi_Setup()
+    {
+        SetupMicrosoft();
+    }
+    
+    [Benchmark]
+    public void ManualDi_Dispose()
+    {
+        _manualDiContainer.Dispose();
+    }
+    
+    [Benchmark]
+    public void MicrosoftDi_Dispose()
+    {
+        _microsoftDiContainer.Dispose();
+    }
 
     [Benchmark]
     public void ManualDi_Resolve_Service()

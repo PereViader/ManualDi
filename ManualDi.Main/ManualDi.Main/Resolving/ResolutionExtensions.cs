@@ -4,7 +4,7 @@ namespace ManualDi.Main
 {
     public static class ResolutionExtensions
     {
-        public static ResolutionConstraints Where(this ResolutionConstraints resolution, Func<ITypeBinding, bool> typeBindingFunc)
+        public static ResolutionConstraints Where(this ResolutionConstraints resolution, Func<TypeBinding, bool> typeBindingFunc)
         {
             var previous = resolution.ResolutionConstraintDelegate;
             if (previous is null)
@@ -46,7 +46,7 @@ namespace ManualDi.Main
             }
             return resolution;
 
-            static bool Check<Y>(object key, Y value, ITypeBinding x)
+            static bool Check<Y>(object key, Y value, TypeBinding x)
             {
                 if (x.Metadata is null)
                 {
@@ -70,7 +70,7 @@ namespace ManualDi.Main
             }
             return resolution;
 
-            static bool Check(object key, Func<T, bool> predicate, ITypeBinding x)
+            static bool Check(object key, Func<T, bool> predicate, TypeBinding x)
             {
                 if (x.Metadata is null)
                 {

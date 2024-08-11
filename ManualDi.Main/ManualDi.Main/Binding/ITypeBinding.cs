@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using ManualDi.Main.Scopes;
 
 namespace ManualDi.Main
 {
@@ -8,18 +7,25 @@ namespace ManualDi.Main
     public delegate void InitializationDelegate<in T>(T instance, IDiContainer container);
     public delegate void InjectionDelegate<in T>(T instance, IDiContainer diContainer);
 
-    public interface ITypeBinding
+    public enum TypeScope
     {
-        Type InterfaceType { get; }
-        Type ConcreteType { get; }
-        ITypeScope TypeScope { get; set; }
-        bool IsLazy { get; set; }
-        bool TryToDispose { get; set; }
-        public Dictionary<object, object>? Metadata { get; set; }
+        Single,
+        Transient
+    }
+    
+    public interface TypeBinding
+    {
+        public Type InterfaceType { get; }
+        public Type ConcreteType { get; }
+        public TypeScope TypeScope { get; set; }
+        public bool IsLazy { get; }
+        public bool TryToDispose { get; }
+        public Dictionary<object, object>? Metadata { get; }
 
-        object Create(IDiContainer container);
+        public object Create(IDiContainer container);
+        
         public bool NeedsInitialize { get; }
-        void InitializeObject(object instance, IDiContainer container);
-        void InjectObject(object instance, IDiContainer container);
+        public void InitializeObject(object instance, IDiContainer container);
+        public void InjectObject(object instance, IDiContainer container);
     }
 }

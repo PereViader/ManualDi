@@ -5,33 +5,53 @@ namespace ManualDi.Main
 {
     internal sealed class BindingInitializer
     {
-        private readonly Stack<List<Action<IDiContainer>>> bindingInitializationCommands = new();
+        private readonly List<List<Action<IDiContainer>>?> bindingInitializationCommands = new();
         private int nestedCount;
 
-        public void Queue(ITypeBinding typeBinding, object instance)
+        public void Queue(TypeBinding typeBinding, object instance)
         {
-            if (nestedCount >= bindingInitializationCommands.Count)
-            {
-                bindingInitializationCommands.Push(new List<Action<IDiContainer>>());
-            }
-
             if (!typeBinding.NeedsInitialize)
             {
+                if (nestedCount >= bindingInitializationCommands.Count)
+                {
+                    bindingInitializationCommands.Add(null);
+                }
+
                 return;
             }
+            List<Action<IDiContainer>>? commands;
+        
+            if (nestedCount >= bindingInitializationCommands.Count)
+            {
+                commands = new List<Action<IDiContainer>>();
+                bindingInitializationCommands.Add(commands);
+            }
+            else
+            {
+                commands = bindingInitializationCommands[nestedCount];
+                if (commands is null)
+                {
+                    commands = new List<Action<IDiContainer>>();
+                    bindingInitializationCommands[nestedCount] = commands;
+                }
+            }
 
-            var commands = bindingInitializationCommands.Peek();
             commands.Add(c => typeBinding.InitializeObject(instance, c));
         }
 
-        public void InitializeAllQueued(IDiContainer container)
+        public void InitializeCurrentLevelQueued(IDiContainer container)
         {
             nestedCount++;
 
-            var commands = bindingInitializationCommands.Pop();
-            foreach (var action in commands)
+            var index = bindingInitializationCommands.Count - 1;
+            var commands = bindingInitializationCommands[index];
+            bindingInitializationCommands.RemoveAt(index);
+            if (commands is not null)
             {
-                action.Invoke(container);
+                foreach (var action in commands)
+                {
+                    action.Invoke(container);
+                }
             }
 
             nestedCount--;

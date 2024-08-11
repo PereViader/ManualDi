@@ -1,6 +1,6 @@
 ﻿namespace ManualDi.Main.Scopes
 {
-    public struct ResolvedInstance
+    public readonly struct ResolvedInstance
     {
         public object Instance { get; }
         public bool IsNew { get; }

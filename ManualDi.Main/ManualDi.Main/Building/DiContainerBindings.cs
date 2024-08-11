@@ -7,23 +7,20 @@ namespace ManualDi.Main
     
     public sealed class DiContainerBindings
     {
+        private readonly Dictionary<Type, List<TypeBinding>> typeBindings = new();
         private readonly List<Action> disposeActions = new();
         private readonly List<ContainerDelegate> initializationDelegates = new();
         private readonly List<ContainerDelegate> injectDelegates = new();
-        
-        public IDiContainer? ParentDiContainer { get; private set; }
-        public Dictionary<Type, List<ITypeBinding>> TypeBindings { get; } = new();
-        public IReadOnlyList<Action> DisposeActions => disposeActions;
-        public IReadOnlyList<ContainerDelegate> InitializationDelegates => initializationDelegates;
-        public IReadOnlyList<ContainerDelegate> InjectDelegates => injectDelegates;
 
-        public void AddBinding(ITypeBinding typeBinding)
+        private IDiContainer? parentDiContainer;
+
+        public void AddBinding(TypeBinding typeBinding)
         {
             Type type = typeBinding.InterfaceType;
-            if (!TypeBindings.TryGetValue(type, out var bindings))
+            if (!typeBindings.TryGetValue(type, out var bindings))
             {
-                bindings = new List<ITypeBinding>();
-                TypeBindings[type] = bindings;
+                bindings = new List<TypeBinding>();
+                typeBindings[type] = bindings;
             }
 
             bindings.Add(typeBinding);
@@ -46,17 +43,13 @@ namespace ManualDi.Main
         
         public DiContainerBindings WithParentContainer(IDiContainer? diContainer)
         {
-            ParentDiContainer = diContainer;
+            parentDiContainer = diContainer;
             return this;
         }
         
         public IDiContainer Build()
         {
-            var diContainer = new DiContainer()
-            {
-                TypeBindings = TypeBindings,
-                ParentDiContainer = ParentDiContainer,
-            };
+            var diContainer = new DiContainer(typeBindings, parentDiContainer);
 
             foreach (var action in disposeActions)
             {

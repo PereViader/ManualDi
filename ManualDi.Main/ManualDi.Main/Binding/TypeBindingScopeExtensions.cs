@@ -8,7 +8,7 @@ namespace ManualDi.Main
             this TypeBinding<TInterface, TConcrete> typeBinding
             )
         {
-            typeBinding.TypeScope = TransientTypeScope.Instance;
+            typeBinding.TypeScope = TypeScope.Transient;
             return typeBinding;
         }
 
@@ -16,7 +16,7 @@ namespace ManualDi.Main
             this TypeBinding<TInterface, TConcrete> typeBinding
             )
         {
-            typeBinding.TypeScope = SingleTypeScope.Instance;
+            typeBinding.TypeScope = TypeScope.Single;
             return typeBinding;
         }
     }

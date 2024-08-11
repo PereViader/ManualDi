@@ -4,9 +4,9 @@ namespace ManualDi.Main
 {
     public sealed class ResolutionConstraints
     {
-        public Func<ITypeBinding, bool>? ResolutionConstraintDelegate { get; set; }
+        public Func<TypeBinding, bool>? ResolutionConstraintDelegate { get; set; }
 
-        public bool Accepts(ITypeBinding typeBinding)
+        public bool Accepts(TypeBinding typeBinding)
         {
             if (ResolutionConstraintDelegate is null)
             {

@@ -45,8 +45,9 @@ namespace ManualDi.Main.Tests
 
             Assert.That(resolution1, Is.Not.EqualTo(resolution2));
 
-            injectionDelegate.Received(2).Invoke(Arg.Any<object>(), Arg.Any<IDiContainer>());
-            factoryMethodDelegate.Received(2).Invoke(Arg.Any<IDiContainer>());
+            injectionDelegate.Received(1).Invoke(Arg.Is<object>(resolution1), Arg.Is<IDiContainer>(container));
+            injectionDelegate.Received(1).Invoke(Arg.Is<object>(resolution2), Arg.Is<IDiContainer>(container));
+            factoryMethodDelegate.Received(2).Invoke(Arg.Is<IDiContainer>(container));
         }
     }
 }

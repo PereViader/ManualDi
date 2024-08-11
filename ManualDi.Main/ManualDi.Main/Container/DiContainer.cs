@@ -10,20 +10,19 @@ namespace ManualDi.Main
     {
         private readonly BindingInitializer bindingInitializer = new();
         private readonly DisposableActionQueue disposableActionQueue = new();
-        
-        public Dictionary<Type, List<ITypeBinding>> TypeBindings { get; set; } = null!;
-        public Dictionary<ITypeScope, ITypeResolver> TypeResolvers { get; set; } = new()
-        {
-            { SingleTypeScope.Instance, new SingleTypeResolver() },
-            { TransientTypeScope.Instance, new TransientTypeResolver() }
-        };
-        
-        public IDiContainer? ParentDiContainer { get; set; }
+        private readonly Dictionary<object, object> singleInstances = new();
+        private readonly Dictionary<Type, List<TypeBinding>> allTypeBindings;
+        private readonly IDiContainer? parentDiContainer;
 
-        private bool isResolving = false;
-
-        private bool hasBeenInitialized = false;
+        private bool isResolving;
+        private bool hasBeenInitialized;
         private bool disposedValue;
+
+        public DiContainer(Dictionary<Type, List<TypeBinding>> allTypeBindings, IDiContainer? parentDiContainer)
+        {
+            this.allTypeBindings = allTypeBindings;
+            this.parentDiContainer = parentDiContainer;
+        }
 
         public void Init()
         {
@@ -34,7 +33,7 @@ namespace ManualDi.Main
 
             hasBeenInitialized = true;
 
-            foreach (var bindings in TypeBindings)
+            foreach (var bindings in allTypeBindings)
             {
                 foreach (var binding in bindings.Value)
                 {
@@ -54,23 +53,26 @@ namespace ManualDi.Main
                 return true;
             }
 
-            if (ParentDiContainer != null)
+            if (parentDiContainer != null)
             {
-                return ParentDiContainer.TryResolveContainer(type, resolutionConstraints, out resolution);
+                return parentDiContainer.TryResolveContainer(type, resolutionConstraints, out resolution);
             }
 
             resolution = default;
             return false;
         }
 
-        private object ResolveBinding(ITypeBinding typeBinding)
+        private object ResolveBinding(TypeBinding typeBinding)
         {
-            var typeResolver = TypeResolvers[typeBinding.TypeScope];
-
             bool wasResolving = this.isResolving;
             isResolving = true;
 
-            var resolvedInstance = typeResolver.Resolve(this, typeBinding);
+            var resolvedInstance = typeBinding.TypeScope switch
+            {
+                TypeScope.Single => ResolveSingle(typeBinding),
+                TypeScope.Transient => ResolveTransient(typeBinding),
+                _ => throw new ArgumentOutOfRangeException(nameof(typeBinding.TypeScope))
+            };
             var instance = resolvedInstance.Instance;
 
             if (!resolvedInstance.IsNew)
@@ -90,15 +92,34 @@ namespace ManualDi.Main
 
             if (!isResolving)
             {
-                bindingInitializer.InitializeAllQueued(this);
+                bindingInitializer.InitializeCurrentLevelQueued(this);
             }
 
             return instance;
         }
-
-        private bool TryGetTypeForConstraint(Type type, ResolutionConstraints? resolutionConstraints, [MaybeNullWhen(false)] out ITypeBinding typeBinding)
+        
+        private ResolvedInstance ResolveSingle(TypeBinding typeBinding)
         {
-            if (!TypeBindings.TryGetValue(type, out var bindings) || bindings.Count == 0)
+            if (singleInstances.TryGetValue(typeBinding, out var singleInstance))
+            {
+                return ResolvedInstance.Reused(singleInstance);
+            }
+
+            var instance = typeBinding.Create(this);
+            singleInstances[typeBinding] = instance;
+
+            return ResolvedInstance.New(instance);
+        }
+        
+        private ResolvedInstance ResolveTransient(TypeBinding typeBinding)
+        {
+            var instance = typeBinding.Create(this);
+            return ResolvedInstance.New(instance);
+        }
+
+        private bool TryGetTypeForConstraint(Type type, ResolutionConstraints? resolutionConstraints, [MaybeNullWhen(false)] out TypeBinding typeBinding)
+        {
+            if (!allTypeBindings.TryGetValue(type, out var bindings) || bindings.Count == 0)
             {
                 typeBinding = default;
                 return false;
@@ -123,9 +144,9 @@ namespace ManualDi.Main
             return false;
         }
 
-        private bool TryGetAllTypeForConstraint(Type type, ResolutionConstraints? resolutionConstraints, [MaybeNullWhen(false)] out List<ITypeBinding> typeBindings)
+        private bool TryGetAllTypeForConstraint(Type type, ResolutionConstraints? resolutionConstraints, [MaybeNullWhen(false)] out List<TypeBinding> typeBindings)
         {
-            if (!TypeBindings.TryGetValue(type, out var bindings) || bindings.Count == 0)
+            if (!this.allTypeBindings.TryGetValue(type, out var bindings) || bindings.Count == 0)
             {
                 typeBindings = default;
                 return false;
@@ -133,11 +154,11 @@ namespace ManualDi.Main
 
             if (resolutionConstraints is null)
             {
-                typeBindings = new List<ITypeBinding>(bindings);
+                typeBindings = new List<TypeBinding>(bindings);
                 return true;
             }
 
-            typeBindings = new List<ITypeBinding>();
+            typeBindings = new List<TypeBinding>();
             foreach (var binding in bindings)
             {
                 if (resolutionConstraints.Accepts(binding))
@@ -160,7 +181,7 @@ namespace ManualDi.Main
                 }
             }
 
-            ParentDiContainer?.ResolveAllContainer(type, resolutionConstraints, resolutions);
+            parentDiContainer?.ResolveAllContainer(type, resolutionConstraints, resolutions);
         }
 
         public void QueueDispose(IDisposable disposable)

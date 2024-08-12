@@ -1,5 +1,6 @@
-﻿using ManualDi.Main;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+
+namespace ManualDi.Main.Benchmark;
 
 #pragma warning disable 9113
 public class Service1();

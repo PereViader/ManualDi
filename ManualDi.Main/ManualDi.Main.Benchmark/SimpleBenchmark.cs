@@ -1,10 +1,11 @@
 ﻿using BenchmarkDotNet.Attributes;
-using ManualDi.Main;
 using Microsoft.Extensions.DependencyInjection;
+
+namespace ManualDi.Main.Benchmark;
 
 [BenchmarkDotNet.Diagnostics.dotTrace.DotTraceDiagnoser]
 [MemoryDiagnoser]
-public class Benchmark
+public class SimpleBenchmark
 {
     private ServiceProvider microsoftDiContainer = default!;
     private IDiContainer manualDiContainer = default!;

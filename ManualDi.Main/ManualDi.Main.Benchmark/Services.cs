@@ -209,7 +209,7 @@ public static class ServiceCollectionExtensions
             .AddTransient<Service97>()
             .AddTransient<Service98>()
             .AddTransient<Service99>()
-            .AddTransient<Service100>();
+            .AddSingleton<Service100>();
         return serviceCollection;
     }
 }

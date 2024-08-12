@@ -7,7 +7,7 @@ namespace ManualDi.Main
     internal sealed class DisposableActionQueue
     {
         private readonly List<IDisposable> disposables = new();
-        private bool disposing = false;
+        private bool disposing;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void QueueDispose(IDisposable disposable)
@@ -38,9 +38,9 @@ namespace ManualDi.Main
                 disposable.Dispose();
             }
 
-            disposing = false;
-
             disposables.Clear();
+            
+            disposing = false;
         }
     }
 }

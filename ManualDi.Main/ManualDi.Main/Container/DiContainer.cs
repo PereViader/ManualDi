@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
@@ -53,7 +52,7 @@ namespace ManualDi.Main
                 return ResolveBinding(typeBinding);
             }
 
-            if (parentDiContainer != null)
+            if (parentDiContainer is not null)
             {
                 return parentDiContainer.ResolveContainer(type, resolutionConstraints);
             }
@@ -116,36 +115,22 @@ namespace ManualDi.Main
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool TryGetAllTypeForConstraint(Type type, ResolutionConstraints? resolutionConstraints, [MaybeNullWhen(false)] out List<TypeBinding> typeBindings)
+        public void ResolveAllContainer(Type type, ResolutionConstraints? resolutionConstraints, IList resolutions)
         {
-            if (!this.allTypeBindings.TryGetValue(type, out var bindings) || bindings.Count == 0)
+            AddResolveAllInstances(type, resolutionConstraints, resolutions);
+
+            parentDiContainer?.ResolveAllContainer(type, resolutionConstraints, resolutions);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void AddResolveAllInstances(Type type, ResolutionConstraints? resolutionConstraints, IList resolutions)
+        {
+            if (!this.allTypeBindings.TryGetValue(type, out var typeBindings))
             {
-                typeBindings = default;
-                return false;
+                return;
             }
 
             if (resolutionConstraints is null)
-            {
-                typeBindings = new List<TypeBinding>(bindings);
-                return true;
-            }
-
-            typeBindings = new List<TypeBinding>(bindings.Count);
-            foreach (var binding in bindings)
-            {
-                if (resolutionConstraints.Accepts(binding))
-                {
-                    typeBindings.Add(binding);
-                }
-            }
-
-            return typeBindings.Count > 0;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void ResolveAllContainer(Type type, ResolutionConstraints? resolutionConstraints, IList resolutions)
-        {
-            if (TryGetAllTypeForConstraint(type, resolutionConstraints, out var typeBindings))
             {
                 foreach (var typeBinding in typeBindings)
                 {
@@ -153,8 +138,17 @@ namespace ManualDi.Main
                     resolutions.Add(resolved);
                 }
             }
-
-            parentDiContainer?.ResolveAllContainer(type, resolutionConstraints, resolutions);
+            else
+            {
+                foreach (var typeBinding in typeBindings)
+                {
+                    if (resolutionConstraints.Accepts(typeBinding))
+                    {
+                        var resolved = ResolveBinding(typeBinding);
+                        resolutions.Add(resolved);
+                    }
+                }
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

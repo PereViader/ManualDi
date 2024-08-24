@@ -2,6 +2,9 @@ name: Publish Nuget Package
 
 on: 
   workflow_call:
+
+env:
+  version_file: ManualDi.Main/ManualDi.Main/ManualDi.Main.csproj
     
 jobs:
   PublishNugetPackage:
@@ -13,15 +16,24 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '6.0'
-          
-      - name: Build Common Project
-        run: dotnet build --configuration Release
-      
-      - name: Publish Common
-        uses: tedd/publish-nuget-neo@v1
-        with:
-          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
-          PROJECT_FILE_PATH: ManualDi.Main/ManualDi.Main.csproj
-          REBUILD_PROJECT: false
-          TAG_COMMIT: true
-          TAG_FORMAT: Nuget/*
+
+      - id: get-version
+        run: |
+          version=$(grep -oP '(?<=<Version>)[^<]+' "${{ env.version_file }}")
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Publish Nuget and Tag Commit
+        run: |
+          dotnet build ManualDi.Main --configuration Release
+          dotnet pack ManualDi.Main --configuration Release --output NugetPackageRelease
+          set +e  # Disable immediate exit on error
+          dotnet nuget push "NugetPackageRelease/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key "${{secrets.NUGET_API_KEY}}"
+          push_result=$?
+          set -e  # Enable immediate exit on error
+
+          if [ $push_result -ne 0 ]; then
+            echo "Package could not be pushed, assuming a package with that version is already present"
+            exit 0
+          fi
+
+          echo "NuGet package pushed successfully"

@@ -17,7 +17,7 @@ while [[ "$#" -gt 0 ]]; do
   shift
 done
 
-# Path to the .csproj file and package.json
+# Path to the .csproj file
 CSPROJ_FILE="ManualDi.Main/ManualDi.Main/ManualDi.Main.csproj"
 
 # Extract version from the .csproj file
@@ -36,7 +36,7 @@ mkdir -p "UnityPackageRelease/"
 echo Copy License
 cp "LICENSE.md" "UnityPackageRelease/LICENSE.md"
 
-cp "GenerateUnityPackage\package.json" "UnityPackageRelease\package.json"
+cp "GenerateUnityPackage/package.json" "UnityPackageRelease/package.json"
 echo "Copy package files to the package root"
 sed -i "s/\"version\": \"\$version\"/\"version\": \"$version\"/g" "UnityPackageRelease/package.json"
 echo "Version in package.json updated to $version"

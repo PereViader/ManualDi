@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ManualDI.Main.Benchmark": {
+      "commandName": "Project",
+      "nativeDebugging": false
+    }
+  }
+}

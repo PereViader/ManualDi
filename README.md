@@ -15,6 +15,44 @@ The principles this project is based on are:
  - Pluggable:  Users of the container should be able to customize the container from the outside as they wish
  - Generic: The container should not assume the needs of the user and should be usable on any project
 
+# Benchmark
+
+Let compare this container with Microsoft's one given it is the standard most projects use today.
+
+## Simple Chain
+
+For this case, we have a chain of 100 services where each depend on the previous one, all of them are transient but the first one that is a singleton and thus will be cached.
+
+- Combined GC consumption for the setup and resolution is 7,33 times lower 
+- Object resolution is 7,9 times faster
+- Disposal is 17 times faster
+- Setup is 1,2 times faster
+- Repeated access is equivalent
+
+```
+BenchmarkDotNet v0.14.0, Windows 11 (10.0.22631.3958/23H2/2023Update/SunValley3)
+AMD Ryzen 7 7800X3D, 1 CPU, 16 logical and 8 physical cores
+.NET SDK 8.0.100
+  [Host]     : .NET 6.0.20 (6.0.2023.32017), X64 RyuJIT AVX2
+  DefaultJob : .NET 6.0.20 (6.0.2023.32017), X64 RyuJIT AVX2
+  Job-RJGPAF : .NET 6.0.20 (6.0.2023.32017), X64 RyuJIT AVX2
+
+
+| Method                           | Mean          | Error       | StdDev       | Median          | Gen0   | Gen1   | Allocated |
+|--------------------------------- |--------------:|------------:|-------------:|----------------:|-------:|-------:|----------:|
+| ManualDi_Setup                   |   4,646.66 ns |    56.60 ns |     44.19 ns |   4,636.3789 ns | 0.3204 | 0.0305 |   16264 B |
+| MicrosoftDi_Setup                |   5,730.04 ns |   110.85 ns |    172.57 ns |   5,696.2318 ns | 0.5951 | 0.5951 |   30232 B |
+| ManualDi_Dispose                 |      47.00 ns |    17.68 ns |     52.14 ns |       0.0000 ns |      - |      - |     640 B |
+| MicrosoftDi_Dispose              |     829.00 ns |    42.93 ns |    126.57 ns |     800.0000 ns |      - |      - |     640 B |
+| ManualDi_Resolve_Service         |  19,096.94 ns |   759.32 ns |  2,214.97 ns |  20,000.0000 ns |      - |      - |    6296 B |
+| MicrosoftDi_Resolve_Service      | 151,230.93 ns | 6,041.54 ns | 17,527.61 ns | 141,500.0000 ns |      - |      - |  135136 B |
+| ManualDi_Resolve_ServiceTwice    |     946.94 ns |    40.95 ns |    119.45 ns |     900.0000 ns |      - |      - |     640 B |
+| MicrosoftDi_Resolve_ServiceTwice |     987.50 ns |    21.58 ns |     33.60 ns |   1,000.0000 ns |      - |      - |     640 B |
+```
+
+
+
+
 # Installation
 
 ## Nuget
@@ -31,7 +69,7 @@ The source generator is the way we can have a nice API while at the same time no
 Methods that are source generated are:
 - FromConstructor
 - Initialize
-- Inject 
+- Inject
 - Default
 
 # API
@@ -45,11 +83,8 @@ To get to the action, please visit the automated tests of the project found on h
 In order to create the container, the project offers a fluent Builder `ContainerBuilder`. Let's see how that would look like:
 
 ```csharp
-    IDiContainer container = new DiContainerBuilder()
-        .Install(b => 
-        {
-            b.InstallSomeFunctionality();
-        })
+    IDiContainer container = new DiContainerBindings()
+        .InstallSomeFunctionality()
         .Install(new SomeOtherInstaller());
         .Build();
 ```
@@ -57,7 +92,7 @@ In order to create the container, the project offers a fluent Builder `Container
 Let's analize this snippet:
 
 - Declare the container variable of type `IDiContainer` called container.
-- Create the `DiContainerBuilder`
+- Create the `DiContainerBindings`
 - Use the `Install` function to start binding data to the container
 - Call the static extension method `InstallSomeFunctionality` which will bind services to the container
 - Use the `Install` function to bind an installer of type `SomeOtherInstaller`. This does the same as the extension method, but with an object instead of a static function call

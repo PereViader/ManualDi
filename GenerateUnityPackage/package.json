@@ -1,11 +1,22 @@
 {
-    "name": "me.pereviader.manualdi.main",
+    "name": "com.pereviader.manualdi.unity3d",
     "version": "$version",
-    "displayName": "ManualDi.Main",
-    "description": "A C# dependency injection library without reflection",
-    "unity": "2022.3.33",
+    "displayName": "ManualDi",
+    "description": "Fast C# dependency injection library that uses no reflexion",
+    "unity": "2022.3",
     "license": "MIT",
     "documentationUrl": "https://github.com/PereViader/ManualDi.Main",
-    "dependencies": {
-    }
-}
+    "changelogUrl": "https://github.com/PereViader/ManualDi.Main/commits/main/",
+    "licensesUrl": "https://opensource.org/license/mit",
+    "author": {
+        "name": "Pere Viader",
+        "url": "https://github.com/PereViader"
+    },
+    "samples": [
+        {
+            "displayName": "Samples",
+            "description": "Samples for ManualDi",
+            "path": "ManualDi.Unity3d/Samples~"
+        }
+    ]
+  }

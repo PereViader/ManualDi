@@ -23,3 +23,5 @@ jobs:
           NUGET_KEY: ${{secrets.NUGET_API_KEY}}
           PROJECT_FILE_PATH: ManualDi.Main/ManualDi.Main.csproj
           REBUILD_PROJECT: false
+          TAG_COMMIT: true
+          TAG_FORMAT: Nuget/*

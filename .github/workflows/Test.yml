@@ -14,4 +14,4 @@ jobs:
         with:
           dotnet-version: '6.0'
           
-      - run: dotnet test
+      - run: dotnet test ManualDi.Main

@@ -56,10 +56,12 @@ AMD Ryzen 7 7800X3D, 1 CPU, 16 logical and 8 physical cores
 # Installation
 
 ## Nuget
-Install the package from [nuget](https://www.nuget.org/packages/ManualDi.Main/)
+
+Install it using [Nuget](https://www.nuget.org/packages/ManualDi.Main/)
 
 ## Unity3d
-See instructions on https://github.com/PereViader/ManualDi.Unity3d
+
+Install it using Unity Package Manager with the following git url: https://github.com/PereViader/ManualDi.Unity3d.git
 
 # Source Generator
 
@@ -451,3 +453,10 @@ b.Bind<D>().Default().FromConstructor(); // Default calls Inject and Initialize
 ```
 
 Using default is not mandatory in any way, but it is a way to speed up development because the source generator will update bindings as the type is changed.
+
+
+## Unity3d
+
+When using the container in the Unity3d game engine the library provides specialized extensions
+
+Section under construction, for now see the code https://github.com/PereViader/ManualDi/tree/main/ManualDi.Unity3d/Assets/ManualDi.Unity3d/Runtime

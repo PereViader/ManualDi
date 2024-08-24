@@ -17,10 +17,10 @@ namespace ManualDi.Main
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T Resolve<T>(this IDiContainer diContainer, Action<ResolutionConstraints> configureReslutionConstraints)
+        public static T Resolve<T>(this IDiContainer diContainer, Action<ResolutionConstraints> configureResolutionConstraints)
         {
             var resolutionConstraints = new ResolutionConstraints();
-            configureReslutionConstraints.Invoke(resolutionConstraints);
+            configureResolutionConstraints.Invoke(resolutionConstraints);
 
             var resolution = diContainer.ResolveContainer(typeof(T), resolutionConstraints: resolutionConstraints);
             if (resolution is null)

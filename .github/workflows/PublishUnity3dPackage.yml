@@ -42,3 +42,14 @@ jobs:
           name: Unity3d ManualDi.Main ${{ steps.get-version.outputs.version }}
           files: |
             UnityPackageRelease/me.pereviader.manualdi.main-${{ steps.get-version.outputs.version }}.tgz
+
+      - name: Trigger Unity3d Repo Workflow
+        if: ${{ steps.release-exists.outputs.exists == 'false' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run PublishUnity3dPackage.yml \
+            --repo PereViader/ManualDi.Unity3d \
+            --ref main \
+            -f release-tag=Unity3d/${{ steps.get-version.outputs.version }}
+            -f file-name=me.pereviader.manualdi.main-${{ steps.get-version.outputs.version }}.tgz

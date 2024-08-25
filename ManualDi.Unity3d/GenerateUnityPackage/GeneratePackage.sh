@@ -36,22 +36,25 @@ mkdir -p "UnityPackageRelease/"
 echo Copy License
 cp "LICENSE.md" "UnityPackageRelease/LICENSE.md"
 
-cp "GenerateUnityPackage/package.json" "UnityPackageRelease/package.json"
+cp "ManualDi.Unity3d/GenerateUnityPackage/package.json" "UnityPackageRelease/package.json"
 echo "Copy package files to the package root"
 sed -i "s/\"version\": \"\$version\"/\"version\": \"$version\"/g" "UnityPackageRelease/package.json"
 echo "Version in package.json updated to $version"
 
-echo Copy assambly definition
-cp "GenerateUnityPackage/ManualDi.asmdef" "UnityPackageRelease/ManualDi.asmdef"
-cp "GenerateUnityPackage/ManualDi.asmdef.meta" "UnityPackageRelease/ManualDi.asmdef.meta"
-cp "GenerateUnityPackage/csc.rsp" "UnityPackageRelease/csc.rsp"
+echo Copy readme
+cp "ManualDi.Unity3d/GenerateUnityPackage/README.md" "UnityPackageRelease/README.md"
 
-sh ./GenerateUnityPackage/GenerateMainPackage.sh
+echo Copy assambly definition
+cp "ManualDi.Unity3d/GenerateUnityPackage/ManualDi.asmdef" "UnityPackageRelease/ManualDi.asmdef"
+cp "ManualDi.Unity3d/GenerateUnityPackage/ManualDi.asmdef.meta" "UnityPackageRelease/ManualDi.asmdef.meta"
+cp "ManualDi.Unity3d/GenerateUnityPackage/csc.rsp" "UnityPackageRelease/csc.rsp"
+
+sh ./ManualDi.Unity3d/GenerateUnityPackage/GenerateMainPackage.sh
 if $skip_unity3d; then
     echo "Skipping unity3d package"
 else
-    sh ./GenerateUnityPackage/GenerateUnity3dPackage.sh
+    sh ./ManualDi.Unity3d/GenerateUnityPackage/GenerateUnity3dPackage.sh
 fi
-sh ./GenerateUnityPackage/GenerateUnity3dMetas.sh
+sh ./ManualDi.Unity3d/GenerateUnityPackage/GenerateUnity3dMetas.sh
 cd UnityPackageRelease
 npm pack

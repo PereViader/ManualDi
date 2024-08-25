@@ -32,7 +32,7 @@ jobs:
       - name: Create Package
         if: ${{ steps.release-exists.outputs.exists == 'false' }}
         run: |
-          sh ./GenerateUnityPackage/GeneratePackage.sh
+          sh ./ManualDi.Unity3d/GenerateUnityPackage/GeneratePackage.sh
 
       - name: Create github release
         if: ${{ steps.release-exists.outputs.exists == 'false' }}

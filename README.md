@@ -1,43 +1,38 @@
-[![Test and publish](https://github.com/PereViader/ManualDi.Main/actions/workflows/TestAndPublish.yml/badge.svg)](https://github.com/PereViader/ManualDi.Main/actions/workflows/TestAndPublish.yml)
+[![Test and publish](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml/badge.svg)](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml)
 
-# Introduction
-
-Welcome to the ManualDi.Main project. A C# dependency injection library.
-
-This project was initially conceived with the idea to be used as a dependency injection library to be used for Unity3d. Although it was built with Unity3d in mind, the project completely separates the game engine specific functionality on another [repository](https://github.com/PereViader/ManualDi.Unity3d) in order to be able to use this project in any C# project.
+Welcome to ManualDi. A C# dependency injection library for both Unity3d and pure C# solutions. 
 
 The principles this project is based on are:
  - Understandable: A new developer should be able to quickly understand how to use it
  - Familiar: Concepts used by the container should be the same as already as existing containers
  - Fast: The container should be able to resolve the object graph quickly and efficiently
+ - Responsible: New features added to the container should not degrade performance
  - Natural: We should invest our time on providing value and not on getting things to work
  - Easy: Adding functionality should not require a high mental load
- - Pluggable:  Users of the container should be able to customize the container from the outside as they wish
- - Generic: The container should not assume the needs of the user and should be usable on any project
+ - Pluggable:  Easily customize the container and provide extra functionality by hooking into its pipeline
+ - Default: The container should do as much work as possible so the user has to do the least work as possible
 
 # Benchmark
 
 Let compare this container with Microsoft's one given it is the standard most projects use today.
 
+When looking at them, keep in mind that
+- CPU time depends on the specs of the pc running it
+- CPU time and memory allocations are correlated with the amount of services bound to the container
+- The benchmark numbers are only valid when comparing the same program implemented with either ManualDi or Microsoft's container.
+
 ## Simple Chain
 
-For this case, we have a chain of 100 services where each depend on the previous one, all of them are transient but the first one that is a singleton and thus will be cached.
+For this case, we have a chain of 100 services where each depend on the previous one, all of them are transient but the first one that is a singleton and thus will be cached. Seconds resolution will happen on the single instance and thus it should reuse the previously built object graph.
 
 - Combined GC consumption for the setup and resolution is 7,33 times lower 
-- Object resolution is 7,9 times faster
+- Aggregate performance is 
+- Object graph resolution is 7,9 times faster
 - Disposal is 17 times faster
 - Setup is 1,2 times faster
 - Repeated access is equivalent
 
 ```
-BenchmarkDotNet v0.14.0, Windows 11 (10.0.22631.3958/23H2/2023Update/SunValley3)
-AMD Ryzen 7 7800X3D, 1 CPU, 16 logical and 8 physical cores
-.NET SDK 8.0.100
-  [Host]     : .NET 6.0.20 (6.0.2023.32017), X64 RyuJIT AVX2
-  DefaultJob : .NET 6.0.20 (6.0.2023.32017), X64 RyuJIT AVX2
-  Job-RJGPAF : .NET 6.0.20 (6.0.2023.32017), X64 RyuJIT AVX2
-
-
 | Method                           | Mean          | Error       | StdDev       | Median          | Gen0   | Gen1   | Allocated |
 |--------------------------------- |--------------:|------------:|-------------:|----------------:|-------:|-------:|----------:|
 | ManualDi_Setup                   |   4,646.66 ns |    56.60 ns |     44.19 ns |   4,636.3789 ns | 0.3204 | 0.0305 |   16264 B |
@@ -50,9 +45,6 @@ AMD Ryzen 7 7800X3D, 1 CPU, 16 logical and 8 physical cores
 | MicrosoftDi_Resolve_ServiceTwice |     987.50 ns |    21.58 ns |     33.60 ns |   1,000.0000 ns |      - |      - |     640 B |
 ```
 
-
-
-
 # Installation
 
 ## Nuget
@@ -63,109 +55,72 @@ Install it using [Nuget](https://www.nuget.org/packages/ManualDi.Main/)
 
 Install it using Unity Package Manager with the following git url: https://github.com/PereViader/ManualDi.Unity3d.git
 
-# Source Generator
+# Examples
 
-The project aims to provide a great user experience by encapsulating common tasks in a source generator.
-The source generator helps by generating methods that require a lot of boilerplate that always looks the same.
-The source generator is the way we can have a nice API while at the same time not using reflexion.
-Methods that are source generated are:
-- FromConstructor
-- Initialize
-- Inject
-- Default
+If you want to quickly jump to the code, you can find examples [here](https://github.com/PereViader/ManualDi/tree/main/ManualDi.Main/ManualDi.Main.Tests) and [here](https://github.com/PereViader/ManualDi/tree/main/ManualDi.Unity3d/Assets/ManualDi.Unity3d/Tests)
 
-# API
+# Creation
 
-## Examples
-
-To get to the action, please visit the automated tests of the project found on https://github.com/PereViader/ManualDi.Unity3d/tree/main/Assets/ManualDi/Tests
-
-## Container creation
-
-In order to create the container, the project offers a fluent Builder `ContainerBuilder`. Let's see how that would look like:
+The container is created using a fluent Builder
 
 ```csharp
-    IDiContainer container = new DiContainerBindings()
-        .InstallSomeFunctionality()
-        .Install(new SomeOtherInstaller());
-        .Build();
+IDiContainer container = new DiContainerBindings()
+    .InstallSomeFunctionality()
+    .Install(new SomeOtherInstaller());
+    .Build();
 ```
 
 Let's analize this snippet:
 
 - Declare the container variable of type `IDiContainer` called container.
-- Create the `DiContainerBindings`
-- Use the `Install` function to start binding data to the container
-- Call the static extension method `InstallSomeFunctionality` which will bind services to the container
-- Use the `Install` function to bind an installer of type `SomeOtherInstaller`. This does the same as the extension method, but with an object instead of a static function call
-- Actually build the container with the contents we gave to the Builder 
+- Create the `DiContainerBindings` builder
+- Call the user created static extension method `InstallSomeFunctionality` which will bind services to the container
+- Call `Install` with an `IInstaller` create by the user named `SomeOtherInstaller`. This does the same as the extension method, but with an object instead of a static function call
+- Call `Build` which will freeze the bindings and return a container
 
-
-## Binding services
-
-### Binding
-
-Let's understand now how to bind anything to the container. 
-For startes, you may only bind to the container during it's creation.
-This is a syncronous process.
-
-Binding data to the container is performed on the type `DiContainerBindings`. It offers its functionality also through extension methods.
-
-In order to bind to the container, there are 3 `Bind` methods. Let's concentrate on the two most common ones.
-
+Creation of the container is a synchronous process, if you need to do any kind of asynchronous work you can do the following:
+- Simple but delays construction: Load the asyncronous data before creating the container and provide it syncronously
 ```csharp
-ITypeBinding<TConcrete, TConcrete> Bind<TConcrete>(this DicontainerBindings diContainerBindings)
-ITypeBinding<TInterface, TConcrete> Bind<TInterface, TConcrete>(this DicontainerBindings diContainerBindings)
+SomeConfig someConfig = await GetSomeConfig(); 
+
+IDiContainer container = new DiContainerBindings()
+    .InstallSomeFunctionality(someConfig)
+    .Build();
 ```
 
-The first, is meant to be used to bind an instance of some type T and expose the same type T as the interface type when resolving
-The second is meant to be used to bind an instance of some type Y but expose a different type T as the interface when resolving
+- Complex but does not delay construction of the object graph: Have the asynchronous loading as part of the runtime code and take into account that the necessary dependency will not be there as part of the runtime flow. Create an object graph that can support this fact, this can take many shapes depending on the usecase.
 
 
-Examples:
+# Binding
 
-Binding the instance and exposed interface as the same one
+First of all, it is important to understand that the configuration of the container may only be done during it's creation. Once built, the container's configuration is completely readonly. Changing the configuration after that will result in undefined behaviour.
 
-```csharp
-b.Bind<SomeType>()
-c.Resolve<SomeType>() // Success
-```
+The previous section displays how to create the container, but the configuration of the container happens on some opaque installers. 
 
-Binding the instance and the exposed interface as different types
+In order to configure the container, Binding extension methods are provided on `DiContainerBindings`. Those binding methods require the `Concrete` and `Apparent` types being bound:
+- Concrete: It's type of the actual instance behind the scenes
+- Aparent: It's the type that can be used when resolving the container.
 
-```csharp
-b.Bind<ISomeType, SomeType>()
-c.Resolve<SomeType>() // Runtime error
-c.Resolve<ISomeType>() // Success
-```
-
-
-### Resolving
-
-Before we define how to actually add the data to the container, it will be useful to understand how we will get the data from the container.
-
-We can get data from the container in two ways
-
-#### Resolve
-
-We get a single registered instance from the container
+Let's see how is one of those installers implemented
 
 ```csharp
-SomeService service = container.Resolve<SomeService>();
+class A {}
+class B {}
+interface IC {}
+class C : IC{}
+
+static class Installer
+{
+    public static DiContainerBindings InstallSomeFunctionality(this DiContainerBindings b)
+    {
+        //Adding more than one bind method 
+        b.Bind<A>()...      // Aparent and concrete type is A
+        b.Bind<B, B>()...   // Aparent and concrete type is B, if it was specified once it would be more readable
+        b.Bind<IC, C>()...  // Aparent type is IC and concrete type is C
+    }
+}
 ```
 
-#### ResolveAll
-
-If we registered multiple instances of the same type to the container this method will return all of them.
-
-```csharp
-List<SomeService> services = container.ResolveAll<SomeService>();
-```
-
-
-### Populating the bindings
-
-We have seen on the previous section how to start binding, but we've not actually bound anything.
 There are several extension methods for the `TypeBinding<T, Y>` that will allow you to actually make the binding do something.
 Although there is nothing preventing you from calling these methods in another order, the convention this library recommends is to call them in this order.
 
@@ -173,7 +128,7 @@ Although there is nothing preventing you from calling these methods in another o
 Bind<T>()
     .Default   // Source generated
     .[Single|Transient]
-    .From[Constructor|Instance|Method|Container|ContainerAll]  //Constructor is source generated
+    .From[Constructor|Instance|Method|Container|ContainerAll|...]  //Constructor is source generated
     .Inject   //Empty overload is source generated
     .Initialize  //Empty overload is source generated
     .Dispose
@@ -183,56 +138,54 @@ Bind<T>()
 
 We will now go over each one of them
 
-### Scope
+## Scope
 
 The scope of a binding defines the rules of creation of instances of the binding.
 
-#### Single
+### Single
 
 The container will generate a single instance of the type and always return the same when asked to resolve it. Similar to the dreaded `Singleton` but not globally accessible. 
 
-#### Transient
+### Transient
 
 The container will generate a new instance of the type when requested to resolve it.
 
 
-### From
+## From
 
 The creation strategy for the binding
 
-#### Constructor
+### Constructor
 
-Will be source generated ONLY if there is a single public/internal accessible constructor.
-It will call that constructor of the type and resolve all the dependencies it requires from the container.
+This method is source generated ONLY if there is a single public/internal accessible constructor.
+When the instance of the type is resolved, it will be created using the constructor of the concrete type. The required dependencies of the constructor will be resolved using the container.
 
 ```csharp
 b.Bind<T>().FromConstructor()
 ```
 
-#### Instance
+### Instance
 
-An instance of the type is directly supplied to the container, which will subsequently return it.
-Note: When used with the transient scope, the container will still return the same instance instead of different ones as one may expect, due to the creation strategy always providing the same instance.
-
-Example:
+When the instance of the type is resolved, it will return the instance supplied during the binding stage.
+Note: When used with a `Transient` scope, the container will still return the same instance.
 
 ```csharp
 b.Bind<T>().FromInstance(new T())
 ```
 
-#### Method
+### Method
 
-A delegate to create instances of the type is provided to the container. This delegate accepts the fully resolved container as a parameter, enabling it to inject services into the type's constructor.
+When the instance of the type is resolved, it will be created using the delegate provided. The delegate provides the container as a parameter, enabling it Resolve any other dependency from it.
 
 Note: Given this is the most common use case, the container optimizes for this use case in terms of GC 
 
 ```csharp
-b.Bind<T>().FromMethod((c) => new T(c.Resolve<SomeService>()))
+b.Bind<T>().FromMethod(c => new T(c.Resolve<SomeService>()))
 ```
 
-#### Container
+### Container
 
-Useful for exposing other interfaces of types on the container
+Useful exposing a type on the container as another
 
 ```csharp
 b.Bind<int>().FromInstance(1);
@@ -245,13 +198,13 @@ System.Console.WriteLine(c.Resolve<object>()); // Outputs "1"
 
 In this snippet, an integer with a value of 1 is registered. Then an object is bound to the container by redirecting the integer binding to it. As a result, when the object is requested, the container resolves the integer and returns 1.
 
-This is a shorthand for calling Resolve on the container for the type:
+Using FromContainer is the same :
 
 ```csharp
 b.Bind<object, int>().FromMethod(c => c.Resolve<int>());
 ```
 
-#### Container All
+### Container All
 
 Just like `FromContainer` binds all the instances to the container
 
@@ -275,9 +228,9 @@ b.Bind<List<object>, List<int>>().FromMethod(c => c.ResolveAll<int>().Cast<objec
 ```
 
 
-### Inject
+## Inject
 
-#### Theory
+### Theory
 
 In some situations, it might not be possible to inject all dependencies for a type at the time of its creation due to various reasons. When this occurs, the Inject method allows for post-construction injection.
 
@@ -334,7 +287,7 @@ c.Resolve<A>();
 - A's inject method finishes
 - A finishes being resolved
 
-#### Source Generator
+### Source Generator
 
 An empty overload of the Inject method will be generated if the type has a public/internal accessible Inject method. The generated method will call the inject method with all the dependencies that are requested as parameters (it may have no parameters).
 
@@ -348,9 +301,9 @@ b.Bind<A>().Inject();
 ```
 
 
-### Initialize
+## Initialize
 
-#### Theory
+### Theory
 
 Similar to the Inject method, the Initialize method defines a delegate to be called for newly constructed instances before they are resolved.
 
@@ -368,7 +321,7 @@ c.Resolve<A>()
 - The from method of A defines we return the instance provided
 - The initialize method calls the Init method on A
 
-#### Source Generation
+### Source Generation
 
 An empty overload of the Initialize method will be generated if the type has a public/internal accessible Initialize method. The generated method will call the Initialize method with all the dependencies that are requested as parameters (it may have no parameters). 
 
@@ -381,7 +334,7 @@ public class A
 b.Bind<A>().Initialize();
 ```
 
-### Dispose
+## Dispose
 
 Objects may implement the IDisposable interface or require custom teardown logic. The Dispose extension method allows defining behavior that will run when the object is disposed. The container will handle disposal when itself is disposed.
 
@@ -398,7 +351,7 @@ container.Dispose(); // A and B disposed if they were created
 ```
 
 
-### With Metadata
+## With Metadata
 
 These extension methods allow registering keys or key/value pairs, enabling the filtering of elements during resolution.
 
@@ -416,17 +369,17 @@ c.Resolve<int>(b => b.WhereMetadata("Banana")); // returns 5
 ```
 
 
-### Laziness
+## Laziness
 
-#### Lazy
+### Lazy
 
 The FromMethod delegate will not be called until the object is actually resolved.
 
-#### NonLazy
+### NonLazy
 
 The object will be built simultaneously with the container.
 
-### Default
+## Default
 
 This source generated method is a shorthand for calling Inject and Initialize when they are available without needing to manually update the container bindings.
 
@@ -460,3 +413,52 @@ Using default is not mandatory in any way, but it is a way to speed up developme
 When using the container in the Unity3d game engine the library provides specialized extensions
 
 Section under construction, for now see the code https://github.com/PereViader/ManualDi/tree/main/ManualDi.Unity3d/Assets/ManualDi.Unity3d/Runtime
+
+
+# Resolving
+
+Notice that resolution can only be done on aparent types, not concrete types. Concrete types are there so the continer can provide a type safe fluent API.
+
+If you use the source generated methods, you will usually not interact with the Resolution methods.
+
+Resolutions can be done in the following ways:
+
+## Resolve
+
+Resolve a single registered instance from the container. An exception is thrown if it can't be resolved.
+
+```csharp
+SomeService service = container.Resolve<SomeService>();
+```
+
+## ResolveNullable
+
+Resolve a single reference type registered instance from the container. Returns null if it can't be resolved.
+
+```csharp
+SomeService? service = container.ResolveNullable<SomeService>();
+```
+
+## ResolveNullableValue
+
+Resolve a single value type registered instance from the container. Returns null if it can't be resolved.
+
+```csharp
+int? service = container.ResolveNullableValue<int>();
+```
+
+## TryResolve
+
+Resolve a single instance from the container. Returns true if found and false if not.
+
+```csharp
+bool found = container.TryResolve<SomeService>(out SomeService someService);
+```
+
+## ResolveAll
+
+Resolve all the registered instance from the container. If no instances are available the list is empty.
+
+```csharp
+List<SomeService> services = container.ResolveAll<SomeService>();
+```

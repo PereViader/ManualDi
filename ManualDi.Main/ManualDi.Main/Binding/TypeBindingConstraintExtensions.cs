@@ -6,7 +6,8 @@ namespace ManualDi.Main
     public static class TypeBindingConstraintExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<TInterface, TConcrete> WithMetadata<TInterface, TConcrete, TMetadata>(this TypeBinding<TInterface, TConcrete> typeBinding, object key, TMetadata value)
+        public static TBinding WithMetadata<TBinding, TMetadata>(this TBinding typeBinding, object key, TMetadata value)
+            where TBinding : TypeBinding
         {
             typeBinding.Metadata ??= new Dictionary<object, object>();
             typeBinding.Metadata.Add(key, value!);
@@ -14,7 +15,8 @@ namespace ManualDi.Main
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<TInterface, TConcrete> WithMetadata<TInterface, TConcrete>(this TypeBinding<TInterface, TConcrete> typeBinding, object key)
+        public static TBinding WithMetadata<TBinding>(this TBinding typeBinding, object key)
+            where TBinding : TypeBinding
         {
             typeBinding.Metadata ??= new Dictionary<object, object>();
             typeBinding.Metadata.Add(key, key);

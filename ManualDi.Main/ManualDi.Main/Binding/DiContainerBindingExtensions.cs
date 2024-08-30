@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
 {
@@ -20,12 +21,20 @@ namespace ManualDi.Main
             diContainerBindings.AddBinding(typeBinding);
             return typeBinding;
         }
-
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<TInterface, TConcrete> Bind<TInterface, TConcrete>(this DiContainerBindings diContainerBindings, TypeBinding<TInterface, TConcrete> typeBinding)
-            where TConcrete : TInterface
+        public static UnsafeTypeBinding Bind(this DiContainerBindings diContainerBindings, Type concreteType)
         {
-            diContainerBindings.AddBinding(typeBinding);
+            UnsafeTypeBinding typeBinding = new(concreteType, concreteType);
+            diContainerBindings.AddUnsafeBinding(typeBinding);
+            return typeBinding;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static UnsafeTypeBinding Bind(this DiContainerBindings diContainerBindings, Type interfaceType, Type concreteType)
+        {
+            UnsafeTypeBinding typeBinding = new(interfaceType, concreteType);
+            diContainerBindings.AddUnsafeBinding(typeBinding);
             return typeBinding;
         }
     }

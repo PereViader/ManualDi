@@ -9,7 +9,7 @@ namespace ManualDi.Main.Tests
         public void TestSingle()
         {
             var factoryMethodDelegate = Substitute.For<CreateDelegate<object>>();
-            var injectionDelegate = Substitute.For<InjectionDelegate<object>>();
+            var injectionDelegate = Substitute.For<InstanceContainerDelegate<object>>();
 
             factoryMethodDelegate.Invoke(Arg.Any<IDiContainer>()).Returns(c => new object());
 
@@ -31,7 +31,7 @@ namespace ManualDi.Main.Tests
         public void TestTransient()
         {
             var factoryMethodDelegate = Substitute.For<CreateDelegate<object>>();
-            var injectionDelegate = Substitute.For<InjectionDelegate<object>>();
+            var injectionDelegate = Substitute.For<InstanceContainerDelegate<object>>();
 
             factoryMethodDelegate.Invoke(Arg.Any<IDiContainer>()).Returns(c => new object());
 

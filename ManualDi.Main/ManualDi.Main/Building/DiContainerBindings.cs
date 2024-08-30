@@ -29,10 +29,23 @@ namespace ManualDi.Main
         
         public void AddBinding<TInterface, TConcrete>(TypeBinding<TInterface, TConcrete> typeBinding)
         {
-            if (!typeBindings.TryGetValue(typeof(TInterface), out var bindings))
+            var interfaceType = typeof(TInterface);
+            if (!typeBindings.TryGetValue(interfaceType, out var bindings))
             {
                 bindings = new List<TypeBinding>(1);
-                typeBindings[typeof(TInterface)] = bindings;
+                typeBindings[interfaceType] = bindings;
+            }
+
+            bindings.Add(typeBinding);
+        }
+        
+        public void AddUnsafeBinding(UnsafeTypeBinding typeBinding)
+        {
+            var interfaceType = typeBinding.InterfaceType;
+            if (!typeBindings.TryGetValue(interfaceType, out var bindings))
+            {
+                bindings = new List<TypeBinding>(1);
+                typeBindings[interfaceType] = bindings;
             }
 
             bindings.Add(typeBinding);
@@ -63,10 +76,13 @@ namespace ManualDi.Main
         {
             var diContainer = new DiContainer(typeBindings, parentDiContainer);
 
-            foreach (var action in disposeActions)
+            diContainer.QueueDispose(new ActionDisposableWrapper(() =>
             {
-                diContainer.QueueDispose(action);
-            }
+                foreach (var action in disposeActions)
+                {
+                    action.Invoke();
+                }
+            }));
 
             diContainer.Init();
             

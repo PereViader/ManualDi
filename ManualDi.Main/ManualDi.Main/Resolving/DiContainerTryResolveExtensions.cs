@@ -21,10 +21,10 @@ namespace ManualDi.Main
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryResolve<T>(this IDiContainer diContainer, Action<ResolutionConstraints> configureReslutionConstraints, [MaybeNullWhen(false)] out T resolution)
+        public static bool TryResolve<T>(this IDiContainer diContainer, Action<ResolutionConstraints> configureResolutionConstraints, [MaybeNullWhen(false)] out T resolution)
         {
             var resolutionConstraints = new ResolutionConstraints();
-            configureReslutionConstraints.Invoke(resolutionConstraints);
+            configureResolutionConstraints.Invoke(resolutionConstraints);
 
             var result = diContainer.ResolveContainer(typeof(T), resolutionConstraints);
             if (result is null)
@@ -35,6 +35,23 @@ namespace ManualDi.Main
 
             resolution = (T)result;
             return true;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool TryResolve(this IDiContainer diContainer, Type type, [MaybeNullWhen(false)] out object resolution)
+        {
+            resolution = diContainer.ResolveContainer(type, resolutionConstraints: null);
+            return resolution is not null;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool TryResolve(this IDiContainer diContainer, Type type, Action<ResolutionConstraints> configureResolutionConstraints, [MaybeNullWhen(false)] out object resolution)
+        {
+            var resolutionConstraints = new ResolutionConstraints();
+            configureResolutionConstraints.Invoke(resolutionConstraints);
+
+            resolution = diContainer.ResolveContainer(type, resolutionConstraints);
+            return resolution is not null;
         }
     }
 }

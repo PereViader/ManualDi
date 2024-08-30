@@ -9,7 +9,7 @@ public class TestDiContainerInitialize
     public void TestInitialize()
     {
         var instance = new object();
-        var initializationDelegate = Substitute.For<InitializationDelegate<object>>();
+        var initializationDelegate = Substitute.For<InstanceContainerDelegate<object>>();
 
         var container = new DiContainerBindings().Install(b =>
         {

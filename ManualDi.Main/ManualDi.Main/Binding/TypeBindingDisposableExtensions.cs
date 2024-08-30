@@ -1,25 +1,12 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
 {
-    public delegate Action GetDisposeDelegate<in T>(T instance, IDiContainer container);
-
     public static class TypeBindingDisposableExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<TInterface, TConcrete> Dispose<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding
-            )
-        {
-            typeBinding.TryToDispose = true;
-            return typeBinding;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<TInterface, TConcrete> DontDispose<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding
-        )
+        public static TBinding DontDispose<TBinding>(this TBinding typeBinding)
+            where TBinding : TypeBinding
         {
             typeBinding.TryToDispose = false;
             return typeBinding;
@@ -28,11 +15,20 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<TInterface, TConcrete> Dispose<TInterface, TConcrete>(
             this TypeBinding<TInterface, TConcrete> typeBinding,
-            GetDisposeDelegate<TConcrete> getDisposeDelegate
+            InstanceContainerDelegate<TConcrete> disposeDelegate
             )
         {
-            typeBinding.TryToDispose = false;
-            typeBinding.Inject((o, c) => c.QueueDispose(getDisposeDelegate.Invoke(o, c)));
+            typeBinding.Inject((o, c) => c.QueueDispose(() => disposeDelegate.Invoke(o, c)));
+            return typeBinding;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static UnsafeTypeBinding Dispose(
+            this UnsafeTypeBinding typeBinding,
+            InstanceContainerDelegate disposeDelegate
+            )
+        {
+            typeBinding.Inject((o, c) => c.QueueDispose(() => disposeDelegate.Invoke(o, c)));
             return typeBinding;
         }
     }

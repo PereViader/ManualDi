@@ -70,26 +70,26 @@ public class TestDiContainerDispose
     public void TestDisposeCustom()
     {
         var instance = new object();
-        var disposeAction = Substitute.For<Action>();
+        var disposeAction = Substitute.For<InstanceContainerDelegate<object>>();
 
         IDiContainer container = new DiContainerBindings().Install(b =>
         {
             b.Bind<object>()
                 .FromInstance(instance)
-                .Dispose((_, _) => disposeAction);
+                .Dispose(disposeAction);
         }).Build();
 
         _ = container.Resolve<object>();
 
-        disposeAction.DidNotReceive().Invoke();
+        disposeAction.DidNotReceive().Invoke(Arg.Any<object>(), Arg.Any<IDiContainer>());
 
         container.Dispose();
 
-        disposeAction.Received(1).Invoke();
+        disposeAction.Received(1).Invoke(Arg.Is<object>(instance), Arg.Is<IDiContainer>(container));
         disposeAction.ClearReceivedCalls();
 
         container.Dispose();
 
-        disposeAction.DidNotReceive().Invoke();
+        disposeAction.DidNotReceive().Invoke(Arg.Any<object>(), Arg.Any<IDiContainer>());
     }
 }

@@ -29,5 +29,30 @@ namespace ManualDi.Main
             }
             return (T)resolution;
         }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static object Resolve(this IDiContainer diContainer, Type type)
+        {
+            var resolution = diContainer.ResolveContainer(type, resolutionConstraints: null);
+            if (resolution is null)
+            {
+                throw new InvalidOperationException($"Could not resolve element of type {type.FullName}");
+            }
+            return resolution;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static object Resolve(this IDiContainer diContainer, Type type, Action<ResolutionConstraints> configureResolutionConstraints)
+        {
+            var resolutionConstraints = new ResolutionConstraints();
+            configureResolutionConstraints.Invoke(resolutionConstraints);
+            
+            var resolution = diContainer.ResolveContainer(type, resolutionConstraints: resolutionConstraints);
+            if (resolution is null)
+            {
+                throw new InvalidOperationException($"Could not resolve element of type {type.FullName}");
+            }
+            return resolution;
+        }
     }
 }

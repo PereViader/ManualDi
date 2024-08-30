@@ -62,5 +62,21 @@ namespace ManualDi.Main
 
             return (T)result;
         }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static object? ResolveNullable(this IDiContainer diContainer, Type type)
+        {
+            return diContainer.ResolveContainer(type, resolutionConstraints: null);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static object? ResolveNullable<T>(this IDiContainer diContainer, Type type, Action<ResolutionConstraints> configureReslutionConstraints)
+            where T : class
+        {
+            var resolutionConstraints = new ResolutionConstraints();
+            configureReslutionConstraints.Invoke(resolutionConstraints);
+
+            return diContainer.ResolveContainer(type, resolutionConstraints);
+        }
     }
 }

@@ -9,7 +9,7 @@ public class TestDiContainerInject
     public void TestInject()
     {
         var instance = new object();
-        var injectMethod = Substitute.For<InjectionDelegate<object>>();
+        var injectMethod = Substitute.For<InstanceContainerDelegate<object>>();
 
         var container = new DiContainerBindings().Install(b =>
         {

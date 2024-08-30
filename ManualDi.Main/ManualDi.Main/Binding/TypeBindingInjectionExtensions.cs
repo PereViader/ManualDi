@@ -7,7 +7,16 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<TInterface, TConcrete> Inject<TInterface, TConcrete>(
             this TypeBinding<TInterface, TConcrete> typeBinding, 
-            InjectionDelegate<TConcrete> injectionDelegate)
+            InstanceContainerDelegate<TConcrete> injectionDelegate)
+        {
+            typeBinding.InjectionDelegates += injectionDelegate;
+            return typeBinding;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static UnsafeTypeBinding Inject(
+            this UnsafeTypeBinding typeBinding, 
+            InstanceContainerDelegate injectionDelegate)
         {
             typeBinding.InjectionDelegates += injectionDelegate;
             return typeBinding;

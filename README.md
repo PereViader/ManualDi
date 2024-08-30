@@ -16,17 +16,11 @@ The principles this project is based on are:
 
 Let compare this container with Microsoft's one given it is the standard most projects use today.
 
-When looking at them, keep in mind that
-- CPU time depends on the specs of the pc running it
-- CPU time and memory allocations are correlated with the amount of services bound to the container
-- The benchmark numbers are only valid when comparing the same program implemented with either ManualDi or Microsoft's container.
+## Simple Chain [🔗](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Main/ManualDi.Main.Benchmark/SimpleBenchmark.cs)
 
-## Simple Chain
-
-For this case, we have a chain of 100 services where each depend on the previous one, all of them are transient but the first one that is a singleton and thus will be cached. Seconds resolution will happen on the single instance and thus it should reuse the previously built object graph.
+In this benchmark there is a chain of 100 services being bound and resolved. This means that each service dependends only on the next one in the chain. The root service in the chain is a bound as Single, meaning that it will reuse the object graph on the second resolution.
 
 - Combined GC consumption for the setup and resolution is 7,33 times lower 
-- Aggregate performance is 
 - Object graph resolution is 7,9 times faster
 - Disposal is 17 times faster
 - Setup is 1,2 times faster
@@ -89,19 +83,29 @@ IDiContainer container = new DiContainerBindings()
 ```
 
 - Complex but does not delay construction of the object graph: Have the asynchronous loading as part of the runtime code and take into account that the necessary dependency will not be there as part of the runtime flow. Create an object graph that can support this fact, this can take many shapes depending on the usecase.
+```csharp
+IDiContainer container = new DiContainerBindings()
+    .InstallSomeFunctionality(someConfig)
+    .Build();
 
+var initializer = container.Resolve<Initializer>();
+
+await initializer.StartApplication();
+```
 
 # Binding
 
-First of all, it is important to understand that the configuration of the container may only be done during it's creation. Once built, the container's configuration is completely readonly. Changing the configuration after that will result in undefined behaviour.
+The configuration of the container may only be done during it's creation. 
+Any alteration by custom means after the container's cration may result in undefined behaviour.
 
-The previous section displays how to create the container, but the configuration of the container happens on some opaque installers. 
+The previous section displays how to create the container, but the configuration of the container is done on some opaque installer extension method or object. 
 
-In order to configure the container, Binding extension methods are provided on `DiContainerBindings`. Those binding methods require the `Concrete` and `Apparent` types being bound:
+Configuration of the container is done through Binding extension methods available on `DiContainerBindings`. 
+These binding methods require the `Concrete` and `Apparent` types being bound:
 - Concrete: It's type of the actual instance behind the scenes
 - Aparent: It's the type that can be used when resolving the container.
 
-Let's see how is one of those installers implemented
+This is a sample implementation of an installer extension method
 
 ```csharp
 class A {}
@@ -120,9 +124,8 @@ static class Installer
     }
 }
 ```
-
-There are several extension methods for the `TypeBinding<T, Y>` that will allow you to actually make the binding do something.
-Although there is nothing preventing you from calling these methods in another order, the convention this library recommends is to call them in this order.
+The result of calling the Bind is `TypeBinding<T, Y>`. This type provides several extension methods to define the exact behaviour of the binding.
+By convention, you should call methods in the following order.
 
 ```csharp
 Bind<T>()
@@ -134,9 +137,8 @@ Bind<T>()
     .Dispose
     .WithMetadata
     .[Lazy|NonLazy]
+    .[Any other custom extension method your project implements]
 ```
-
-We will now go over each one of them
 
 ## Scope
 
@@ -144,12 +146,12 @@ The scope of a binding defines the rules of creation of instances of the binding
 
 ### Single
 
-The container will generate a single instance of the type and always return the same when asked to resolve it. Similar to the dreaded `Singleton` but not globally accessible. 
+The container will generate a single instance of the type and cache it.
+Further calls with for the same resolution will return the cached instance.
 
 ### Transient
 
-The container will generate a new instance of the type when requested to resolve it.
-
+The container will generate a new instance every time the type is resolved.
 
 ## From
 
@@ -167,7 +169,7 @@ b.Bind<T>().FromConstructor()
 ### Instance
 
 When the instance of the type is resolved, it will return the instance supplied during the binding stage.
-Note: When used with a `Transient` scope, the container will still return the same instance.
+Note: If used with `Transient` scope, the container will still return the same instance.
 
 ```csharp
 b.Bind<T>().FromInstance(new T())
@@ -185,7 +187,7 @@ b.Bind<T>().FromMethod(c => new T(c.Resolve<SomeService>()))
 
 ### Container
 
-Useful exposing a type on the container as another
+Useful mapping one type of the container as another
 
 ```csharp
 b.Bind<int>().FromInstance(1);
@@ -196,9 +198,7 @@ b.Bind<object, int>().FromContainer();
 System.Console.WriteLine(c.Resolve<object>()); // Outputs "1"
 ```
 
-In this snippet, an integer with a value of 1 is registered. Then an object is bound to the container by redirecting the integer binding to it. As a result, when the object is requested, the container resolves the integer and returns 1.
-
-Using FromContainer is the same :
+Using FromContainer is a shorthand for:
 
 ```csharp
 b.Bind<object, int>().FromMethod(c => c.Resolve<int>());
@@ -221,95 +221,97 @@ foreach(var value in container.Resolve<List<object>>())
 }
 ```
 
-As seen before this is just a shorthand for ResolveAll
+Using FromContainerAll is a shorthand for:
 
 ```csharp
 b.Bind<List<object>, List<int>>().FromMethod(c => c.ResolveAll<int>().Cast<object>().ToList());
 ```
 
-
 ## Inject
 
-### Theory
-
-In some situations, it might not be possible to inject all dependencies for a type at the time of its creation due to various reasons. When this occurs, the Inject method allows for post-construction injection.
-
-Instead of injecting the object immediately after construction, it is added to a queue to be injected later. This ensures that all dependent services are created and injected in the correct order.
-
-The Inject method will be called once for every new type, depending on the scope.
-
-Example:
-
-
-Service A: Depends on B
-Service B: Depends on A
-
-
-Naive solution that won't work
-
-```csharp
-b.Bind<A>().FromMethod(c => new A(c.Resolve<B>()));
-b.Bind<B>().FromMethod(c => new B(c.Resolve<A>()));
-
-// ...
-
-c.Resolve<A>();
-```
-
-- Start by getting service A
-- The from method of A defines we call the constructor, but first we have to get an instance of B
-- The from method of B defines we call the constructor, but first we have to get an instance of A
-- The from method of A defines we call the constructor, but first we have to get an instance of B
-- The from method of B defines we call the constructor, but first we have to get an instance of A
-- The from method of A defines we call the constructor, but first we have to get an instance of B
-- The from method of B defines we call the constructor, but first we have to get an instance of A
-- The from method of A defines we call the constructor, but first we have to get an instance of B
-- The from method of B defines we call the constructor, but first we have to get an instance of A
-... this never ends and will fail when the stack is full
-
-Actual solution that works
-
-```csharp
-b.Bind<A>().FromMethod(c => new A())).Inject((o,c) => o.B = c.Resolve<B>());
-b.Bind<B>().FromMethod(c => new B(c.Resolve<A>()));
-
-// ...
-
-c.Resolve<A>();
-```
-
-- Start by getting service A
-- The from method of A defines we call the constructor
-- The inject method is called, which requests and instance of B
-- The from method of B defines we call the constructor, but first we have to get an instance of A
-- We get the instance of A already constructed and return it
-- The constructor for B resolves
-- A's inject method finishes
-- A finishes being resolved
+The Inject method allows for post-construction injection of types.
+The injection will happen immediately after the object creation.
+The injection will be done in reverse resolution order. In other words, injected objects will already be injected themselves.
+The injection will not happen more than once for any instance.
+The injection can also be used to run other custom user code during the object creation lifecycle.
 
 ### Source Generator
 
-An empty overload of the Inject method will be generated if the type has a public/internal accessible Inject method. The generated method will call the inject method with all the dependencies that are requested as parameters (it may have no parameters).
+An empty overload of the Inject method will be generated if:
+- The type has a single public/internal accessible Inject method. The method may have 0 or more dependencies.
+- The type has any amount of public/internal accessible properties that use the Inject attribute
+
+The generated method will first do property injection on the properties and then call the inject method.
 
 ```csharp
 public class A
 {
+    [Inject] public object Object { get; set; }
+    [Inject] public int Value { get; set; }
+
     public void Inject(B b, C c) { }
 }
 
-b.Bind<A>().Inject();
+public class B
+{
+    [Inject] public object Object { get; set; }
+}
+
+public class C
+{
+    public void Inject() { }
+}
+
+b.Bind<object>().FromInstance(new object());
+b.Bind<int>().FromInstance(3);
+b.Bind<A>().FromConstructor().Inject();
+b.Bind<B>().FromConstructor().Inject();
+b.Bind<C>().FromConstructor().Inject();
 ```
 
+### Example1: Cannot change the constructor
+
+In the unity engine for example, types that that derive from `UnityEngine.Object` cannot make use of the constructor.
+For this reason, derived types will usually make resort to this kind of injection
+
+```csharp
+public class SomethingGameRelated : MonoBehaviour  // this class derives from UnityEngine.Object
+{
+    [Inject] public SomeGameService SomeGameService { get; set; }
+
+    public void Inject()
+    {
+        //Do something
+    }
+}
+```
+
+#### Example2: Cyclic dependencies
+
+Warning: Cyclic dependencies usually highlight a problem in the design of the code. If you find such a problem in your codebase, consider redesigning the code before applying the following proposal.
+
+This will throw a stack trace exception when any of the types involved in the cyclic chain is resolved.
+
+```csharp
+b.Bind<A>().FromMethod(c => new A(c.Resolve<B>()));
+b.Bind<B>().FromMethod(c => new B(c.Resolve<A>()));
+```
+
+This will work.
+As long as a single object in the cyclic chain breaks the chain, the resolution will be able to complete successfully.
+
+```csharp
+b.Bind<A>().FromMethod(c => new A())).Inject((o,c) => o.B = c.Resolve<B>());
+b.Bind<B>().FromMethod(c => new B(c.Resolve<A>()));
+```
 
 ## Initialize
 
-### Theory
-
-Similar to the Inject method, the Initialize method defines a delegate to be called for newly constructed instances before they are resolved.
-
-Like the Inject method, newly created instances are added to a queue for initialization.
-
-The Initialize method will be called once for every new type, depending on the scope.
+The Initialize method allows for post-injection initialization and injection of types.
+The initialization will NOT happen immediately after the object injection. It will be queued and run later.
+The initialization will be done in reverse resolution order. In other words, injected objects will already be initialized themselves.
+The initialization will not happen more than once for any instance.
+The initialization can also be used to hook into the object creation lifecycle and run other custom user code.
 
 ```csharp
 b.Bind<A>().FromInstance(new A()).Initialize((o,c) => o.Init());
@@ -317,13 +319,10 @@ b.Bind<A>().FromInstance(new A()).Initialize((o,c) => o.Init());
 c.Resolve<A>()
 ```
 
-- Start by getting service A
-- The from method of A defines we return the instance provided
-- The initialize method calls the Init method on A
-
 ### Source Generation
 
-An empty overload of the Initialize method will be generated if the type has a public/internal accessible Initialize method. The generated method will call the Initialize method with all the dependencies that are requested as parameters (it may have no parameters). 
+An empty overload of the Initialize method will be generated if:
+- The type has a single public/internal accessible Initialize method. The method may have 0 or more dependencies.
 
 ```csharp
 public class A
@@ -331,24 +330,50 @@ public class A
     public void Initialize() { }
 }
 
-b.Bind<A>().Initialize();
+public class B
+{
+    public void Initialize(A a) { }
+}
+
+b.Bind<A>().FromConstructor().Initialize();
+b.Bind<B>().FromConstructor().Initialize();
 ```
 
 ## Dispose
 
-Objects may implement the IDisposable interface or require custom teardown logic. The Dispose extension method allows defining behavior that will run when the object is disposed. The container will handle disposal when itself is disposed.
+Objects may implement the IDisposable interface or require custom teardown logic. 
+The Dispose extension method allows defining behavior that will run when the object is disposed. 
+The container will dispose of the objects when itself is disposed.
+The objects will be disposed in reverse resolution order.
 
 If an object implements the IDisposable interface, it doesn't need to call Dispose, it will be Disposed automatically.
 
 ```csharp
-// Given A implements IDisposable
-// Given B does not implement IDisposable
+class A : IDisposable 
+{ 
+    public void Dispose() { }    
+}
 
-b.Bind<A>().FromInstance(new A());
-b.Bind<B>().FromInstance(new B()).Dispose((o,c) => o.DoCleanup);
+class B 
+{
+    public B(A a) { }
+    public void DoCleanup() { }
+}
 
-container.Dispose(); // A and B disposed if they were created
+b.Bind<A>().FromConstructor(); // No need to call Dispose because the object is IDisposable
+b.Bind<B>().FromConstructor().Dispose((o,c) => o.DoCleanup);
+
+// ...
+
+B b = c.Resolve<B>();
+
+c.Dispose(); // A is the first object disposed, then B
 ```
+
+### DontDispose
+
+If this extension method is called, the method will not call the `IDisposable.Dispose` method.
+Any delegate registered to the Dispose method will still be called.
 
 
 ## With Metadata
@@ -356,9 +381,6 @@ container.Dispose(); // A and B disposed if they were created
 These extension methods allow registering keys or key/value pairs, enabling the filtering of elements during resolution.
 
 ```csharp
-Given A does not implement IDisposable
-and B implements IDisposable
-
 b.Bind<int>().FromInstance(1).WithMetadata("Potato");
 b.Bind<int>().FromInstance(5).WithMetadata("Banana");
 
@@ -374,6 +396,7 @@ c.Resolve<int>(b => b.WhereMetadata("Banana")); // returns 5
 ### Lazy
 
 The FromMethod delegate will not be called until the object is actually resolved.
+By default bindings are Lazy so calling this method is usually not necessary.
 
 ### NonLazy
 
@@ -405,7 +428,9 @@ b.Bind<C>().Default().FromConstructor(); // Default calls Initialize
 b.Bind<D>().Default().FromConstructor(); // Default calls Inject and Initialize
 ```
 
-Using default is not mandatory in any way, but it is a way to speed up development because the source generator will update bindings as the type is changed.
+Using default is not mandatory, but it helps development by taking the responsability of updating the bindings away from the developer any time a new Inject / Initialize method is introduced.
+
+Thus it is recommended to always add it even if the type does not currently have any of the methods.
 
 
 ## Unity3d

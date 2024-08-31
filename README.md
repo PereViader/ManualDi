@@ -1,4 +1,5 @@
-[![Test and publish](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml/badge.svg)](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml)
+[![Test and publish](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml/badge.svg)](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml) ![NuGet Version](https://img.shields.io/nuget/v/ManualDi.Main) [![Release](https://img.shields.io/github/release/PereViader/ManualDi.svg)](https://github.com/PereViader/ManualDi/releases/latest) [![Unity version 2022.3.29](https://img.shields.io/badge/Unity-2022.3.29-57b9d3.svg?style=flat&logo=unity)](https://unity3d.com)
+
 
 Welcome to ManualDi. A C# manual dependency injection library for both Unity3d and pure C# solutions. 
 
@@ -45,6 +46,7 @@ Install it using [Nuget](https://www.nuget.org/packages/ManualDi.Main/)
 ## Unity3d
 
 Install it using the [Unity Package Manager](https://docs.unity3d.com/Manual/upm-ui-giturl.html) with the following git url: https://github.com/PereViader/ManualDi.Unity3d.git
+Compatible with [Unity 2022.3.29](https://github.com/PereViader/ManualDi/issues/25) or later
 
 # Examples
 
@@ -55,22 +57,14 @@ If you want to quickly jump to the code, you can find examples [here](https://gi
 The container is created using a fluent Builder
 
 ```csharp
-IDiContainer container = new DiContainerBindings()
-    .InstallSomeFunctionality()
-    .Install(new SomeOtherInstaller());
-    .Build();
+IDiContainer container = new DiContainerBindings()  // Declare the fluent builder
+    .InstallSomeFunctionality()                     // Configure with an extension method implemented in your project
+    .Install(new SomeOtherInstaller());             // Configure with an instance of `IInstaller` implemented your project
+    .Build();                                       // Build the container
 ```
 
-Let's analize this snippet:
-
-- Declare the container variable of type `IDiContainer` called container.
-- Create the `DiContainerBindings` builder
-- Call the user created static extension method `InstallSomeFunctionality` which will bind services to the container
-- Call `Install` with an `IInstaller` create by the user named `SomeOtherInstaller`. This does the same as the extension method, but with an object instead of a static function call
-- Call `Build` which will freeze the bindings and return a container
-
 Creation of the container is a synchronous process, if you need to do any kind of asynchronous work you can do the following:
-- Simple but delays construction: Load the asyncronous data before creating the container and provide it syncronously
+- Simple but with delayed construction: Load the asynchronous data before creating the container, then provide it synchronously.
 ```csharp
 SomeConfig someConfig = await GetSomeConfig(); 
 
@@ -79,10 +73,10 @@ IDiContainer container = new DiContainerBindings()
     .Build();
 ```
 
-- Complex but does not delay construction of the object graph: Have the asynchronous loading as part of the runtime code and take into account that the necessary dependency will not be there as part of the runtime flow. Create an object graph that can support this fact, this can take many shapes depending on the usecase.
+- Avoids delayed construction but complex: Handle asynchronous loading during runtime, designing the object graph to work even if some dependencies aren't immediately available.
 ```csharp
 IDiContainer container = new DiContainerBindings()
-    .InstallSomeFunctionality(someConfig)
+    .InstallSomeFunctionality()
     .Build();
 
 var initializer = container.Resolve<Initializer>();
@@ -90,9 +84,16 @@ var initializer = container.Resolve<Initializer>();
 await initializer.StartApplication();
 ```
 
+# Container Lifecycle
+
+- Installation Phase: The container's configuration is defined and set up.
+- Building Phase: The container is created and ingests the configuration. Non lazy Bindings are resolved.
+- Resolution Phase: The container can be used to resolve services as needed.
+- Disposal Phase: The container and its resources are properly cleaned up and released.
+
 # Binding
 
-The configuration of the container may only be done during it's creation. 
+The configuration of the container may only set during the installation phase. 
 Any alteration by custom means after the container's cration may result in undefined behaviour.
 
 The previous section displays how to create the container, but the configuration of the container is done on some opaque installer extension method or object. 
@@ -268,8 +269,8 @@ b.Bind<C>().FromConstructor().Inject();
 
 ### Example1: Cannot change the constructor
 
-In the unity engine for example, types that that derive from `UnityEngine.Object` cannot make use of the constructor.
-For this reason, derived types will usually make resort to this kind of injection
+In the unity engine, for example, types that that derive from `UnityEngine.Object` cannot make use of the constructor.
+For this reason, derived types will usually resort to this kind of injection
 
 ```csharp
 public class SomethingGameRelated : MonoBehaviour  // this class derives from UnityEngine.Object

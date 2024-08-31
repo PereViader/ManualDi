@@ -1,16 +1,13 @@
 [![Test and publish](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml/badge.svg)](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml)
 
-Welcome to ManualDi. A C# dependency injection library for both Unity3d and pure C# solutions. 
+Welcome to ManualDi. A C# manual dependency injection library for both Unity3d and pure C# solutions. 
 
-The principles this project is based on are:
- - Understandable: A new developer should be able to quickly understand how to use it
- - Familiar: Concepts used by the container should be the same as already as existing containers
- - Fast: The container should be able to resolve the object graph quickly and efficiently
- - Responsible: New features added to the container should not degrade performance
- - Natural: We should invest our time on providing value and not on getting things to work
- - Easy: Adding functionality should not require a high mental load
- - Pluggable:  Easily customize the container and provide extra functionality by hooking into its pipeline
- - Default: The container should do as much work as possible so the user has to do the least work as possible
+The project is grounded on the following five fundamentals:
+ - Fast: Operations must be quick and efficient.
+ - Flexible: The container's pipeline should support custom functionality.
+ - Functional: Achieving desired behaviors should require minimal boilerplate.
+ - Familiar: The container should use simple concepts and, where possible, leverage those already familiar from other containers.
+ - Fathomable: Functionality should be easy to read and understand.
 
 # Benchmark
 
@@ -18,13 +15,13 @@ Let compare this container with Microsoft's one given it is the standard most pr
 
 ## Simple Chain [🔗](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Main/ManualDi.Main.Benchmark/SimpleBenchmark.cs)
 
-In this benchmark there is a chain of 100 services being bound and resolved. This means that each service dependends only on the next one in the chain. The root service in the chain is a bound as Single, meaning that it will reuse the object graph on the second resolution.
+In this benchmark, a chain of 100 services is bound and resolved, with each service depending solely on the next one in the sequence. The root service in the chain is bound as a Singleton, ensuring that the object graph is reused during the second resolution.
 
-- Combined GC consumption for the setup and resolution is 7,33 times lower 
-- Object graph resolution is 7,9 times faster
-- Disposal is 17 times faster
-- Setup is 1,2 times faster
-- Repeated access is equivalent
+ - Combined GC consumption for setup and resolution is reduced by 7.33 times.
+ - Object graph resolution is 7.9 times faster.
+ - Disposal speed is 17 times faster.
+ - Setup is 1.2 times faster.
+ - Repeated access performance remains equivalent.
 
 ```
 | Method                           | Mean          | Error       | StdDev       | Median          | Gen0   | Gen1   | Allocated |
@@ -47,7 +44,7 @@ Install it using [Nuget](https://www.nuget.org/packages/ManualDi.Main/)
 
 ## Unity3d
 
-Install it using Unity Package Manager with the following git url: https://github.com/PereViader/ManualDi.Unity3d.git
+Install it using the [Unity Package Manager](https://docs.unity3d.com/Manual/upm-ui-giturl.html) with the following git url: https://github.com/PereViader/ManualDi.Unity3d.git
 
 # Examples
 

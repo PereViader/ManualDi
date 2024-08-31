@@ -17,18 +17,21 @@ namespace ManualDi.Main.Generators
         public string ClassName { get; }
         public INamedTypeSymbol ClassSymbol { get; }
         public string ObsoleteText { get; }
+        public INamedTypeSymbol LazyTypeSymbol { get; }
 
-        public GenerationClassContext(StringBuilder stringBuilder, string className, INamedTypeSymbol classSymbol, string obsoleteText)
+        public GenerationClassContext(StringBuilder stringBuilder, string className, INamedTypeSymbol classSymbol,
+            string obsoleteText, INamedTypeSymbol lazyTypeSymbol)
         {
             StringBuilder = stringBuilder;
             ClassName = className;
             ClassSymbol = classSymbol;
             ObsoleteText = obsoleteText;
+            LazyTypeSymbol = lazyTypeSymbol;
         }
     }
     
     [Generator]
-    public class TestsSourceGenerator : IIncrementalGenerator
+    public class ManualDiSourceGenerator : IIncrementalGenerator
     {
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
@@ -50,12 +53,43 @@ namespace ManualDi.Main.Generators
             context.RegisterSourceOutput(providers, Generate);
         }
         
+        private static bool IsSyntaxNodeValid(SyntaxNode node, CancellationToken ct)
+        {
+            if (node is not ClassDeclarationSyntax classDeclarationSyntax)
+            {
+                return false;
+            }
+
+            if (classDeclarationSyntax.Modifiers.Any(SyntaxKind.StaticKeyword))
+            {
+                return false;
+            }
+
+            if (classDeclarationSyntax.TypeParameterList?.Parameters.Count > 0)
+            {
+                return false;
+            }
+
+            return true;
+        }
+        
+        private static ClassDeclarationSyntax GetClassDeclaration(GeneratorSyntaxContext context, CancellationToken ct)
+        {
+            return (ClassDeclarationSyntax)context.Node;
+        }
+        
         private void Generate(SourceProductionContext context, ((Compilation, ImmutableArray<ModuleInfo>), ImmutableArray<ClassDeclarationSyntax>) arg)
         {
             var ((compilation, moduleInfos), classDeclarations) = arg;
 
             //We don't generate if the ManualDi reference is not there
             if (moduleInfos.Length == 0)
+            {
+                return;
+            }
+            
+            var lazyTypeSymbol = compilation.GetTypeByMetadataName("System.Lazy`1");
+            if (lazyTypeSymbol is null)
             {
                 return;
             }
@@ -81,9 +115,7 @@ namespace ManualDi.Main.Generators
                 """);
                 
                 var model = compilation.GetSemanticModel(classDeclaration.SyntaxTree);
-                var classSymbol = ModelExtensions.GetDeclaredSymbol(model, classDeclaration) as INamedTypeSymbol;
-                
-                if (classSymbol is null)
+                if (ModelExtensions.GetDeclaredSymbol(model, classDeclaration) is not INamedTypeSymbol classSymbol)
                 {
                     continue;
                 }
@@ -95,12 +127,12 @@ namespace ManualDi.Main.Generators
                 }
 
                 bool inheritsUnityObject = InheritsFromSymbol(classSymbol, unityEngineObjectSymbol);
-                var className = FullyQualifyType(classSymbol);
+                var className = FullyQualifyTypeWithoutNullable(classSymbol);
                 var obsoleteText = IsSymbolObsolete(classSymbol)
                     ? "[System.Obsolete]\r\n        " 
                     : "";
 
-                var generationContext = new GenerationClassContext(stringBuilder, className, classSymbol, obsoleteText);
+                var generationContext = new GenerationClassContext(stringBuilder, className, classSymbol, obsoleteText, lazyTypeSymbol);
 
                 if (!inheritsUnityObject)
                 {
@@ -187,26 +219,6 @@ namespace ManualDi.Main.Generators
             };
         }
         
-        private static bool IsSyntaxNodeValid(SyntaxNode node, CancellationToken ct)
-        {
-            if (node is not ClassDeclarationSyntax classDeclarationSyntax)
-            {
-                return false;
-            }
-
-            if (classDeclarationSyntax.Modifiers.Any(SyntaxKind.StaticKeyword))
-            {
-                return false;
-            }
-
-            if (classDeclarationSyntax.TypeParameterList?.Parameters.Count > 0)
-            {
-                return false;
-            }
-
-            return true;
-        }
-        
         private static Accessibility GetSymbolAccessibility(ISymbol symbol)
         {
             // Recursively determine the effective accessibility of the type
@@ -226,11 +238,6 @@ namespace ManualDi.Main.Generators
             return visibility;
         }
 
-        private static ClassDeclarationSyntax GetClassDeclaration(GeneratorSyntaxContext context, CancellationToken ct)
-        {
-            return (ClassDeclarationSyntax)context.Node;
-        }
-
         private static Accessibility? AddFromConstructor(GenerationClassContext context)
         {
             var constructor = context.ClassSymbol
@@ -244,7 +251,7 @@ namespace ManualDi.Main.Generators
 
             var accessibility = GetSymbolAccessibility(constructor);
             var accessibilityString = GetAccessibilityString(accessibility);
-            var arguments = CreateArgumentsResolution(constructor);
+            var arguments = CreateMethodResolution(constructor, context.LazyTypeSymbol);
             
             context.StringBuilder.AppendLine($$"""
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -257,12 +264,36 @@ namespace ManualDi.Main.Generators
             return accessibility;
         }
 
-        private static string CreateArgumentsResolution(IMethodSymbol constructor)
+        private static string CreateMethodResolution(IMethodSymbol constructor, INamedTypeSymbol lazyTypeSymbol)
         {
-            return string.Join(",\r\n                ", constructor.Parameters.Select(p => $"c.{CreateArgumentResolutionMethod(p.Type)}<{FullyQualifyType(p.Type)}>()"));
+            return string.Join(",\r\n                ", constructor.Parameters.Select(x => CreteTypeResolution(x.Type, lazyTypeSymbol)));
         }
 
-        private static string CreateArgumentResolutionMethod(ITypeSymbol typeSymbol)
+        private static string CreteTypeResolution(ITypeSymbol typeSymbol, INamedTypeSymbol lazyTypeSymbol)
+        {
+            var genericType = TryGetLazyGenericType(typeSymbol, lazyTypeSymbol);
+            if (genericType is not null)
+            {
+                return $"new System.Lazy<{FullyQualifyTypeWithNullable(genericType)}>(() => c.{CreateContainerResolutionMethod(genericType)}<{FullyQualifyTypeWithoutNullable(genericType)}>())";
+            }
+            
+            return $"c.{CreateContainerResolutionMethod(typeSymbol)}<{FullyQualifyTypeWithoutNullable(typeSymbol)}>()";
+        }
+        
+        public static ITypeSymbol? TryGetLazyGenericType(ITypeSymbol typeSymbol, INamedTypeSymbol lazyTypeSymbol)
+        {
+            if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
+            {
+                if (SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, lazyTypeSymbol))
+                {
+                    return namedTypeSymbol.TypeArguments[0];
+                }
+            }
+
+            return null;
+        }
+
+        private static string CreateContainerResolutionMethod(ITypeSymbol typeSymbol)
         {
             if (typeSymbol.NullableAnnotation is not NullableAnnotation.Annotated)
             {
@@ -291,7 +322,7 @@ namespace ManualDi.Main.Generators
 
             var accessibility = GetSymbolAccessibility(initializeMethod);
             var accessibilityString = GetAccessibilityString(accessibility);
-            var arguments = CreateArgumentsResolution(initializeMethod);
+            var arguments = CreateMethodResolution(initializeMethod, context.LazyTypeSymbol);
 
             context.StringBuilder.AppendLine($$"""
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -341,17 +372,17 @@ namespace ManualDi.Main.Generators
                     {{generationClassContext.ObsoleteText}}{{accessibilityString}} static TypeBinding<T, {{generationClassContext.ClassName}}> Inject<T>(this TypeBinding<T, {{generationClassContext.ClassName}}> typeBinding)
                     {
                         return typeBinding.Inject(static (o, c) => 
-                        { 
+                        {
             """);
 
             foreach (var injectProperty in injectProperties)
             {
-                generationClassContext.StringBuilder.AppendLine($"                o.{injectProperty.Name} = c.{CreateArgumentResolutionMethod(injectProperty.Type)}<{FullyQualifyType(injectProperty.Type)}>();");
+                generationClassContext.StringBuilder.AppendLine($"                o.{injectProperty.Name} = {CreteTypeResolution(injectProperty.Type, generationClassContext.LazyTypeSymbol)};");
             }
             
             if (injectMethod is not null)
             {
-                var arguments = CreateArgumentsResolution(injectMethod);
+                var arguments = CreateMethodResolution(injectMethod, generationClassContext.LazyTypeSymbol);
                 generationClassContext.StringBuilder.AppendLine($"                o.Inject({arguments});");
             }
                         
@@ -408,7 +439,7 @@ namespace ManualDi.Main.Generators
             genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters
         );
         
-        private static string FullyQualifyType(ITypeSymbol typeSymbol)
+        private static string FullyQualifyTypeWithoutNullable(ITypeSymbol typeSymbol)
         {
             //I don't like that we cast this, but I could not find a way to do this without casting
             if (typeSymbol is INamedTypeSymbol namedTypeSymbol &&
@@ -420,6 +451,11 @@ namespace ManualDi.Main.Generators
             }
             
             return typeSymbol.ToDisplayString(FullyQualifyTypeSymbolDisplayFormat);
+        }
+        
+        private static string FullyQualifyTypeWithNullable(ITypeSymbol typeSymbol)
+        {
+            return typeSymbol.ToDisplayString();
         }
     }
 }

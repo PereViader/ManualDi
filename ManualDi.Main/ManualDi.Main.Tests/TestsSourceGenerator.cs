@@ -35,7 +35,7 @@ public class TestsSourceGenerator
             },
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        var generator = new Generators.TestsSourceGenerator();
+        var generator = new Generators.ManualDiSourceGenerator();
         var driver = CSharpGeneratorDriver.Create(generator);
         driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out _);
         

@@ -432,6 +432,45 @@ Using default is not mandatory, but it helps development by taking the responsab
 
 Thus it is recommended to always add it even if the type does not currently have any of the methods.
 
+## Extra Source Generator features
+
+### Nullable
+
+The source generator will take into account the nullability of the dependencies.
+If a dependency is nullable, the resolution will not fail if it is missing.
+If a dependency is not nullable, the resolution will fail if it is missing.
+
+```
+public class A
+{
+    //object MUST be registered on the container
+    //int may or may not be registered on the container
+    public A(object obj, int? nullableValue) { }
+}
+
+b.Bind<A>().Default().FromConstructor();
+```
+
+### Lazy<T>
+
+The source generator will lazily inject dependencies if the dependency is lazy itself.
+Lazy dependencies may have nullable contents.
+Lazy dependencies may NOT be nullable themselves
+
+```
+public class A
+{
+    [Inject] Lazy<object> Obj {get; set;}
+    [Inject] Lazy<object?> NullableObj {get; set;}
+    [Inject] Lazy<int> Value {get; set;}
+    [Inject] Lazy<int?> NullableValue {get; set;}
+
+    //[Inject] Lazy<object>? NullableObj {get; set;} //DON'T do this
+    //[Inject] Lazy<object?>? NullableObj {get; set;} //DON'T do this
+}
+
+b.Bind<A>().Default().FromConstructor();
+```
 
 ## Unity3d
 

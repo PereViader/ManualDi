@@ -1,14 +1,14 @@
 [![Test and publish](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml/badge.svg)](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml) ![NuGet Version](https://img.shields.io/nuget/v/ManualDi.Main) [![Release](https://img.shields.io/github/release/PereViader/ManualDi.svg)](https://github.com/PereViader/ManualDi/releases/latest) [![Unity version 2022.3.29](https://img.shields.io/badge/Unity-2022.3.29-57b9d3.svg?style=flat&logo=unity)](https://unity3d.com)
 
 
-Welcome to ManualDi. A C# manual dependency injection library for both Unity3d and pure C# solutions. 
+Welcome to ManualDi. A manual dependency injection library for both Unity3d and pure C# solutions. 
 
 The project is grounded on the following five fundamentals:
  - Fast: Operations must be quick and efficient.
  - Flexible: The container's pipeline should support custom functionality.
+ - Familiar: Simple, known concepts should be prioritized.
+ - Fathomable: Behaviour should be easy to read and understand.
  - Functional: Achieving desired behaviors should require minimal boilerplate.
- - Familiar: The container should use simple concepts and, where possible, leverage those already familiar from other containers.
- - Fathomable: Functionality should be easy to read and understand.
 
 # Benchmark
 
@@ -46,6 +46,7 @@ Install it using [Nuget](https://www.nuget.org/packages/ManualDi.Main/)
 ## Unity3d
 
 Install it using the [Unity Package Manager](https://docs.unity3d.com/Manual/upm-ui-giturl.html) with the following git url: https://github.com/PereViader/ManualDi.Unity3d.git
+
 Compatible with [Unity 2022.3.29](https://github.com/PereViader/ManualDi/issues/25) or later
 
 # Examples
@@ -58,9 +59,9 @@ The container is created using a fluent Builder
 
 ```csharp
 IDiContainer container = new DiContainerBindings()  // Declare the fluent builder
-    .InstallSomeFunctionality()                     // Configure with an extension method implemented in your project
-    .Install(new SomeOtherInstaller());             // Configure with an instance of `IInstaller` implemented your project
-    .Build();                                       // Build the container
+    .InstallSomeFunctionality() // Configure with an extension method implemented in your project
+    .Install(new SomeOtherInstaller()) // Configure with an instance of `IInstaller` implemented your project
+    .Build(); // Build the container
 ```
 
 Creation of the container is a synchronous process, if you need to do any kind of asynchronous work you can do the following:
@@ -122,7 +123,7 @@ static class Installer
     }
 }
 ```
-The result of calling the Bind is `TypeBinding<T, Y>`. This type provides several extension methods to define the exact behaviour of the binding.
+The result of calling the Bind with generic arguments is a `TypeBinding<T, Y>`. This type provides several extension used to define the exact behaviour of the binding.
 By convention, you should call methods in the following order.
 
 ```csharp
@@ -137,6 +138,28 @@ Bind<T>()
     .[Lazy|NonLazy]
     .[Any other custom extension method your project implements]
 ```
+
+The bindings may also be done with a non type safe interface. This variant should only be used when implementing programatic driven configuration. Use the type safe variant when all the types involved are known.
+
+```csharp
+List<Type> someTypes = GetSomeTypesWithReflexion();
+foreach(var type in someTypes)
+{
+    b.Bind(type)....
+}
+```
+
+Using reflexion to do such bindings will slow down your application due to the runtime Type metadata analysis necessary.
+
+If the reduced performance is not desired, [source generation](https://github.com/PereViader/ManualDi/tree/develop/ManualDi.Main/ManualDi.Main.Generators) of equivalent code that avoids reflexion can be done to do the analysis at build time.
+
+Some platforms may not even be compatible with reflexion. If you target any such platform, using source generators is the only approach.
+
+```csharp
+b.InstallSomeTypes(); // This could be source generated to do the same but faster
+```
+
+## Binding
 
 ## Scope
 

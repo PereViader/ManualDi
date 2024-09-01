@@ -1,7 +1,7 @@
-[![Test and publish](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml/badge.svg)](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml) ![NuGet Version](https://img.shields.io/nuget/v/ManualDi.Main) [![Release](https://img.shields.io/github/release/PereViader/ManualDi.svg)](https://github.com/PereViader/ManualDi/releases/latest) [![Unity version 2022.3.29](https://img.shields.io/badge/Unity-2022.3.29-57b9d3.svg?style=flat&logo=unity)](https://unity3d.com)
+[![Test and publish](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml/badge.svg)](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml) ![NuGet Version](https://img.shields.io/nuget/v/ManualDi.Main) [![Release](https://img.shields.io/github/release/PereViader/ManualDi.svg)](https://github.com/PereViader/ManualDi/releases/latest) [![Unity version 2022.3.29](https://img.shields.io/badge/Unity-2022.3.29-57b9d3.svg?style=flat&logo=unity)](https://github.com/PereViader/ManualDi.Unity3d)
 
 
-Welcome to ManualDi. A manual dependency injection library for both Unity3d and pure C# solutions. 
+Welcome to ManualDi. A manual dependency injection library for both Unity3d and plain C# solutions.
 
 The project is grounded on the following five fundamentals:
  - Fast: Operations must be quick and efficient.

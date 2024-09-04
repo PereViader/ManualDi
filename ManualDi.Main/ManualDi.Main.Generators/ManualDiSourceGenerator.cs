@@ -18,15 +18,17 @@ namespace ManualDi.Main.Generators
         public INamedTypeSymbol ClassSymbol { get; }
         public string ObsoleteText { get; }
         public INamedTypeSymbol LazyTypeSymbol { get; }
+        public INamedTypeSymbol ListTypeSymbol { get; }
 
         public GenerationClassContext(StringBuilder stringBuilder, string className, INamedTypeSymbol classSymbol,
-            string obsoleteText, INamedTypeSymbol lazyTypeSymbol)
+            string obsoleteText, INamedTypeSymbol lazyTypeSymbol, INamedTypeSymbol listTypeSymbol)
         {
             StringBuilder = stringBuilder;
             ClassName = className;
             ClassSymbol = classSymbol;
             ObsoleteText = obsoleteText;
             LazyTypeSymbol = lazyTypeSymbol;
+            ListTypeSymbol = listTypeSymbol;
         }
     }
     
@@ -94,6 +96,12 @@ namespace ManualDi.Main.Generators
                 return;
             }
             
+            var listTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.List`1");
+            if (listTypeSymbol is null)
+            {
+                return;
+            }
+            
             var unityEngineObjectSymbol = compilation.GetTypeByMetadataName("UnityEngine.Object");
 
             foreach (var classDeclaration in classDeclarations)
@@ -132,7 +140,7 @@ namespace ManualDi.Main.Generators
                     ? "[System.Obsolete]\r\n        " 
                     : "";
 
-                var generationContext = new GenerationClassContext(stringBuilder, className, classSymbol, obsoleteText, lazyTypeSymbol);
+                var generationContext = new GenerationClassContext(stringBuilder, className, classSymbol, obsoleteText, lazyTypeSymbol, listTypeSymbol);
 
                 if (!inheritsUnityObject)
                 {
@@ -251,7 +259,7 @@ namespace ManualDi.Main.Generators
 
             var accessibility = GetSymbolAccessibility(constructor);
             var accessibilityString = GetAccessibilityString(accessibility);
-            var arguments = CreateMethodResolution(constructor, context.LazyTypeSymbol);
+            var arguments = CreateMethodResolution(constructor, context.LazyTypeSymbol, context.ListTypeSymbol);
             
             context.StringBuilder.AppendLine($$"""
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -264,23 +272,29 @@ namespace ManualDi.Main.Generators
             return accessibility;
         }
 
-        private static string CreateMethodResolution(IMethodSymbol constructor, INamedTypeSymbol lazyTypeSymbol)
+        private static string CreateMethodResolution(IMethodSymbol constructor, INamedTypeSymbol lazyTypeSymbol, INamedTypeSymbol listTypeSymbol)
         {
-            return string.Join(",\r\n                ", constructor.Parameters.Select(x => CreteTypeResolution(x.Type, lazyTypeSymbol)));
+            return string.Join(",\r\n                ", constructor.Parameters.Select(x => CreteTypeResolution(x.Type, lazyTypeSymbol, listTypeSymbol)));
         }
 
-        private static string CreteTypeResolution(ITypeSymbol typeSymbol, INamedTypeSymbol lazyTypeSymbol)
+        private static string CreteTypeResolution(ITypeSymbol typeSymbol, INamedTypeSymbol lazyTypeSymbol, INamedTypeSymbol listTypeSymbol)
         {
-            var genericType = TryGetLazyGenericType(typeSymbol, lazyTypeSymbol);
-            if (genericType is not null)
+            var lazyGenericType = TryGeneric1Type(typeSymbol, lazyTypeSymbol);
+            if (lazyGenericType is not null)
             {
-                return $"new System.Lazy<{FullyQualifyTypeWithNullable(genericType)}>(() => c.{CreateContainerResolutionMethod(genericType)}<{FullyQualifyTypeWithoutNullable(genericType)}>())";
+                return $"new System.Lazy<{FullyQualifyTypeWithNullable(lazyGenericType)}>(() => c.{CreateContainerResolutionMethod(lazyGenericType)}<{FullyQualifyTypeWithoutNullable(lazyGenericType)}>())";
+            }
+            
+            var listGenericType = TryGeneric1Type(typeSymbol, listTypeSymbol);
+            if (listGenericType is not null && !IsNullableTypeSymbol(listGenericType))
+            {
+                return $"c.ResolveAll<{FullyQualifyTypeWithoutNullable(listGenericType)}>()";
             }
             
             return $"c.{CreateContainerResolutionMethod(typeSymbol)}<{FullyQualifyTypeWithoutNullable(typeSymbol)}>()";
         }
         
-        public static ITypeSymbol? TryGetLazyGenericType(ITypeSymbol typeSymbol, INamedTypeSymbol lazyTypeSymbol)
+        public static ITypeSymbol? TryGeneric1Type(ITypeSymbol typeSymbol, INamedTypeSymbol lazyTypeSymbol)
         {
             if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
             {
@@ -295,7 +309,7 @@ namespace ManualDi.Main.Generators
 
         private static string CreateContainerResolutionMethod(ITypeSymbol typeSymbol)
         {
-            if (typeSymbol.NullableAnnotation is not NullableAnnotation.Annotated)
+            if (!IsNullableTypeSymbol(typeSymbol))
             {
                 return "Resolve";
             }
@@ -322,7 +336,7 @@ namespace ManualDi.Main.Generators
 
             var accessibility = GetSymbolAccessibility(initializeMethod);
             var accessibilityString = GetAccessibilityString(accessibility);
-            var arguments = CreateMethodResolution(initializeMethod, context.LazyTypeSymbol);
+            var arguments = CreateMethodResolution(initializeMethod, context.LazyTypeSymbol, context.ListTypeSymbol);
 
             context.StringBuilder.AppendLine($$"""
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -335,14 +349,14 @@ namespace ManualDi.Main.Generators
             return accessibility;
         }
 
-        private static Accessibility? AddInject(GenerationClassContext generationClassContext)
+        private static Accessibility? AddInject(GenerationClassContext context)
         {
-            var injectMethod = generationClassContext.ClassSymbol
+            var injectMethod = context.ClassSymbol
                 .GetMembers()
                 .OfType<IMethodSymbol>()
                 .SingleOrDefault(m => m is { Name: "Inject", DeclaredAccessibility: Accessibility.Public or Accessibility.Internal, IsStatic: false });
 
-            var injectProperties = generationClassContext.ClassSymbol
+            var injectProperties = context.ClassSymbol
                 .GetMembers()
                 .OfType<IPropertySymbol>()
                 .Where(IsSymbolInjectValid)
@@ -367,9 +381,9 @@ namespace ManualDi.Main.Generators
             
             var accessibilityString = GetAccessibilityString(accessibility);
             
-            generationClassContext.StringBuilder.AppendLine($$"""
+            context.StringBuilder.AppendLine($$"""
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    {{generationClassContext.ObsoleteText}}{{accessibilityString}} static TypeBinding<T, {{generationClassContext.ClassName}}> Inject<T>(this TypeBinding<T, {{generationClassContext.ClassName}}> typeBinding)
+                    {{context.ObsoleteText}}{{accessibilityString}} static TypeBinding<T, {{context.ClassName}}> Inject<T>(this TypeBinding<T, {{context.ClassName}}> typeBinding)
                     {
                         return typeBinding.Inject(static (o, c) => 
                         {
@@ -377,16 +391,16 @@ namespace ManualDi.Main.Generators
 
             foreach (var injectProperty in injectProperties)
             {
-                generationClassContext.StringBuilder.AppendLine($"                o.{injectProperty.Name} = {CreteTypeResolution(injectProperty.Type, generationClassContext.LazyTypeSymbol)};");
+                context.StringBuilder.AppendLine($"                o.{injectProperty.Name} = {CreteTypeResolution(injectProperty.Type, context.LazyTypeSymbol, context.ListTypeSymbol)};");
             }
             
             if (injectMethod is not null)
             {
-                var arguments = CreateMethodResolution(injectMethod, generationClassContext.LazyTypeSymbol);
-                generationClassContext.StringBuilder.AppendLine($"                o.Inject({arguments});");
+                var arguments = CreateMethodResolution(injectMethod, context.LazyTypeSymbol, context.ListTypeSymbol);
+                context.StringBuilder.AppendLine($"                o.Inject({arguments});");
             }
                         
-            generationClassContext.StringBuilder.AppendLine("""
+            context.StringBuilder.AppendLine("""
                         });
                     }
                     
@@ -441,18 +455,41 @@ namespace ManualDi.Main.Generators
         
         private static string FullyQualifyTypeWithoutNullable(ITypeSymbol typeSymbol)
         {
-            //I don't like that we cast this, but I could not find a way to do this without casting
-            if (typeSymbol is INamedTypeSymbol namedTypeSymbol &&
-              namedTypeSymbol.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T)
+            var nonNullableType = GetNonNullableType(typeSymbol);
+            if (nonNullableType is not null)
             {
-                // Get the underlying non-nullable type (the first type argument of the nullable type)
-                var underlyingType = namedTypeSymbol.TypeArguments[0];
-                return underlyingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                return nonNullableType.ToDisplayString();
             }
             
-            return typeSymbol.ToDisplayString(FullyQualifyTypeSymbolDisplayFormat);
+            return typeSymbol.ToDisplayString();
         }
         
+        private static bool IsNullableTypeSymbol(ITypeSymbol typeSymbol)
+        {
+            if (typeSymbol.NullableAnnotation == NullableAnnotation.Annotated || typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
+            {
+                return true;
+            }
+            
+            return false;
+        }
+        
+        public static ITypeSymbol? GetNonNullableType(ITypeSymbol typeSymbol)
+        {
+            if (typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T && 
+                typeSymbol is INamedTypeSymbol namedTypeSymbol)
+            {
+                return namedTypeSymbol.TypeArguments[0];
+            }
+            
+            if (typeSymbol.NullableAnnotation == NullableAnnotation.Annotated)
+            {
+                return typeSymbol.WithNullableAnnotation(NullableAnnotation.NotAnnotated);
+            }
+
+            return null;
+        }
+
         private static string FullyQualifyTypeWithNullable(ITypeSymbol typeSymbol)
         {
             return typeSymbol.ToDisplayString();

@@ -107,6 +107,7 @@ public class NullableDependency
 {
     [Inject] public object? Object { get; set; }
     [Inject] public int? Int { get; set; }
+    [Inject] public Nullable<int> Int2 { get; set; }
     public NullableDependency(object? obj, Nullable<int> value) { }
     public void Inject(object? obj, int? value) { }
     public void Initialize(object? obj, int? value) { }
@@ -118,6 +119,15 @@ static class Static
     internal class InternalNested { }
     private class PrivateNested { }
     static class StaticNested { }
+}
+
+class ListInject 
+{
+    
+    public ListInject(List<object> objects, List<int?> objectsNullable) { }
+    
+    public void Inject(List<object> objects, List<object?> objectsNullable) { }
+    public void Initialize(List<object> objects, List<object?> objectsNullable) { }
 }
 
 class LazyDependencies

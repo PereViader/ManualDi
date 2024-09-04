@@ -285,8 +285,6 @@ namespace ManualDi.Unity3d
             return typeBinding;
         }
         
-        //TODO:!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! I LEFT IT HERE,CONTINUE ABOVE NOT BELOW. I AM ADDING DESTROY ON DISPOSE SO THAT CREATED INSTANCES ARE PROPERLY DISPOSED WHEN THE CONTAINER IS DISPOSED
-        
         public static TypeBinding<List<TInterface>, List<TConcrete>> FromInstantiateGameObjectGetComponentsInChildren<TInterface, TConcrete>(
             this TypeBinding<List<TInterface>, List<TConcrete>> typeBinding,
             GameObject gameObject,

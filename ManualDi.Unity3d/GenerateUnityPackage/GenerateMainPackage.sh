@@ -13,4 +13,3 @@ dotnet build ManualDi.Main --configuration Release
 
 echo Copy generator dll to package
 cp "ManualDi.Main/ManualDi.Main.Generators/bin/Release/netstandard2.0/ManualDi.Main.Generators.dll" "UnityPackageRelease/ManualDi.Main.Generators.dll"
-cp "GenerateUnityPackage/ManualDi.Main.Generators.dll.meta" "UnityPackageRelease/ManualDi.Main.Generators.dll.meta"

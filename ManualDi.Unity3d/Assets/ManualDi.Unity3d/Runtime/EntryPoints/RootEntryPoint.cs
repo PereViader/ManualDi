@@ -28,7 +28,7 @@ namespace ManualDi.Unity3d
                 throw new InvalidOperationException("Context is already initialized");
             }
             
-            Container = new DiContainerBuilder()
+            Container = new DiContainerBindings()
                 .Install(this)
                 .Build();
         }

@@ -87,7 +87,7 @@ namespace ManualDi.Unity3d
             typeBinding.FromMethod(_ => gameObject.AddComponent<TConcrete>());
             if (destroyOnDispose)
             {
-                typeBinding.Dispose((o, c) => () => Object.Destroy(o));
+                typeBinding.Dispose((o, c) => Object.Destroy(o));
             }
             return typeBinding;
         }
@@ -127,7 +127,7 @@ namespace ManualDi.Unity3d
             typeBinding.FromMethod(_ => Object.Instantiate(component, parent, worldPositionStays));
             if (destroyOnDispose)
             {
-                typeBinding.Dispose((o, c) => () => Object.Destroy(o.gameObject));
+                typeBinding.Dispose((o, c) => Object.Destroy(o.gameObject));
             }
             return typeBinding;
         }
@@ -152,7 +152,7 @@ namespace ManualDi.Unity3d
             });
             if (destroyOnDispose)
             {
-                typeBinding.Dispose((o, c) => () => Object.Destroy(o.gameObject));
+                typeBinding.Dispose((o, c) => Object.Destroy(o.gameObject));
             }
             return typeBinding;
         }
@@ -174,7 +174,7 @@ namespace ManualDi.Unity3d
             });
             if (destroyOnDispose)
             {
-                typeBinding.Dispose((o, c) => () =>
+                typeBinding.Dispose((o, c) =>
                 {
                     if (instance != null)
                     {
@@ -202,7 +202,7 @@ namespace ManualDi.Unity3d
             });
             if (destroyOnDispose)
             {
-                typeBinding.Dispose((o, c) => () =>
+                typeBinding.Dispose((o, c) =>
                 {
                     if (instance != null)
                     {
@@ -238,7 +238,7 @@ namespace ManualDi.Unity3d
             });
             if (destroyOnDispose)
             {
-                typeBinding.Dispose((o, c) => () =>
+                typeBinding.Dispose((o, c) =>
                 {
                     if (instance != null)
                     {
@@ -274,7 +274,7 @@ namespace ManualDi.Unity3d
             });
             if (destroyOnDispose)
             {
-                typeBinding.Dispose((o, c) => () =>
+                typeBinding.Dispose((o, c) =>
                 {
                     if (instance != null)
                     {
@@ -312,7 +312,7 @@ namespace ManualDi.Unity3d
             });
             if (destroyOnDispose)
             {
-                typeBinding.Dispose((o, c) => () =>
+                typeBinding.Dispose((o, c) =>
                 {
                     if (instance != null)
                     {
@@ -339,7 +339,7 @@ namespace ManualDi.Unity3d
             });
             if (destroyOnDispose)
             {
-                typeBinding.Dispose((o, c) => () => Object.Destroy(o.gameObject));
+                typeBinding.Dispose((o, c) => Object.Destroy(o.gameObject));
             }
             return typeBinding;
         }
@@ -379,7 +379,7 @@ namespace ManualDi.Unity3d
             });
             if (destroyOnDispose)
             {
-                typeBinding.Dispose((o, c) => () => Object.Destroy(o.gameObject));
+                typeBinding.Dispose((o, c) => Object.Destroy(o.gameObject));
             }
             return typeBinding;
         }
@@ -402,7 +402,7 @@ namespace ManualDi.Unity3d
             });
             if (destroyOnDispose)
             {
-                typeBinding.Dispose((o, c) => () =>
+                typeBinding.Dispose((o, c) =>
                 {
                     if (instance != null)
                     {
@@ -431,7 +431,7 @@ namespace ManualDi.Unity3d
             });
             if (destroyOnDispose)
             {
-                typeBinding.Dispose((o, c) => () =>
+                typeBinding.Dispose((o, c) =>
                 {
                     if (instance != null)
                     {
@@ -469,7 +469,7 @@ namespace ManualDi.Unity3d
             
             if (destroyOnDispose)
             {
-                typeBinding.Dispose((o, c) => () =>
+                typeBinding.Dispose((o, c) =>
                 {
                     if (instance != null)
                     {
@@ -507,7 +507,7 @@ namespace ManualDi.Unity3d
             
             if (destroyOnDispose)
             {
-                typeBinding.Dispose((o, c) => () =>
+                typeBinding.Dispose((o, c) =>
                 {
                     if (instance != null)
                     {
@@ -545,7 +545,7 @@ namespace ManualDi.Unity3d
             
             if (destroyOnDispose)
             {
-                typeBinding.Dispose((o, c) => () =>
+                typeBinding.Dispose((o, c) =>
                 {
                     if (instance != null)
                     {
@@ -573,7 +573,7 @@ namespace ManualDi.Unity3d
             });
             if (destroyOnDispose)
             {
-                typeBinding.Dispose((o, c) => () => Object.Destroy(o.gameObject));
+                typeBinding.Dispose((o, c) => Object.Destroy(o.gameObject));
             }
             return typeBinding;
         }

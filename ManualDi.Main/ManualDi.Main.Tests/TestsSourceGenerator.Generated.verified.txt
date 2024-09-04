@@ -272,7 +272,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, ConstructorWithGenericArgument> FromConstructor<T>(this TypeBinding<T, ConstructorWithGenericArgument> typeBinding)
         {
-            return typeBinding.FromMethod(static c => new ConstructorWithGenericArgument(c.Resolve<Func<int>>()));
+            return typeBinding.FromMethod(static c => new ConstructorWithGenericArgument(c.Resolve<System.Func<int>>()));
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -387,18 +387,21 @@ namespace ManualDi.Main
     public static partial class ManualDiGeneratedExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [System.Obsolete]
         internal static TypeBinding<T, Obsolete> FromConstructor<T>(this TypeBinding<T, Obsolete> typeBinding)
         {
             return typeBinding.FromMethod(static c => new Obsolete());
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [System.Obsolete]
         internal static TypeBinding<T, Obsolete> Initialize<T>(this TypeBinding<T, Obsolete> typeBinding)
         {
             return typeBinding.Initialize(static (o, c) => o.Initialize());
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [System.Obsolete]
         internal static TypeBinding<T, Obsolete> Inject<T>(this TypeBinding<T, Obsolete> typeBinding)
         {
             return typeBinding.Inject(static (o, c) => 
@@ -408,6 +411,7 @@ namespace ManualDi.Main
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [System.Obsolete]
         internal static TypeBinding<T, Obsolete> Default<T>(this TypeBinding<T, Obsolete> typeBinding)
         {
             return typeBinding.Initialize().Inject();
@@ -426,7 +430,7 @@ namespace ManualDi.Main
         public static TypeBinding<T, NullableDependency> FromConstructor<T>(this TypeBinding<T, NullableDependency> typeBinding)
         {
             return typeBinding.FromMethod(static c => new NullableDependency(c.ResolveNullable<object>(),
-                c.Resolve<Nullable<int>>()));
+                c.ResolveNullableValue<int>()));
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -443,7 +447,7 @@ namespace ManualDi.Main
             {
                 o.Object = c.ResolveNullable<object>();
                 o.Int = c.ResolveNullableValue<int>();
-                o.Int3 = c.Resolve<Nullable<int>>();
+                o.Int3 = c.ResolveNullableValue<int>();
                 o.Inject(c.ResolveNullable<object>(),
                 c.ResolveNullableValue<int>());
             });
@@ -561,14 +565,14 @@ namespace ManualDi.Main
         {
             return typeBinding.Inject(static (o, c) => 
             {
-                o.Object = c.Resolve<Lazy<object>>();
-                o.NullableObject = c.Resolve<Lazy<object?>>();
-                o.Value = c.Resolve<Lazy<int>>();
-                o.NullableValue = c.Resolve<Lazy<int?>>();
-                o.Inject(c.Resolve<Lazy<object>>(),
-                c.Resolve<Lazy<object?>>(),
-                c.Resolve<Lazy<int>>(),
-                c.Resolve<Lazy<int?>>());
+                o.Object = new System.Lazy<object>(() => c.Resolve<object>());
+                o.NullableObject = new System.Lazy<object?>(() => c.ResolveNullable<object>());
+                o.Value = new System.Lazy<int>(() => c.Resolve<int>());
+                o.NullableValue = new System.Lazy<int?>(() => c.ResolveNullableValue<int>());
+                o.Inject(new System.Lazy<object>(() => c.Resolve<object>()),
+                new System.Lazy<object?>(() => c.ResolveNullable<object>()),
+                new System.Lazy<int>(() => c.Resolve<int>()),
+                new System.Lazy<int?>(() => c.ResolveNullableValue<int>()));
             });
         }
         

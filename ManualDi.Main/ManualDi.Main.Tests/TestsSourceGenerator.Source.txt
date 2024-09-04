@@ -105,6 +105,7 @@ public class NullableDependency
 {
     [Inject] public object? Object { get; set; }
     [Inject] public int? Int { get; set; }
+    [Inject] public Nullable<int> Int3 { get; set; }
     public NullableDependency(object? obj, Nullable<int> value) { }
     public void Inject(object? obj, int? value) { }
     public void Initialize(object? obj, int? value) { }
@@ -118,12 +119,29 @@ static class Static
     static class StaticNested { }
 }
 
+class ListInject 
+{
+    public ListInject(List<object> objects) { }
+    
+    [Inject] public IEnumerable<object> IEnumerableObject { get; set; } = default!;
+    [Inject] public IEnumerable<int> IEnumerableInt { get; set; } = default!;
+    [Inject] public IReadOnlyList<object> IReadOnlyListObject { get; set; } = default!;
+    [Inject] public IReadOnlyList<int> IReadOnlyListInt { get; set; } = default!;
+    [Inject] public IList<object> IListObject { get; set; } = default!;
+    [Inject] public IList<int> IListInt { get; set; } = default!;
+    [Inject] public List<object> ListObject { get; set; } = default!;
+    [Inject] public List<int> ListInt { get; set; } = default!;
+    
+    public void Inject(List<object> objects) { }
+    public void Initialize(List<object> objects) { }
+}
+
 class LazyDependencies
 {
-    [Inject] public Lazy<object> Object { get; set; }
-    [Inject] public Lazy<object?> NullableObject { get; set; }
-    [Inject] public Lazy<int> Value { get; set; }
-    [Inject] public Lazy<int?> NullableValue { get; set; }
+    [Inject] public Lazy<object> Object { get; set; } = default!;
+    [Inject] public Lazy<object?> NullableObject { get; set; } = default!;
+    [Inject] public Lazy<int> Value { get; set; } = default!;
+    [Inject] public Lazy<int?> NullableValue { get; set; } = default!;
     
     public void Inject(Lazy<object> obj, Lazy<object?> nullObj, Lazy<int> val, Lazy<int?> nullVal) { }
 }

@@ -107,7 +107,7 @@ public class NullableDependency
 {
     [Inject] public object? Object { get; set; }
     [Inject] public int? Int { get; set; }
-    [Inject] public Nullable<int> Int2 { get; set; }
+    [Inject] public Nullable<int> Int3 { get; set; }
     public NullableDependency(object? obj, Nullable<int> value) { }
     public void Inject(object? obj, int? value) { }
     public void Initialize(object? obj, int? value) { }
@@ -123,11 +123,19 @@ static class Static
 
 class ListInject 
 {
+    public ListInject(List<object> objects) { }
     
-    public ListInject(List<object> objects, List<int?> objectsNullable) { }
+    [Inject] public IEnumerable<object> IEnumerableObject { get; set; } = default!;
+    [Inject] public IEnumerable<int> IEnumerableInt { get; set; } = default!;
+    [Inject] public IReadOnlyList<object> IReadOnlyListObject { get; set; } = default!;
+    [Inject] public IReadOnlyList<int> IReadOnlyListInt { get; set; } = default!;
+    [Inject] public IList<object> IListObject { get; set; } = default!;
+    [Inject] public IList<int> IListInt { get; set; } = default!;
+    [Inject] public List<object> ListObject { get; set; } = default!;
+    [Inject] public List<int> ListInt { get; set; } = default!;
     
-    public void Inject(List<object> objects, List<object?> objectsNullable) { }
-    public void Initialize(List<object> objects, List<object?> objectsNullable) { }
+    public void Inject(List<object> objects) { }
+    public void Initialize(List<object> objects) { }
 }
 
 class LazyDependencies

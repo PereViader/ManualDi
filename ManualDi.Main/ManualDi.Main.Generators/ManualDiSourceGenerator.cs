@@ -17,18 +17,14 @@ namespace ManualDi.Main.Generators
         public string ClassName { get; }
         public INamedTypeSymbol ClassSymbol { get; }
         public string ObsoleteText { get; }
-        public INamedTypeSymbol LazyTypeSymbol { get; }
-        public INamedTypeSymbol ListTypeSymbol { get; }
 
         public GenerationClassContext(StringBuilder stringBuilder, string className, INamedTypeSymbol classSymbol,
-            string obsoleteText, INamedTypeSymbol lazyTypeSymbol, INamedTypeSymbol listTypeSymbol)
+            string obsoleteText)
         {
             StringBuilder = stringBuilder;
             ClassName = className;
             ClassSymbol = classSymbol;
             ObsoleteText = obsoleteText;
-            LazyTypeSymbol = lazyTypeSymbol;
-            ListTypeSymbol = listTypeSymbol;
         }
     }
     
@@ -89,19 +85,12 @@ namespace ManualDi.Main.Generators
             {
                 return;
             }
-            
-            var lazyTypeSymbol = compilation.GetTypeByMetadataName("System.Lazy`1");
-            if (lazyTypeSymbol is null)
+
+            if (!TryInitializeStaticTypeSymbols(compilation))
             {
                 return;
             }
-            
-            var listTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.List`1");
-            if (listTypeSymbol is null)
-            {
-                return;
-            }
-            
+
             var unityEngineObjectSymbol = compilation.GetTypeByMetadataName("UnityEngine.Object");
 
             foreach (var classDeclaration in classDeclarations)
@@ -140,7 +129,7 @@ namespace ManualDi.Main.Generators
                     ? "[System.Obsolete]\r\n        " 
                     : "";
 
-                var generationContext = new GenerationClassContext(stringBuilder, className, classSymbol, obsoleteText, lazyTypeSymbol, listTypeSymbol);
+                var generationContext = new GenerationClassContext(stringBuilder, className, classSymbol, obsoleteText);
 
                 if (!inheritsUnityObject)
                 {
@@ -159,7 +148,47 @@ namespace ManualDi.Main.Generators
                 context.AddSource($"ManualDiGeneratedExtensions.{className}.cs", SourceText.From(stringBuilder.ToString(), Encoding.UTF8));
             }
         }
-        
+
+        private static bool TryInitializeStaticTypeSymbols(Compilation compilation)
+        {
+            var lazyTypeSymbol = compilation.GetTypeByMetadataName("System.Lazy`1");
+            if (lazyTypeSymbol is null)
+            {
+                return false;
+            }
+            LazyTypeSymbol = lazyTypeSymbol;
+            
+            var listTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.List`1");
+            if (listTypeSymbol is null)
+            {
+                return false;
+            }
+            ListTypeSymbol = listTypeSymbol;
+            
+            var ilistTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.IList`1");
+            if (ilistTypeSymbol is null)
+            {
+                return false;
+            }
+            IListTypeSymbol = ilistTypeSymbol;
+            
+            var ireadOnlyListTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyList`1");
+            if (ireadOnlyListTypeSymbol is null)
+            {
+                return false;
+            }
+            IReadOnlyListTypeSymbol = ireadOnlyListTypeSymbol;
+            
+            var ienumerableTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1");
+            if (ienumerableTypeSymbol is null)
+            {
+                return false;
+            }
+            IEnumerableTypeSymbol = ienumerableTypeSymbol;
+            
+            return true;
+        }
+
         private static bool InheritsFromSymbol(INamedTypeSymbol namedTypeSymbol, INamedTypeSymbol? inheritedNameTypeSymbol)
         {
             if (inheritedNameTypeSymbol == null)
@@ -259,7 +288,7 @@ namespace ManualDi.Main.Generators
 
             var accessibility = GetSymbolAccessibility(constructor);
             var accessibilityString = GetAccessibilityString(accessibility);
-            var arguments = CreateMethodResolution(constructor, context.LazyTypeSymbol, context.ListTypeSymbol);
+            var arguments = CreateMethodResolution(constructor);
             
             context.StringBuilder.AppendLine($$"""
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -272,20 +301,20 @@ namespace ManualDi.Main.Generators
             return accessibility;
         }
 
-        private static string CreateMethodResolution(IMethodSymbol constructor, INamedTypeSymbol lazyTypeSymbol, INamedTypeSymbol listTypeSymbol)
+        private static string CreateMethodResolution(IMethodSymbol constructor)
         {
-            return string.Join(",\r\n                ", constructor.Parameters.Select(x => CreteTypeResolution(x.Type, lazyTypeSymbol, listTypeSymbol)));
+            return string.Join(",\r\n                ", constructor.Parameters.Select(x => CreteTypeResolution(x.Type)));
         }
 
-        private static string CreteTypeResolution(ITypeSymbol typeSymbol, INamedTypeSymbol lazyTypeSymbol, INamedTypeSymbol listTypeSymbol)
+        private static string CreteTypeResolution(ITypeSymbol typeSymbol)
         {
-            var lazyGenericType = TryGeneric1Type(typeSymbol, lazyTypeSymbol);
+            var lazyGenericType = TryGenericLazyType(typeSymbol);
             if (lazyGenericType is not null)
             {
                 return $"new System.Lazy<{FullyQualifyTypeWithNullable(lazyGenericType)}>(() => c.{CreateContainerResolutionMethod(lazyGenericType)}<{FullyQualifyTypeWithoutNullable(lazyGenericType)}>())";
             }
-            
-            var listGenericType = TryGeneric1Type(typeSymbol, listTypeSymbol);
+
+            var listGenericType = TryGetEnumerableType(typeSymbol);
             if (listGenericType is not null && !IsNullableTypeSymbol(listGenericType))
             {
                 return $"c.ResolveAll<{FullyQualifyTypeWithoutNullable(listGenericType)}>()";
@@ -293,12 +322,43 @@ namespace ManualDi.Main.Generators
             
             return $"c.{CreateContainerResolutionMethod(typeSymbol)}<{FullyQualifyTypeWithoutNullable(typeSymbol)}>()";
         }
+
+        private static ITypeSymbol? GetSpecialTypeList(ITypeSymbol typeSymbol)
+        {
+            if (typeSymbol.SpecialType is SpecialType.System_Collections_Generic_IReadOnlyList_T
+                or SpecialType.System_Collections_Generic_IList_T
+                or SpecialType.System_Collections_Generic_IEnumerable_T)
+            {
+                if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
+                {
+                    return namedTypeSymbol.TypeArguments[0];
+                }
+            }
+
+            return null;
+        }
         
-        public static ITypeSymbol? TryGeneric1Type(ITypeSymbol typeSymbol, INamedTypeSymbol lazyTypeSymbol)
+        public static ITypeSymbol? TryGenericLazyType(ITypeSymbol typeSymbol)
         {
             if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
             {
-                if (SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, lazyTypeSymbol))
+                if (SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, LazyTypeSymbol))
+                {
+                    return namedTypeSymbol.TypeArguments[0];
+                }
+            }
+
+            return null;
+        }
+
+        public static ITypeSymbol? TryGetEnumerableType(ITypeSymbol typeSymbol)
+        {
+            if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
+            {
+                if (SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, ListTypeSymbol) ||
+                    SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, IReadOnlyListTypeSymbol) ||
+                    SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, IListTypeSymbol) || 
+                    SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, IEnumerableTypeSymbol))
                 {
                     return namedTypeSymbol.TypeArguments[0];
                 }
@@ -336,7 +396,7 @@ namespace ManualDi.Main.Generators
 
             var accessibility = GetSymbolAccessibility(initializeMethod);
             var accessibilityString = GetAccessibilityString(accessibility);
-            var arguments = CreateMethodResolution(initializeMethod, context.LazyTypeSymbol, context.ListTypeSymbol);
+            var arguments = CreateMethodResolution(initializeMethod);
 
             context.StringBuilder.AppendLine($$"""
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -391,12 +451,12 @@ namespace ManualDi.Main.Generators
 
             foreach (var injectProperty in injectProperties)
             {
-                context.StringBuilder.AppendLine($"                o.{injectProperty.Name} = {CreteTypeResolution(injectProperty.Type, context.LazyTypeSymbol, context.ListTypeSymbol)};");
+                context.StringBuilder.AppendLine($"                o.{injectProperty.Name} = {CreteTypeResolution(injectProperty.Type)};");
             }
             
             if (injectMethod is not null)
             {
-                var arguments = CreateMethodResolution(injectMethod, context.LazyTypeSymbol, context.ListTypeSymbol);
+                var arguments = CreateMethodResolution(injectMethod);
                 context.StringBuilder.AppendLine($"                o.Inject({arguments});");
             }
                         
@@ -447,11 +507,11 @@ namespace ManualDi.Main.Generators
             """);
         }
 
-        private static readonly SymbolDisplayFormat FullyQualifyTypeSymbolDisplayFormat = new(
-            globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
-            typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
-            genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters
-        );
+        private static INamedTypeSymbol LazyTypeSymbol = default!;
+        private static INamedTypeSymbol ListTypeSymbol = default!;
+        private static INamedTypeSymbol IListTypeSymbol = default!;
+        private static INamedTypeSymbol IReadOnlyListTypeSymbol = default!;
+        private static INamedTypeSymbol IEnumerableTypeSymbol = default!;
         
         private static string FullyQualifyTypeWithoutNullable(ITypeSymbol typeSymbol)
         {

@@ -311,7 +311,7 @@ namespace ManualDi.Main.Generators
             var lazyGenericType = TryGenericLazyType(typeSymbol);
             if (lazyGenericType is not null)
             {
-                return $"new System.Lazy<{FullyQualifyTypeWithNullable(lazyGenericType)}>(() => c.{CreateContainerResolutionMethod(lazyGenericType)}<{FullyQualifyTypeWithoutNullable(lazyGenericType)}>())";
+                return $"new System.Lazy<{FullyQualifyTypeWithNullable(lazyGenericType)}>(() => {CreteTypeResolution(lazyGenericType)})";
             }
 
             var listGenericType = TryGetEnumerableType(typeSymbol);

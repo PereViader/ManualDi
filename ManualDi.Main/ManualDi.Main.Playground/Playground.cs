@@ -144,6 +144,8 @@ class LazyDependencies
     [Inject] public Lazy<object?> NullableObject { get; set; } = default!;
     [Inject] public Lazy<int> Value { get; set; } = default!;
     [Inject] public Lazy<int?> NullableValue { get; set; } = default!;
+    [Inject] public Lazy<Lazy<Lazy<int>>> RecursiveLazy { get; set; } = default!;
+    [Inject] public Lazy<List<int>> LazyList { get; set; } = default!;
     
     public void Inject(Lazy<object> obj, Lazy<object?> nullObj, Lazy<int> val, Lazy<int?> nullVal) { }
 }

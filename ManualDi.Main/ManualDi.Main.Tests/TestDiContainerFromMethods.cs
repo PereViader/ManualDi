@@ -38,7 +38,7 @@ public class TestDiContainerFromMethods
         var container = new DiContainerBindings().Install(b =>
         {
             b.Bind<int>().FromInstance(instance);
-            b.Bind<object, int>().FromContainer();
+            b.Bind<object, int>().FromContainerResolve();
         }).Build();
 
         var resolved = container.Resolve<object>();

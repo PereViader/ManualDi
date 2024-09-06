@@ -6,7 +6,7 @@ namespace ManualDi.Main
     public static class TypeBindingFromExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<TInterface, TConcrete> FromContainer<TInterface, TConcrete>(
+        public static TypeBinding<TInterface, TConcrete> FromContainerResolve<TInterface, TConcrete>(
             this TypeBinding<TInterface, TConcrete> typeBinding
             )
         {
@@ -15,7 +15,7 @@ namespace ManualDi.Main
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static UnsafeTypeBinding FromContainer(
+        public static UnsafeTypeBinding FromContainerResolve(
             this UnsafeTypeBinding typeBinding
         )
         {
@@ -24,7 +24,7 @@ namespace ManualDi.Main
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<TInterface, TConcrete> FromContainer<TInterface, TConcrete>(
+        public static TypeBinding<TInterface, TConcrete> FromContainerResolve<TInterface, TConcrete>(
             this TypeBinding<TInterface, TConcrete> typeBinding,
             Action<ResolutionConstraints> constraints
             )
@@ -34,7 +34,7 @@ namespace ManualDi.Main
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static UnsafeTypeBinding FromContainer(
+        public static UnsafeTypeBinding FromContainerResolve(
             this UnsafeTypeBinding typeBinding,
             Action<ResolutionConstraints> constraints
         )

@@ -206,20 +206,20 @@ Note: Given this is the most common use case, the container optimizes for this u
 b.Bind<T>().FromMethod(c => new T(c.Resolve<SomeService>()))
 ```
 
-### Container
+### ContainerResolve
 
 Useful mapping one type of the container as another
 
 ```csharp
 b.Bind<int>().FromInstance(1);
-b.Bind<object, int>().FromContainer();
+b.Bind<object, int>().FromContainerResolve();
 
 // ...
 
 System.Console.WriteLine(c.Resolve<object>()); // Outputs "1"
 ```
 
-Using FromContainer is a shorthand for:
+Using FromContainerResolve is a shorthand for:
 
 ```csharp
 b.Bind<object, int>().FromMethod(c => c.Resolve<int>());

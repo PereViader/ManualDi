@@ -558,7 +558,6 @@ When using the container in the Unity3d game engine the library provides special
 - `FromInstantiateGameObjectResourceGetComponentInParent`: Instantiates a GameObject from a resource and retrieves a component from its parent.
 - `FromInstantiateGameObjectResourceGetComponentInChildren`: Instantiates a GameObject from a resource and retrieves a component from its children.
 - `FromInstantiateGameObjectResourceGetComponents`: Instantiates a GameObject from a resource and retrieves all components of a specific type.
-- `FromInstantiateGameObjectResourceGetComponentsInParent`: Instantiates a GameObject from a resource and retrieves all components from its parent.
 - `FromInstantiateGameObjectResourceGetComponentsInChildren`: Instantiates a GameObject from a resource and retrieves all components from its children.
 - `FromInstantiateGameObjectResourceAddComponent`: Instantiates a GameObject from a resource and adds a component to it.
 

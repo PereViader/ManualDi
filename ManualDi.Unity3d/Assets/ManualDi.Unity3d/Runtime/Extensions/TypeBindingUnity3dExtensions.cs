@@ -478,44 +478,6 @@ namespace ManualDi.Unity3d
             return typeBinding;
         }
         
-        public static TypeBinding<List<TInterface>, List<TConcrete>> FromInstantiateGameObjectResourceGetComponentsInParent<TInterface, TConcrete>(
-            this TypeBinding<List<TInterface>, List<TConcrete>> typeBinding,
-            string path,
-            Transform? parent = null,
-            bool worldPositionStays = false,
-            bool allowEmpty = false,
-            bool destroyOnDispose = true
-        )
-            where TConcrete : Component
-        {
-            GameObject? instance = null;
-            typeBinding.FromMethod(_ =>
-            {
-                var gameObject = Resources.Load<GameObject>(path);
-                instance = Object.Instantiate(gameObject, parent, worldPositionStays);
-                var components = instance.GetComponentsInParent<TConcrete>();
-                if (components.Length == 0 && !allowEmpty)
-                {
-                    Object.Destroy(instance);
-                    instance = null;
-                    return null;
-                }
-                return components.ToList();
-            });
-            
-            if (destroyOnDispose)
-            {
-                typeBinding.Dispose((o, c) =>
-                {
-                    if (instance != null)
-                    {
-                        Object.Destroy(instance);
-                    }
-                });
-            }
-            return typeBinding;
-        }
-        
         public static TypeBinding<List<TInterface>, List<TConcrete>> FromInstantiateGameObjectResourceGetComponentsInChildren<TInterface, TConcrete>(
             this TypeBinding<List<TInterface>, List<TConcrete>> typeBinding,
             string path,

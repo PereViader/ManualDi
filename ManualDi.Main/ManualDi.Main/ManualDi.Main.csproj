@@ -7,16 +7,18 @@
     <Nullable>enable</Nullable>
     <AssemblyName>ManualDi.Main</AssemblyName>
     <RootNamespace>ManualDi.Main</RootNamespace>
-    <Version>1.3.4</Version>
+    <Version>1.3.5</Version>
     <Authors>Pere Viader</Authors>
     <RepositoryUrl>https://github.com/PereViader/ManualDi.Main</RepositoryUrl>
     <Product>ManualDi.Main</Product>
     <Description>Dependency injection library for C#</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/PereViader/ManualDi.Main</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="" />
     <None Include="$(SolutionDir)ManualDi.Main.Generators\bin\$(Configuration)\netstandard2.0\ManualDi.Main.Generators.dll"
           Pack="true"
           PackagePath="analyzers/dotnet/cs"

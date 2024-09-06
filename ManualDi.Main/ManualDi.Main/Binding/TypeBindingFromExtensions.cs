@@ -42,7 +42,51 @@ namespace ManualDi.Main
             typeBinding.CreateConcreteDelegate = c => c.Resolve(typeBinding.ConcreteType, constraints);
             return typeBinding;
         }
-
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TypeBinding<TInterface, TConcrete> FromSubContainerResolve<TInterface, TConcrete>(
+            this TypeBinding<TInterface, TConcrete> typeBinding,
+            InstallDelegate installDelegate,
+            bool isContainerParent = true
+        )
+        {
+            IDiContainer? subContainer = null;
+            typeBinding.CreateConcreteDelegate = c =>
+            {
+                var bindings = new DiContainerBindings().Install(installDelegate);
+                if (isContainerParent)
+                {
+                    bindings.WithParentContainer(c);
+                }
+                subContainer = bindings.Build();
+                return subContainer.Resolve<TConcrete>();
+            };
+            typeBinding.Dispose((o, c) => subContainer?.Dispose());
+            return typeBinding;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static UnsafeTypeBinding FromSubContainerResolve(
+            this UnsafeTypeBinding typeBinding,
+            InstallDelegate installDelegate,
+            bool isContainerParent = true
+        )
+        {
+            IDiContainer? subContainer = null;
+            typeBinding.CreateConcreteDelegate = c =>
+            {
+                var bindings = new DiContainerBindings().Install(installDelegate);
+                if (isContainerParent)
+                {
+                    bindings.WithParentContainer(c);
+                }
+                subContainer = bindings.Build();
+                return subContainer.Resolve(typeBinding.ConcreteType);
+            };
+            typeBinding.Dispose((o, c) => subContainer?.Dispose());
+            return typeBinding;
+        }
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<TInterface, TConcrete> FromInstance<TInterface, TConcrete>(
             this TypeBinding<TInterface, TConcrete> typeBinding,

@@ -225,28 +225,20 @@ Using FromContainer is a shorthand for:
 b.Bind<object, int>().FromMethod(c => c.Resolve<int>());
 ```
 
-### Container All
+### SubContainerResolve
 
-Just like `FromContainer` binds all the instances to the container
+This method allows resolving instances from a sub-container, enabling more modular and flexible container setups. A sub-container is created using the provided InstallDelegate, with the option to inherit the parent container (isContainerParent), giving precise control over lifetimes and resolution scopes.
 
-```csharp
-b.Bind<int>().FromInstance(1);
-b.Bind<int>().FromInstance(5);
-b.Bind<List<object>, List<int>>().FromContainerAll();
+```
+class SomeService(Dependency dependency) { }
+class Dependency { }
 
-// ...
-
-foreach(var value in container.Resolve<List<object>>())
-{
-    System.Console.WriteLine(value); // Outputs "1" and then "5"
-}
+b.Bind<SomeService>().FromSubContainerResolve(sub => {
+    sub.Bind<SomeService>().Default().FromConstructor();
+    sub.Bind<Dependency>().Default().FromConstructor();
+})
 ```
 
-Using FromContainerAll is a shorthand for:
-
-```csharp
-b.Bind<List<object>, List<int>>().FromMethod(c => c.ResolveAll<int>().Cast<object>().ToList());
-```
 
 ## Inject
 
@@ -472,11 +464,35 @@ public class A
 b.Bind<A>().Default().FromConstructor();
 ```
 
+### Collection
+
+The source generator will inject all bound instances of a type if the dependency declared is one of the following types `List<T>` `IList<T>` `IReadOnlyList<T>` `IEnumerable<T>`
+The resolved dependencies will be resolved using `ResolveAll<T>`
+The underlying `T` type may NOT be nullable.
+The whole collection type may NOT be nullable
+
+```
+public class A
+{
+    [Inject] List<object> ListObj {get; set;}
+    [Inject] IList<int> IListInt {get; set;}
+    [Inject] IReadOnlyList<obj> IReadOnlyListObj {get; set;}
+    [Inject] IEnumerable<int> IEnumerableInt {get; set;}
+
+    //[Inject] List<object?> NullableList1 {get; set;} //DON'T do this
+    //[Inject] List<object>? NullableList2 {get; set;} //DON'T do this
+}
+
+b.Bind<A>().Default().FromConstructor();
+```
+
 ### Lazy<T>
 
 The source generator will lazily inject dependencies if the dependency is lazy itself.
 Lazy dependencies may have nullable contents.
 Lazy dependencies may NOT be nullable themselves
+Lazy dependencies are also compatible with collection .
+Lazy Collection dependencies are also supported
 
 ```
 public class A
@@ -485,6 +501,7 @@ public class A
     [Inject] Lazy<object?> NullableObj {get; set;}
     [Inject] Lazy<int> Value {get; set;}
     [Inject] Lazy<int?> NullableValue {get; set;}
+    [Inject] Lazy<List<object>> LazyObjectList {get; set;}
 
     //[Inject] Lazy<object>? NullableObj {get; set;} //DON'T do this
     //[Inject] Lazy<object?>? NullableObj {get; set;} //DON'T do this
@@ -495,7 +512,73 @@ b.Bind<A>().Default().FromConstructor();
 
 ## Unity3d
 
-When using the container in the Unity3d game engine the library provides specialized extensions
+### Installers
+
+The container provides two specialized Installers `MonoBehaviourInstaller` `ScriptableObjectInstaller`
+
+Using an installer this way is a very good way to have plain C# and unity references in the same installer
+
+```csharp
+public class SomeFeatureInstaller : MonoBehaviourInstaller
+{
+    public Image Image;
+    public Toggle Toggle;
+    public Transform Transform;
+
+    public override Install(DiContainerBindings b)
+    {
+        b.Bind<Image>().FromInstance(Image);
+        b.Bind<Toggle>().FromInstance(Toggle);
+        b.Bind<Transform>().FromInstance(Transform);
+    }
+}
+```
+
+### Binding
+
+When using the container in the Unity3d game engine the library provides specialized extensions for object construction
+
+- `FromGameObjectGetComponentInParent`: Retrieves a component from the parent of a GameObject.
+- `FromGameObjectGetComponentsInParent`: Retrieves all components of a specific type from the parent of a GameObject.
+- `FromGameObjectGetComponentInChildren`: Retrieves a component from the children of a GameObject.
+- `FromGameObjectGetComponentsInChildren`: Retrieves all components of a specific type from the children of a GameObject.
+- `FromGameObjectGetComponent`: Retrieves a component from the current GameObject.
+- `FromGameObjectAddComponent`: Adds a component to the current GameObject.
+- `FromGameObjectGetComponents`: Retrieves all components of a specific type from the current GameObject.
+- `FromInstantiateComponent`: Instantiates a component and optionally sets a parent.
+- `FromInstantiateGameObjectGetComponent`: Instantiates a GameObject and retrieves a specific component from it.
+- `FromInstantiateGameObjectGetComponentInParent`: Instantiates a GameObject and retrieves a component from its parent.
+- `FromInstantiateGameObjectGetComponentInChildren`: Instantiates a GameObject and retrieves a component from its children.
+- `FromInstantiateGameObjectGetComponents`: Instantiates a GameObject and retrieves all components of a specific type.
+- `FromInstantiateGameObjectGetComponentsInParent`: Instantiates a GameObject and retrieves all components from its parent.
+- `FromInstantiateGameObjectGetComponentsInChildren`: Instantiates a GameObject and retrieves all components from its children.
+- `FromInstantiateGameObjectAddComponent`: Instantiates a GameObject and adds a component to it.
+- `FromObjectResource`: Loads an object from a Unity resource file by its path.
+- `FromInstantiateGameObjectResourceGetComponent`: Instantiates a GameObject from a resource file and retrieves a component from it.
+- `FromInstantiateGameObjectResourceGetComponentInParent`: Instantiates a GameObject from a resource and retrieves a component from its parent.
+- `FromInstantiateGameObjectResourceGetComponentInChildren`: Instantiates a GameObject from a resource and retrieves a component from its children.
+- `FromInstantiateGameObjectResourceGetComponents`: Instantiates a GameObject from a resource and retrieves all components of a specific type.
+- `FromInstantiateGameObjectResourceGetComponentsInParent`: Instantiates a GameObject from a resource and retrieves all components from its parent.
+- `FromInstantiateGameObjectResourceGetComponentsInChildren`: Instantiates a GameObject from a resource and retrieves all components from its children.
+- `FromInstantiateGameObjectResourceAddComponent`: Instantiates a GameObject from a resource and adds a component to it.
+
+Use them like this
+
+```csharp
+public class SomeFeatureInstaller : MonoBehaviourInstaller
+{
+    public string ResourcePath;
+    public Toggle TogglePrefab;
+    public Transform Transform;
+
+    public override Install(DiContainerBindings b)
+    {
+        b.Bind<Toggle>().FromInstantiateComponent(TogglePrefab);
+        b.Bind<Image>().FromInstantiateGameObjectResourceGetComponent("ResourcePath");
+    }
+}
+```
+
 
 Section under construction, for now see the code https://github.com/PereViader/ManualDi/tree/main/ManualDi.Unity3d/Assets/ManualDi.Unity3d/Runtime
 

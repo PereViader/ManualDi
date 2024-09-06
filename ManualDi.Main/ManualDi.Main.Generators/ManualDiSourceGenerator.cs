@@ -179,6 +179,20 @@ namespace ManualDi.Main.Generators
             }
             IReadOnlyListTypeSymbol = ireadOnlyListTypeSymbol;
             
+            var ireadOnlyCollectionTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyCollection`1");
+            if (ireadOnlyCollectionTypeSymbol is null)
+            {
+                return false;
+            }
+            IReadOnlyCollectionTypeSymbol = ireadOnlyCollectionTypeSymbol;
+            
+            var iCollectionTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.ICollection`1");
+            if (iCollectionTypeSymbol is null)
+            {
+                return false;
+            }
+            ICollectionTypeSymbol = iCollectionTypeSymbol;
+            
             var ienumerableTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1");
             if (ienumerableTypeSymbol is null)
             {
@@ -358,6 +372,8 @@ namespace ManualDi.Main.Generators
                 if (SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, ListTypeSymbol) ||
                     SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, IReadOnlyListTypeSymbol) ||
                     SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, IListTypeSymbol) || 
+                    SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, ICollectionTypeSymbol) || 
+                    SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, IReadOnlyCollectionTypeSymbol) || 
                     SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, IEnumerableTypeSymbol))
                 {
                     return namedTypeSymbol.TypeArguments[0];
@@ -512,6 +528,8 @@ namespace ManualDi.Main.Generators
         private static INamedTypeSymbol IListTypeSymbol = default!;
         private static INamedTypeSymbol IReadOnlyListTypeSymbol = default!;
         private static INamedTypeSymbol IEnumerableTypeSymbol = default!;
+        private static INamedTypeSymbol IReadOnlyCollectionTypeSymbol = default!;
+        private static INamedTypeSymbol ICollectionTypeSymbol = default!;
         
         private static string FullyQualifyTypeWithoutNullable(ITypeSymbol typeSymbol)
         {

@@ -535,6 +535,10 @@ namespace ManualDi.Main
                 o.IListInt = c.Resolve<IList<int>>();
                 o.ListObject = c.Resolve<List<object>>();
                 o.ListInt = c.Resolve<List<int>>();
+                o.IReadOnlyCollectionObject = c.Resolve<IReadOnlyCollection<object>>();
+                o.IReadOnlyCollectionInt = c.Resolve<IReadOnlyCollection<int>>();
+                o.ICollectionObject = c.Resolve<ICollection<object>>();
+                o.ICollectionInt = c.Resolve<ICollection<int>>();
                 o.Inject(c.Resolve<List<object>>());
             });
         }

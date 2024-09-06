@@ -133,6 +133,11 @@ class ListInject
     [Inject] public IList<int> IListInt { get; set; } = default!;
     [Inject] public List<object> ListObject { get; set; } = default!;
     [Inject] public List<int> ListInt { get; set; } = default!;
+    [Inject] public IReadOnlyCollection<object> IReadOnlyCollectionObject { get; set; } = default!;
+    [Inject] public IReadOnlyCollection<int> IReadOnlyCollectionInt { get; set; } = default!;
+    [Inject] public ICollection<object> ICollectionObject { get; set; } = default!;
+    [Inject] public ICollection<int> ICollectionInt { get; set; } = default!;
+    
     
     public void Inject(List<object> objects) { }
     public void Initialize(List<object> objects) { }

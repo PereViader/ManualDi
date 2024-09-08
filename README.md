@@ -677,11 +677,6 @@ If the parameter is left as `true`, when the container is disposed, it will firs
 This is the necessary default behaviour due to the game likely needing those resources cleaned up for example from shared Additive scenes and wanting the default behaviour to be the safest.
 If the scene the resource is created on will then be deleted, there is no need to destroy it during the disposal of the container, so feel free to set the parameter as `false`.
 
-
-
-Section under construction, for now see the code https://github.com/PereViader/ManualDi/tree/main/ManualDi.Unity3d/Assets/ManualDi.Unity3d/Runtime
-
-
 ## EntryPoints
 
 An entry point is a place where some context of your application is meant to start.

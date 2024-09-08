@@ -593,6 +593,9 @@ b.WithStartup<Startup>(o => o.Start());
 
 # ManualDi.Unity3d
 
+When using the container in unity, do not rely on Awake / Start. Instead rely on Inject / Initialize.
+You can still use Awake / Start if the classes involved are not injected through the container.
+
 ## Installers
 
 The container provides two specialized Installers 
@@ -808,11 +811,20 @@ public class Data
 }
 public class SceneFacade
 {
-    public void DoSomething() { ... }
+    [Inject] Data Data { get; set; }
+
+    public void DoSomething() 
+    {  
+        Console.WriteLine(Data.Name);
+    }
 }
 public class SceneEntryPoint : MonoBehaviourSubordinateEntryPoint<Data, SceneFacade>
 {
-    ...
+    public override void Install(DiContainerBindings b)
+    {
+        b.Bind<Data>().Default().FromInstance(Data);
+        b.Bind<SceneFacade>().Default().FromConstructor();
+    }
 }
 
 class Example
@@ -829,6 +841,27 @@ class Example
     }
 }
 ```
+
+and this is an example of how you could use a subordinate prefab
+
+
+```csharp
+class Example : MonoBehaviour
+{
+    public SceneEntryPoint EntryPoint;
+
+    void Start()
+    {        
+        var data = new Data() { Name = "Charles" };
+        var facade = entryPoint.Initiate(data)
+        
+        facade.DoSomething();
+    }
+}
+```
+
+The container provides you with the puzzle pieces necessary. The actual composition of these pieces is up to you to decide.
+Feel free to ignore the container classes and implement your custom entry points if you have any special need.
 
 ## Link
 

@@ -37,5 +37,16 @@ namespace ManualDi.Main
             diContainerBindings.AddUnsafeBinding(typeBinding);
             return typeBinding;
         }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DiContainerBindings WithStartup<T>(this DiContainerBindings diContainerBindings, Action<T> startup)
+        {
+            diContainerBindings.QueueStartup(c =>
+            {
+                var resolved = c.Resolve<T>();
+                startup.Invoke(resolved);
+            });
+            return diContainerBindings;
+        }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace ManualDi.Unity3d.Samples.Sample0
 {
-    internal class Sample0EntryPoint : RootEntryPoint
+    internal class Sample0EntryPoint : MonoBehaviourRootEntryPoint
     {
         public string message;
         

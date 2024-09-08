@@ -9,7 +9,7 @@ namespace ManualDi.Unity3d.Tests.PlayMode
 {
     public class TestContainerStarterGameObjectPrefabExtensions
     {
-        private class TestSubordinateEntryPoint : SubordinateEntryPoint<TestInstallerData>
+        private class TestMonoBehaviourSubordinateEntryPoint : MonoBehaviourSubordinateEntryPoint<TestInstallerData>
         {
             public override void Install(DiContainerBindings b)
             {
@@ -36,7 +36,7 @@ namespace ManualDi.Unity3d.Tests.PlayMode
         {
             bool disposed = false;
 
-            var entryPoint = new GameObject().AddComponent<TestSubordinateEntryPoint>();
+            var entryPoint = new GameObject().AddComponent<TestMonoBehaviourSubordinateEntryPoint>();
             
             entryPoint.Initiate(new TestInstallerData(b =>
             {

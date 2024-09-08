@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace ManualDi.Unity3d.Examples.Example2
 {
-    internal class Example2EntryPoint : SubordinateEntryPoint<PrimitiveType, Example2Context>
+    internal class Example2EntryPoint : MonoBehaviourSubordinateEntryPoint<PrimitiveType, Example2Context>
     {
         public Example2Context context;
 

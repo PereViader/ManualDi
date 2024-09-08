@@ -1,25 +1,13 @@
-using System;
+﻿using System;
 using ManualDi.Main;
 using UnityEngine;
 
 namespace ManualDi.Unity3d
 {
-    public abstract class MonoBehaviourRootEntryPoint : MonoBehaviour, IInstaller, IDisposable
+    public abstract class ScriptableObjectRootEntryPoint : ScriptableObject, IInstaller, IDisposable
     {
-        [field: SerializeField] public bool InitializeOnStart { get; set; }
-        
         public bool IsInitialized => Container is not null;
         public IDiContainer? Container { get; private set; }
-        
-        public void Start()
-        {
-            if (!InitializeOnStart)
-            {
-                return;
-            }
-            
-            Initiate();
-        }
 
         public void Initiate()
         {
@@ -31,11 +19,6 @@ namespace ManualDi.Unity3d
             Container = new DiContainerBindings()
                 .Install(this)
                 .Build();
-        }
-
-        public virtual void OnDestroy()
-        {
-            Dispose();
         }
 
         public void Dispose()

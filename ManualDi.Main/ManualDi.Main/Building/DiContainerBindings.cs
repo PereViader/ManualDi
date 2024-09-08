@@ -10,6 +10,7 @@ namespace ManualDi.Main
         private readonly Dictionary<Type, List<TypeBinding>> typeBindings;
         private readonly List<ContainerDelegate> injectDelegates;
         private readonly List<ContainerDelegate> initializationDelegates;
+        private readonly List<ContainerDelegate> startupDelegates;
         private readonly List<Action> disposeActions;
 
         private IDiContainer? parentDiContainer;
@@ -18,12 +19,14 @@ namespace ManualDi.Main
             int? bindingsCapacity = null, 
             int? injectCapacity = null,
             int? initializationCapacity = null,
-            int? disposeCapacity = null
+            int? disposeCapacity = null,
+            int? entryPointCapacity = null
             )
         {
             typeBindings = bindingsCapacity.HasValue ? new(bindingsCapacity.Value) : new();
             injectDelegates = injectCapacity.HasValue ? new(injectCapacity.Value) : new();
             initializationDelegates = initializationCapacity.HasValue ? new(initializationCapacity.Value) : new();
+            startupDelegates = entryPointCapacity.HasValue ? new(entryPointCapacity.Value) : new();
             disposeActions = disposeCapacity.HasValue ? new(disposeCapacity.Value) : new();
         }
         
@@ -61,6 +64,11 @@ namespace ManualDi.Main
             initializationDelegates.Add(containerDelegate);
         }
         
+        public void QueueStartup(ContainerDelegate containerDelegate)
+        {
+            startupDelegates.Add(containerDelegate);
+        }
+        
         public void QueueDispose(Action action)
         {
             disposeActions.Add(action);
@@ -94,6 +102,11 @@ namespace ManualDi.Main
             foreach (var initializationDelegate in initializationDelegates)
             {
                 initializationDelegate.Invoke(diContainer);
+            }
+
+            foreach (var startupDelegate in startupDelegates)
+            {
+                startupDelegate.Invoke(diContainer);
             }
 
             return diContainer;

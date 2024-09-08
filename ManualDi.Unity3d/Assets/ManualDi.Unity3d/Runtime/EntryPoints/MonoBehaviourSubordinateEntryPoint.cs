@@ -4,15 +4,13 @@ using UnityEngine;
 
 namespace ManualDi.Unity3d
 {
-    public abstract class SubordinateEntryPoint<TData> : MonoBehaviour, IInstaller, IDisposable
+    public abstract class MonoBehaviourSubordinateEntryPoint<TData> : MonoBehaviour, IInstaller, IDisposable
     {
         public bool IsInitialized => Container is not null;
         public IDiContainer? Container { get; private set; }
         public TData? Data { get; private set; }
-
-        public GameObject GameObject => gameObject;
-
-        public void Initiate(TData data, IDiContainer? parentDiContainer = null)
+        
+        public void Initiate(TData data)
         {
             if (IsInitialized)
             {
@@ -21,22 +19,12 @@ namespace ManualDi.Unity3d
             
             Data = data;
 
-            Container = new DiContainerBindings()
-                .WithParentContainer(parentDiContainer)
-                .Install(b =>
-                {
-                    if (Data is IInstaller dataInstaller)
-                    {
-                        dataInstaller.Install(b);
-                    }
-                    Install(b);
-                })
-                .Build();
-        }
-
-        public void Teardown()
-        {
-            Dispose();
+            var bindings = new DiContainerBindings();
+            if (Data is IInstaller dataInstaller)
+            {
+                bindings.Install(dataInstaller);
+            }
+            Container = bindings.Build();
         }
 
         public virtual void OnDestroy()
@@ -60,17 +48,14 @@ namespace ManualDi.Unity3d
         public abstract void Install(DiContainerBindings b);
     }
     
-    public abstract class SubordinateEntryPoint<TData, TContext> : MonoBehaviour, IInstaller, IDisposable
-        where TContext : MonoBehaviour
+    public abstract class MonoBehaviourSubordinateEntryPoint<TData, TContext> : MonoBehaviour, IInstaller, IDisposable
     {
         public bool IsInitialized => Container is not null;
         public IDiContainer? Container { get; private set; }
         public TContext? Context { get; private set; }
         public TData? Data { get; private set; }
-
-        public GameObject GameObject => gameObject;
-
-        public TContext Initiate(TData data, IDiContainer? parentDiContainer = null)
+        
+        public TContext Initiate(TData data)
         {
             if (IsInitialized)
             {
@@ -79,26 +64,16 @@ namespace ManualDi.Unity3d
             
             Data = data;
 
-            Container = new DiContainerBindings()
-                .WithParentContainer(parentDiContainer)
-                .Install(b =>
-                {
-                    if (Data is IInstaller dataInstaller)
-                    {
-                        dataInstaller.Install(b);
-                    }
-                    Install(b);
-                })
-                .Build();
+            var bindings = new DiContainerBindings();
+            if (Data is IInstaller dataInstaller)
+            {
+                bindings.Install(dataInstaller);
+            }
+            Container = bindings.Build();
 
             Context = Container.Resolve<TContext>();
 
             return Context;
-        }
-
-        public void Teardown()
-        {
-            Dispose();
         }
 
         public virtual void OnDestroy()

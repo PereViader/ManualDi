@@ -2,7 +2,7 @@
 
 namespace ManualDi.Unity3d.Examples.Example1
 {
-    internal class Example1EntryPoint : SubordinateEntryPoint<int, Example1Context>
+    internal class Example1EntryPoint : MonoBehaviourSubordinateEntryPoint<int, Example1Context>
     {
         public Example1Configuration configuration;
         public Example1Context context;

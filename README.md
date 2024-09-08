@@ -93,6 +93,7 @@ await initializer.StartApplication();
 
 - Installation Phase: The container's configuration is defined and set up.
 - Building Phase: The container is created and ingests the configuration. Non lazy Bindings are resolved.
+- Startup Phase: The Startup callbacks addded during the Building Phase are run before the container is returned.
 - Resolution Phase: The container can be used to resolve services as needed.
 - Disposal Phase: The container and its resources are properly cleaned up and released.
 
@@ -514,78 +515,6 @@ public class A
 b.Bind<A>().Default().FromConstructor();
 ```
 
-## Unity3d
-
-### Installers
-
-The container provides two specialized Installers `MonoBehaviourInstaller` `ScriptableObjectInstaller`
-
-Using an installer this way is a very good way to have plain C# and unity references in the same installer
-
-```csharp
-public class SomeFeatureInstaller : MonoBehaviourInstaller
-{
-    public Image Image;
-    public Toggle Toggle;
-    public Transform Transform;
-
-    public override Install(DiContainerBindings b)
-    {
-        b.Bind<Image>().FromInstance(Image);
-        b.Bind<Toggle>().FromInstance(Toggle);
-        b.Bind<Transform>().FromInstance(Transform);
-    }
-}
-```
-
-### Binding
-
-When using the container in the Unity3d game engine the library provides specialized extensions for object construction
-
-- `FromGameObjectGetComponentInParent`: Retrieves a component from the parent of a GameObject.
-- `FromGameObjectGetComponentsInParent`: Retrieves all components of a specific type from the parent of a GameObject.
-- `FromGameObjectGetComponentInChildren`: Retrieves a component from the children of a GameObject.
-- `FromGameObjectGetComponentsInChildren`: Retrieves all components of a specific type from the children of a GameObject.
-- `FromGameObjectGetComponent`: Retrieves a component from the current GameObject.
-- `FromGameObjectAddComponent`: Adds a component to the current GameObject.
-- `FromGameObjectGetComponents`: Retrieves all components of a specific type from the current GameObject.
-- `FromInstantiateComponent`: Instantiates a component and optionally sets a parent.
-- `FromInstantiateGameObjectGetComponent`: Instantiates a GameObject and retrieves a specific component from it.
-- `FromInstantiateGameObjectGetComponentInParent`: Instantiates a GameObject and retrieves a component from its parent.
-- `FromInstantiateGameObjectGetComponentInChildren`: Instantiates a GameObject and retrieves a component from its children.
-- `FromInstantiateGameObjectGetComponents`: Instantiates a GameObject and retrieves all components of a specific type.
-- `FromInstantiateGameObjectGetComponentsInParent`: Instantiates a GameObject and retrieves all components from its parent.
-- `FromInstantiateGameObjectGetComponentsInChildren`: Instantiates a GameObject and retrieves all components from its children.
-- `FromInstantiateGameObjectAddComponent`: Instantiates a GameObject and adds a component to it.
-- `FromObjectResource`: Loads an object from a Unity resource file by its path.
-- `FromInstantiateGameObjectResourceGetComponent`: Instantiates a GameObject from a resource file and retrieves a component from it.
-- `FromInstantiateGameObjectResourceGetComponentInParent`: Instantiates a GameObject from a resource and retrieves a component from its parent.
-- `FromInstantiateGameObjectResourceGetComponentInChildren`: Instantiates a GameObject from a resource and retrieves a component from its children.
-- `FromInstantiateGameObjectResourceGetComponents`: Instantiates a GameObject from a resource and retrieves all components of a specific type.
-- `FromInstantiateGameObjectResourceGetComponentsInChildren`: Instantiates a GameObject from a resource and retrieves all components from its children.
-- `FromInstantiateGameObjectResourceAddComponent`: Instantiates a GameObject from a resource and adds a component to it.
-
-Use them like this
-
-```csharp
-public class SomeFeatureInstaller : MonoBehaviourInstaller
-{
-    public string ResourcePath;
-    public Toggle TogglePrefab;
-    public Transform Transform;
-
-    public override Install(DiContainerBindings b)
-    {
-        b.Bind<Toggle>().FromInstantiateComponent(TogglePrefab);
-        b.Bind<Image>().FromInstantiateGameObjectResourceGetComponent("ResourcePath");
-    }
-}
-```
-
-
-Section under construction, for now see the code https://github.com/PereViader/ManualDi/tree/main/ManualDi.Unity3d/Assets/ManualDi.Unity3d/Runtime
-
-
 # Resolving
 
 Notice that resolution can only be done on aparent types, not concrete types. Concrete types are there so the continer can provide a type safe fluent API.
@@ -632,4 +561,292 @@ Resolve all the registered instance from the container. If no instances are avai
 
 ```csharp
 List<SomeService> services = container.ResolveAll<SomeService>();
+```
+
+# Startups
+
+The container also provides an extension method so it can queue some delegate to be run during the Startups lifecycle of the container.
+This step is useful to make sure that some object's method is run after all the NonLazy objects have been created and initialized.
+
+In the following example the following will happen once the container is built:
+- `SomeNonLazy` is created 
+- `SomeNonLazy`'s `Initialize` method is be called
+- `Startup` is created
+- `Startup`'s `Start` method is called
+
+```csharp
+class Startup
+{
+    public Startup(...) { ... }
+    public void Start() { ... }
+}
+
+class SomeNonLazy
+{
+    public void Initialize() { ... }
+}
+
+b.Bind<SomeNonLazy>().Default().FromConstructor().NonLazy()
+b.Bind<Startup>().Default().FromConstructor();
+b.WithStartup<Startup>(o => o.Start());
+```
+
+# ManualDi.Unity3d
+
+## Installers
+
+The container provides two specialized Installers 
+- `MonoBehaviourInstaller` 
+- `ScriptableObjectInstaller`
+
+This is the idiomatic Unity way to have both the configuration and engine object references in the same place.
+These classes just implement the `IInstaller` interface, there is no requriement for these classes to be used, so feel free to use IInstaller directly if you want.
+
+```csharp
+public class SomeFeatureInstaller : MonoBehaviourInstaller
+{
+    public Image Image;
+    public Toggle Toggle;
+    public Transform Transform;
+
+    public override void Install(DiContainerBindings b)
+    {
+        b.Bind<Image>().FromInstance(Image);
+        b.Bind<Toggle>().FromInstance(Toggle);
+        b.Bind<Transform>().FromInstance(Transform);
+    }
+}
+```
+
+## Binding
+
+When using the container in the Unity3d game engine the library provides specialized extensions for object construction
+
+- `FromGameObjectGetComponentInParent`: Retrieves a component from the parent of a GameObject.
+- `FromGameObjectGetComponentsInParent`: Retrieves all components of a specific type from the parent of a GameObject.
+- `FromGameObjectGetComponentInChildren`: Retrieves a component from the children of a GameObject.
+- `FromGameObjectGetComponentsInChildren`: Retrieves all components of a specific type from the children of a GameObject.
+- `FromGameObjectGetComponent`: Retrieves a component from the current GameObject.
+- `FromGameObjectAddComponent`: Adds a component to the current GameObject.
+- `FromGameObjectGetComponents`: Retrieves all components of a specific type from the current GameObject.
+- `FromInstantiateComponent`: Instantiates a component and optionally sets a parent.
+- `FromInstantiateGameObjectGetComponent`: Instantiates a GameObject and retrieves a specific component from it.
+- `FromInstantiateGameObjectGetComponentInParent`: Instantiates a GameObject and retrieves a component from its parent.
+- `FromInstantiateGameObjectGetComponentInChildren`: Instantiates a GameObject and retrieves a component from its children.
+- `FromInstantiateGameObjectGetComponents`: Instantiates a GameObject and retrieves all components of a specific type.
+- `FromInstantiateGameObjectGetComponentsInParent`: Instantiates a GameObject and retrieves all components from its parent.
+- `FromInstantiateGameObjectGetComponentsInChildren`: Instantiates a GameObject and retrieves all components from its children.
+- `FromInstantiateGameObjectAddComponent`: Instantiates a GameObject and adds a component to it.
+- `FromObjectResource`: Loads an object from a Unity resource file by its path.
+- `FromInstantiateGameObjectResourceGetComponent`: Instantiates a GameObject from a resource file and retrieves a component from it.
+- `FromInstantiateGameObjectResourceGetComponentInParent`: Instantiates a GameObject from a resource and retrieves a component from its parent.
+- `FromInstantiateGameObjectResourceGetComponentInChildren`: Instantiates a GameObject from a resource and retrieves a component from its children.
+- `FromInstantiateGameObjectResourceGetComponents`: Instantiates a GameObject from a resource and retrieves all components of a specific type.
+- `FromInstantiateGameObjectResourceGetComponentsInChildren`: Instantiates a GameObject from a resource and retrieves all components from its children.
+- `FromInstantiateGameObjectResourceAddComponent`: Instantiates a GameObject from a resource and adds a component to it.
+
+Use them like this
+
+```csharp
+public class SomeFeatureInstaller : MonoBehaviourInstaller
+{
+    public Transform canvasTransform;
+    public string ResourcePath;
+    public Toggle TogglePrefab;
+    public GameObject SomeGameObject;
+
+    public override Install(DiContainerBindings b)
+    {
+        b.Bind<Toggle>().FromInstantiateComponent(TogglePrefab, canvasTransform);
+        b.Bind<Image>().FromInstantiateGameObjectResourceGetComponent(ResourcePath);
+        b.Bind<SomeFeature>().FromGameObjectGetComponent(SomeGameObject);
+    }
+}
+```
+
+Most methods have several optional parameters.
+
+Also special attention to `Transform? parent = null`. This one will define the parent transform used when instantiating new instances.
+
+
+Special attention to `bool destroyOnDispose = true` one. This one will be available on creation strategies that create new instances.
+If the parameter is left as `true`, when the container is disposed, it will first destroy the instance.
+This is the necessary default behaviour due to the game likely needing those resources cleaned up for example from shared Additive scenes and wanting the default behaviour to be the safest.
+If the scene the resource is created on will then be deleted, there is no need to destroy it during the disposal of the container, so feel free to set the parameter as `false`.
+
+
+
+Section under construction, for now see the code https://github.com/PereViader/ManualDi/tree/main/ManualDi.Unity3d/Assets/ManualDi.Unity3d/Runtime
+
+
+## EntryPoints
+
+An entry point is a place where some context of your application is meant to start.
+In the case of ManualDi, it is where the object graph is configured and then the container is started.
+
+The last binding of an entry point will usually make use of WithStartable to run any logic necessary after the container is created.
+
+### RootEntryPoint
+
+Root entry points will not depend on any other container.
+This means that all dependencies will be registered in the main container itself.
+
+Use the appropiate type depending on how you want to structure your application:
+- `MonoBehaviourRootEntryPoint`
+- `ScriptableObjectRootEntryPoint`
+
+```csharp
+public class Startup
+{
+    public Startup(Dependency1 d1, Dependency2 d2) { ... }
+    public void Start() { ... }
+}
+
+class InitialSceneEntryPoint : MonoBehaviourRootEntryPoint
+{
+    public Dependency1 dependency1;
+    public Dependency2 dependency2;
+
+    public override void Install(DiContainerBindings b)
+    {
+        b.Bind<Dependency1>().Default().FromInstance(dependency1);
+        b.Bind<Dependency2>().Default().FromInstance(dependency2);
+        b.Bind<Startup>().Default().FromConstructor();
+        b.WithStartup<Startup>(o => o.Start());
+    }
+}
+```
+
+### SubordinateEntryPoint
+
+Subodinate entry points will depend on other container or require other data.
+This means that these entry points cannot be started by themselves. They need to be started by some other part of your application.
+
+If the data provided to these entry points, implements `IInstaller`, then the data will also be installed to the container.
+Otherwise it will just be available throught the `Data` property of the EntryPoint.
+If the subordinate container requires all the dependencies of the parent container, it is recommended to set the parent container on the EntryPointData object.
+
+```
+public class EntryPointData : IInstaller
+{
+    public IDiContainer ParentDiContainer { get; set; }
+
+    public void Install(DiContainerBindings b)
+    {
+        b.WithParentContainer(ParentDiContainer);
+    }
+}
+```
+
+These entry points may also optionally return a `TContext` object resolved from the container.
+
+Doing such a thing is useful to provide a facade to the systems created.
+
+Use the appropiate type depending on how you want to structure your application:
+- `MonoBehaviourSubordinateEntryPoint<TData>`
+- `MonoBehaviourSubordinateEntryPoint<TData, TContext>`
+- `ScriptableObjectSubordinateEntryPoint<TData>`
+- `ScriptableObjectSubordinateEntryPoint<TData, TContext>`
+
+```csharp
+public class Startup
+{
+    public Startup(Dependency1? d1, Dependency2 d2) { ... }
+    public void Start() { ... }
+}
+
+public class EntryPointData : IInstaller
+{
+    public Dependency1? Dependency1 { get; set; }
+
+    public void Install(DiContainerBindings b)
+    {
+        if(Dependency1 is not null)
+        {
+            b.Bind<Dependency1>().FromInstance(Dependency1).DontDispose();
+        }
+    }
+}
+
+public class Facade : MonoBehaviour
+{
+    [Inject] public Dependency1? Dependency1 { get; set; }
+    [Inject] public Dependency2 Dependency2 { get; set; }
+
+    public void DoSomething1()
+    {
+        Dependency1?.DoSomething1();
+    }
+
+    public void DoSomething2()
+    {
+        Dependency2.DoSomething2();
+    }
+}
+
+class InitialSceneEntryPoint : MonoBehaviourSubordinateEntryPoint<EntryPointData, Facade>
+{
+    public Dependency2 dependency2;
+    public Facade Facade;
+
+    public override void Install(DiContainerBindings b)
+    {
+        b.Bind<Dependency2>().Default().FromInstance(dependency2);
+        b.Bind<Facade>().Default().FromInstance(Facade);
+        b.Bind<Startup>().Default().FromConstructor();
+        b.WithStartup<Startup>(o => o.Start());
+    }
+}
+```
+
+And this is how a subordinate entry point on a scene could be started
+
+```csharp
+public class Data
+{
+    public string Name { get; set; }
+}
+public class SceneFacade
+{
+    public void DoSomething() { ... }
+}
+public class SceneEntryPoint : MonoBehaviourSubordinateEntryPoint<Data, SceneFacade>
+{
+    ...
+}
+
+class Example
+{
+    IEnumerator Run()
+    {
+        yield return SceneManager.LoadSceneAsync("TheScene", LoadSceneMode.Additive);
+        
+        var entryPoint = Object.FindObjectOfType<SceneEntryPoint>();
+        var data = new Data() { Name = "Charles" };
+        var facade = entryPoint.Initiate(data)
+        
+        facade.DoSomething();
+    }
+}
+```
+
+## Link
+
+When binding things to the container, further actions can be done on the bindings
+
+- `LinkDontDestroyOnLoad`: The object will have don't destroy on load called on it when the contianer is bound. Behaviour can be customized with the optional parameters
+
+```cs
+class Installer : MonoBehaviourInstaller
+{
+    public SomeService SomeService;
+
+    public override void Install(DiContainerBindings b)
+    {
+        b.Bind<SomeService>()
+            .Default()
+            .FromInstance(SomeService)
+            .LinkDontDestroyOnLoad();
+    }
+}
 ```

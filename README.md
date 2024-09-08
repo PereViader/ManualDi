@@ -379,7 +379,7 @@ class B
 }
 
 b.Bind<A>().FromConstructor(); // No need to call Dispose because the object is IDisposable
-b.Bind<B>().FromConstructor().Dispose((o,c) => o.DoCleanup);
+b.Bind<B>().FromConstructor().Dispose((o,c) => o.DoCleanup());
 
 // ...
 
@@ -804,6 +804,7 @@ public class Data
 {
     public string Name { get; set; }
 }
+
 public class SceneFacade
 {
     [Inject] Data Data { get; set; }
@@ -813,6 +814,7 @@ public class SceneFacade
         Console.WriteLine(Data.Name);
     }
 }
+
 public class SceneEntryPoint : MonoBehaviourSubordinateEntryPoint<Data, SceneFacade>
 {
     public override void Install(DiContainerBindings b)
@@ -864,7 +866,7 @@ When binding things to the container, further actions can be done on the binding
 
 - `LinkDontDestroyOnLoad`: The object will have don't destroy on load called on it when the contianer is bound. Behaviour can be customized with the optional parameters
 
-```cs
+```csharp
 class Installer : MonoBehaviourInstaller
 {
     public SomeService SomeService;

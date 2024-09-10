@@ -12,34 +12,25 @@ The project is grounded on the following five fundamentals:
 
 # Benchmark
 
-## Plain C#
-Let's compare this container with Microsoft's one given it is the standard most projects use today. [(Benchmark)](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Main/ManualDi.Main.Benchmark/SimpleBenchmark.cs)
-
- - Combined GC consumption for setup and resolution is reduced by 7.33 times.
- - Object graph resolution is 7.9 times faster.
- - Disposal speed is 17 times faster.
- - Setup is 1.2 times faster.
- - Repeated access performance remains equivalent.
+[Benchmark](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Main/ManualDi.Main.Benchmark/SimpleBenchmark.cs) against Microsoft's container
 
 ```
-| Method                           | Mean          | Error       | StdDev       | Median          | Gen0   | Gen1   | Allocated |
-|--------------------------------- |--------------:|------------:|-------------:|----------------:|-------:|-------:|----------:|
-| ManualDi_Setup                   |   4,646.66 ns |    56.60 ns |     44.19 ns |   4,636.3789 ns | 0.3204 | 0.0305 |   16264 B |
-| MicrosoftDi_Setup                |   5,730.04 ns |   110.85 ns |    172.57 ns |   5,696.2318 ns | 0.5951 | 0.5951 |   30232 B |
-| ManualDi_Dispose                 |      47.00 ns |    17.68 ns |     52.14 ns |       0.0000 ns |      - |      - |     640 B |
-| MicrosoftDi_Dispose              |     829.00 ns |    42.93 ns |    126.57 ns |     800.0000 ns |      - |      - |     640 B |
-| ManualDi_Resolve_Service         |  19,096.94 ns |   759.32 ns |  2,214.97 ns |  20,000.0000 ns |      - |      - |    6296 B |
-| MicrosoftDi_Resolve_Service      | 151,230.93 ns | 6,041.54 ns | 17,527.61 ns | 141,500.0000 ns |      - |      - |  135136 B |
-| ManualDi_Resolve_ServiceTwice    |     946.94 ns |    40.95 ns |    119.45 ns |     900.0000 ns |      - |      - |     640 B |
-| MicrosoftDi_Resolve_ServiceTwice |     987.50 ns |    21.58 ns |     33.60 ns |   1,000.0000 ns |      - |      - |     640 B |
+| Method                           | Mean         | Error       | StdDev       | Median       | Gen0   | Gen1   | Allocated |
+|--------------------------------- |-------------:|------------:|-------------:|-------------:|-------:|-------:|----------:|
+| ManualDi_Setup                   |   4,681.2 ns |    53.37 ns |     49.92 ns |   4,662.3 ns | 0.3281 | 0.0305 |   16488 B |
+| MicrosoftDi_Setup                |   5,516.9 ns |    72.40 ns |     67.72 ns |   5,530.3 ns | 0.5951 | 0.1450 |   30232 B |
+| ManualDi_Dispose                 |     238.0 ns |    42.24 ns |    124.54 ns |     300.0 ns |      - |      - |     640 B |
+| MicrosoftDi_Dispose              |     529.3 ns |    83.27 ns |    244.22 ns |     500.0 ns |      - |      - |     640 B |
+| ManualDi_Resolve_Service         |  16,469.1 ns |   689.67 ns |  2,000.85 ns |  15,800.0 ns |      - |      - |    6888 B |
+| MicrosoftDi_Resolve_Service      | 140,985.9 ns | 5,846.42 ns | 17,146.55 ns | 132,900.0 ns |      - |      - |  135136 B |
+| ManualDi_Resolve_ServiceTwice    |     311.1 ns |    25.48 ns |     71.02 ns |     300.0 ns |      - |      - |     640 B |
+| MicrosoftDi_Resolve_ServiceTwice |     407.8 ns |    28.06 ns |     78.22 ns |     400.0 ns |      - |      - |     640 B |
+
 ```
 
-## Unity3d
+[Benchmark](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Unity3d/Assets/ManualDi.Unity3d/Tests/Benchmark.cs) against some Unity3d compatible containers. 
 
-Let's compare the container against some other common Unity3d compatible containers. [(Benchmark)](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Unity3d/Assets/ManualDi.Unity3d/Tests/Benchmark.cs)
-
-![Unity3d-Build-Benchmark](https://github.com/user-attachments/assets/fe5c13ad-82c8-4c45-a8f8-5a818c6d97a7) 
-![Unity3d-Resolve-Benchmark](https://github.com/user-attachments/assets/15589e49-5106-4855-bc20-41e0dd50bfcd)
+![Unity3d-Container-Benchmark](https://github.com/user-attachments/assets/b27ac43e-5fb6-4c3e-bb5d-5049b2220c42)
 
 # Installation
 

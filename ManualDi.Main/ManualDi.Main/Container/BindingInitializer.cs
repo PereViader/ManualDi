@@ -6,7 +6,8 @@ namespace ManualDi.Main
 {
     internal sealed class BindingInitializer
     {
-        private readonly List<List<Action<IDiContainer>>?> bindingInitializationCommands = new();
+        private readonly List<Action<IDiContainer>> bindingInitializationCommands = new();
+        private readonly List<ushort> initializationsOnEachLevel = new();
         private int nestedCount;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -16,29 +17,21 @@ namespace ManualDi.Main
             {
                 if (nestedCount >= bindingInitializationCommands.Count)
                 {
-                    bindingInitializationCommands.Add(null);
+                    initializationsOnEachLevel.Add(0);
                 }
-
                 return;
             }
-            List<Action<IDiContainer>>? commands;
         
-            if (nestedCount >= bindingInitializationCommands.Count)
+            if (nestedCount >= initializationsOnEachLevel.Count)
             {
-                commands = new List<Action<IDiContainer>>(1);
-                bindingInitializationCommands.Add(commands);
+                initializationsOnEachLevel.Add(1);
             }
             else
             {
-                commands = bindingInitializationCommands[nestedCount];
-                if (commands is null)
-                {
-                    commands = new List<Action<IDiContainer>>(1);
-                    bindingInitializationCommands[nestedCount] = commands;
-                }
+                initializationsOnEachLevel[nestedCount]++;
             }
 
-            commands.Add(c => typeBinding.InitializeObject(instance, c));
+            bindingInitializationCommands.Add(c => typeBinding.InitializeObject(instance, c));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -46,16 +39,23 @@ namespace ManualDi.Main
         {
             nestedCount++;
 
-            var index = bindingInitializationCommands.Count - 1;
-            var commands = bindingInitializationCommands[index];
-            bindingInitializationCommands.RemoveAt(index);
-            if (commands is not null)
+            var removeIndex = initializationsOnEachLevel.Count - 1;
+            var toDelete = initializationsOnEachLevel[removeIndex];
+            
+            bindingInitializationCommands.Reverse(bindingInitializationCommands.Count - toDelete, toDelete);
+            
+            while (toDelete > 0)
             {
-                foreach (var action in commands)
-                {
-                    action.Invoke(container);
-                }
+                toDelete--;
+                
+                var lastIndex = bindingInitializationCommands.Count - 1;
+                var element = bindingInitializationCommands[lastIndex];
+                bindingInitializationCommands.RemoveAt(lastIndex);
+                
+                element.Invoke(container);
             }
+            
+            initializationsOnEachLevel.RemoveAt(removeIndex);
 
             nestedCount--;
         }

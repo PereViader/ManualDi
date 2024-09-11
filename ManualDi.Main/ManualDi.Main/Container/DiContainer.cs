@@ -13,7 +13,6 @@ namespace ManualDi.Main
         private BindingInitializer bindingInitializer;
         private DisposableActionQueue disposableActionQueue;
         private bool isResolving;
-        private bool hasBeenInitialized;
         private bool disposedValue;
 
         public DiContainer(
@@ -30,15 +29,8 @@ namespace ManualDi.Main
             this.parentDiContainer = parentDiContainer;
         }
 
-        public void Init()
+        public void Initialize()
         {
-            if (hasBeenInitialized)
-            {
-                throw new InvalidOperationException("Container has already finished binding. Make sure you bind everything only when creating it");
-            }
-
-            hasBeenInitialized = true;
-
             foreach (var bindings in allTypeBindings)
             {
                 foreach (var binding in bindings.Value)
@@ -51,7 +43,6 @@ namespace ManualDi.Main
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object? ResolveContainer(Type type, ResolutionConstraints? resolutionConstraints)
         {
             var typeBinding = GetTypeForConstraint(type, resolutionConstraints);
@@ -68,7 +59,6 @@ namespace ManualDi.Main
             return null;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private object ResolveBinding(TypeBinding typeBinding)
         {
             bool wasResolving = this.isResolving;

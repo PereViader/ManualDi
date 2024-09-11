@@ -106,7 +106,7 @@ namespace ManualDi.Main
                 }
             }));
 
-            diContainer.Init();
+            diContainer.Initialize();
             
             foreach (var injectDelegate in injectDelegates)
             {

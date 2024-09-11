@@ -4,10 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
 {
-    public delegate object? CreateDelegate(IDiContainer diContainer);
     public delegate T? CreateDelegate<out T>(IDiContainer diContainer);
-
-    public delegate void InstanceContainerDelegate(object instance, IDiContainer diContainer);
     public delegate void InstanceContainerDelegate<in T>(T instance, IDiContainer diContainer);
     
 
@@ -26,34 +23,8 @@ namespace ManualDi.Main
         
         internal object? SingleInstance { get; set; }
 
-        public abstract (object instance, bool isNew) Create(IDiContainer container);
-        
-        public abstract bool NeedsInitialize { get; }
-        public abstract void InitializeObject(object instance, IDiContainer container);
-        public abstract void InjectObject(object instance, IDiContainer container);
-    }
-    
-    public sealed class TypeBinding<TInterface, TConcrete> : TypeBinding
-    {
-        public CreateDelegate<TConcrete>? CreateConcreteDelegate { get; set; }
-        public InstanceContainerDelegate<TConcrete>? InjectionDelegates { get; set; }
-        public InstanceContainerDelegate<TConcrete>? InitializationDelegate { get; set; }
-        public override bool NeedsInitialize => InitializationDelegate is not null;
-        
-        public override (object instance, bool isNew) Create(IDiContainer container)
-        {
-            var result = TryCreate(container);
-            if (result.HasValue)
-            {
-                return result.Value;
-            }
-
-            throw new InvalidOperationException(
-                $"Could not create object for TypeBinding with apparent type {typeof(TInterface).FullName} and concrete type {typeof(TConcrete).FullName}");
-        }
-        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private (object instance, bool isNew)? TryCreate(IDiContainer container)
+        public (object instance, bool isNew) Create(IDiContainer container)
         {
             if (TypeScope is TypeScope.Single)
             {
@@ -65,7 +36,7 @@ namespace ManualDi.Main
                 SingleInstance = CreateNew(container);
                 if (SingleInstance is null)
                 {
-                    return null;
+                    throw new InvalidOperationException($"Could not create object for {GetType().FullName}");
                 }
                 
                 return (SingleInstance, true);
@@ -74,20 +45,32 @@ namespace ManualDi.Main
             var instance = CreateNew(container);
             if (instance is null)
             {
-                return null;
+                throw new InvalidOperationException($"Could not create object for {GetType().FullName}");
             }
             return (instance, true);
         }
+        
+        protected abstract object? CreateNew(IDiContainer container);
+        public abstract bool NeedsInitialize { get; }
+        public abstract void InitializeObject(object instance, IDiContainer container);
+        public abstract void InjectObject(object instance, IDiContainer container);
+    }
+    
+    public sealed class TypeBinding<TInterface, TConcrete> : TypeBinding
+    {
+        public CreateDelegate<TConcrete>? CreateConcreteDelegate { get; set; }
+        public InstanceContainerDelegate<TConcrete>? InjectionDelegates { get; set; }
+        public InstanceContainerDelegate<TConcrete>? InitializationDelegate { get; set; }
+        public override bool NeedsInitialize => InitializationDelegate is not null;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private object? CreateNew(IDiContainer container)
+        protected override object? CreateNew(IDiContainer container)
         {
-            if (CreateConcreteDelegate is not null)
+            if (CreateConcreteDelegate is null)
             {
-                return CreateConcreteDelegate.Invoke(container);
+                return null;
             }
 
-            return null;
+            return CreateConcreteDelegate.Invoke(container);
         }
 
         public override void InjectObject(object instance, IDiContainer container)
@@ -101,6 +84,7 @@ namespace ManualDi.Main
         }
     }
     
+    // Attention Consider any methods that use this experimental. They may be removed in the future.
     public sealed class UnsafeTypeBinding : TypeBinding
     {
         public UnsafeTypeBinding(Type interfaceType, Type concreteType)
@@ -111,60 +95,14 @@ namespace ManualDi.Main
 
         public Type InterfaceType { get; }
         public Type ConcreteType { get; }
-        public CreateDelegate? CreateConcreteDelegate { get; set; }
-        public InstanceContainerDelegate? InjectionDelegates { get; set; }
-        public InstanceContainerDelegate? InitializationDelegate { get; set; }
-        
+        public CreateDelegate<object>? CreateConcreteDelegate { get; set; }
+        public InstanceContainerDelegate<object>? InjectionDelegates { get; set; }
+        public InstanceContainerDelegate<object>? InitializationDelegate { get; set; }
         public override bool NeedsInitialize => InitializationDelegate is not null;
         
-        public override (object instance, bool isNew) Create(IDiContainer container)
+        protected override object? CreateNew(IDiContainer container)
         {
-            var result = TryCreate(container);
-            if (result.HasValue)
-            {
-                return result.Value;
-            }
-
-            throw new InvalidOperationException(
-                $"Could not create object for TypeBinding with apparent type {InterfaceType.FullName} and concrete type {ConcreteType.FullName}");
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private (object instance, bool isNew)? TryCreate(IDiContainer container)
-        {
-            if (TypeScope is TypeScope.Single)
-            {
-                if (SingleInstance is not null)
-                {
-                    return (SingleInstance, false);
-                }
-
-                SingleInstance = CreateNew(container);
-                if (SingleInstance is null)
-                {
-                    return null;
-                }
-                
-                return (SingleInstance, true);
-            }
-            
-            var instance = CreateNew(container);
-            if (instance is null)
-            {
-                return null;
-            }
-            return (instance, true);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private object? CreateNew(IDiContainer container)
-        {
-            if (CreateConcreteDelegate is not null)
-            {
-                return CreateConcreteDelegate.Invoke(container);
-            }
-
-            return null;
+            return CreateConcreteDelegate?.Invoke(container);
         }
 
         public override void InjectObject(object instance, IDiContainer container)

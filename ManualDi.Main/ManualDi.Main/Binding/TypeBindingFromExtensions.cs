@@ -120,7 +120,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static UnsafeTypeBinding FromMethod(
             this UnsafeTypeBinding typeBinding,
-            CreateDelegate createDelegate
+            CreateDelegate<object> createDelegate
         )
         {
             typeBinding.CreateConcreteDelegate = createDelegate;

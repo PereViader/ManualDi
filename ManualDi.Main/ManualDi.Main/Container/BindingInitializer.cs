@@ -6,7 +6,7 @@ namespace ManualDi.Main
 {
     internal sealed class BindingInitializer
     {
-        private readonly List<Action<IDiContainer>> bindingInitializationCommands = new();
+        private readonly List<(TypeBinding typeBinding, object instance)> bindingInitializationCommands = new();
         private readonly List<ushort> initializationsOnEachLevel = new();
         private int nestedCount;
 
@@ -31,7 +31,7 @@ namespace ManualDi.Main
                 initializationsOnEachLevel[nestedCount]++;
             }
 
-            bindingInitializationCommands.Add(c => typeBinding.InitializeObject(instance, c));
+            bindingInitializationCommands.Add((typeBinding, instance));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -49,10 +49,10 @@ namespace ManualDi.Main
                 toDelete--;
                 
                 var lastIndex = bindingInitializationCommands.Count - 1;
-                var element = bindingInitializationCommands[lastIndex];
+                var (typeBinding, instance) = bindingInitializationCommands[lastIndex];
                 bindingInitializationCommands.RemoveAt(lastIndex);
                 
-                element.Invoke(container);
+                typeBinding.InitializeObject(instance, container);
             }
             
             initializationsOnEachLevel.RemoveAt(removeIndex);

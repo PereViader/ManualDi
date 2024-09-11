@@ -4,43 +4,53 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
 {
-    internal sealed class DisposableActionQueue
+    //In order to optimize the container, this is a struct that is modified by static ref extensions
+    internal struct DisposableActionQueue
     {
-        private readonly List<IDisposable> disposables = new();
-        private bool disposing;
+        public readonly List<IDisposable> Disposables;
+        public bool IsDisposing;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void QueueDispose(IDisposable disposable)
+        public DisposableActionQueue(int? disposablesCount = null)
         {
-            if (disposing)
+            Disposables = disposablesCount.HasValue ? new(disposablesCount.Value) : new();
+            IsDisposing = false;
+        }
+    }
+
+    internal static class DisposableActionQueueExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void QueueDispose(ref this DisposableActionQueue o, IDisposable disposable)
+        {
+            if (o.IsDisposing)
             {
                 throw new InvalidOperationException(
                     "Tried to register a dispose action while disposing"
-                    );
+                );
             }
 
-            disposables.Add(disposable);
+            o.Disposables.Add(disposable);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void QueueDispose(Action disposableAction)
+        public static void QueueDispose(ref this DisposableActionQueue o, Action disposableAction)
         {
-            QueueDispose(new ActionDisposableWrapper(disposableAction));
+            o.QueueDispose(new ActionDisposableWrapper(disposableAction));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void DisposeAll()
+        public static void DisposeAll(ref this DisposableActionQueue o)
         {
-            disposing = true;
+            o.IsDisposing = true;
 
-            foreach (var disposable in disposables)
+            foreach (var disposable in o.Disposables)
             {
                 disposable.Dispose();
             }
 
-            disposables.Clear();
+            o.Disposables.Clear();
             
-            disposing = false;
+            o.IsDisposing = false;
         }
     }
 }

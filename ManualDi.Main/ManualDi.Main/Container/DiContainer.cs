@@ -7,17 +7,25 @@ namespace ManualDi.Main
 {
     public sealed class DiContainer : IDiContainer
     {
-        private readonly BindingInitializer bindingInitializer = new();
-        private readonly DisposableActionQueue disposableActionQueue = new();
         private readonly Dictionary<Type, List<TypeBinding>> allTypeBindings;
         private readonly IDiContainer? parentDiContainer;
-
+        
+        private BindingInitializer bindingInitializer;
+        private DisposableActionQueue disposableActionQueue;
         private bool isResolving;
         private bool hasBeenInitialized;
         private bool disposedValue;
 
-        public DiContainer(Dictionary<Type, List<TypeBinding>> allTypeBindings, IDiContainer? parentDiContainer)
+        public DiContainer(
+            Dictionary<Type, List<TypeBinding>> allTypeBindings, 
+            IDiContainer? parentDiContainer,
+            int? initializationsCount = null, 
+            int? initializationsOnDepthCount = null,
+            int? disposablesCount = null)
         {
+            bindingInitializer = new(initializationsCount, initializationsOnDepthCount);
+            disposableActionQueue = new(disposablesCount);
+            
             this.allTypeBindings = allTypeBindings;
             this.parentDiContainer = parentDiContainer;
         }

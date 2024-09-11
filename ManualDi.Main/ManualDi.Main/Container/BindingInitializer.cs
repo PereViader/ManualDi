@@ -1,63 +1,76 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
 {
-    internal sealed class BindingInitializer
+    //In order to optimize the container, this is a struct that is modified by static ref extensions
+    internal struct BindingInitializer
     {
-        private readonly List<(TypeBinding typeBinding, object instance)> bindingInitializationCommands = new();
-        private readonly List<ushort> initializationsOnEachLevel = new();
-        private int nestedCount;
+        // This method has been optimized by storing the initialization commands that may happen at different depth levels
+        // in the same list, thus having them be closer in memory and thus more cache friendly
+        // however this requires us to track how many of those commands happen on each depth level
+        // so we can keep track of how many belong to each depth level
+        public readonly List<(TypeBinding typeBinding, object instance)> Initializations;
+        public readonly List<ushort> InitializationsOnDepth;
+        public int NestedCount;
 
+        /// <summary>
+        /// If you want to optimize your program for your use case and gain a little bit of time because the application won't need to dynamically change the list sizes
+        /// provide the proper counts for each of the lists 
+        /// </summary>
+        public BindingInitializer(int? initializationsCount = null, int? initializationsOnDepthCount = null)
+        {
+            Initializations = initializationsCount.HasValue ? new(initializationsCount.Value) : new();
+            InitializationsOnDepth = initializationsOnDepthCount.HasValue ? new(initializationsOnDepthCount.Value) : new();
+            NestedCount = 0;
+        }
+    }
+    
+    internal static class BindingInitializerExtensions
+    {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Queue(TypeBinding typeBinding, object instance)
+        public static void Queue(ref this BindingInitializer o, TypeBinding typeBinding, object instance)
         {
             if (!typeBinding.NeedsInitialize)
             {
-                if (nestedCount >= bindingInitializationCommands.Count)
+                if (o.NestedCount >= o.Initializations.Count)
                 {
-                    initializationsOnEachLevel.Add(0);
+                    o.InitializationsOnDepth.Add(0);
                 }
                 return;
             }
         
-            if (nestedCount >= initializationsOnEachLevel.Count)
+            if (o.NestedCount >= o.InitializationsOnDepth.Count)
             {
-                initializationsOnEachLevel.Add(1);
+                o.InitializationsOnDepth.Add(1);
             }
             else
             {
-                initializationsOnEachLevel[nestedCount]++;
+                o.InitializationsOnDepth[o.NestedCount]++;
             }
 
-            bindingInitializationCommands.Add((typeBinding, instance));
+            o.Initializations.Add((typeBinding, instance));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void InitializeCurrentLevelQueued(IDiContainer container)
+        public static void InitializeCurrentLevelQueued(ref this BindingInitializer o, IDiContainer container)
         {
-            nestedCount++;
+            o.NestedCount++;
 
-            var removeIndex = initializationsOnEachLevel.Count - 1;
-            var toDelete = initializationsOnEachLevel[removeIndex];
+            var levelIndex = o.InitializationsOnDepth.Count - 1;
+            var initializationCount = o.InitializationsOnDepth[levelIndex];
+            var initializationStartIndex = o.Initializations.Count - initializationCount;
             
-            bindingInitializationCommands.Reverse(bindingInitializationCommands.Count - toDelete, toDelete);
-            
-            while (toDelete > 0)
+            for (int i = initializationStartIndex; i < o.Initializations.Count; i++)
             {
-                toDelete--;
-                
-                var lastIndex = bindingInitializationCommands.Count - 1;
-                var (typeBinding, instance) = bindingInitializationCommands[lastIndex];
-                bindingInitializationCommands.RemoveAt(lastIndex);
-                
+                var (typeBinding, instance) = o.Initializations[i];
                 typeBinding.InitializeObject(instance, container);
             }
             
-            initializationsOnEachLevel.RemoveAt(removeIndex);
+            o.Initializations.RemoveRange(initializationStartIndex, initializationCount);
+            o.InitializationsOnDepth.RemoveAt(levelIndex);
 
-            nestedCount--;
-        }
+            o.NestedCount--;
+        }   
     }
 }

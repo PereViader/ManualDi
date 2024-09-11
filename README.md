@@ -17,20 +17,21 @@ The project is grounded on the following five fundamentals:
 ```
 | Method                           | Mean         | Error       | StdDev       | Median       | Gen0   | Gen1   | Allocated |
 |--------------------------------- |-------------:|------------:|-------------:|-------------:|-------:|-------:|----------:|
-| ManualDi_Setup                   |   4,681.2 ns |    53.37 ns |     49.92 ns |   4,662.3 ns | 0.3281 | 0.0305 |   16488 B |
-| MicrosoftDi_Setup                |   5,516.9 ns |    72.40 ns |     67.72 ns |   5,530.3 ns | 0.5951 | 0.1450 |   30232 B |
-| ManualDi_Dispose                 |     238.0 ns |    42.24 ns |    124.54 ns |     300.0 ns |      - |      - |     640 B |
-| MicrosoftDi_Dispose              |     529.3 ns |    83.27 ns |    244.22 ns |     500.0 ns |      - |      - |     640 B |
-| ManualDi_Resolve_Service         |  16,469.1 ns |   689.67 ns |  2,000.85 ns |  15,800.0 ns |      - |      - |    6888 B |
-| MicrosoftDi_Resolve_Service      | 140,985.9 ns | 5,846.42 ns | 17,146.55 ns | 132,900.0 ns |      - |      - |  135136 B |
-| ManualDi_Resolve_ServiceTwice    |     311.1 ns |    25.48 ns |     71.02 ns |     300.0 ns |      - |      - |     640 B |
-| MicrosoftDi_Resolve_ServiceTwice |     407.8 ns |    28.06 ns |     78.22 ns |     400.0 ns |      - |      - |     640 B |
+| ManualDi_Setup                   |   4,566.4 ns |    50.12 ns |     41.85 ns |   4,575.3 ns | 0.3281 | 0.0305 |   16464 B |
+| MicrosoftDi_Setup                |   5,648.1 ns |   112.09 ns |     99.36 ns |   5,616.9 ns | 0.5951 | 0.1450 |   30232 B |
+| ManualDi_Dispose                 |     234.0 ns |    38.65 ns |    110.28 ns |     300.0 ns |      - |      - |     640 B |
+| MicrosoftDi_Dispose              |     508.1 ns |    76.66 ns |    224.82 ns |     500.0 ns |      - |      - |     640 B |
+| ManualDi_Resolve_Service         |  15,630.9 ns |   680.82 ns |  1,975.18 ns |  15,100.0 ns |      - |      - |    3688 B |
+| MicrosoftDi_Resolve_Service      | 141,871.7 ns | 5,095.97 ns | 14,945.60 ns | 134,900.0 ns |      - |      - |  135136 B |
+| ManualDi_Resolve_ServiceTwice    |     531.6 ns |   118.81 ns |    346.59 ns |     400.0 ns |      - |      - |     640 B |
+| MicrosoftDi_Resolve_ServiceTwice |     631.0 ns |    90.27 ns |    266.17 ns |     500.0 ns |      - |      - |     640 B |
+
 
 ```
 
 [Benchmark](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Unity3d/Assets/ManualDi.Unity3d/Tests/Benchmark.cs) against some Unity3d compatible containers. 
 
-![Unity3d-Container-Benchmark](https://github.com/user-attachments/assets/b27ac43e-5fb6-4c3e-bb5d-5049b2220c42)
+![Unity3d-Container-Benchmark](https://github.com/user-attachments/assets/6ec1ca8b-a442-43ef-8609-d419f02854fb)
 
 # Installation
 

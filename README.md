@@ -1,14 +1,10 @@
 [![Test and publish](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml/badge.svg)](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml) [![NuGet Version](https://img.shields.io/nuget/v/ManualDi.Main)](https://www.nuget.org/packages/ManualDi.Main) [![Release](https://img.shields.io/github/release/PereViader/ManualDi.svg)](https://github.com/PereViader/ManualDi/releases/latest) [![Unity version 2022.3.29](https://img.shields.io/badge/Unity-2022.3.29-57b9d3.svg?style=flat&logo=unity)](https://github.com/PereViader/ManualDi.Unity3d)
 
-
-Welcome to ManualDi. A manual dependency injection library for both Unity3d and plain C# solutions.
-
-The project is grounded on the following five fundamentals:
- - Fast: Operations must be quick and efficient.
- - Flexible: The container's pipeline should support custom functionality.
- - Familiar: Simple, known concepts should be prioritized.
- - Fathomable: Behaviour should be easy to read and understand.
- - Functional: Achieving desired behaviors should require minimal boilerplate.
+Welcome to ManualDi – the simple, fast and extensible C# dependency injection library.
+- Source generation, no reflection – fully compatible with all client and server platforms, including IL2CPP and WASM.
+- Faster and more memory efficient than most other dependency injection containers
+- Hook into the container and extend it with your own needs
+- Seamless Unity3D game engine integration
 
 # Benchmark
 
@@ -29,7 +25,7 @@ The project is grounded on the following five fundamentals:
 
 ```
 
-[Benchmark](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Unity3d/Assets/ManualDi.Unity3d/Tests/Benchmark.cs) against some Unity3d compatible containers. 
+[Benchmark](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Unity3d/Assets/ManualDi.Unity3d/Tests/Benchmark.cs) against Unity3d compatible containers. 
 
 ![Unity3d-Container-Benchmark](https://github.com/user-attachments/assets/6ec1ca8b-a442-43ef-8609-d419f02854fb)
 
@@ -104,10 +100,10 @@ These binding methods require the `Concrete` and `Apparent` types being bound:
 This is a sample implementation of an installer extension method
 
 ```csharp
-class A {}
-class B {}
-interface IC {}
-class C : IC{}
+class A { }
+class B { }
+interface IC { }
+class C : IC { }
 
 static class Installer
 {
@@ -139,18 +135,18 @@ Bind<T>()
 The bindings may also be done with a non type safe interface. This variant should only be used when implementing programatic driven configuration. Use the type safe variant when all the types involved are known.
 
 ```csharp
-List<Type> someTypes = GetSomeTypesWithReflexion();
+List<Type> someTypes = GetSomeTypesWithReflection();
 foreach(var type in someTypes)
 {
     b.Bind(type)....
 }
 ```
 
-Using reflexion to do such bindings will slow down your application due to the runtime Type metadata analysis necessary.
+Using reflection to do such bindings will slow down your application due to the runtime Type metadata analysis necessary.
 
-If the reduced performance is not desired, [source generation](https://github.com/PereViader/ManualDi/tree/develop/ManualDi.Main/ManualDi.Main.Generators) of equivalent code that avoids reflexion can be done to do the analysis at build time.
+If the reduced performance is not desired, [source generation](https://github.com/PereViader/ManualDi/tree/develop/ManualDi.Main/ManualDi.Main.Generators) of equivalent code that avoids reflection can be done to do the analysis at build time.
 
-Some platforms may not even be compatible with reflexion. If you target any such platform, using source generators is the only approach.
+Some platforms may not even be compatible with reflection. If you target any such platform, using source generators is the only approach.
 
 ```csharp
 b.InstallSomeTypes(); // This could be source generated to do the same but faster

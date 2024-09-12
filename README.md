@@ -1,9 +1,9 @@
 [![Test and publish](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml/badge.svg)](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml) [![NuGet Version](https://img.shields.io/nuget/v/ManualDi.Main)](https://www.nuget.org/packages/ManualDi.Main) [![Release](https://img.shields.io/github/release/PereViader/ManualDi.svg)](https://github.com/PereViader/ManualDi/releases/latest) [![Unity version 2022.3.29](https://img.shields.io/badge/Unity-2022.3.29-57b9d3.svg?style=flat&logo=unity)](https://github.com/PereViader/ManualDi.Unity3d)
 
 Welcome to ManualDi – the simple, fast and extensible C# dependency injection library.
-- Source generation, no reflection – fully compatible with all client and server platforms, including IL2CPP and WASM.
-- Faster and more memory efficient than most other dependency injection containers
-- Hook into the container and extend it with your own needs
+- Source generation, no reflection - Faster and more memory efficient than most other dependency injection containers.
+- Fully compatible with all client and server platforms, including IL2CPP and WASM
+- Supercharge the container with your own custom extensions
 - Seamless Unity3D game engine integration
 
 # Benchmark
@@ -174,7 +174,7 @@ The injection will happen immediately after the object creation.
 The injection will be done in reverse resolution order. In other words, injected objects will already be injected themselves.
 The injection will not happen more than once for any instance.
 The injection can also be used to run other custom user code during the object creation lifecycle.
-More than one injection callback can be registered
+Any amount of injection callbacks can be registered
 
 ```csharp
 b.Bind<object>()
@@ -260,7 +260,7 @@ The initialization will NOT happen immediately after the object injection. It wi
 The initialization will be done in reverse resolution order. In other words, injected objects will already be initialized themselves.
 The initialization will not happen more than once for any instance.
 The initialization can also be used to hook into the object creation lifecycle and run other custom user code.
-More than one initialization callback can be registered
+Any amount of initialization callback can be registered
 
 ```csharp
 b.Bind<A>()
@@ -338,8 +338,8 @@ b.Bind<int>().FromInstance(5).WithId("Banana");
 
 // ...
 
-c.Resolve<int>(b => b.WhereId("Potato")); // returns 1
-c.Resolve<int>(b => b.WhereId("Banana")); // returns 5
+c.Resolve<int>(x => x.WhereId("Potato")); // returns 1
+c.Resolve<int>(x => x.WhereId("Banana")); // returns 5
 ```
 
 
@@ -568,15 +568,12 @@ When using the container in the Unity3d game engine the library provides special
 - `FromGameObjectGetComponents`: Retrieves all components of a specific type from the current GameObject.
 - `FromInstantiateComponent`: Instantiates a component and optionally sets a parent.
 - `FromInstantiateGameObjectGetComponent`: Instantiates a GameObject and retrieves a specific component from it.
-- `FromInstantiateGameObjectGetComponentInParent`: Instantiates a GameObject and retrieves a component from its parent.
 - `FromInstantiateGameObjectGetComponentInChildren`: Instantiates a GameObject and retrieves a component from its children.
 - `FromInstantiateGameObjectGetComponents`: Instantiates a GameObject and retrieves all components of a specific type.
-- `FromInstantiateGameObjectGetComponentsInParent`: Instantiates a GameObject and retrieves all components from its parent.
 - `FromInstantiateGameObjectGetComponentsInChildren`: Instantiates a GameObject and retrieves all components from its children.
 - `FromInstantiateGameObjectAddComponent`: Instantiates a GameObject and adds a component to it.
 - `FromObjectResource`: Loads an object from a Unity resource file by its path.
 - `FromInstantiateGameObjectResourceGetComponent`: Instantiates a GameObject from a resource file and retrieves a component from it.
-- `FromInstantiateGameObjectResourceGetComponentInParent`: Instantiates a GameObject from a resource and retrieves a component from its parent.
 - `FromInstantiateGameObjectResourceGetComponentInChildren`: Instantiates a GameObject from a resource and retrieves a component from its children.
 - `FromInstantiateGameObjectResourceGetComponents`: Instantiates a GameObject from a resource and retrieves all components of a specific type.
 - `FromInstantiateGameObjectResourceGetComponentsInChildren`: Instantiates a GameObject from a resource and retrieves all components from its children.

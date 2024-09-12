@@ -74,7 +74,7 @@ Bind<(TInterface,)? TConcrete>() // TInterface is optional and will be equal to 
     .Inject   //Empty overload is source generated
     .Initialize  //Empty overload is source generated
     .Dispose
-    .WithMetadata
+    .WithId
     .[Lazy|NonLazy]
     .[Any other custom extension method your project implements]
 ```
@@ -260,9 +260,13 @@ The initialization will NOT happen immediately after the object injection. It wi
 The initialization will be done in reverse resolution order. In other words, injected objects will already be initialized themselves.
 The initialization will not happen more than once for any instance.
 The initialization can also be used to hook into the object creation lifecycle and run other custom user code.
+More than one initialization callback can be registered
 
 ```csharp
-b.Bind<A>().FromInstance(new A()).Initialize((o,c) => o.Init());
+b.Bind<A>()
+    .FromInstance(new A())
+    .Initialize((o, c) => o.Init())
+    .Initialize((o, c) => Console.WriteLine("After init"));
 
 c.Resolve<A>()
 ```
@@ -324,18 +328,18 @@ If this extension method is called, the method will not call the `IDisposable.Di
 Any delegate registered to the Dispose method will still be called.
 
 
-## With Metadata
+## WithId
 
 These extension methods allow registering keys or key/value pairs, enabling the filtering of elements during resolution.
 
 ```csharp
-b.Bind<int>().FromInstance(1).WithMetadata("Potato");
-b.Bind<int>().FromInstance(5).WithMetadata("Banana");
+b.Bind<int>().FromInstance(1).WithId("Potato");
+b.Bind<int>().FromInstance(5).WithId("Banana");
 
 // ...
 
-c.Resolve<int>(b => b.WhereMetadata("Potato")); // returns 1
-c.Resolve<int>(b => b.WhereMetadata("Banana")); // returns 5
+c.Resolve<int>(b => b.WhereId("Potato")); // returns 1
+c.Resolve<int>(b => b.WhereId("Banana")); // returns 5
 ```
 
 

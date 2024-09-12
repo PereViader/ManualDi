@@ -19,7 +19,7 @@ namespace ManualDi.Main
         public TypeScope TypeScope { get; set; } = TypeScope.Single;
         public bool IsLazy { get; set; } = true;
         public bool TryToDispose { get; set; } = true;
-        public Dictionary<object, object>? Metadata { get; set; }
+        public object? Id { get; set; }
         
         internal object? SingleInstance { get; set; }
 

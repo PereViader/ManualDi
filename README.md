@@ -29,74 +29,57 @@ Welcome to ManualDi – the simple, fast and extensible C# dependency injection 
 
 # Installation
 
-## Nuget
-
-Install it using [Nuget](https://www.nuget.org/packages/ManualDi.Main/)
-
-## Unity3d
-
-Install it using the [Unity Package Manager](https://docs.unity3d.com/Manual/upm-ui-giturl.html) with the following git url: https://github.com/PereViader/ManualDi.Unity3d.git
-
-Compatible with [Unity 2022.3.29](https://github.com/PereViader/ManualDi/issues/25) or later
-
-# Examples
-
-If you want to quickly jump to the code, you can find examples [here](https://github.com/PereViader/ManualDi/tree/main/ManualDi.Main/ManualDi.Main.Tests) and [here](https://github.com/PereViader/ManualDi/tree/main/ManualDi.Unity3d/Assets/ManualDi.Unity3d/Tests)
-
-# Creation
-
-The container is created using a fluent Builder
-
-```csharp
-IDiContainer container = new DiContainerBindings()  // Declare the fluent builder
-    .InstallSomeFunctionality() // Configure with an extension method implemented in your project
-    .Install(new SomeOtherInstaller()) // Configure with an instance of `IInstaller` implemented your project
-    .Build(); // Build the container
-```
-
-Creation of the container is a synchronous process, if you need to do any kind of asynchronous work you can do the following:
-- Simple but with delayed construction: Load the asynchronous data before creating the container, then provide it synchronously.
-```csharp
-SomeConfig someConfig = await GetSomeConfig(); 
-
-IDiContainer container = new DiContainerBindings()
-    .InstallSomeFunctionality(someConfig)
-    .Build();
-```
-
-- Avoids delayed construction but complex: Handle asynchronous loading during runtime, designing the object graph to work even if some dependencies aren't immediately available.
-```csharp
-IDiContainer container = new DiContainerBindings()
-    .InstallSomeFunctionality()
-    .Build();
-
-var initializer = container.Resolve<Initializer>();
-
-await initializer.StartApplication();
-```
+- Plain C#: Install it using [Nuget](https://www.nuget.org/packages/ManualDi.Main/)
+- Unity3d [2022.3.29](https://github.com/PereViader/ManualDi/issues/25) or later
+  - Install it using [Unity Package Manager](https://docs.unity3d.com/Manual/upm-ui-giturl.html) 
+  - Git URL: https://github.com/PereViader/ManualDi.Unity3d.git
 
 # Container Lifecycle
 
-- Installation Phase: The container's configuration is defined and set up.
-- Building Phase: The container is created and ingests the configuration. Non lazy Bindings are resolved.
-- Startup Phase: The Startup callbacks addded during the Building Phase are run before the container is returned.
-- Resolution Phase: The container can be used to resolve services as needed.
-- Disposal Phase: The container and its resources are properly cleaned up and released.
+- Installation Phase: Container configuration is defined.
+- Building Phase: Container configuration is ingested. Non lazy Bindings are resolved.
+- Startup Phase: Configured startup callbacks are run.
+- Resolution Phase: Container is provided and explicit resolutions can be done.
+- Disposal Phase: The container and its resources are released.
+
+# Usage
+
+The container is created using a synchronous fluent Builder
+
+```csharp
+IDiContainer container = new DiContainerBindings()  // Create the builder
+    .InstallSomeFunctionality() // Configure with an extension method implemented in your project
+    .Install(new SomeOtherInstaller()) // Configure with an instance of `IInstaller` implemented your project
+    .Build(); // Build the container
+
+SomeService service = container.Resolve<SomeService>();
+```
 
 # Binding
 
-The configuration of the container may only set during the installation phase. 
+The configuration of the container is done through Binding extension methods available on `DiContainerBindings` and can only be set during the installation phase. 
 Any alteration by custom means after the container's cration may result in undefined behaviour.
 
-The previous section displays how to create the container, but the configuration of the container is done on some opaque installer extension method or object. 
-
-Configuration of the container is done through Binding extension methods available on `DiContainerBindings`. 
-These binding methods require the `Concrete` and `Apparent` types being bound:
-- Concrete: It's type of the actual instance behind the scenes
+Calling the Bind method provides a fluent inteface through `TypeBinding<TAparent, TConcrete>`.
+- Concrete: It's type of the actual instance behind the scenes.
 - Aparent: It's the type that can be used when resolving the container.
 
-This is a sample implementation of an installer extension method
+By convention, method calls should be don in the following order.
 
+```csharp
+Bind<(TInterface,)? TConcrete>() // TInterface is optional and will be equal to TConcrete if undefined
+    .Default   // Source generated
+    .[Single|Transient]
+    .From[Constructor|Instance|Method|ContainerResolve|SubContainerResolve|...]  //Constructor is source generated
+    .Inject   //Empty overload is source generated
+    .Initialize  //Empty overload is source generated
+    .Dispose
+    .WithMetadata
+    .[Lazy|NonLazy]
+    .[Any other custom extension method your project implements]
+```
+
+Sample extension method installer:
 ```csharp
 class A { }
 class B { }
@@ -107,80 +90,39 @@ static class Installer
 {
     public static DiContainerBindings InstallSomeFunctionality(this DiContainerBindings b)
     {
-        //Adding more than one bind method 
-        b.Bind<A>()...      // Aparent and concrete type is A
-        b.Bind<B, B>()...   // Aparent and concrete type is B, if it was specified once it would be more readable
-        b.Bind<IC, C>()...  // Aparent type is IC and concrete type is C
+        b.Bind<A>().Default().FromInstance(new A());
+        b.Bind<B>().Default().FromConstructor();
+        b.Bind<IC, C>().Default().FromConstructor();
     }
 }
-```
-The result of calling the Bind with generic arguments is a `TypeBinding<T, Y>`. This type provides several extension used to define the exact behaviour of the binding.
-By convention, you should call methods in the following order.
-
-```csharp
-Bind<T>()
-    .Default   // Source generated
-    .[Single|Transient]
-    .From[Constructor|Instance|Method|Container|ContainerAll|...]  //Constructor is source generated
-    .Inject   //Empty overload is source generated
-    .Initialize  //Empty overload is source generated
-    .Dispose
-    .WithMetadata
-    .[Lazy|NonLazy]
-    .[Any other custom extension method your project implements]
-```
-
-The bindings may also be done with a non type safe interface. This variant should only be used when implementing programatic driven configuration. Use the type safe variant when all the types involved are known.
-
-```csharp
-List<Type> someTypes = GetSomeTypesWithReflection();
-foreach(var type in someTypes)
-{
-    b.Bind(type)....
-}
-```
-
-Using reflection to do such bindings will slow down your application due to the runtime Type metadata analysis necessary.
-
-If the reduced performance is not desired, [source generation](https://github.com/PereViader/ManualDi/tree/develop/ManualDi.Main/ManualDi.Main.Generators) of equivalent code that avoids reflection can be done to do the analysis at build time.
-
-Some platforms may not even be compatible with reflection. If you target any such platform, using source generators is the only approach.
-
-```csharp
-b.InstallSomeTypes(); // This could be source generated to do the same but faster
 ```
 
 ## Binding
 
 ## Scope
 
-The scope of a binding defines the rules of creation of instances of the binding.
-
-### Single
-
-The container will generate a single instance of the type and cache it.
-Further calls with for the same resolution will return the cached instance.
-
-### Transient
-
-The container will generate a new instance every time the type is resolved.
+The scope of a binding defines the rules for instance creation.
+- Single: The container will generate a single instance of the type and cache it. Followup calls for the same type will reuse the instance.
+- Transient: The container will generate a new instance every time the type is resolved.
 
 ## From
 
-The creation strategy for the binding
+These methods define the instance creation strategy
 
 ### Constructor
 
 This method is source generated ONLY if there is a single public/internal accessible constructor.
-When the instance of the type is resolved, it will be created using the constructor of the concrete type. The required dependencies of the constructor will be resolved using the container.
+
+The instance is created using the constructor of the concrete type. 
+The necessary dependencies of the constructor are resolved using the container.
 
 ```csharp
-b.Bind<T>().FromConstructor()
+b.Bind<T>().FromConstructor() 
 ```
 
 ### Instance
 
-When the instance of the type is resolved, it will return the instance supplied during the binding stage.
+No new instances will be created, the instance provided during the binding stage is used directly.
 Note: If used with `Transient` scope, the container will still return the same instance.
 
 ```csharp
@@ -189,9 +131,7 @@ b.Bind<T>().FromInstance(new T())
 
 ### Method
 
-When the instance of the type is resolved, it will be created using the delegate provided. The delegate provides the container as a parameter, enabling it Resolve any other dependency from it.
-
-Note: Given this is the most common use case, the container optimizes for this use case in terms of GC 
+The instance is created using the delegate provided. The container is provided as a parameter thus allowing it to Resolve required dependencies.
 
 ```csharp
 b.Bind<T>().FromMethod(c => new T(c.Resolve<SomeService>()))
@@ -199,26 +139,22 @@ b.Bind<T>().FromMethod(c => new T(c.Resolve<SomeService>()))
 
 ### ContainerResolve
 
-Useful mapping one type of the container as another
+Used for aparent type remapping.
+Commonly used to bind multiple relevant intefaces of some type to the container.
 
 ```csharp
-b.Bind<int>().FromInstance(1);
-b.Bind<object, int>().FromContainerResolve();
-
-// ...
-
-System.Console.WriteLine(c.Resolve<object>()); // Outputs "1"
-```
-
-Using FromContainerResolve is a shorthand for:
-
-```csharp
-b.Bind<object, int>().FromMethod(c => c.Resolve<int>());
+inteface IFirst { }
+interface ISecond { }
+public class SomeClass : IFirst, ISecond { }
+b.Bind<SomeClass>().FromConstructor();
+b.Bind<IFirst, SomeClass>().FromContainerResolve();
+b.Bind<ISecond, SomeClass>().FromContainerResolve();
 ```
 
 ### SubContainerResolve
 
-This method allows resolving instances from a sub-container, enabling more modular and flexible container setups. A sub-container is created using the provided InstallDelegate, with the option to inherit the parent container (isContainerParent), giving precise control over lifetimes and resolution scopes.
+The instance is created using a sub container built using the installer parameter.
+Useful for encapsulating parts of object graph definition into subcontainers.
 
 ```
 class SomeService(Dependency dependency) { }
@@ -238,6 +174,14 @@ The injection will happen immediately after the object creation.
 The injection will be done in reverse resolution order. In other words, injected objects will already be injected themselves.
 The injection will not happen more than once for any instance.
 The injection can also be used to run other custom user code during the object creation lifecycle.
+More than one injection callback can be registered
+
+```csharp
+b.Bind<object>()
+    .FromInstance(new object())
+    .Inject((o, c) => Console.WriteLine("1"))
+    .Inject((o, c) => Console.WriteLine("2"));
+```
 
 ### Source Generator
 
@@ -848,7 +792,8 @@ Feel free to ignore the container classes and implement your custom entry points
 
 ## Link
 
-When binding things to the container, further actions can be done on the bindings
+Link methods are a great way to interconnect different features right from the container.
+The library provides a few, but adding your own custom ones for your usecases is a great way to speed up development.
 
 - `LinkDontDestroyOnLoad`: The object will have don't destroy on load called on it when the contianer is bound. Behaviour can be customized with the optional parameters
 
@@ -865,4 +810,52 @@ class Installer : MonoBehaviourInstaller
             .LinkDontDestroyOnLoad();
     }
 }
+```
+
+# Async dependencies
+
+Creation of the container is a synchronous process, if you need to do any kind of asynchronous work you can do the following:
+- Simple but with delayed construction: Load the asynchronous data before creating the container, then provide it synchronously.
+```csharp
+SomeConfig someConfig = await GetSomeConfig(); 
+
+IDiContainer container = new DiContainerBindings()
+    .InstallSomeFunctionality(someConfig)
+    .Build();
+```
+
+- Avoids delayed construction but complex: Handle asynchronous loading after the object graph is built, the design should take into account that those dependencies are not available from the beginning
+
+```csharp
+IDiContainer container = new DiContainerBindings()
+    .InstallSomeFunctionality()
+    .Build();
+
+var initializer = container.Resolve<Initializer>();
+
+await initializer.StartApplication();
+```
+
+# Unsafe Binding (Experimental)
+
+The following is experimental and might be removed.
+
+The bindings may also be done with a non type safe interface. This variant should only be used when implementing programatic driven configuration. Use the type safe variant when all the types involved are known.
+
+```csharp
+List<Type> someTypes = GetSomeTypesWithReflection();
+foreach(var type in someTypes)
+{
+    b.Bind(type)....
+}
+```
+
+Using reflection to do such bindings will slow down your application due to the runtime Type metadata analysis necessary.
+
+If the reduced performance is not desired, [source generation](https://github.com/PereViader/ManualDi/tree/develop/ManualDi.Main/ManualDi.Main.Generators) of equivalent code that avoids reflection can be done to do the analysis at build time.
+
+Some platforms may not even be compatible with reflection. If you target any such platform, using source generators is the only approach.
+
+```csharp
+b.InstallSomeTypes(); // This could be source generated to do the same but faster
 ```

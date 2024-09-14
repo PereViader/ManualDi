@@ -11,26 +11,21 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace ManualDi.Main.Generators
 {
-    public readonly struct GenerationClassContext
-    {
-        public StringBuilder StringBuilder { get; }
-        public string ClassName { get; }
-        public INamedTypeSymbol ClassSymbol { get; }
-        public string ObsoleteText { get; }
-
-        public GenerationClassContext(StringBuilder stringBuilder, string className, INamedTypeSymbol classSymbol,
-            string obsoleteText)
-        {
-            StringBuilder = stringBuilder;
-            ClassName = className;
-            ClassSymbol = classSymbol;
-            ObsoleteText = obsoleteText;
-        }
-    }
+    public record struct GenerationClassContext(StringBuilder StringBuilder, string ClassName, INamedTypeSymbol ClassSymbol, string ObsoleteText);
     
     [Generator]
     public class ManualDiSourceGenerator : IIncrementalGenerator
     {
+        private static INamedTypeSymbol LazyTypeSymbol = default!;
+        private static INamedTypeSymbol ListTypeSymbol = default!;
+        private static INamedTypeSymbol IListTypeSymbol = default!;
+        private static INamedTypeSymbol IReadOnlyListTypeSymbol = default!;
+        private static INamedTypeSymbol IEnumerableTypeSymbol = default!;
+        private static INamedTypeSymbol IReadOnlyCollectionTypeSymbol = default!;
+        private static INamedTypeSymbol ICollectionTypeSymbol = default!;
+        private static INamedTypeSymbol InjectAttributeTypeSymbol = default!;
+        private static INamedTypeSymbol ObsoleteAttributeTypeSymbol = default!;
+        
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             //https://www.thinktecture.com/en/net/roslyn-source-generators-code-according-to-dependencies/
@@ -86,7 +81,7 @@ namespace ManualDi.Main.Generators
                 return;
             }
 
-            if (!TryInitializeStaticTypeSymbols(compilation))
+            if (!TryInitializeStaticTypeSymbols(compilation, context))
             {
                 return;
             }
@@ -149,58 +144,95 @@ namespace ManualDi.Main.Generators
             }
         }
 
-        private static bool TryInitializeStaticTypeSymbols(Compilation compilation)
+        private static bool TryInitializeStaticTypeSymbols(Compilation compilation, SourceProductionContext context)
         {
             var lazyTypeSymbol = compilation.GetTypeByMetadataName("System.Lazy`1");
             if (lazyTypeSymbol is null)
             {
+                ReportTypeNotFound("System.Lazy<T>", context);
                 return false;
             }
             LazyTypeSymbol = lazyTypeSymbol;
-            
+
             var listTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.List`1");
             if (listTypeSymbol is null)
             {
+                ReportTypeNotFound("System.Collections.Generic.List<T>", context);
                 return false;
             }
             ListTypeSymbol = listTypeSymbol;
-            
+
             var ilistTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.IList`1");
             if (ilistTypeSymbol is null)
             {
+                ReportTypeNotFound("System.Collections.Generic.IList<T>", context);
                 return false;
             }
             IListTypeSymbol = ilistTypeSymbol;
-            
+
             var ireadOnlyListTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyList`1");
             if (ireadOnlyListTypeSymbol is null)
             {
+                ReportTypeNotFound("System.Collections.Generic.IReadOnlyList<T>", context);
                 return false;
             }
             IReadOnlyListTypeSymbol = ireadOnlyListTypeSymbol;
-            
+
             var ireadOnlyCollectionTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyCollection`1");
             if (ireadOnlyCollectionTypeSymbol is null)
             {
+                ReportTypeNotFound("System.Collections.Generic.IReadOnlyCollection<T>", context);
                 return false;
             }
             IReadOnlyCollectionTypeSymbol = ireadOnlyCollectionTypeSymbol;
-            
+
             var iCollectionTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.ICollection`1");
             if (iCollectionTypeSymbol is null)
             {
+                ReportTypeNotFound("System.Collections.Generic.ICollection<T>", context);
                 return false;
             }
             ICollectionTypeSymbol = iCollectionTypeSymbol;
-            
+
             var ienumerableTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1");
             if (ienumerableTypeSymbol is null)
             {
+                ReportTypeNotFound("System.Collections.Generic.IEnumerable<T>", context);
                 return false;
             }
             IEnumerableTypeSymbol = ienumerableTypeSymbol;
-            
+
+            var injectAttributeTypeSymbol = compilation.GetTypeByMetadataName("ManualDi.Main.InjectAttribute");
+            if (injectAttributeTypeSymbol is null)
+            {
+                ReportTypeNotFound("ManualDi.Main.InjectAttribute", context);
+                return false;
+            }
+            InjectAttributeTypeSymbol = injectAttributeTypeSymbol;
+
+            var obsoleteAttributeTypeSymbol = compilation.GetTypeByMetadataName("System.ObsoleteAttribute");
+            if (obsoleteAttributeTypeSymbol is null)
+            {
+                ReportTypeNotFound("System.ObsoleteAttribute", context);
+                return false;
+            }
+            ObsoleteAttributeTypeSymbol = obsoleteAttributeTypeSymbol;
+
             return true;
+        }
+
+        private static void ReportTypeNotFound(string typeName, SourceProductionContext context)
+        {
+            var descriptor = new DiagnosticDescriptor(
+                id: "MDI001",
+                title: "Type Not Found",
+                messageFormat: "The type '{0}' could not be found. Ensure the necessary assemblies are referenced.",
+                category: "ManualDiGenerator",
+                DiagnosticSeverity.Error,
+                isEnabledByDefault: true);
+
+            var diagnostic = Diagnostic.Create(descriptor, Location.None, typeName);
+            context.ReportDiagnostic(diagnostic);
         }
 
         private static bool InheritsFromSymbol(INamedTypeSymbol namedTypeSymbol, INamedTypeSymbol? inheritedNameTypeSymbol)
@@ -225,37 +257,54 @@ namespace ManualDi.Main.Generators
         private static bool IsSymbolObsolete(ISymbol typeSymbol)
         {
             return typeSymbol.GetAttributes()
-                .Any(x => x.AttributeClass?.ToDisplayString() == "System.ObsoleteAttribute");
+                .Any(x => SymbolEqualityComparer.Default.Equals(x.AttributeClass, ObsoleteAttributeTypeSymbol));
         }
-        
-        private static bool IsSymbolInjectValid(IPropertySymbol propertySymbol)
+
+        private static AttributeData? GetInjectAttribute(IPropertySymbol propertySymbol)
         {
             if (propertySymbol.IsStatic)
             {
-                return false;
+                return null;
+            }
+            
+            bool isSetterAccessible = propertySymbol.SetMethod?.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal;
+            if (!isSetterAccessible)
+            {
+                return null;
             }
             
             bool isPropertyAccessible = propertySymbol.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal;
             if (!isPropertyAccessible)
             {
-                return false;
+                return null;
             }
 
-            bool isSetterAccessible = propertySymbol.SetMethod?.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal;
-            if (!isSetterAccessible)
-            {
-                return false;
-            }
-            
-            bool hasInjectAttribute = propertySymbol
+            return propertySymbol
                 .GetAttributes()
-                .Any(x => x.AttributeClass?.ToDisplayString() == "ManualDi.Main.InjectAttribute");
-            if (!hasInjectAttribute)
+                .FirstOrDefault(x => SymbolEqualityComparer.Default.Equals(x.AttributeClass, InjectAttributeTypeSymbol));
+        }
+        
+        private static AttributeData? GetInjectAttribute(ISymbol parameterSymbol)
+        {
+            return parameterSymbol
+                .GetAttributes()
+                .FirstOrDefault(x => SymbolEqualityComparer.Default.Equals(x.AttributeClass, InjectAttributeTypeSymbol));
+        }
+
+        private static string? GetInjectId(AttributeData attributeData)
+        {
+            if (attributeData.ConstructorArguments.Length != 1)
             {
-                return false;
+                return null;
             }
-            
-            return true;
+
+            var idArgument = attributeData.ConstructorArguments[0];
+            if (idArgument.Value is null)
+            {
+                return null;
+            }
+                
+            return $"\"{idArgument.Value}\"";
         }
 
         private static string GetAccessibilityString(Accessibility accessibility)
@@ -317,24 +366,33 @@ namespace ManualDi.Main.Generators
 
         private static string CreateMethodResolution(IMethodSymbol constructor)
         {
-            return string.Join(",\r\n                ", constructor.Parameters.Select(x => CreteTypeResolution(x.Type)));
+            return string.Join(",\r\n                ", constructor.Parameters.Select(x =>
+            {
+                var attribute = GetInjectAttribute(x);
+                var id = attribute is null ? null : GetInjectId(attribute);
+                return CreteTypeResolution(x.Type, id);
+            }));
         }
 
-        private static string CreteTypeResolution(ITypeSymbol typeSymbol)
+        private static string CreteTypeResolution(ITypeSymbol typeSymbol, string? id)
         {
             var lazyGenericType = TryGenericLazyType(typeSymbol);
             if (lazyGenericType is not null)
             {
-                return $"new System.Lazy<{FullyQualifyTypeWithNullable(lazyGenericType)}>(() => {CreteTypeResolution(lazyGenericType)})";
+                return $"new System.Lazy<{FullyQualifyTypeWithNullable(lazyGenericType)}>(() => {CreteTypeResolution(lazyGenericType, id)})";
             }
 
             var listGenericType = TryGetEnumerableType(typeSymbol);
             if (listGenericType is not null && !IsNullableTypeSymbol(listGenericType))
             {
-                return $"c.ResolveAll<{FullyQualifyTypeWithoutNullable(listGenericType)}>()";
+                return id is null 
+                    ? $"c.ResolveAll<{FullyQualifyTypeWithoutNullable(listGenericType)}>()" 
+                    : $"c.ResolveAll<{FullyQualifyTypeWithoutNullable(listGenericType)}>(x => x.WhereId({id}))";
             }
-            
-            return $"c.{CreateContainerResolutionMethod(typeSymbol)}<{FullyQualifyTypeWithoutNullable(typeSymbol)}>()";
+
+            return id is null 
+                ? $"c.{CreateContainerResolutionMethod(typeSymbol)}<{FullyQualifyTypeWithoutNullable(typeSymbol)}>()" 
+                : $"c.{CreateContainerResolutionMethod(typeSymbol)}<{FullyQualifyTypeWithoutNullable(typeSymbol)}>(x => x.WhereId({id}))";
         }
 
         private static ITypeSymbol? GetSpecialTypeList(ITypeSymbol typeSymbol)
@@ -435,7 +493,8 @@ namespace ManualDi.Main.Generators
             var injectProperties = context.ClassSymbol
                 .GetMembers()
                 .OfType<IPropertySymbol>()
-                .Where(IsSymbolInjectValid)
+                .Select(x => (propertySymbol: x, attribute: GetInjectAttribute(x)))
+                .Where(x => x.attribute is not null)
                 .ToArray();
 
             if (injectMethod is null && injectProperties.Length == 0)
@@ -446,7 +505,7 @@ namespace ManualDi.Main.Generators
             var injectPropertiesAccessibility = injectProperties.Length == 0
                 ? Accessibility.Public
                 : injectProperties
-                    .Select(GetSymbolAccessibility)
+                    .Select(x => GetSymbolAccessibility(x.propertySymbol))
                     .Min();
             
             var methodAccessibility = injectMethod is null
@@ -465,9 +524,10 @@ namespace ManualDi.Main.Generators
                         {
             """);
 
-            foreach (var injectProperty in injectProperties)
+            foreach (var (injectProperty, attribute) in injectProperties)
             {
-                context.StringBuilder.AppendLine($"                o.{injectProperty.Name} = {CreteTypeResolution(injectProperty.Type)};");
+                var id = attribute is null ? null : GetInjectId(attribute);
+                context.StringBuilder.AppendLine($"                o.{injectProperty.Name} = {CreteTypeResolution(injectProperty.Type, id)};");
             }
             
             if (injectMethod is not null)
@@ -522,14 +582,6 @@ namespace ManualDi.Main.Generators
                     }
             """);
         }
-
-        private static INamedTypeSymbol LazyTypeSymbol = default!;
-        private static INamedTypeSymbol ListTypeSymbol = default!;
-        private static INamedTypeSymbol IListTypeSymbol = default!;
-        private static INamedTypeSymbol IReadOnlyListTypeSymbol = default!;
-        private static INamedTypeSymbol IEnumerableTypeSymbol = default!;
-        private static INamedTypeSymbol IReadOnlyCollectionTypeSymbol = default!;
-        private static INamedTypeSymbol ICollectionTypeSymbol = default!;
         
         private static string FullyQualifyTypeWithoutNullable(ITypeSymbol typeSymbol)
         {

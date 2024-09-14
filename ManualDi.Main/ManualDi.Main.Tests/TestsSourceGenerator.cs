@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using ManualDi.Main.Generators;
 using System.Linq;
@@ -19,29 +21,33 @@ public class TestsSourceGenerator
     public Task Generated()
     {
         var code = File.ReadAllText("TestsSourceGenerator.Source.txt");
-        var generatedCode = Generate(code);
-        return Verifier.Verify(generatedCode);
+        var generated = Generate(code);
+        Assert.That(generated.diagnostics, Is.Empty);
+        return Verifier.Verify(generated.code);
     }
 
-    private static IEnumerable<string> Generate(string code)
+    private static (IEnumerable<string> code, ImmutableArray<Diagnostic> diagnostics) Generate(string code)
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(SourceText.From(code, Encoding.UTF8));
+        var references = AppDomain.CurrentDomain
+            .GetAssemblies()
+            .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location))
+            .Select(a => MetadataReference.CreateFromFile(a.Location))
+            .ToList();
+        
+        references.Add(MetadataReference.CreateFromFile(typeof(IDiContainer).Assembly.Location));
+        
         var compilation = CSharpCompilation.Create("AssemblyName",
-            new[] { syntaxTree },
-            new[]
-            {
-                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(IDiContainer).Assembly.Location)
-            },
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+            new[] { CSharpSyntaxTree.ParseText(SourceText.From(code, Encoding.UTF8)) },
+            references,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+                .WithNullableContextOptions(NullableContextOptions.Enable));
 
-        var generator = new Generators.ManualDiSourceGenerator();
-        var driver = CSharpGeneratorDriver.Create(generator);
+        var driver = CSharpGeneratorDriver.Create(new ManualDiSourceGenerator());
         driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out _);
         
         var generatedTrees = outputCompilation.SyntaxTrees.ToList();
-
+        
         var generatedCode = generatedTrees.Skip(1).Select(x => x.ToString());
-        return generatedCode;
+        return (code: generatedCode, diagnostics: outputCompilation.GetDiagnostics());
     }
 }

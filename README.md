@@ -61,22 +61,24 @@ The configuration of the container is done through Binding extension methods ava
 Any alteration by custom means after the container's cration may result in undefined behaviour.
 
 Calling the Bind method provides a fluent inteface through `TypeBinding<TAparent, TConcrete>`.
-- Concrete: It's type of the actual instance behind the scenes.
 - Aparent: It's the type that can be used when resolving the container.
+- Concrete: It's type of the actual instance behind the scenes.
 
-By convention, method calls should be don in the following order.
+By convention, method calls should be done in the following order.
 
 ```csharp
 Bind<(TInterface,)? TConcrete>() // TInterface is optional and will be equal to TConcrete if undefined
     .Default   // Source generated
-    .[Single|Transient]
+    .[Single*|Transient]
     .From[Constructor|Instance|Method|ContainerResolve|SubContainerResolve|...]  //Constructor is source generated
     .Inject   //Empty overload is source generated
     .Initialize  //Empty overload is source generated
     .Dispose
     .WithId
-    .[Lazy|NonLazy]
+    .[Lazy*|NonLazy]
     .[Any other custom extension method your project implements]
+
+//* means default, no need to call it
 ```
 
 Sample extension method installer:
@@ -330,7 +332,7 @@ Any delegate registered to the Dispose method will still be called.
 
 ## WithId
 
-These extension methods allow registering keys or key/value pairs, enabling the filtering of elements during resolution.
+These extension methods allow defining an id, enabling the filtering of elements during resolution.
 
 ```csharp
 b.Bind<int>().FromInstance(1).WithId("Potato");
@@ -342,6 +344,39 @@ c.Resolve<int>(x => x.WhereId("Potato")); // returns 1
 c.Resolve<int>(x => x.WhereId("Banana")); // returns 5
 ```
 
+Note: This feature can be nice to use, but I usually prefer using it sparingly. This is because it introduces the need for the provider and consumer to share two points of information (Type and Id) instead of just one (Type)
+
+An alternative to it is to register delegates instead. Delegates used this way encote the two concepts into one.
+
+```
+delegate int GetPotatoInt();
+
+b.Bind<GetPotatoInt>().FromInstance(() => 1);
+
+int value = c.Resolve<GetPotatoInt>()();
+```
+
+### Source generator
+
+The id functionality can be used on method and property dependencies by using the Inject attribute and providing a string id to it
+
+```
+class A
+{
+    [Inject("Potato")] public B B { get; set; }
+
+    public void Inject(int a, [Inject("Other")] object b) { ... }
+}
+
+//Will resolve the property doing
+c.Resolve<B>(x => x.WhereId("Potato"));
+
+//and call the inject method doing
+o.Inject(
+    c.Resolve<int>(),
+    c.Resolve<object>(x => x.WhereId("Other"))
+)
+```
 
 ## Laziness
 

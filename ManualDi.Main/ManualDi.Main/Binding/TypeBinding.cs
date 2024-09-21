@@ -5,7 +5,7 @@ namespace ManualDi.Main
 {
     public delegate T? CreateDelegate<out T>(IDiContainer diContainer);
     public delegate void InstanceContainerDelegate<in T>(T instance, IDiContainer diContainer);
-    public delegate bool IsValidBindingDelegate(BindingContext context);
+    public delegate bool FilterBindingDelegate(BindingContext context);
 
     public sealed class BindingContext
     {
@@ -28,9 +28,9 @@ namespace ManualDi.Main
         public bool IsLazy { get; set; } = true;
         public bool TryToDispose { get; set; } = true;
         public object? Id { get; set; }
-        public IsValidBindingDelegate? IsValidBindingDelegate { get; set; }
+        public FilterBindingDelegate? FilterBindingDelegate { get; set; }
         
-        internal object? SingleInstance { get; set; }
+        private object? SingleInstance { get; set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public (object instance, bool isNew) Create(IDiContainer container)

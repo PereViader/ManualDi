@@ -36,7 +36,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static UnsafeTypeBinding FromContainerResolve(
             this UnsafeTypeBinding typeBinding,
-            IsValidBindingDelegate constraints
+            FilterBindingDelegate constraints
         )
         {
             typeBinding.CreateConcreteDelegate = c => c.Resolve(typeBinding.ConcreteType, constraints);

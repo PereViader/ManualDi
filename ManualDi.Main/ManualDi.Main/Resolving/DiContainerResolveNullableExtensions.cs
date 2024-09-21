@@ -9,7 +9,7 @@ namespace ManualDi.Main
         public static T? ResolveNullable<T>(this IDiContainer diContainer)
             where T : class
         {
-            var result = diContainer.ResolveContainer(typeof(T), isValidBindingDelegate: null);
+            var result = diContainer.ResolveContainer(typeof(T), filterBindingDelegate: null);
             if (result is null)
             {
                 return null;
@@ -22,7 +22,7 @@ namespace ManualDi.Main
         public static T? ResolveNullableValue<T>(this IDiContainer diContainer)
             where T : struct
         {
-            var result = diContainer.ResolveContainer(typeof(T), isValidBindingDelegate: null);
+            var result = diContainer.ResolveContainer(typeof(T), filterBindingDelegate: null);
             if (result is null)
             {
                 return null;
@@ -32,13 +32,13 @@ namespace ManualDi.Main
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T? ResolveNullable<T>(this IDiContainer diContainer, Action<ResolutionConstraints> configureReslutionConstraints)
+        public static T? ResolveNullable<T>(this IDiContainer diContainer, Action<ResolutionConstraints> configureResolutionConstraints)
             where T : class
         {
             var resolutionConstraints = new ResolutionConstraints();
-            configureReslutionConstraints.Invoke(resolutionConstraints);
+            configureResolutionConstraints.Invoke(resolutionConstraints);
 
-            var result = diContainer.ResolveContainer(typeof(T), resolutionConstraints.IsValidBindingDelegate);
+            var result = diContainer.ResolveContainer(typeof(T), resolutionConstraints.FilterBindingDelegate);
             if (result is null)
             {
                 return null;
@@ -48,13 +48,13 @@ namespace ManualDi.Main
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T? ResolveNullableValue<T>(this IDiContainer diContainer, Action<ResolutionConstraints> configureReslutionConstraints)
+        public static T? ResolveNullableValue<T>(this IDiContainer diContainer, Action<ResolutionConstraints> configureResolutionConstraints)
             where T : struct
         {
             var resolutionConstraints = new ResolutionConstraints();
-            configureReslutionConstraints.Invoke(resolutionConstraints);
+            configureResolutionConstraints.Invoke(resolutionConstraints);
 
-            var result = diContainer.ResolveContainer(typeof(T), resolutionConstraints.IsValidBindingDelegate);
+            var result = diContainer.ResolveContainer(typeof(T), resolutionConstraints.FilterBindingDelegate);
             if (result is null)
             {
                 return null;
@@ -66,17 +66,16 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static object? ResolveNullable(this IDiContainer diContainer, Type type)
         {
-            return diContainer.ResolveContainer(type, isValidBindingDelegate: null);
+            return diContainer.ResolveContainer(type, filterBindingDelegate: null);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static object? ResolveNullable<T>(this IDiContainer diContainer, Type type, Action<ResolutionConstraints> configureReslutionConstraints)
-            where T : class
+        public static object? ResolveNullable(this IDiContainer diContainer, Type type, Action<ResolutionConstraints> configureResolutionConstraints)
         {
             var resolutionConstraints = new ResolutionConstraints();
-            configureReslutionConstraints.Invoke(resolutionConstraints);
+            configureResolutionConstraints.Invoke(resolutionConstraints);
 
-            return diContainer.ResolveContainer(type, resolutionConstraints.IsValidBindingDelegate);
+            return diContainer.ResolveContainer(type, resolutionConstraints.FilterBindingDelegate);
         }
     }
 }

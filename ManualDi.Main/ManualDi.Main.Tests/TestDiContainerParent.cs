@@ -48,6 +48,6 @@ public class TestDiContainerParent
 
         var resolution = childContainer.ResolveAll<object>();
 
-        Assert.That(resolution, Is.EquivalentTo(new object[] { instanceParent, instanceChild }));
+        Assert.That(resolution, Is.EquivalentTo(new [] { instanceParent, instanceChild }));
     }
 }

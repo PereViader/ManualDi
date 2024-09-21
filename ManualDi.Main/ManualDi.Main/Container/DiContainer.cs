@@ -45,9 +45,9 @@ namespace ManualDi.Main
             }
         }
 
-        public object? ResolveContainer(Type type, IsValidBindingDelegate? isValidBindingDelegate)
+        public object? ResolveContainer(Type type, FilterBindingDelegate? filterBindingDelegate)
         {
-            var typeBinding = GetTypeForConstraint(type, isValidBindingDelegate);
+            var typeBinding = GetTypeForConstraint(type, filterBindingDelegate);
             if (typeBinding is not null)
             {
                 return ResolveBinding(typeBinding);
@@ -55,7 +55,7 @@ namespace ManualDi.Main
 
             if (parentDiContainer is not null)
             {
-                return parentDiContainer.ResolveContainer(type, isValidBindingDelegate);
+                return parentDiContainer.ResolveContainer(type, filterBindingDelegate);
             }
 
             return null;
@@ -95,7 +95,7 @@ namespace ManualDi.Main
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private TypeBinding? GetTypeForConstraint(Type type, IsValidBindingDelegate? isValidBindingDelegate)
+        private TypeBinding? GetTypeForConstraint(Type type, FilterBindingDelegate? filterBindingDelegate)
         {
             if (!allTypeBindings.TryGetValue(type, out var typeBindings))
             {
@@ -103,20 +103,20 @@ namespace ManualDi.Main
             }
 
             var first = typeBindings[0];
-            if (isValidBindingDelegate is null && first.IsValidBindingDelegate is null)
+            if (filterBindingDelegate is null && first.FilterBindingDelegate is null)
             {
                 return first;
             }
 
             bindingContext.InjectedIntoTypeBinding = injectedTypeBinding;
 
-            if (isValidBindingDelegate is null)
+            if (filterBindingDelegate is null)
             {
                 foreach (var typeBinding in typeBindings)
                 {
                     bindingContext.TypeBinding = typeBinding;
 
-                    if (typeBinding.IsValidBindingDelegate?.Invoke(bindingContext) ?? true)
+                    if (typeBinding.FilterBindingDelegate?.Invoke(bindingContext) ?? true)
                     {
                         return typeBinding;
                     }
@@ -128,7 +128,7 @@ namespace ManualDi.Main
                 {
                     bindingContext.TypeBinding = typeBinding;
 
-                    if (isValidBindingDelegate.Invoke(bindingContext) && (typeBinding.IsValidBindingDelegate?.Invoke(bindingContext) ?? true))
+                    if (filterBindingDelegate.Invoke(bindingContext) && (typeBinding.FilterBindingDelegate?.Invoke(bindingContext) ?? true))
                     {
                         return typeBinding;
                     }
@@ -139,15 +139,15 @@ namespace ManualDi.Main
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void ResolveAllContainer(Type type, IsValidBindingDelegate? isValidBindingDelegate, IList resolutions)
+        public void ResolveAllContainer(Type type, FilterBindingDelegate? filterBindingDelegate, IList resolutions)
         {
-            AddResolveAllInstances(type, isValidBindingDelegate, resolutions);
+            AddResolveAllInstances(type, filterBindingDelegate, resolutions);
 
-            parentDiContainer?.ResolveAllContainer(type, isValidBindingDelegate, resolutions);
+            parentDiContainer?.ResolveAllContainer(type, filterBindingDelegate, resolutions);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void AddResolveAllInstances(Type type, IsValidBindingDelegate? isValidBindingDelegate, IList resolutions)
+        private void AddResolveAllInstances(Type type, FilterBindingDelegate? filterBindingDelegate, IList resolutions)
         {
             if (!this.allTypeBindings.TryGetValue(type, out var typeBindings))
             {
@@ -160,8 +160,8 @@ namespace ManualDi.Main
             {
                 bindingContext.TypeBinding = typeBinding;
 
-                if ((isValidBindingDelegate?.Invoke(bindingContext) ?? true) && 
-                    (typeBinding.IsValidBindingDelegate?.Invoke(bindingContext) ?? true))
+                if ((filterBindingDelegate?.Invoke(bindingContext) ?? true) && 
+                    (typeBinding.FilterBindingDelegate?.Invoke(bindingContext) ?? true))
                 {
                     var resolved = ResolveBinding(typeBinding);
                     resolutions.Add(resolved);

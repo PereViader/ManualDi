@@ -11,16 +11,16 @@ namespace ManualDi.Main
         {
             var constraints = new ResolutionConstraints();
             resolutionConstraintsDelegate(constraints);
-            var isValidBindingDelegate = constraints.IsValidBindingDelegate;
-            if (isValidBindingDelegate is null)
+            var filterBindingDelegate = constraints.FilterBindingDelegate;
+            if (filterBindingDelegate is null)
             {
                 return typeBinding;
             }
             
-            var previous = typeBinding.IsValidBindingDelegate;
-            typeBinding.IsValidBindingDelegate = previous is null
-                ? isValidBindingDelegate
-                : x => previous.Invoke(x) && isValidBindingDelegate.Invoke(x);
+            var previous = typeBinding.FilterBindingDelegate;
+            typeBinding.FilterBindingDelegate = previous is null
+                ? filterBindingDelegate
+                : x => previous.Invoke(x) && filterBindingDelegate.Invoke(x);
 
             return typeBinding;
         }

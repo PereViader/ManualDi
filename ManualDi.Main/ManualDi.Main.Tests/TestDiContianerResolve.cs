@@ -2,7 +2,7 @@
 
 namespace ManualDi.Main.Tests;
 
-public class TestDiContianerTryResolve
+public class TestDiContainerTryResolve
 {
     private record NestedInt(int Value);
     

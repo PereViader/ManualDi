@@ -9,7 +9,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryResolve<T>(this IDiContainer diContainer, [MaybeNullWhen(false)] out T resolution)
         {
-            var result = diContainer.ResolveContainer(typeof(T), isValidBindingDelegate: null);
+            var result = diContainer.ResolveContainer(typeof(T), filterBindingDelegate: null);
             if (result is null)
             {
                 resolution = default;
@@ -26,7 +26,7 @@ namespace ManualDi.Main
             var resolutionConstraints = new ResolutionConstraints();
             configureResolutionConstraints.Invoke(resolutionConstraints);
 
-            var result = diContainer.ResolveContainer(typeof(T), resolutionConstraints.IsValidBindingDelegate);
+            var result = diContainer.ResolveContainer(typeof(T), resolutionConstraints.FilterBindingDelegate);
             if (result is null)
             {
                 resolution = default;
@@ -40,7 +40,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryResolve(this IDiContainer diContainer, Type type, [MaybeNullWhen(false)] out object resolution)
         {
-            resolution = diContainer.ResolveContainer(type, isValidBindingDelegate: null);
+            resolution = diContainer.ResolveContainer(type, filterBindingDelegate: null);
             return resolution is not null;
         }
 
@@ -50,7 +50,7 @@ namespace ManualDi.Main
             var resolutionConstraints = new ResolutionConstraints();
             configureResolutionConstraints.Invoke(resolutionConstraints);
 
-            resolution = diContainer.ResolveContainer(type, resolutionConstraints.IsValidBindingDelegate);
+            resolution = diContainer.ResolveContainer(type, resolutionConstraints.FilterBindingDelegate);
             return resolution is not null;
         }
     }

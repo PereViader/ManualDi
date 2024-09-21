@@ -9,8 +9,8 @@ namespace ManualDi.Main
 
     public sealed class BindingContext
     {
-        public Type? InjectIntoType { get; set; }
-        public object? Id { get; set; }
+        public TypeBinding TypeBinding { get; set; } = default!;
+        public TypeBinding? InjectedIntoTypeBinding { get; set; }
     }
 
     public enum TypeScope

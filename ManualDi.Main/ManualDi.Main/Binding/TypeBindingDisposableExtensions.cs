@@ -24,29 +24,6 @@ namespace ManualDi.Main
 
             return typeBinding;
         }
-        
-        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        // public static TBinding WhenInjectedInto<TBinding, TConcrete>(this TBinding typeBinding)
-        //     where TBinding : TypeBinding
-        // {
-        //     var previous = typeBinding.IsValidBindingDelegate;
-        //     typeBinding.IsValidBindingDelegate = previous is null 
-        //         ? x => x.InjectIntoType == typeof(TConcrete)
-        //         : x => previous.Invoke(x) && x.InjectIntoType == typeof(TConcrete);
-        //     
-        //     return typeBinding;
-        // }
-        
-        public static TBinding WhenInjectedInto<TConcrete, TBinding>(this TBinding typeBinding)
-            where TBinding : TypeBinding
-        {
-            var previous = typeBinding.IsValidBindingDelegate;
-            typeBinding.IsValidBindingDelegate = previous is null
-                ? x => x.InjectIntoType == typeof(TConcrete)
-                : x => previous(x) && x.InjectIntoType == typeof(TConcrete);
-
-            return typeBinding;
-        }
     }
 
     public static class TypeBindingDisposableExtensions

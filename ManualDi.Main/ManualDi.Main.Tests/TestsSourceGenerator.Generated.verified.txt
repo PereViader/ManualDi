@@ -606,8 +606,8 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, SomeNamespace.Subnamespace.InjectIdAttribute> Initialize<T>(this TypeBinding<T, SomeNamespace.Subnamespace.InjectIdAttribute> typeBinding)
         {
-            return typeBinding.Initialize(static (o, c) => o.Initialize(c.Resolve<object>(x => x.WhereId("Potato")),
-                c.Resolve<float>(x => x.WhereId("Banana")),
+            return typeBinding.Initialize(static (o, c) => o.Initialize(c.Resolve<object>(x => x.Id("Potato")),
+                c.Resolve<float>(x => x.Id("Banana")),
                 c.Resolve<object>()));
         }
         
@@ -616,11 +616,11 @@ namespace ManualDi.Main
         {
             return typeBinding.Inject(static (o, c) => 
             {
-                o.HelloIdValue = c.Resolve<int>(x => x.WhereId("A"));
-                o.LazyInt = new System.Lazy<int>(() => c.Resolve<int>(x => x.WhereId("A")));
-                o.Inject(c.Resolve<object>(x => x.WhereId("Potato")),
-                c.Resolve<float>(x => x.WhereId("Banana")),
-                new System.Lazy<int>(() => c.Resolve<int>(x => x.WhereId("P"))),
+                o.HelloIdValue = c.Resolve<int>(x => x.Id("A"));
+                o.LazyInt = new System.Lazy<int>(() => c.Resolve<int>(x => x.Id("A")));
+                o.Inject(c.Resolve<object>(x => x.Id("Potato")),
+                c.Resolve<float>(x => x.Id("Banana")),
+                new System.Lazy<int>(() => c.Resolve<int>(x => x.Id("P"))),
                 c.Resolve<object>());
             });
         }

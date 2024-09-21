@@ -20,28 +20,38 @@ namespace ManualDi.Main
         {
             var previous = resolution.IsValidBindingDelegate;
             resolution.IsValidBindingDelegate = previous is null 
-                ? x => x.Id == id 
-                : x => previous.Invoke(x) && x.Id == id;
+                ? x => x.TypeBinding.Id == id 
+                : x => previous.Invoke(x) && x.TypeBinding.Id == id;
             return resolution;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ResolutionConstraints InjectedInto<T>(this ResolutionConstraints resolution)
+        public static ResolutionConstraints InjectedIntoType<T>(this ResolutionConstraints resolution)
         {
             var previous = resolution.IsValidBindingDelegate;
             resolution.IsValidBindingDelegate = previous is null 
-                ? x => x.InjectIntoType == typeof(T) 
-                : x => previous.Invoke(x) && x.InjectIntoType == typeof(T);
+                ? x => x.InjectedIntoTypeBinding?.ConcreteType == typeof(T) 
+                : x => previous.Invoke(x) && x.InjectedIntoTypeBinding?.ConcreteType == typeof(T);
             return resolution;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ResolutionConstraints InjectedInto(this ResolutionConstraints resolution, Type type)
+        public static ResolutionConstraints InjectedIntoType(this ResolutionConstraints resolution, Type type)
         {
             var previous = resolution.IsValidBindingDelegate;
             resolution.IsValidBindingDelegate = previous is null 
-                ? x => x.InjectIntoType == type 
-                : x => previous.Invoke(x) && x.InjectIntoType == type;
+                ? x => x.InjectedIntoTypeBinding?.ConcreteType == type 
+                : x => previous.Invoke(x) && x.InjectedIntoTypeBinding?.ConcreteType == type;
+            return resolution;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ResolutionConstraints InjectedIntoId(this ResolutionConstraints resolution, object id)
+        {
+            var previous = resolution.IsValidBindingDelegate;
+            resolution.IsValidBindingDelegate = previous is null 
+                ? x => x.InjectedIntoTypeBinding?.Id == id 
+                : x => previous.Invoke(x) && x.InjectedIntoTypeBinding?.Id == id;
             return resolution;
         }
     }

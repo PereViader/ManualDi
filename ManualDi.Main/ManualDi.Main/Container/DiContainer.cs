@@ -9,15 +9,13 @@ namespace ManualDi.Main
     {
         private readonly Dictionary<Type, List<TypeBinding>> allTypeBindings;
         private readonly IDiContainer? parentDiContainer;
-        
         private readonly BindingContext bindingContext = new();
-        private readonly Stack<Type?> bindingStack = new();
         
         private BindingInitializer bindingInitializer;
         private DisposableActionQueue disposableActionQueue;
         private bool isResolving;
         private bool disposedValue;
-        
+        private TypeBinding? injectedTypeBinding;
 
         public DiContainer(
             Dictionary<Type, List<TypeBinding>> allTypeBindings, 
@@ -31,8 +29,6 @@ namespace ManualDi.Main
             
             this.allTypeBindings = allTypeBindings;
             this.parentDiContainer = parentDiContainer;
-            
-            bindingStack.Push(null);
         }
 
         public void Initialize()
@@ -71,9 +67,10 @@ namespace ManualDi.Main
             bool wasResolving = this.isResolving;
             isResolving = true;
 
-            bindingStack.Push(typeBinding.ConcreteType);
+            var previousType = injectedTypeBinding;
+            injectedTypeBinding = typeBinding;
             var (instance, isNew) = typeBinding.Create(this);
-            bindingStack.Pop();
+            injectedTypeBinding = previousType;
             if (!isNew)
             {
                 isResolving = wasResolving;
@@ -111,13 +108,13 @@ namespace ManualDi.Main
                 return first;
             }
 
-            bindingContext.InjectIntoType = bindingStack.Peek();
+            bindingContext.InjectedIntoTypeBinding = injectedTypeBinding;
 
             if (isValidBindingDelegate is null)
             {
                 foreach (var typeBinding in typeBindings)
                 {
-                    bindingContext.Id = typeBinding.Id;
+                    bindingContext.TypeBinding = typeBinding;
 
                     if (typeBinding.IsValidBindingDelegate?.Invoke(bindingContext) ?? true)
                     {
@@ -129,7 +126,7 @@ namespace ManualDi.Main
             {
                 foreach (var typeBinding in typeBindings)
                 {
-                    bindingContext.Id = typeBinding.Id;
+                    bindingContext.TypeBinding = typeBinding;
 
                     if (isValidBindingDelegate.Invoke(bindingContext) && (typeBinding.IsValidBindingDelegate?.Invoke(bindingContext) ?? true))
                     {
@@ -157,11 +154,11 @@ namespace ManualDi.Main
                 return;
             }
             
-            bindingContext.InjectIntoType = bindingStack.Peek();
+            bindingContext.InjectedIntoTypeBinding = injectedTypeBinding;
             
             foreach (var typeBinding in typeBindings)
             {
-                bindingContext.Id = typeBinding.Id;
+                bindingContext.TypeBinding = typeBinding;
 
                 if ((isValidBindingDelegate?.Invoke(bindingContext) ?? true) && 
                     (typeBinding.IsValidBindingDelegate?.Invoke(bindingContext) ?? true))

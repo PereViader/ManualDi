@@ -75,7 +75,7 @@ Bind<(TApparent,)? TConcrete>() // TApparent is optional and will be equal to TC
     .Initialize  //Empty overload is source generated
     .Dispose
     .WithId
-    .When
+    .When([InjectedIntoId|InjectedIntoType])
     .[Lazy*|NonLazy]
     .[Any other custom extension method your project implements]
 

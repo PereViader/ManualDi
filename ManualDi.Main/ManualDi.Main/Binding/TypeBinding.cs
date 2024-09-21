@@ -1,12 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
 {
     public delegate T? CreateDelegate<out T>(IDiContainer diContainer);
     public delegate void InstanceContainerDelegate<in T>(T instance, IDiContainer diContainer);
-    
+    public delegate bool IsValidBindingDelegate(BindingContext context);
+
+    public sealed class BindingContext
+    {
+        public Type? InjectIntoType { get; set; }
+        public object? Id { get; set; }
+    }
 
     public enum TypeScope
     {
@@ -16,10 +21,14 @@ namespace ManualDi.Main
     
     public abstract class TypeBinding
     {
+        public abstract Type ApparentType { get; }
+        public abstract Type ConcreteType { get; }
+        
         public TypeScope TypeScope { get; set; } = TypeScope.Single;
         public bool IsLazy { get; set; } = true;
         public bool TryToDispose { get; set; } = true;
         public object? Id { get; set; }
+        public IsValidBindingDelegate? IsValidBindingDelegate { get; set; }
         
         internal object? SingleInstance { get; set; }
 
@@ -56,12 +65,16 @@ namespace ManualDi.Main
         public abstract void InjectObject(object instance, IDiContainer container);
     }
     
-    public sealed class TypeBinding<TInterface, TConcrete> : TypeBinding
+    public sealed class TypeBinding<TApparent, TConcrete> : TypeBinding
     {
+        public override Type ApparentType => typeof(TApparent);
+        public override Type ConcreteType => typeof(TConcrete);
+        
         public CreateDelegate<TConcrete>? CreateConcreteDelegate { get; set; }
         public InstanceContainerDelegate<TConcrete>? InjectionDelegates { get; set; }
         public InstanceContainerDelegate<TConcrete>? InitializationDelegate { get; set; }
         public override bool NeedsInitialize => InitializationDelegate is not null;
+
 
         protected override object? CreateNew(IDiContainer container)
         {
@@ -87,14 +100,14 @@ namespace ManualDi.Main
     // Attention Consider any methods that use this experimental. They may be removed in the future.
     public sealed class UnsafeTypeBinding : TypeBinding
     {
-        public UnsafeTypeBinding(Type interfaceType, Type concreteType)
+        public UnsafeTypeBinding(Type apparentType, Type concreteType)
         {
-            InterfaceType = interfaceType;
+            ApparentType = apparentType;
             ConcreteType = concreteType;
         }
 
-        public Type InterfaceType { get; }
-        public Type ConcreteType { get; }
+        public override Type ApparentType { get; }
+        public override Type ConcreteType { get; }
         public CreateDelegate<object>? CreateConcreteDelegate { get; set; }
         public InstanceContainerDelegate<object>? InjectionDelegates { get; set; }
         public InstanceContainerDelegate<object>? InitializationDelegate { get; set; }

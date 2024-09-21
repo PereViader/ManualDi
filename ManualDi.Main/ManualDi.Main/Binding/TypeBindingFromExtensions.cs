@@ -36,7 +36,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static UnsafeTypeBinding FromContainerResolve(
             this UnsafeTypeBinding typeBinding,
-            Action<ResolutionConstraints> constraints
+            IsValidBindingDelegate constraints
         )
         {
             typeBinding.CreateConcreteDelegate = c => c.Resolve(typeBinding.ConcreteType, constraints);
@@ -61,7 +61,7 @@ namespace ManualDi.Main
                 subContainer = bindings.Build();
                 return subContainer.Resolve<TConcrete>();
             };
-            typeBinding.Dispose((o, c) => subContainer?.Dispose());
+            typeBinding.Dispose((_, _) => subContainer?.Dispose());
             return typeBinding;
         }
         
@@ -83,7 +83,7 @@ namespace ManualDi.Main
                 subContainer = bindings.Build();
                 return subContainer.Resolve(typeBinding.ConcreteType);
             };
-            typeBinding.Dispose((o, c) => subContainer?.Dispose());
+            typeBinding.Dispose((_, _) => subContainer?.Dispose());
             return typeBinding;
         }
         

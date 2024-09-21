@@ -8,7 +8,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Resolve<T>(this IDiContainer diContainer)
         {
-            var resolution = diContainer.ResolveContainer(typeof(T), resolutionConstraints: null);
+            var resolution = diContainer.ResolveContainer(typeof(T), isValidBindingDelegate: null);
             if (resolution is null)
             {
                 throw new InvalidOperationException($"Could not resolve element of type {typeof(T).FullName}");
@@ -22,7 +22,7 @@ namespace ManualDi.Main
             var resolutionConstraints = new ResolutionConstraints();
             configureResolutionConstraints.Invoke(resolutionConstraints);
 
-            var resolution = diContainer.ResolveContainer(typeof(T), resolutionConstraints: resolutionConstraints);
+            var resolution = diContainer.ResolveContainer(typeof(T), resolutionConstraints.IsValidBindingDelegate);
             if (resolution is null)
             {
                 throw new InvalidOperationException($"Could not resolve element of type {typeof(T).FullName}");
@@ -33,7 +33,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static object Resolve(this IDiContainer diContainer, Type type)
         {
-            var resolution = diContainer.ResolveContainer(type, resolutionConstraints: null);
+            var resolution = diContainer.ResolveContainer(type, isValidBindingDelegate: null);
             if (resolution is null)
             {
                 throw new InvalidOperationException($"Could not resolve element of type {type.FullName}");
@@ -42,12 +42,9 @@ namespace ManualDi.Main
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static object Resolve(this IDiContainer diContainer, Type type, Action<ResolutionConstraints> configureResolutionConstraints)
+        public static object Resolve(this IDiContainer diContainer, Type type, IsValidBindingDelegate isValidBindingDelegate)
         {
-            var resolutionConstraints = new ResolutionConstraints();
-            configureResolutionConstraints.Invoke(resolutionConstraints);
-            
-            var resolution = diContainer.ResolveContainer(type, resolutionConstraints: resolutionConstraints);
+            var resolution = diContainer.ResolveContainer(type, isValidBindingDelegate: isValidBindingDelegate);
             if (resolution is null)
             {
                 throw new InvalidOperationException($"Could not resolve element of type {type.FullName}");

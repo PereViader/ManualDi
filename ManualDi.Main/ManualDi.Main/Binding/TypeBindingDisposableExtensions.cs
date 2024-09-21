@@ -1,7 +1,54 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
 {
+    public static class TypeBindingFilterExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TBinding When<TBinding>(this TBinding typeBinding, Action<ResolutionConstraints> resolutionConstraintsDelegate)
+            where TBinding : TypeBinding
+        {
+            var constraints = new ResolutionConstraints();
+            resolutionConstraintsDelegate(constraints);
+            var isValidBindingDelegate = constraints.IsValidBindingDelegate;
+            if (isValidBindingDelegate is null)
+            {
+                return typeBinding;
+            }
+            
+            var previous = typeBinding.IsValidBindingDelegate;
+            typeBinding.IsValidBindingDelegate = previous is null
+                ? isValidBindingDelegate
+                : x => previous.Invoke(x) && isValidBindingDelegate.Invoke(x);
+
+            return typeBinding;
+        }
+        
+        // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // public static TBinding WhenInjectedInto<TBinding, TConcrete>(this TBinding typeBinding)
+        //     where TBinding : TypeBinding
+        // {
+        //     var previous = typeBinding.IsValidBindingDelegate;
+        //     typeBinding.IsValidBindingDelegate = previous is null 
+        //         ? x => x.InjectIntoType == typeof(TConcrete)
+        //         : x => previous.Invoke(x) && x.InjectIntoType == typeof(TConcrete);
+        //     
+        //     return typeBinding;
+        // }
+        
+        public static TBinding WhenInjectedInto<TConcrete, TBinding>(this TBinding typeBinding)
+            where TBinding : TypeBinding
+        {
+            var previous = typeBinding.IsValidBindingDelegate;
+            typeBinding.IsValidBindingDelegate = previous is null
+                ? x => x.InjectIntoType == typeof(TConcrete)
+                : x => previous(x) && x.InjectIntoType == typeof(TConcrete);
+
+            return typeBinding;
+        }
+    }
+
     public static class TypeBindingDisposableExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

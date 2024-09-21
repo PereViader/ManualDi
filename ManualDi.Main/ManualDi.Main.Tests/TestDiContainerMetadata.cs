@@ -16,8 +16,8 @@ public class TestDiContainerMetadata
             b.Bind<object>().FromInstance(instance2).WithId(nameof(instance2));
         }).Build();
 
-        var resolution1 = container.Resolve<object>(static b => b.WhereId(nameof(instance1)));
-        var resolution2 = container.Resolve<object>(static b => b.WhereId(nameof(instance2)));
+        var resolution1 = container.Resolve<object>(static b => b.Id(nameof(instance1)));
+        var resolution2 = container.Resolve<object>(static b => b.Id(nameof(instance2)));
 
         Assert.That(resolution1, Is.EqualTo(instance1));
         Assert.That(resolution2, Is.EqualTo(instance2));

@@ -10,10 +10,14 @@ namespace ManualDi.Main
         private readonly Dictionary<Type, List<TypeBinding>> allTypeBindings;
         private readonly IDiContainer? parentDiContainer;
         
+        private readonly BindingContext bindingContext = new();
+        private readonly Stack<Type?> bindingStack = new();
+        
         private BindingInitializer bindingInitializer;
         private DisposableActionQueue disposableActionQueue;
         private bool isResolving;
         private bool disposedValue;
+        
 
         public DiContainer(
             Dictionary<Type, List<TypeBinding>> allTypeBindings, 
@@ -27,6 +31,8 @@ namespace ManualDi.Main
             
             this.allTypeBindings = allTypeBindings;
             this.parentDiContainer = parentDiContainer;
+            
+            bindingStack.Push(null);
         }
 
         public void Initialize()
@@ -43,9 +49,9 @@ namespace ManualDi.Main
             }
         }
 
-        public object? ResolveContainer(Type type, ResolutionConstraints? resolutionConstraints)
+        public object? ResolveContainer(Type type, IsValidBindingDelegate? isValidBindingDelegate)
         {
-            var typeBinding = GetTypeForConstraint(type, resolutionConstraints);
+            var typeBinding = GetTypeForConstraint(type, isValidBindingDelegate);
             if (typeBinding is not null)
             {
                 return ResolveBinding(typeBinding);
@@ -53,7 +59,7 @@ namespace ManualDi.Main
 
             if (parentDiContainer is not null)
             {
-                return parentDiContainer.ResolveContainer(type, resolutionConstraints);
+                return parentDiContainer.ResolveContainer(type, isValidBindingDelegate);
             }
 
             return null;
@@ -61,10 +67,13 @@ namespace ManualDi.Main
 
         private object ResolveBinding(TypeBinding typeBinding)
         {
+
             bool wasResolving = this.isResolving;
             isResolving = true;
 
+            bindingStack.Push(typeBinding.ConcreteType);
             var (instance, isNew) = typeBinding.Create(this);
+            bindingStack.Pop();
             if (!isNew)
             {
                 isResolving = wasResolving;
@@ -89,23 +98,27 @@ namespace ManualDi.Main
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private TypeBinding? GetTypeForConstraint(Type type, ResolutionConstraints? resolutionConstraints)
+        private TypeBinding? GetTypeForConstraint(Type type, IsValidBindingDelegate? isValidBindingDelegate)
         {
-            if (!allTypeBindings.TryGetValue(type, out var bindings))
+            if (!allTypeBindings.TryGetValue(type, out var typeBindings))
             {
                 return null;
             }
 
-            if (resolutionConstraints is null)
+            var first = typeBindings[0];
+            if (isValidBindingDelegate is null && first.IsValidBindingDelegate is null)
             {
-                return bindings[0];
+                return first;
             }
 
-            foreach (var binding in bindings)
+            bindingContext.InjectIntoType = bindingStack.Peek();
+            foreach (var typeBinding in typeBindings)
             {
-                if (resolutionConstraints.Accepts(binding))
+                bindingContext.Id = typeBinding.Id;
+
+                if ((isValidBindingDelegate?.Invoke(bindingContext) ?? true) && (typeBinding.IsValidBindingDelegate?.Invoke(bindingContext) ?? true))
                 {
-                    return binding;
+                    return typeBinding;
                 }
             }
             
@@ -113,38 +126,32 @@ namespace ManualDi.Main
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void ResolveAllContainer(Type type, ResolutionConstraints? resolutionConstraints, IList resolutions)
+        public void ResolveAllContainer(Type type, IsValidBindingDelegate? isValidBindingDelegate, IList resolutions)
         {
-            AddResolveAllInstances(type, resolutionConstraints, resolutions);
+            AddResolveAllInstances(type, isValidBindingDelegate, resolutions);
 
-            parentDiContainer?.ResolveAllContainer(type, resolutionConstraints, resolutions);
+            parentDiContainer?.ResolveAllContainer(type, isValidBindingDelegate, resolutions);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void AddResolveAllInstances(Type type, ResolutionConstraints? resolutionConstraints, IList resolutions)
+        private void AddResolveAllInstances(Type type, IsValidBindingDelegate? isValidBindingDelegate, IList resolutions)
         {
             if (!this.allTypeBindings.TryGetValue(type, out var typeBindings))
             {
                 return;
             }
-
-            if (resolutionConstraints is null)
+            
+            bindingContext.InjectIntoType = bindingStack.Peek();
+            
+            foreach (var typeBinding in typeBindings)
             {
-                foreach (var typeBinding in typeBindings)
+                bindingContext.Id = typeBinding.Id;
+
+                if ((isValidBindingDelegate?.Invoke(bindingContext) ?? true) && 
+                    (typeBinding.IsValidBindingDelegate?.Invoke(bindingContext) ?? true))
                 {
                     var resolved = ResolveBinding(typeBinding);
                     resolutions.Add(resolved);
-                }
-            }
-            else
-            {
-                foreach (var typeBinding in typeBindings)
-                {
-                    if (resolutionConstraints.Accepts(typeBinding))
-                    {
-                        var resolved = ResolveBinding(typeBinding);
-                        resolutions.Add(resolved);
-                    }
                 }
             }
         }

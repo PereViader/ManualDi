@@ -162,29 +162,29 @@ namespace ManualDi.Main.Generators
             }
             ListTypeSymbol = listTypeSymbol;
 
-            var ilistTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.IList`1");
-            if (ilistTypeSymbol is null)
+            var iListTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.IList`1");
+            if (iListTypeSymbol is null)
             {
                 ReportTypeNotFound("System.Collections.Generic.IList<T>", context);
                 return false;
             }
-            IListTypeSymbol = ilistTypeSymbol;
+            IListTypeSymbol = iListTypeSymbol;
 
-            var ireadOnlyListTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyList`1");
-            if (ireadOnlyListTypeSymbol is null)
+            var iReadOnlyListTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyList`1");
+            if (iReadOnlyListTypeSymbol is null)
             {
                 ReportTypeNotFound("System.Collections.Generic.IReadOnlyList<T>", context);
                 return false;
             }
-            IReadOnlyListTypeSymbol = ireadOnlyListTypeSymbol;
+            IReadOnlyListTypeSymbol = iReadOnlyListTypeSymbol;
 
-            var ireadOnlyCollectionTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyCollection`1");
-            if (ireadOnlyCollectionTypeSymbol is null)
+            var iReadOnlyCollectionTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyCollection`1");
+            if (iReadOnlyCollectionTypeSymbol is null)
             {
                 ReportTypeNotFound("System.Collections.Generic.IReadOnlyCollection<T>", context);
                 return false;
             }
-            IReadOnlyCollectionTypeSymbol = ireadOnlyCollectionTypeSymbol;
+            IReadOnlyCollectionTypeSymbol = iReadOnlyCollectionTypeSymbol;
 
             var iCollectionTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.ICollection`1");
             if (iCollectionTypeSymbol is null)
@@ -194,13 +194,13 @@ namespace ManualDi.Main.Generators
             }
             ICollectionTypeSymbol = iCollectionTypeSymbol;
 
-            var ienumerableTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1");
-            if (ienumerableTypeSymbol is null)
+            var iEnumerableTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1");
+            if (iEnumerableTypeSymbol is null)
             {
                 ReportTypeNotFound("System.Collections.Generic.IEnumerable<T>", context);
                 return false;
             }
-            IEnumerableTypeSymbol = ienumerableTypeSymbol;
+            IEnumerableTypeSymbol = iEnumerableTypeSymbol;
 
             var injectAttributeTypeSymbol = compilation.GetTypeByMetadataName("ManualDi.Main.InjectAttribute");
             if (injectAttributeTypeSymbol is null)
@@ -387,30 +387,15 @@ namespace ManualDi.Main.Generators
             {
                 return id is null 
                     ? $"c.ResolveAll<{FullyQualifyTypeWithoutNullable(listGenericType)}>()" 
-                    : $"c.ResolveAll<{FullyQualifyTypeWithoutNullable(listGenericType)}>(x => x.WhereId({id}))";
+                    : $"c.ResolveAll<{FullyQualifyTypeWithoutNullable(listGenericType)}>(x => x.Id({id}))";
             }
 
             return id is null 
                 ? $"c.{CreateContainerResolutionMethod(typeSymbol)}<{FullyQualifyTypeWithoutNullable(typeSymbol)}>()" 
-                : $"c.{CreateContainerResolutionMethod(typeSymbol)}<{FullyQualifyTypeWithoutNullable(typeSymbol)}>(x => x.WhereId({id}))";
-        }
-
-        private static ITypeSymbol? GetSpecialTypeList(ITypeSymbol typeSymbol)
-        {
-            if (typeSymbol.SpecialType is SpecialType.System_Collections_Generic_IReadOnlyList_T
-                or SpecialType.System_Collections_Generic_IList_T
-                or SpecialType.System_Collections_Generic_IEnumerable_T)
-            {
-                if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
-                {
-                    return namedTypeSymbol.TypeArguments[0];
-                }
-            }
-
-            return null;
+                : $"c.{CreateContainerResolutionMethod(typeSymbol)}<{FullyQualifyTypeWithoutNullable(typeSymbol)}>(x => x.Id({id}))";
         }
         
-        public static ITypeSymbol? TryGenericLazyType(ITypeSymbol typeSymbol)
+        private static ITypeSymbol? TryGenericLazyType(ITypeSymbol typeSymbol)
         {
             if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
             {
@@ -423,7 +408,7 @@ namespace ManualDi.Main.Generators
             return null;
         }
 
-        public static ITypeSymbol? TryGetEnumerableType(ITypeSymbol typeSymbol)
+        private static ITypeSymbol? TryGetEnumerableType(ITypeSymbol typeSymbol)
         {
             if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
             {
@@ -558,11 +543,11 @@ namespace ManualDi.Main.Generators
                 accessibility = inject.Value;
             }
 
-            var accessibiliyString = GetAccessibilityString(accessibility);
+            var accessibilityString = GetAccessibilityString(accessibility);
             
             generationClassContext.StringBuilder.Append($$"""
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    {{generationClassContext.ObsoleteText}}{{accessibiliyString}} static TypeBinding<T, {{generationClassContext.ClassName}}> Default<T>(this TypeBinding<T, {{generationClassContext.ClassName}}> typeBinding)
+                    {{generationClassContext.ObsoleteText}}{{accessibilityString}} static TypeBinding<T, {{generationClassContext.ClassName}}> Default<T>(this TypeBinding<T, {{generationClassContext.ClassName}}> typeBinding)
                     {
                         return typeBinding
             """);
@@ -604,7 +589,7 @@ namespace ManualDi.Main.Generators
             return false;
         }
         
-        public static ITypeSymbol? GetNonNullableType(ITypeSymbol typeSymbol)
+        private static ITypeSymbol? GetNonNullableType(ITypeSymbol typeSymbol)
         {
             if (typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T && 
                 typeSymbol is INamedTypeSymbol namedTypeSymbol)

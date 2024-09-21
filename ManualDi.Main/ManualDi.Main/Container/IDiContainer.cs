@@ -11,20 +11,20 @@ namespace ManualDi.Main
         /// </summary>
         /// <remarks>There are more versions of this Resolution using extension methods <see cref="DiContainerResolutionExtensions"/></remarks>
         /// <param name="type">The type of the binding to resolve</param>
-        /// <param name="resolutionConstraints">Filter bindings to resolve according to these constraints. May be null</param>
+        /// <param name="isValidBindingDelegate">Filter bindings to resolve according to these constraints. May be null</param>
         /// <param name="resolution">Resolved instance from the container</param>
         /// <returns>The resolved instance for the binding</returns>
-        object? ResolveContainer(Type type, ResolutionConstraints? resolutionConstraints);
+        object? ResolveContainer(Type type, IsValidBindingDelegate? isValidBindingDelegate);
 
         /// <summary>
         /// Non generic resolution of all bindings for their registered instances
         /// </summary>
         /// <remarks>There are more versions of this Resolution using extension methods <see cref="DiContainerResolutionExtensions"/></remarks>
         /// <param name="type">The type of the binding to resolve</param>
-        /// <param name="resolutionConstraints">Filter bindings to resolve according to these constraints. May be null</param>
+        /// <param name="isValidBindingDelegate">Filter bindings to resolve according to these constraints. May be null</param>
         /// <param name="resolutions">The list of resolutions to be populated from the operations done inside. Resolutions are added at the end of the list</param>
         /// <returns>The resolved instances for the binding</returns>
-        void ResolveAllContainer(Type type, ResolutionConstraints? resolutionConstraints, IList resolutions);
+        void ResolveAllContainer(Type type, IsValidBindingDelegate? isValidBindingDelegate, IList resolutions);
 
         /// <summary>
         /// Queues for disposal a disposable. They will be called in order when disposing the container.

@@ -4,6 +4,8 @@ namespace ManualDi.Main.Tests;
 
 public class TestDiContianerTryResolve
 {
+    private record NestedInt(int Value);
+    
     [Test]
     public void TestTryResolveSuccess()
     {
@@ -24,5 +26,19 @@ public class TestDiContianerTryResolve
 
         var success = container.TryResolve<int>(out _);
         Assert.That(success, Is.False);
+    }
+    
+    [Test]
+    public void TestWhenInjectedInto()
+    {
+        var container = new DiContainerBindings().Install(b =>
+        {
+            b.Bind<NestedInt>().FromMethod(c => new NestedInt(c.Resolve<int>()));
+            b.Bind<int>().FromInstance(1).When(x => x.InjectedInto<object>());
+            b.Bind<int>().FromInstance(2).When(x => x.InjectedInto<NestedInt>());
+        }).Build();
+
+        var nestedInt = container.Resolve<NestedInt>();
+        Assert.That(nestedInt.Value, Is.EqualTo(2));
     }
 }

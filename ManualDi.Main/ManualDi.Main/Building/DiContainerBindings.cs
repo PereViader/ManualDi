@@ -53,7 +53,7 @@ namespace ManualDi.Main
         
         public void AddUnsafeBinding(UnsafeTypeBinding typeBinding)
         {
-            var interfaceType = typeBinding.InterfaceType;
+            var interfaceType = typeBinding.ApparentType;
             if (!typeBindings.TryGetValue(interfaceType, out var bindings))
             {
                 bindings = new List<TypeBinding>(1);

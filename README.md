@@ -106,8 +106,9 @@ static class Installer
 
 The scope of a binding defines the rules for instance creation.
 - Single: The container will generate a single instance of the type and cache it. Followup calls for the same type will reuse the instance.
-  - This is the default behaviour for bindings
 - Transient: The container will generate a new instance every time the type is resolved.
+
+If no scope is specified, `Single` is used
 
 ## From
 

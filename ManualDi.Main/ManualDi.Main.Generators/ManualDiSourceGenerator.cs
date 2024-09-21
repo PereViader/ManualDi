@@ -351,48 +351,125 @@ namespace ManualDi.Main.Generators
 
             var accessibility = GetSymbolAccessibility(constructor);
             var accessibilityString = GetAccessibilityString(accessibility);
-            var arguments = CreateMethodResolution(constructor);
+            var arguments = 
             
-            context.StringBuilder.AppendLine($$"""
+            context.StringBuilder.Append($$"""
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
                     {{context.ObsoleteText}}{{accessibilityString}} static TypeBinding<T, {{context.ClassName}}> FromConstructor<T>(this TypeBinding<T, {{context.ClassName}}> typeBinding)
                     {
-                        return typeBinding.FromMethod(static c => new {{context.ClassName}}({{arguments}}));
+                        return typeBinding.FromMethod(static c => new {{context.ClassName}}(
+            """);
+            
+            CreateMethodResolution(constructor, "                ", context.StringBuilder);
+            
+            context.StringBuilder.AppendLine($$"""
+            ));
                     }
-                    
+            
             """);
             return accessibility;
         }
 
-        private static string CreateMethodResolution(IMethodSymbol constructor)
+        private static void CreateMethodResolution(IMethodSymbol constructor, string tabs, StringBuilder stringBuilder)
         {
-            return string.Join(",\r\n                ", constructor.Parameters.Select(x =>
+            bool isFirst = true;
+            foreach (var parameter in constructor.Parameters)
             {
-                var attribute = GetInjectAttribute(x);
+                if (!isFirst)
+                {
+                    stringBuilder.AppendLine(",");    
+                }
+                else
+                {
+                    stringBuilder.AppendLine();
+                    isFirst = false;
+                }
+                
+                var attribute = GetInjectAttribute(parameter);
                 var id = attribute is null ? null : GetInjectId(attribute);
-                return CreteTypeResolution(x.Type, id);
-            }));
+                stringBuilder.Append(tabs);
+                CreteTypeResolution(parameter.Type, id, stringBuilder);
+            }
         }
 
-        private static string CreteTypeResolution(ITypeSymbol typeSymbol, string? id)
+        private static void CreateIdResolution(string? id, StringBuilder stringBuilder)
+        {
+            if (id is not null)
+            {
+                stringBuilder.Append("x => x.Id(");
+                stringBuilder.Append(id);
+                stringBuilder.Append(")");
+            }
+        }
+        
+        private static void CreteTypeResolution(ITypeSymbol typeSymbol, string? id, StringBuilder stringBuilder)
         {
             var lazyGenericType = TryGenericLazyType(typeSymbol);
             if (lazyGenericType is not null)
             {
-                return $"new System.Lazy<{FullyQualifyTypeWithNullable(lazyGenericType)}>(() => {CreteTypeResolution(lazyGenericType, id)})";
+                if (IsNullableTypeSymbol(typeSymbol))
+                {
+                    stringBuilder.Append("c.WouldResolve<");
+                    stringBuilder.Append(FullyQualifyTypeWithoutNullable(lazyGenericType));
+                    stringBuilder.Append(">(");
+                    CreateIdResolution(id, stringBuilder);
+                    stringBuilder.Append(") ? new System.Lazy<");
+                    stringBuilder.Append(FullyQualifyTypeWithNullable(lazyGenericType));
+                    stringBuilder.Append(">(() => ");
+                    CreteTypeResolution(lazyGenericType, id, stringBuilder);
+                    stringBuilder.Append(") : null");
+                    return;
+                }
+
+                stringBuilder.Append("new System.Lazy<");
+                stringBuilder.Append(FullyQualifyTypeWithNullable(lazyGenericType));
+                stringBuilder.Append(">(() => ");
+                CreteTypeResolution(lazyGenericType, id, stringBuilder);
+                stringBuilder.Append(")");
+                return;
             }
 
+            // Updated code below
             var listGenericType = TryGetEnumerableType(typeSymbol);
-            if (listGenericType is not null && !IsNullableTypeSymbol(listGenericType))
+            if (listGenericType is not null)
             {
-                return id is null 
-                    ? $"c.ResolveAll<{FullyQualifyTypeWithoutNullable(listGenericType)}>()" 
-                    : $"c.ResolveAll<{FullyQualifyTypeWithoutNullable(listGenericType)}>(x => x.Id({id}))";
-            }
+                var isListNullable = IsNullableTypeSymbol(typeSymbol);
+                if (isListNullable)
+                {
+                    stringBuilder.Append("c.WouldResolve<");
+                    stringBuilder.Append(FullyQualifyTypeWithoutNullable(listGenericType));
+                    stringBuilder.Append(">(");
+                    CreateIdResolution(id, stringBuilder);
+                    stringBuilder.Append(") ? ");
+                }
 
-            return id is null 
-                ? $"c.{CreateContainerResolutionMethod(typeSymbol)}<{FullyQualifyTypeWithoutNullable(typeSymbol)}>()" 
-                : $"c.{CreateContainerResolutionMethod(typeSymbol)}<{FullyQualifyTypeWithoutNullable(typeSymbol)}>(x => x.Id({id}))";
+                stringBuilder.Append("c.ResolveAll<");
+                stringBuilder.Append(FullyQualifyTypeWithoutNullable(listGenericType));
+                stringBuilder.Append(">(");
+                CreateIdResolution(id, stringBuilder);
+                stringBuilder.Append(")");
+
+                if (isListNullable)
+                {
+                    if (IsNullableTypeSymbol(listGenericType))
+                    {
+                        stringBuilder.Append(".ConvertAll<");
+                        stringBuilder.Append(FullyQualifyTypeWithNullable(listGenericType));
+                        stringBuilder.Append(">(x => x)");
+                    }
+                    stringBuilder.Append(" : null");
+                }
+                
+                return;
+            }
+            
+            stringBuilder.Append("c.");
+            stringBuilder.Append(CreateContainerResolutionMethod(typeSymbol));
+            stringBuilder.Append("<");
+            stringBuilder.Append(FullyQualifyTypeWithoutNullable(typeSymbol));
+            stringBuilder.Append(">(");
+            CreateIdResolution(id, stringBuilder);
+            stringBuilder.Append(")");
         }
         
         private static ITypeSymbol? TryGenericLazyType(ITypeSymbol typeSymbol)
@@ -455,16 +532,22 @@ namespace ManualDi.Main.Generators
 
             var accessibility = GetSymbolAccessibility(initializeMethod);
             var accessibilityString = GetAccessibilityString(accessibility);
-            var arguments = CreateMethodResolution(initializeMethod);
-
-            context.StringBuilder.AppendLine($$"""
+            
+            context.StringBuilder.Append($$"""
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
                     {{context.ObsoleteText}}{{accessibilityString}} static TypeBinding<T, {{context.ClassName}}> Initialize<T>(this TypeBinding<T, {{context.ClassName}}> typeBinding)
                     {
-                        return typeBinding.Initialize(static (o, c) => o.Initialize({{arguments}}));
-                    }
-                    
+                        return typeBinding.Initialize(static (o, c) => o.Initialize(
             """);
+            
+            CreateMethodResolution(initializeMethod, "                ", context.StringBuilder);
+            
+            context.StringBuilder.AppendLine($$"""
+            ));
+                    }
+            
+            """);
+            
             return accessibility;
         }
 
@@ -512,13 +595,16 @@ namespace ManualDi.Main.Generators
             foreach (var (injectProperty, attribute) in injectProperties)
             {
                 var id = attribute is null ? null : GetInjectId(attribute);
-                context.StringBuilder.AppendLine($"                o.{injectProperty.Name} = {CreteTypeResolution(injectProperty.Type, id)};");
+                context.StringBuilder.Append($"                o.{injectProperty.Name} = ");
+                CreteTypeResolution(injectProperty.Type, id, context.StringBuilder);
+                context.StringBuilder.AppendLine(";");
             }
             
             if (injectMethod is not null)
             {
-                var arguments = CreateMethodResolution(injectMethod);
-                context.StringBuilder.AppendLine($"                o.Inject({arguments});");
+                context.StringBuilder.Append("                o.Inject(");
+                CreateMethodResolution(injectMethod, "                    ", context.StringBuilder);
+                context.StringBuilder.AppendLine(");");
             }
                         
             context.StringBuilder.AppendLine("""

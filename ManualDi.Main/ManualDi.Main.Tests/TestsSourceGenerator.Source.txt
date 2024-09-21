@@ -200,7 +200,59 @@ namespace SomeNamespace.Subnamespace
         [Inject] public ICollection<object> ICollectionObject { get; set; } = default!;
         [Inject] public ICollection<int> ICollectionInt { get; set; } = default!;
 
+        [Inject("A")] public IEnumerable<object> IEnumerableObjectId { get; set; } = default!;
+        [Inject("A")] public IEnumerable<int> IEnumerableIntId { get; set; } = default!;
+        [Inject("A")] public IReadOnlyList<object> IReadOnlyListObjectId { get; set; } = default!;
+        [Inject("A")] public IReadOnlyList<int> IReadOnlyListIntId { get; set; } = default!;
+        [Inject("A")] public IList<object> IListObjectId { get; set; } = default!;
+        [Inject("A")] public IList<int> IListIntId { get; set; } = default!;
+        [Inject("A")] public List<object> ListObjectId { get; set; } = default!;
+        [Inject("A")] public List<int> ListIntId { get; set; } = default!;
+        [Inject("A")] public IReadOnlyCollection<object> IReadOnlyCollectionObjectId { get; set; } = default!;
+        [Inject("A")] public IReadOnlyCollection<int> IReadOnlyCollectionIntId { get; set; } = default!;
+        [Inject("A")] public ICollection<object> ICollectionObjectId { get; set; } = default!;
+        [Inject("A")] public ICollection<int> ICollectionIntId { get; set; } = default!;
+        
+        [Inject] public IEnumerable<object>? IEnumerableObjectNullable { get; set; } = default!;
+        [Inject] public IEnumerable<int>? IEnumerableIntNullable { get; set; } = default!;
+        [Inject] public IReadOnlyList<object>? IReadOnlyListObjectNullable { get; set; } = default!;
+        [Inject] public IReadOnlyList<int>? IReadOnlyListIntNullable { get; set; } = default!;
+        [Inject] public IList<object>? IListObjectNullable { get; set; } = default!;
+        [Inject] public IList<int>? IListIntNullable { get; set; } = default!;
+        [Inject] public List<object>? ListObjectNullable { get; set; } = default!;
+        [Inject] public List<int>? ListIntNullable { get; set; } = default!;
+        [Inject] public IReadOnlyCollection<object>? IReadOnlyCollectionObjectNullable { get; set; } = default!;
+        [Inject] public IReadOnlyCollection<int>? IReadOnlyCollectionIntNullable { get; set; } = default!;
+        [Inject] public ICollection<object>? ICollectionObjectNullable { get; set; } = default!;
+        [Inject] public ICollection<int>? ICollectionIntNullable { get; set; } = default!;
+        
 
+        [Inject("A")] public IEnumerable<object>? IEnumerableObjectNullableId { get; set; } = default!;
+        [Inject("A")] public IEnumerable<int>? IEnumerableIntNullableId { get; set; } = default!;
+        [Inject("A")] public IReadOnlyList<object>? IReadOnlyListObjectNullableId { get; set; } = default!;
+        [Inject("A")] public IReadOnlyList<int>? IReadOnlyListIntNullableId { get; set; } = default!;
+        [Inject("A")] public IList<object>? IListObjectNullableId { get; set; } = default!;
+        [Inject("A")] public IList<int>? IListIntNullableId { get; set; } = default!;
+        [Inject("A")] public List<object>? ListObjectNullableId { get; set; } = default!;
+        [Inject("A")] public List<int>? ListIntNullableId { get; set; } = default!;
+        [Inject("A")] public IReadOnlyCollection<object>? IReadOnlyCollectionObjectNullableId { get; set; } = default!;
+        [Inject("A")] public IReadOnlyCollection<int>? IReadOnlyCollectionIntNullableId { get; set; } = default!;
+        [Inject("A")] public ICollection<object>? ICollectionObjectNullableId { get; set; } = default!;
+        [Inject("A")] public ICollection<int>? ICollectionIntNullableId { get; set; } = default!;
+        
+        [Inject("A")] public IEnumerable<object?>? IEnumerableObjectNullableNullableId { get; set; } = default!;
+        [Inject("A")] public IEnumerable<int?>? IEnumerableIntNullableNullableId { get; set; } = default!;
+        [Inject("A")] public IReadOnlyList<object?>? IReadOnlyListObjectNullableNullableId { get; set; } = default!;
+        [Inject("A")] public IReadOnlyList<int?>? IReadOnlyListIntNullableNullableId { get; set; } = default!;
+        [Inject("A")] public IList<object?>? IListObjectNullableNullableId { get; set; } = default!;
+        [Inject("A")] public IList<int?>? IListIntNullableNullableId { get; set; } = default!;
+        [Inject("A")] public List<object?>? ListObjectNullableNullableId { get; set; } = default!;
+        [Inject("A")] public List<int?>? ListIntNullableNullableId { get; set; } = default!;
+        [Inject("A")] public IReadOnlyCollection<object?>? IReadOnlyCollectionObjectNullableNullableId { get; set; } = default!;
+        [Inject("A")] public IReadOnlyCollection<int?>? IReadOnlyCollectionIntNullableNullableId { get; set; } = default!;
+        [Inject("A")] public ICollection<object?>? ICollectionObjectNullableNullableId { get; set; } = default!;
+        [Inject("A")] public ICollection<int?>? ICollectionIntNullableNullableId { get; set; } = default!;
+        
         public void Inject(List<object> objects)
         {
         }
@@ -218,6 +270,13 @@ namespace SomeNamespace.Subnamespace
         [Inject] public Lazy<int?> NullableValue { get; set; } = default!;
         [Inject] public Lazy<Lazy<Lazy<int>>> RecursiveLazy { get; set; } = default!;
         [Inject] public Lazy<List<int>> LazyList { get; set; } = default!;
+        
+        [Inject] public Lazy<object>? ObjectNullable { get; set; } = default!;
+        [Inject] public Lazy<object?>? NullableObjectNullable { get; set; } = default!;
+        [Inject] public Lazy<int>? ValueNullable { get; set; } = default!;
+        [Inject] public Lazy<int?>? NullableValueNullable { get; set; } = default!;
+        [Inject] public Lazy<Lazy<Lazy<int>>>? RecursiveLazyNullable { get; set; } = default!;
+        [Inject] public Lazy<List<int>>? LazyListNullable { get; set; } = default!;
 
         public void Inject(Lazy<object> obj, Lazy<object?> nullObj, Lazy<int> val, Lazy<int?> nullVal)
         {
@@ -256,7 +315,7 @@ namespace UnityEngine
 
     public class MonoBeheviour : Object
     {
-        [Inject] public Object Something { get; set; } = default!;
+        [Inject] public object Something { get; set; } = default!;
         
         public void Initialize() { }
     }

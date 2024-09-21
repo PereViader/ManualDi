@@ -53,12 +53,12 @@ namespace ManualDi.Main
                 return ResolveBinding(typeBinding);
             }
 
-            if (parentDiContainer is not null)
+            if (parentDiContainer is null)
             {
-                return parentDiContainer.ResolveContainer(type, filterBindingDelegate);
+                return null;
             }
 
-            return null;
+            return parentDiContainer.ResolveContainer(type, filterBindingDelegate);
         }
 
         private object ResolveBinding(TypeBinding typeBinding)
@@ -145,7 +145,23 @@ namespace ManualDi.Main
 
             parentDiContainer?.ResolveAllContainer(type, filterBindingDelegate, resolutions);
         }
-        
+
+        public bool WouldResolveContainer(Type type, FilterBindingDelegate? filterBindingDelegate)
+        {
+            var typeBinding = GetTypeForConstraint(type, filterBindingDelegate);
+            if (typeBinding is not null)
+            {
+                return true;
+            }
+
+            if (parentDiContainer is null)
+            {
+                return false;
+            }
+
+            return parentDiContainer.WouldResolveContainer(type, filterBindingDelegate);
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AddResolveAllInstances(Type type, FilterBindingDelegate? filterBindingDelegate, IList resolutions)
         {

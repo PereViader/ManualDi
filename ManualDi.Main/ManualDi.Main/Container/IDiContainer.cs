@@ -25,6 +25,15 @@ namespace ManualDi.Main
         void ResolveAllContainer(Type type, FilterBindingDelegate? filterBindingDelegate, IList resolutions);
 
         /// <summary>
+        /// Checks if calling ResolveContainer or ResolveAllContainer would return any instance.
+        /// False positives are possible if the bindings would at creation time
+        /// </summary>
+        /// <param name="type">The type of the binding to resolve</param>
+        /// <param name="resolutions">The list of resolutions to be populated from the operations done inside. Resolutions are added at the end of the list</param>
+        /// <returns>True when resolving would succeed or throw, false when resolving returns null or empty list</returns>
+        bool WouldResolveContainer(Type type, FilterBindingDelegate? filterBindingDelegate);
+        
+        /// <summary>
         /// Queues for disposal a disposable. They will be called in order when disposing the container.
         /// </summary>
         /// <param name="disposable">The disposable to queue</param>

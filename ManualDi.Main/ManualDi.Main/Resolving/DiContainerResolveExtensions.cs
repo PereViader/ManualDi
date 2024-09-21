@@ -3,6 +3,36 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
 {
+    public static class DiContainerWouldResolveExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool WouldResolve<T>(this IDiContainer diContainer)
+        {
+            return diContainer.WouldResolveContainer(typeof(T), filterBindingDelegate: null);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool WouldResolve<T>(this IDiContainer diContainer, Action<ResolutionConstraints> configureResolutionConstraints)
+        {
+            var resolutionConstraints = new ResolutionConstraints();
+            configureResolutionConstraints.Invoke(resolutionConstraints);
+
+            return diContainer.WouldResolveContainer(typeof(T), resolutionConstraints.FilterBindingDelegate);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool WouldResolve(this IDiContainer diContainer, Type type)
+        {
+            return diContainer.WouldResolveContainer(type, filterBindingDelegate: null);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool WouldResolve(this IDiContainer diContainer, Type type, FilterBindingDelegate filterBindingDelegate)
+        {
+            return diContainer.WouldResolveContainer(type, filterBindingDelegate: filterBindingDelegate);
+        }
+    }
+    
     public static class DiContainerResolveExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

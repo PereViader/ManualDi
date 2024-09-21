@@ -112,13 +112,29 @@ namespace ManualDi.Main
             }
 
             bindingContext.InjectIntoType = bindingStack.Peek();
-            foreach (var typeBinding in typeBindings)
-            {
-                bindingContext.Id = typeBinding.Id;
 
-                if ((isValidBindingDelegate?.Invoke(bindingContext) ?? true) && (typeBinding.IsValidBindingDelegate?.Invoke(bindingContext) ?? true))
+            if (isValidBindingDelegate is null)
+            {
+                foreach (var typeBinding in typeBindings)
                 {
-                    return typeBinding;
+                    bindingContext.Id = typeBinding.Id;
+
+                    if (typeBinding.IsValidBindingDelegate?.Invoke(bindingContext) ?? true)
+                    {
+                        return typeBinding;
+                    }
+                }
+            }
+            else
+            {
+                foreach (var typeBinding in typeBindings)
+                {
+                    bindingContext.Id = typeBinding.Id;
+
+                    if (isValidBindingDelegate.Invoke(bindingContext) && (typeBinding.IsValidBindingDelegate?.Invoke(bindingContext) ?? true))
+                    {
+                        return typeBinding;
+                    }
                 }
             }
             

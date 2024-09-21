@@ -60,7 +60,7 @@ SomeService service = container.Resolve<SomeService>();
 The configuration of the container is done through Binding extension methods available on `DiContainerBindings` and can only be set during the installation phase. 
 Any alteration by custom means after the container's creation may result in undefined behaviour.
 
-Calling the Bind method provides a fluent interface through `TypeBinding<TAparent, TConcrete>`.
+Calling the Bind method provides a fluent interface through `TypeBinding<TApparent, TConcrete>`.
 - Apparent: It's the type that can be used when resolving the container.
 - Concrete: It's type of the actual instance behind the scenes.
 

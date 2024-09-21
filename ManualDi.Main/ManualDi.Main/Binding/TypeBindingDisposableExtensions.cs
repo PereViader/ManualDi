@@ -37,8 +37,8 @@ namespace ManualDi.Main
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<TInterface, TConcrete> Dispose<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding,
+        public static TypeBinding<TApparent, TConcrete> Dispose<TApparent, TConcrete>(
+            this TypeBinding<TApparent, TConcrete> typeBinding,
             InstanceContainerDelegate<TConcrete> disposeDelegate
             )
         {

@@ -14,10 +14,10 @@ namespace ManualDi.Main
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<TInterface, TConcrete> Bind<TInterface, TConcrete>(this DiContainerBindings diContainerBindings)
-            where TConcrete : TInterface
+        public static TypeBinding<TApparent, TConcrete> Bind<TApparent, TConcrete>(this DiContainerBindings diContainerBindings)
+            where TConcrete : TApparent
         {
-            TypeBinding<TInterface, TConcrete> typeBinding = new();
+            TypeBinding<TApparent, TConcrete> typeBinding = new();
             diContainerBindings.AddBinding(typeBinding);
             return typeBinding;
         }
@@ -31,9 +31,9 @@ namespace ManualDi.Main
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static UnsafeTypeBinding Bind(this DiContainerBindings diContainerBindings, Type interfaceType, Type concreteType)
+        public static UnsafeTypeBinding Bind(this DiContainerBindings diContainerBindings, Type apparentType, Type concreteType)
         {
-            UnsafeTypeBinding typeBinding = new(interfaceType, concreteType);
+            UnsafeTypeBinding typeBinding = new(apparentType, concreteType);
             diContainerBindings.AddUnsafeBinding(typeBinding);
             return typeBinding;
         }

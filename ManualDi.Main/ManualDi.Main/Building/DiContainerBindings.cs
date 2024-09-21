@@ -39,13 +39,13 @@ namespace ManualDi.Main
             disposeActions = disposeCapacity.HasValue ? new(disposeCapacity.Value) : new();
         }
         
-        public void AddBinding<TInterface, TConcrete>(TypeBinding<TInterface, TConcrete> typeBinding)
+        public void AddBinding<TApparent, TConcrete>(TypeBinding<TApparent, TConcrete> typeBinding)
         {
-            var interfaceType = typeof(TInterface);
-            if (!typeBindings.TryGetValue(interfaceType, out var bindings))
+            var apparentType = typeof(TApparent);
+            if (!typeBindings.TryGetValue(apparentType, out var bindings))
             {
                 bindings = new List<TypeBinding>(1);
-                typeBindings[interfaceType] = bindings;
+                typeBindings[apparentType] = bindings;
             }
 
             bindings.Add(typeBinding);
@@ -53,11 +53,11 @@ namespace ManualDi.Main
         
         public void AddUnsafeBinding(UnsafeTypeBinding typeBinding)
         {
-            var interfaceType = typeBinding.ApparentType;
-            if (!typeBindings.TryGetValue(interfaceType, out var bindings))
+            var apparentType = typeBinding.ApparentType;
+            if (!typeBindings.TryGetValue(apparentType, out var bindings))
             {
                 bindings = new List<TypeBinding>(1);
-                typeBindings[interfaceType] = bindings;
+                typeBindings[apparentType] = bindings;
             }
 
             bindings.Add(typeBinding);

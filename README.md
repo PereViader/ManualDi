@@ -37,7 +37,7 @@ Welcome to ManualDi – the simple, fast and extensible C# dependency injection 
 # Container Lifecycle
 
 - Installation Phase: Container configuration is defined.
-- Building Phase: Container configuration is ingested. Non lazy Bindings are resolved.
+- Building Phase: Container configuration is ingested. Non-lazy Bindings are resolved.
 - Startup Phase: Configured startup callbacks are run.
 - Resolution Phase: Container is provided and explicit resolutions can be done.
 - Disposal Phase: The container and its resources are released.
@@ -58,16 +58,16 @@ SomeService service = container.Resolve<SomeService>();
 # Binding
 
 The configuration of the container is done through Binding extension methods available on `DiContainerBindings` and can only be set during the installation phase. 
-Any alteration by custom means after the container's cration may result in undefined behaviour.
+Any alteration by custom means after the container's creation may result in undefined behaviour.
 
-Calling the Bind method provides a fluent inteface through `TypeBinding<TAparent, TConcrete>`.
-- Aparent: It's the type that can be used when resolving the container.
+Calling the Bind method provides a fluent interface through `TypeBinding<TAparent, TConcrete>`.
+- Apparent: It's the type that can be used when resolving the container.
 - Concrete: It's type of the actual instance behind the scenes.
 
 By convention, method calls should be done in the following order.
 
 ```csharp
-Bind<(TInterface,)? TConcrete>() // TInterface is optional and will be equal to TConcrete if undefined
+Bind<(TApparent,)? TConcrete>() // TApparent is optional and will be equal to TConcrete if undefined
     .Default   // Source generated
     .[Single*|Transient]
     .From[Constructor|Instance|Method|ContainerResolve|SubContainerResolve|...]  //Constructor is source generated
@@ -75,6 +75,7 @@ Bind<(TInterface,)? TConcrete>() // TInterface is optional and will be equal to 
     .Initialize  //Empty overload is source generated
     .Dispose
     .WithId
+    .When
     .[Lazy*|NonLazy]
     .[Any other custom extension method your project implements]
 
@@ -105,6 +106,7 @@ static class Installer
 
 The scope of a binding defines the rules for instance creation.
 - Single: The container will generate a single instance of the type and cache it. Followup calls for the same type will reuse the instance.
+  - This is the default behaviour for bindings
 - Transient: The container will generate a new instance every time the type is resolved.
 
 ## From
@@ -141,8 +143,8 @@ b.Bind<T>().FromMethod(c => new T(c.Resolve<SomeService>()))
 
 ### ContainerResolve
 
-Used for aparent type remapping.
-Commonly used to bind multiple relevant intefaces of some type to the container.
+Used for apparent type remapping.
+Commonly used to bind multiple relevant interfaces of some type to the container.
 
 ```csharp
 inteface IFirst { }
@@ -156,7 +158,7 @@ b.Bind<ISecond, SomeClass>().FromContainerResolve();
 ### SubContainerResolve
 
 The instance is created using a sub container built using the installer parameter.
-Useful for encapsulating parts of object graph definition into subcontainers.
+Useful for encapsulating parts of object graph definition into sub-containers.
 
 ```
 class SomeService(Dependency dependency) { }
@@ -221,7 +223,7 @@ b.Bind<C>().FromConstructor().Inject();
 
 ### Example1: Cannot change the constructor
 
-In the unity engine, for example, types that that derive from `UnityEngine.Object` cannot make use of the constructor.
+In the unity engine, for example, types that derive from `UnityEngine.Object` cannot make use of the constructor.
 For this reason, derived types will usually resort to this kind of injection
 
 ```csharp
@@ -340,13 +342,13 @@ b.Bind<int>().FromInstance(5).WithId("Banana");
 
 // ...
 
-c.Resolve<int>(x => x.WhereId("Potato")); // returns 1
-c.Resolve<int>(x => x.WhereId("Banana")); // returns 5
+c.Resolve<int>(x => x.Id("Potato")); // returns 1
+c.Resolve<int>(x => x.Id("Banana")); // returns 5
 ```
 
 Note: This feature can be nice to use, but I usually prefer using it sparingly. This is because it introduces the need for the provider and consumer to share two points of information (Type and Id) instead of just one (Type)
 
-An alternative to it is to register delegates instead. Delegates used this way encote the two concepts into one.
+An alternative to it is to register delegates instead. Delegates used this way encode the two concepts into one.
 
 ```
 delegate int GetPotatoInt();
@@ -369,13 +371,53 @@ class A
 }
 
 //Will resolve the property doing
-c.Resolve<B>(x => x.WhereId("Potato"));
+c.Resolve<B>(x => x.Id("Potato"));
 
 //and call the inject method doing
 o.Inject(
     c.Resolve<int>(),
-    c.Resolve<object>(x => x.WhereId("Other"))
+    c.Resolve<object>(x => x.Id("Other"))
 )
+```
+
+## When
+
+The `When` extension method allows defining filtering conditions as part of the bindings.
+
+### InjectedIntoType
+
+Allows filtering bindings using the injected Concrete type
+
+```csharp
+class SomeValue(int Value) { }
+class OtherValue(int Value) { }
+class FailValue(int Value) { }
+
+b.Bind<int>().FromInstance(1).When(x => x.InjectedIntoType<SomeValue>())
+b.Bind<int>().FromInstance(2).When(x => x.InjectedIntoType<OtherValue>())
+
+b.Bind<SomeValue>().Default().FromConstructor(); // will be provided 1
+b.Bind<OtherValue>().Default().FromConstructor(); // will be provided 2
+b.Bind<FailValue>().Default().FromConstructor(); // will fail at runtime when resolved
+
+c.Resolve<int>(x => x.InjectedIntoType<OtherValue>()); // returns 2
+```
+
+### InjectedIntoId
+
+Allows filtering bindings using the injected Concrete type
+
+```csharp
+class SomeValue(int Value) { }
+
+b.Bind<int>().FromInstance(1).When(x => x.InjectedIntoId("1"));
+b.Bind<int>().FromInstance(2).When(x => x.InjectedIntoId("2"));
+
+b.Bind<SomeValue>().Default().FromConstructor().WithId("1"); // will be provided 1
+b.Bind<SomeValue>().Default().FromConstructor().WithId("2"); // will be provided 2
+b.Bind<FailValue>().Default().FromConstructor(); // will fail at runtime when resolved
+
+c.Resolve<int>(x => x.InjectedIntoId("2")) // returns 2
 ```
 
 ## Laziness
@@ -383,7 +425,7 @@ o.Inject(
 ### Lazy
 
 The FromMethod delegate will not be called until the object is actually resolved.
-By default bindings are Lazy so calling this method is usually not necessary.
+By default, bindings are Lazy so calling this method is usually not necessary.
 
 ### NonLazy
 
@@ -415,9 +457,9 @@ b.Bind<C>().Default().FromConstructor(); // Default calls Initialize
 b.Bind<D>().Default().FromConstructor(); // Default calls Inject and Initialize
 ```
 
-Using default is not mandatory, but it helps development by taking the responsability of updating the bindings away from the developer any time a new Inject / Initialize method is introduced.
+Using default is not mandatory, but it helps development by taking the responsibility of updating the bindings away from the developer any time a new Inject / Initialize method is introduced.
 
-Thus it is recommended to always add it even if the type does not currently have any of the methods.
+Thus, it is recommended to always add it even if the type does not currently have any of the methods.
 
 ## Extra Source Generator features
 
@@ -486,7 +528,7 @@ b.Bind<A>().Default().FromConstructor();
 
 # Resolving
 
-Notice that resolution can only be done on aparent types, not concrete types. Concrete types are there so the continer can provide a type safe fluent API.
+Notice that resolution can only be done on apparent types, not concrete types. Concrete types are there so the container can provide a type safe fluent API.
 
 If you use the source generated methods, you will usually not interact with the Resolution methods.
 
@@ -494,7 +536,7 @@ Resolutions can be done in the following ways:
 
 ## Resolve
 
-Resolve a single registered instance from the container. An exception is thrown if it can't be resolved.
+Resolve an instance from the container. An exception is thrown if it can't be resolved.
 
 ```csharp
 SomeService service = container.Resolve<SomeService>();
@@ -502,7 +544,7 @@ SomeService service = container.Resolve<SomeService>();
 
 ## ResolveNullable
 
-Resolve a single reference type registered instance from the container. Returns null if it can't be resolved.
+Resolve a reference type instance from the container. Returns null if it can't be resolved.
 
 ```csharp
 SomeService? service = container.ResolveNullable<SomeService>();
@@ -510,7 +552,7 @@ SomeService? service = container.ResolveNullable<SomeService>();
 
 ## ResolveNullableValue
 
-Resolve a single value type registered instance from the container. Returns null if it can't be resolved.
+Resolve a value type instance from the container. Returns null if it can't be resolved.
 
 ```csharp
 int? service = container.ResolveNullableValue<int>();
@@ -518,7 +560,7 @@ int? service = container.ResolveNullableValue<int>();
 
 ## TryResolve
 
-Resolve a single instance from the container. Returns true if found and false if not.
+Resolve an instance from the container. Returns true if found and false if not.
 
 ```csharp
 bool found = container.TryResolve<SomeService>(out SomeService someService);
@@ -537,12 +579,6 @@ List<SomeService> services = container.ResolveAll<SomeService>();
 The container also provides an extension method so it can queue some delegate to be run during the Startups lifecycle of the container.
 This step is useful to make sure that some object's method is run after all the NonLazy objects have been created and initialized.
 
-In the following example the following will happen once the container is built:
-- `SomeNonLazy` is created 
-- `SomeNonLazy`'s `Initialize` method is be called
-- `Startup` is created
-- `Startup`'s `Start` method is called
-
 ```csharp
 class Startup
 {
@@ -560,9 +596,15 @@ b.Bind<Startup>().Default().FromConstructor();
 b.WithStartup<Startup>(o => o.Start());
 ```
 
+In the snippet above, the following will happen once the container is built:
+- `SomeNonLazy` is created
+- `SomeNonLazy`'s `Initialize` method is called
+- `Startup` is created
+- `Startup`'s `Start` method is called
+
 # ManualDi.Unity3d
 
-When using the container in unity, do not rely on Awake / Start. Instead rely on Inject / Initialize.
+When using the container in unity, do not rely on Awake / Start. Instead, rely on Inject / Initialize.
 You can still use Awake / Start if the classes involved are not injected through the container.
 
 ## Installers
@@ -572,7 +614,7 @@ The container provides two specialized Installers
 - `ScriptableObjectInstaller`
 
 This is the idiomatic Unity way to have both the configuration and engine object references in the same place.
-These classes just implement the `IInstaller` interface, there is no requriement for these classes to be used, so feel free to use IInstaller directly if you want.
+These classes just implement the `IInstaller` interface, there is no requirement for these classes to be used, so feel free to use IInstaller directly if you want.
 
 ```csharp
 public class SomeFeatureInstaller : MonoBehaviourInstaller
@@ -635,7 +677,7 @@ public class SomeFeatureInstaller : MonoBehaviourInstaller
 
 Most methods have several optional parameters.
 
-Also special attention to `Transform? parent = null`. This one will define the parent transform used when instantiating new instances.
+Also, special attention to `Transform? parent = null`. This one will define the parent transform used when instantiating new instances.
 
 
 Special attention to `bool destroyOnDispose = true` one. This one will be available on creation strategies that create new instances.
@@ -648,14 +690,14 @@ If the scene the resource is created on will then be deleted, there is no need t
 An entry point is a place where some context of your application is meant to start.
 In the case of ManualDi, it is where the object graph is configured and then the container is started.
 
-The last binding of an entry point will usually make use of WithStartable to run any logic necessary after the container is created.
+The last binding of an entry point will usually make use of WithStartable, to run any logic necessary after the container is created.
 
 ### RootEntryPoint
 
 Root entry points will not depend on any other container.
 This means that all dependencies will be registered in the main container itself.
 
-Use the appropiate type depending on how you want to structure your application:
+Use the appropriate type depending on how you want to structure your application:
 - `MonoBehaviourRootEntryPoint`
 - `ScriptableObjectRootEntryPoint`
 
@@ -683,11 +725,11 @@ class InitialSceneEntryPoint : MonoBehaviourRootEntryPoint
 
 ### SubordinateEntryPoint
 
-Subodinate entry points will depend on other container or require other data.
+Subordinate entry points will depend on other container or require other data.
 This means that these entry points cannot be started by themselves. They need to be started by some other part of your application.
 
 If the data provided to these entry points, implements `IInstaller`, then the data will also be installed to the container.
-Otherwise it will just be available throught the `Data` property of the EntryPoint.
+Otherwise, it will just be available through the `Data` property of the EntryPoint.
 If the subordinate container requires all the dependencies of the parent container, it is recommended to set the parent container on the EntryPointData object.
 
 ```
@@ -706,7 +748,7 @@ These entry points may also optionally return a `TContext` object resolved from 
 
 Doing such a thing is useful to provide a facade to the systems created.
 
-Use the appropiate type depending on how you want to structure your application:
+Use the appropriate type depending on how you want to structure your application:
 - `MonoBehaviourSubordinateEntryPoint<TData>`
 - `MonoBehaviourSubordinateEntryPoint<TData, TContext>`
 - `ScriptableObjectSubordinateEntryPoint<TData>`
@@ -829,9 +871,9 @@ Feel free to ignore the container classes and implement your custom entry points
 ## Link
 
 Link methods are a great way to interconnect different features right from the container.
-The library provides a few, but adding your own custom ones for your usecases is a great way to speed up development.
+The library provides a few, but adding your own custom ones for your use cases is a great way to speed up development.
 
-- `LinkDontDestroyOnLoad`: The object will have don't destroy on load called on it when the contianer is bound. Behaviour can be customized with the optional parameters
+- `LinkDontDestroyOnLoad`: The object will have don't destroy on load called on it when the container is bound. Behaviour can be customized with the optional parameters
 
 ```csharp
 class Installer : MonoBehaviourInstaller
@@ -876,7 +918,7 @@ await initializer.StartApplication();
 
 The following is experimental and might be removed.
 
-The bindings may also be done with a non type safe interface. This variant should only be used when implementing programatic driven configuration. Use the type safe variant when all the types involved are known.
+The bindings may also be done with a non type safe interface. This variant should only be used when implementing programmatic driven configuration. Use the type safe variant when all the types involved are known.
 
 ```csharp
 List<Type> someTypes = GetSomeTypesWithReflection();

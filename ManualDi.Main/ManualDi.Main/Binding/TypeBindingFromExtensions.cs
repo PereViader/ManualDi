@@ -6,8 +6,8 @@ namespace ManualDi.Main
     public static class TypeBindingFromExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<TInterface, TConcrete> FromContainerResolve<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding
+        public static TypeBinding<TApparent, TConcrete> FromContainerResolve<TApparent, TConcrete>(
+            this TypeBinding<TApparent, TConcrete> typeBinding
             )
         {
             typeBinding.CreateConcreteDelegate = c => c.Resolve<TConcrete>();
@@ -24,8 +24,8 @@ namespace ManualDi.Main
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<TInterface, TConcrete> FromContainerResolve<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding,
+        public static TypeBinding<TApparent, TConcrete> FromContainerResolve<TApparent, TConcrete>(
+            this TypeBinding<TApparent, TConcrete> typeBinding,
             Action<ResolutionConstraints> constraints
             )
         {
@@ -44,8 +44,8 @@ namespace ManualDi.Main
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<TInterface, TConcrete> FromSubContainerResolve<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding,
+        public static TypeBinding<TApparent, TConcrete> FromSubContainerResolve<TApparent, TConcrete>(
+            this TypeBinding<TApparent, TConcrete> typeBinding,
             InstallDelegate installDelegate,
             bool isContainerParent = true
         )
@@ -88,8 +88,8 @@ namespace ManualDi.Main
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<TInterface, TConcrete> FromInstance<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding,
+        public static TypeBinding<TApparent, TConcrete> FromInstance<TApparent, TConcrete>(
+            this TypeBinding<TApparent, TConcrete> typeBinding,
             TConcrete instance
             )
         {
@@ -108,8 +108,8 @@ namespace ManualDi.Main
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<TInterface, TConcrete> FromMethod<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding,
+        public static TypeBinding<TApparent, TConcrete> FromMethod<TApparent, TConcrete>(
+            this TypeBinding<TApparent, TConcrete> typeBinding,
             CreateDelegate<TConcrete> createDelegate
             )
         {

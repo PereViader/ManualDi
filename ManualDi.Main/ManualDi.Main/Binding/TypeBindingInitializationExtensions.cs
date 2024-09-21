@@ -5,8 +5,8 @@ namespace ManualDi.Main
     public static class TypeBindingInitializationExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<TInterface, TConcrete> Initialize<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding,
+        public static TypeBinding<TApparent, TConcrete> Initialize<TApparent, TConcrete>(
+            this TypeBinding<TApparent, TConcrete> typeBinding,
             InstanceContainerDelegate<TConcrete> initializationDelegate
             )
         {

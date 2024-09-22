@@ -400,8 +400,6 @@ b.Bind<int>().FromInstance(2).When(x => x.InjectedIntoType<OtherValue>())
 b.Bind<SomeValue>().Default().FromConstructor(); // will be provided 1
 b.Bind<OtherValue>().Default().FromConstructor(); // will be provided 2
 b.Bind<FailValue>().Default().FromConstructor(); // will fail at runtime when resolved
-
-c.Resolve<int>(x => x.InjectedIntoType<OtherValue>()); // returns 2
 ```
 
 ### InjectedIntoId
@@ -417,8 +415,6 @@ b.Bind<int>().FromInstance(2).When(x => x.InjectedIntoId("2"));
 b.Bind<SomeValue>().Default().FromConstructor().WithId("1"); // will be provided 1
 b.Bind<SomeValue>().Default().FromConstructor().WithId("2"); // will be provided 2
 b.Bind<FailValue>().Default().FromConstructor(); // will fail at runtime when resolved
-
-c.Resolve<int>(x => x.InjectedIntoId("2")) // returns 2
 ```
 
 ## Laziness

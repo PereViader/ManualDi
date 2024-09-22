@@ -141,7 +141,22 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ResolveAllContainer(Type type, FilterBindingDelegate? filterBindingDelegate, IList resolutions)
         {
-            AddResolveAllInstances(type, filterBindingDelegate, resolutions);
+            if (allTypeBindings.TryGetValue(type, out var typeBindings))
+            {
+                bindingContext.InjectedIntoTypeBinding = injectedTypeBinding;
+            
+                foreach (var typeBinding in typeBindings)
+                {
+                    bindingContext.TypeBinding = typeBinding;
+
+                    if ((filterBindingDelegate?.Invoke(bindingContext) ?? true) && 
+                        (typeBinding.FilterBindingDelegate?.Invoke(bindingContext) ?? true))
+                    {
+                        var resolved = ResolveBinding(typeBinding);
+                        resolutions.Add(resolved);
+                    }
+                }
+            }
 
             parentDiContainer?.ResolveAllContainer(type, filterBindingDelegate, resolutions);
         }
@@ -175,28 +190,6 @@ namespace ManualDi.Main
                 overrideFilterBindingDelegate);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void AddResolveAllInstances(Type type, FilterBindingDelegate? filterBindingDelegate, IList resolutions)
-        {
-            if (!this.allTypeBindings.TryGetValue(type, out var typeBindings))
-            {
-                return;
-            }
-            
-            bindingContext.InjectedIntoTypeBinding = injectedTypeBinding;
-            
-            foreach (var typeBinding in typeBindings)
-            {
-                bindingContext.TypeBinding = typeBinding;
-
-                if ((filterBindingDelegate?.Invoke(bindingContext) ?? true) && 
-                    (typeBinding.FilterBindingDelegate?.Invoke(bindingContext) ?? true))
-                {
-                    var resolved = ResolveBinding(typeBinding);
-                    resolutions.Add(resolved);
-                }
-            }
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void QueueDispose(IDisposable disposable)

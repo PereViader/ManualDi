@@ -10,7 +10,7 @@ public class SimpleBenchmark
     private ServiceProvider microsoftDiContainer = default!;
     private IDiContainer manualDiContainer = default!;
     
-    [IterationSetup(Targets = new[] { nameof(MicrosoftDi_Dispose), nameof(MicrosoftDi_Resolve_Service) })]
+    [IterationSetup(Targets = new[] { nameof(MicrosoftDi_Resolve_Service) })]
     public void SetupMicrosoft()
     {
         microsoftDiContainer = new ServiceCollection()
@@ -18,7 +18,7 @@ public class SimpleBenchmark
             .BuildServiceProvider();
     }
 
-    [IterationSetup(Targets = new [] { nameof(ManualDi_Dispose), nameof(ManualDi_Resolve_Service)})]
+    [IterationSetup(Targets = new [] { nameof(ManualDi_Resolve_Service)})]
     public void SetupManualDi()
     {
         manualDiContainer = new DiContainerBindings(bindingsCapacity: 100)
@@ -38,22 +38,6 @@ public class SimpleBenchmark
     public void MicrosoftDi_Setup()
     {
         SetupMicrosoft();
-    }
-    
-    #endregion
-
-    #region Dispose
-    
-    [Benchmark]
-    public void ManualDi_Dispose()
-    {
-        manualDiContainer.Dispose();
-    }
-    
-    [Benchmark]
-    public void MicrosoftDi_Dispose()
-    {
-        microsoftDiContainer.Dispose();
     }
     
     #endregion

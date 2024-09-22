@@ -134,7 +134,6 @@ namespace ManualDi.Main
             return null;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ResolveAllContainer(Type type, FilterBindingDelegate? filterBindingDelegate, IList resolutions)
         {
             if (allTypeBindings.TryGetValue(type, out var typeBindings))
@@ -184,15 +183,12 @@ namespace ManualDi.Main
             return parentDiContainer.WouldResolveContainer(type, filterBindingDelegate, overrideInjectedIntoType, 
                 overrideFilterBindingDelegate);
         }
-
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        
         public void QueueDispose(IDisposable disposable)
         {
             diContainerDisposer.QueueDispose(disposable);
         }
         
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void QueueDispose(Action disposableAction)
         {
             diContainerDisposer.QueueDispose(disposableAction);

@@ -11,21 +11,17 @@ Welcome to ManualDi – the simple, fast and extensible C# dependency injection 
 [Benchmark](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Main/ManualDi.Main.Benchmark/SimpleBenchmark.cs) against Microsoft's container
 
 ```
-| Method                           | Mean         | Error       | StdDev       | Median       | Gen0   | Gen1   | Allocated |
-|--------------------------------- |-------------:|------------:|-------------:|-------------:|-------:|-------:|----------:|  
-| ManualDi_Setup                   |   4,437.9 ns |    22.92 ns |     21.44 ns |   4,434.3 ns | 0.3281 | 0.0305 |   16464 B |  
-| MicrosoftDi_Setup                |   5,579.5 ns |    81.10 ns |     75.86 ns |   5,606.6 ns | 0.5951 | 0.1450 |   30232 B |  
-| ManualDi_Dispose                 |     243.3 ns |    35.50 ns |    102.98 ns |     200.0 ns |      - |      - |     640 B |  
-| MicrosoftDi_Dispose              |     574.5 ns |    83.00 ns |    242.12 ns |     600.0 ns |      - |      - |     640 B |  
-| ManualDi_Resolve_Service         |  12,883.5 ns |   463.03 ns |  1,298.40 ns |  12,500.0 ns |      - |      - |    3688 B |  
-| MicrosoftDi_Resolve_Service      | 143,961.0 ns | 6,218.92 ns | 18,336.62 ns | 135,500.0 ns |      - |      - |  135136 B |  
-| ManualDi_Resolve_ServiceTwice    |     460.0 ns |    97.85 ns |    288.50 ns |     300.0 ns |      - |      - |     640 B |  
-| MicrosoftDi_Resolve_ServiceTwice |     351.6 ns |    26.24 ns |     73.58 ns |     300.0 ns |      - |      - |     640 B |
+| Method              | Mean       | Error     | StdDev     | Median     | Gen0   | Gen1   | Allocated |
+|-------------------- |-----------:|----------:|-----------:|-----------:|-------:|-------:|----------:|
+| ManualDi_Setup      |   4.409 us | 0.0061 us |  0.0051 us |   4.409 us | 0.3433 | 0.0381 |   16.9 KB |
+| MicrosoftDi_Setup   |   5.473 us | 0.1083 us |  0.1159 us |   5.461 us | 0.5951 | 0.1450 |  29.52 KB |
+| ManualDi_Resolve    |  11.619 us | 0.4813 us |  1.3810 us |  11.500 us |      - |      - |    3.6 KB |
+| MicrosoftDi_Resolve | 141.507 us | 4.7015 us | 13.8625 us | 135.850 us |      - |      - | 131.97 KB |
 ```
 
 [Benchmark](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Unity3d/Assets/ManualDi.Unity3d/Tests/Benchmark.cs) against Unity3d compatible containers. 
 
-![Unity3d-Container-Benchmark](https://github.com/user-attachments/assets/536645da-f92a-4be8-abc5-03198ee2e6e0)
+![Unity3d-Container-Benchmark](https://github.com/user-attachments/assets/a524e8d9-1234-40e5-b9d2-9358838b641b)
 
 # Installation
 

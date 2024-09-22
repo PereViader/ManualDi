@@ -102,10 +102,9 @@ namespace ManualDi.Main
                 return null;
             }
 
-            var first = typeBindings[0];
-            if (filterBindingDelegate is null && first.FilterBindingDelegate is null)
+            if (filterBindingDelegate is null && typeBindings[0].FilterBindingDelegate is null)
             {
-                return first;
+                return typeBindings[0];
             }
 
             bindingContext.InjectedIntoTypeBinding = injectedTypeBinding;

@@ -35,27 +35,17 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public (object instance, bool isNew) Create(IDiContainer container)
         {
+            if (SingleInstance is not null) //Optimization: We don't check if Scope is Single
+            {
+                return (SingleInstance, false);
+            }
+        
+            var instance = CreateNew(container) ?? throw new InvalidOperationException($"Could not create object for {GetType().FullName}");
             if (TypeScope is TypeScope.Single)
             {
-                if (SingleInstance is not null)
-                {
-                    return (SingleInstance, false);
-                }
-
-                SingleInstance = CreateNew(container);
-                if (SingleInstance is null)
-                {
-                    throw new InvalidOperationException($"Could not create object for {GetType().FullName}");
-                }
-                
-                return (SingleInstance, true);
+                SingleInstance = instance;
             }
-            
-            var instance = CreateNew(container);
-            if (instance is null)
-            {
-                throw new InvalidOperationException($"Could not create object for {GetType().FullName}");
-            }
+        
             return (instance, true);
         }
         

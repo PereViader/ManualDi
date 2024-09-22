@@ -24,33 +24,15 @@ namespace ManualDi.Main
         public abstract Type ApparentType { get; }
         public abstract Type ConcreteType { get; }
         
-        public TypeScope TypeScope { get; set; } = TypeScope.Single;
-        public bool IsLazy { get; set; } = true;
-        public bool TryToDispose { get; set; } = true;
-        public object? Id { get; set; }
-        public FilterBindingDelegate? FilterBindingDelegate { get; set; }
+        public TypeScope TypeScope = TypeScope.Single;
+        public bool IsLazy = true;
+        public bool TryToDispose = true;
+        public object? Id;
+        public FilterBindingDelegate? FilterBindingDelegate;
+        internal object? SingleInstance;
         
-        private object? SingleInstance { get; set; }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public (object instance, bool isNew) Create(IDiContainer container)
-        {
-            if (SingleInstance is not null) //Optimization: We don't check if Scope is Single
-            {
-                return (SingleInstance, false);
-            }
-        
-            var instance = CreateNew(container) ?? throw new InvalidOperationException($"Could not create object for {GetType().FullName}");
-            if (TypeScope is TypeScope.Single)
-            {
-                SingleInstance = instance;
-            }
-        
-            return (instance, true);
-        }
-        
-        protected abstract object? CreateNew(IDiContainer container);
-        public abstract bool NeedsInitialize { get; }
+        public abstract object? CreateNew(IDiContainer container);
+        public abstract bool NeedsInitialize();
         public abstract void InitializeObject(object instance, IDiContainer container);
         public abstract void InjectObject(object instance, IDiContainer container);
     }
@@ -59,14 +41,12 @@ namespace ManualDi.Main
     {
         public override Type ApparentType => typeof(TApparent);
         public override Type ConcreteType => typeof(TConcrete);
+
+        public CreateDelegate<TConcrete>? CreateConcreteDelegate;
+        public InstanceContainerDelegate<TConcrete>? InjectionDelegates;
+        public InstanceContainerDelegate<TConcrete>? InitializationDelegate;
         
-        public CreateDelegate<TConcrete>? CreateConcreteDelegate { get; set; }
-        public InstanceContainerDelegate<TConcrete>? InjectionDelegates { get; set; }
-        public InstanceContainerDelegate<TConcrete>? InitializationDelegate { get; set; }
-        public override bool NeedsInitialize => InitializationDelegate is not null;
-
-
-        protected override object? CreateNew(IDiContainer container)
+        public override object? CreateNew(IDiContainer container)
         {
             if (CreateConcreteDelegate is null)
             {
@@ -79,6 +59,11 @@ namespace ManualDi.Main
         public override void InjectObject(object instance, IDiContainer container)
         {
             InjectionDelegates?.Invoke((TConcrete)instance, container);
+        }
+
+        public override bool NeedsInitialize()
+        {
+            return InitializationDelegate is not null;   
         }
         
         public override void InitializeObject(object instance, IDiContainer container)
@@ -98,12 +83,12 @@ namespace ManualDi.Main
 
         public override Type ApparentType { get; }
         public override Type ConcreteType { get; }
-        public CreateDelegate<object>? CreateConcreteDelegate { get; set; }
-        public InstanceContainerDelegate<object>? InjectionDelegates { get; set; }
-        public InstanceContainerDelegate<object>? InitializationDelegate { get; set; }
-        public override bool NeedsInitialize => InitializationDelegate is not null;
         
-        protected override object? CreateNew(IDiContainer container)
+        public CreateDelegate<object>? CreateConcreteDelegate;
+        public InstanceContainerDelegate<object>? InjectionDelegates;
+        public InstanceContainerDelegate<object>? InitializationDelegate;
+        
+        public override object? CreateNew(IDiContainer container)
         {
             return CreateConcreteDelegate?.Invoke(container);
         }
@@ -111,6 +96,11 @@ namespace ManualDi.Main
         public override void InjectObject(object instance, IDiContainer container)
         {
             InjectionDelegates?.Invoke(instance, container);
+        }
+
+        public override bool NeedsInitialize()
+        {
+            return InitializationDelegate is not null;   
         }
         
         public override void InitializeObject(object instance, IDiContainer container)

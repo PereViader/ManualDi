@@ -13,7 +13,6 @@ namespace ManualDi.Main
         
         private BindingInitializer bindingInitializer;
         private DisposableActionQueue disposableActionQueue;
-        private bool isResolving;
         private bool disposedValue;
         private TypeBinding? injectedTypeBinding;
 
@@ -63,17 +62,13 @@ namespace ManualDi.Main
 
         private object ResolveBinding(TypeBinding typeBinding)
         {
-
-            bool wasResolving = this.isResolving;
-            isResolving = true;
-
             var previousType = injectedTypeBinding;
             injectedTypeBinding = typeBinding;
-            var (instance, isNew) = typeBinding.Create(this);
-            injectedTypeBinding = previousType;
+            
+            var (instance, isNew) = Create(typeBinding);
             if (!isNew)
             {
-                isResolving = wasResolving;
+                injectedTypeBinding = previousType;
                 return instance;
             }
 
@@ -84,14 +79,30 @@ namespace ManualDi.Main
             }
             bindingInitializer.Queue(typeBinding, instance);
 
-            isResolving = wasResolving;
-
-            if (!isResolving)
+            injectedTypeBinding = previousType;
+            if (injectedTypeBinding is null)
             {
                 bindingInitializer.InitializeCurrentLevelQueued(this);
             }
 
             return instance;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private (object instance, bool isNew) Create(TypeBinding typeBinding)
+        {
+            if (typeBinding.SingleInstance is not null) //Optimization: We don't check if Scope is Single
+            {
+                return (typeBinding.SingleInstance, false);
+            }
+        
+            var instance = typeBinding.CreateNew(this) ?? throw new InvalidOperationException($"Could not create object for {GetType().FullName}");
+            if (typeBinding.TypeScope is TypeScope.Single)
+            {
+                typeBinding.SingleInstance = instance;
+            }
+        
+            return (instance, true);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -151,8 +162,7 @@ namespace ManualDi.Main
                     if ((filterBindingDelegate?.Invoke(bindingContext) ?? true) && 
                         (typeBinding.FilterBindingDelegate?.Invoke(bindingContext) ?? true))
                     {
-                        var resolved = ResolveBinding(typeBinding);
-                        resolutions.Add(resolved);
+                        resolutions.Add(ResolveBinding(typeBinding));
                     }
                 }
             }

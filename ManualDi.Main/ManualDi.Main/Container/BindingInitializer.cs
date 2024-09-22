@@ -31,7 +31,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Queue(ref this BindingInitializer o, TypeBinding typeBinding, object instance)
         {
-            if (!typeBinding.NeedsInitialize)
+            if (!typeBinding.NeedsInitialize())
             {
                 if (o.NestedCount >= o.Initializations.Count)
                 {

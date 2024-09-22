@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 namespace ManualDi.Main
 {
     //In order to optimize the container, this is a struct that is modified by static ref extensions
-    internal struct BindingInitializer
+    internal struct DiContainerInitializer
     {
         // This method has been optimized by storing the initialization commands that may happen at different depth levels
         // in the same list, thus having them be closer in memory and thus more cache friendly
@@ -18,7 +18,7 @@ namespace ManualDi.Main
         /// If you want to optimize your program for your use case and gain a little bit of time because the application won't need to dynamically change the list sizes
         /// provide the proper counts for each of the lists 
         /// </summary>
-        public BindingInitializer(int? initializationsCount = null, int? initializationsOnDepthCount = null)
+        public DiContainerInitializer(int? initializationsCount = null, int? initializationsOnDepthCount = null)
         {
             Initializations = initializationsCount.HasValue ? new(initializationsCount.Value) : new();
             InitializationsOnDepth = initializationsOnDepthCount.HasValue ? new(initializationsOnDepthCount.Value) : new();
@@ -26,10 +26,10 @@ namespace ManualDi.Main
         }
     }
     
-    internal static class BindingInitializerExtensions
+    internal static class DiContainerInitializerExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Queue(ref this BindingInitializer o, TypeBinding typeBinding, object instance)
+        public static void Queue(ref this DiContainerInitializer o, TypeBinding typeBinding, object instance)
         {
             if (!typeBinding.NeedsInitialize())
             {
@@ -53,7 +53,7 @@ namespace ManualDi.Main
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void InitializeCurrentLevelQueued(ref this BindingInitializer o, IDiContainer container)
+        public static void InitializeCurrentLevelQueued(ref this DiContainerInitializer o, IDiContainer container)
         {
             o.NestedCount++;
 

@@ -5,33 +5,41 @@ using System.Runtime.CompilerServices;
 namespace ManualDi.Main
 {
     //In order to optimize the container, this is a struct that is modified by static ref extensions
-    internal struct DisposableActionQueue
+    internal struct DiContainerDisposer
     {
         public readonly List<IDisposable> Disposables;
+        public bool DisposedValue;
 
-        public DisposableActionQueue(int? disposablesCount = null)
+        public DiContainerDisposer(int? disposablesCount = null)
         {
             Disposables = disposablesCount.HasValue ? new(disposablesCount.Value) : new();
+            DisposedValue = false;
         }
     }
 
-    internal static class DisposableActionQueueExtensions
+    internal static class DiContainerDisposerExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void QueueDispose(ref this DisposableActionQueue o, IDisposable disposable)
+        public static void QueueDispose(ref this DiContainerDisposer o, IDisposable disposable)
         {
             o.Disposables.Add(disposable);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void QueueDispose(ref this DisposableActionQueue o, Action disposableAction)
+        public static void QueueDispose(ref this DiContainerDisposer o, Action disposableAction)
         {
             o.Disposables.Add(new ActionDisposableWrapper(disposableAction));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void DisposeAll(ref this DisposableActionQueue o)
+        public static void Dispose(ref this DiContainerDisposer o)
         {
+            if (o.DisposedValue)
+            {
+                return;
+            }
+            o.DisposedValue = true;
+            
             foreach (var disposable in o.Disposables)
             {
                 disposable.Dispose();

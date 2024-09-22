@@ -11,9 +11,8 @@ namespace ManualDi.Main
         private readonly IDiContainer? parentDiContainer;
         private readonly BindingContext bindingContext = new();
         
-        private BindingInitializer bindingInitializer;
-        private DisposableActionQueue disposableActionQueue;
-        private bool disposedValue;
+        private DiContainerInitializer diContainerInitializer;
+        private DiContainerDisposer diContainerDisposer;
         private TypeBinding? injectedTypeBinding;
 
         public DiContainer(
@@ -23,8 +22,8 @@ namespace ManualDi.Main
             int? initializationsOnDepthCount = null,
             int? disposablesCount = null)
         {
-            bindingInitializer = new(initializationsCount, initializationsOnDepthCount);
-            disposableActionQueue = new(disposablesCount);
+            diContainerInitializer = new(initializationsCount, initializationsOnDepthCount);
+            diContainerDisposer = new(disposablesCount);
             
             this.allTypeBindings = allTypeBindings;
             this.parentDiContainer = parentDiContainer;
@@ -62,47 +61,34 @@ namespace ManualDi.Main
 
         private object ResolveBinding(TypeBinding typeBinding)
         {
-            var previousType = injectedTypeBinding;
-            injectedTypeBinding = typeBinding;
-            
-            var (instance, isNew) = Create(typeBinding);
-            if (!isNew)
-            {
-                injectedTypeBinding = previousType;
-                return instance;
-            }
-
-            typeBinding.InjectObject(instance, this);
-            if (typeBinding.TryToDispose && instance is IDisposable disposable)
-            {
-                QueueDispose(disposable);
-            }
-            bindingInitializer.Queue(typeBinding, instance);
-
-            injectedTypeBinding = previousType;
-            if (injectedTypeBinding is null)
-            {
-                bindingInitializer.InitializeCurrentLevelQueued(this);
-            }
-
-            return instance;
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private (object instance, bool isNew) Create(TypeBinding typeBinding)
-        {
             if (typeBinding.SingleInstance is not null) //Optimization: We don't check if Scope is Single
             {
-                return (typeBinding.SingleInstance, false);
+                return typeBinding.SingleInstance;
             }
+            
+            var previousInjectedTypeBinding = injectedTypeBinding;
+            injectedTypeBinding = typeBinding;
         
             var instance = typeBinding.CreateNew(this) ?? throw new InvalidOperationException($"Could not create object for {GetType().FullName}");
             if (typeBinding.TypeScope is TypeScope.Single)
             {
                 typeBinding.SingleInstance = instance;
             }
-        
-            return (instance, true);
+            
+            typeBinding.InjectObject(instance, this);
+            if (typeBinding.TryToDispose && instance is IDisposable disposable)
+            {
+                QueueDispose(disposable);
+            }
+            diContainerInitializer.Queue(typeBinding, instance);
+
+            injectedTypeBinding = previousInjectedTypeBinding;
+            if (injectedTypeBinding is null)
+            {
+                diContainerInitializer.InitializeCurrentLevelQueued(this);
+            }
+
+            return instance;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -203,24 +189,18 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void QueueDispose(IDisposable disposable)
         {
-            disposableActionQueue.QueueDispose(disposable);
+            diContainerDisposer.QueueDispose(disposable);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void QueueDispose(Action disposableAction)
         {
-            disposableActionQueue.QueueDispose(disposableAction);
+            diContainerDisposer.QueueDispose(disposableAction);
         }
 
         public void Dispose()
         {
-            if (disposedValue)
-            {
-                return;
-            }
-            disposedValue = true;
-
-            disposableActionQueue.DisposeAll();
+            diContainerDisposer.Dispose();
         }
     }
 }

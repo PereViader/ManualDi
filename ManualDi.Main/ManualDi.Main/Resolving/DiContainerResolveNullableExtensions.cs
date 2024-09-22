@@ -32,13 +32,10 @@ namespace ManualDi.Main
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T? ResolveNullable<T>(this IDiContainer diContainer, Action<ResolutionConstraints> configureResolutionConstraints)
+        public static T? ResolveNullable<T>(this IDiContainer diContainer, FilterBindingDelegate filterBindingDelegate)
             where T : class
         {
-            var resolutionConstraints = new ResolutionConstraints();
-            configureResolutionConstraints.Invoke(resolutionConstraints);
-
-            var result = diContainer.ResolveContainer(typeof(T), resolutionConstraints.FilterBindingDelegate);
+            var result = diContainer.ResolveContainer(typeof(T), filterBindingDelegate);
             if (result is null)
             {
                 return null;
@@ -48,13 +45,10 @@ namespace ManualDi.Main
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T? ResolveNullableValue<T>(this IDiContainer diContainer, Action<ResolutionConstraints> configureResolutionConstraints)
+        public static T? ResolveNullableValue<T>(this IDiContainer diContainer, FilterBindingDelegate filterBindingDelegate)
             where T : struct
         {
-            var resolutionConstraints = new ResolutionConstraints();
-            configureResolutionConstraints.Invoke(resolutionConstraints);
-
-            var result = diContainer.ResolveContainer(typeof(T), resolutionConstraints.FilterBindingDelegate);
+            var result = diContainer.ResolveContainer(typeof(T), filterBindingDelegate);
             if (result is null)
             {
                 return null;
@@ -70,12 +64,9 @@ namespace ManualDi.Main
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static object? ResolveNullable(this IDiContainer diContainer, Type type, Action<ResolutionConstraints> configureResolutionConstraints)
+        public static object? ResolveNullable(this IDiContainer diContainer, Type type, FilterBindingDelegate filterBindingDelegate)
         {
-            var resolutionConstraints = new ResolutionConstraints();
-            configureResolutionConstraints.Invoke(resolutionConstraints);
-
-            return diContainer.ResolveContainer(type, resolutionConstraints.FilterBindingDelegate);
+            return diContainer.ResolveContainer(type, filterBindingDelegate);
         }
     }
 }

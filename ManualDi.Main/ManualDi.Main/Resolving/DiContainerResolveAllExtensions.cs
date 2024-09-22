@@ -15,12 +15,10 @@ namespace ManualDi.Main
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static List<T> ResolveAll<T>(this IDiContainer diContainer, Action<ResolutionConstraints> configureResolutionConstraints)
+        public static List<T> ResolveAll<T>(this IDiContainer diContainer, FilterBindingDelegate filterBindingDelegate)
         {
             var resolutions = new List<T>();
-            var resolutionConstraints = new ResolutionConstraints();
-            configureResolutionConstraints.Invoke(resolutionConstraints);
-            diContainer.ResolveAllContainer(typeof(T), resolutionConstraints.FilterBindingDelegate, resolutions);
+            diContainer.ResolveAllContainer(typeof(T), filterBindingDelegate, resolutions);
             return resolutions;
         }
         
@@ -33,12 +31,10 @@ namespace ManualDi.Main
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static List<object> ResolveAll(this IDiContainer diContainer, Type type, Action<ResolutionConstraints> configureResolutionConstraints)
+        public static List<object> ResolveAll(this IDiContainer diContainer, Type type, FilterBindingDelegate filterBindingDelegate)
         {
             var resolutions = new List<object>();
-            var resolutionConstraints = new ResolutionConstraints();
-            configureResolutionConstraints.Invoke(resolutionConstraints);
-            diContainer.ResolveAllContainer(type, resolutionConstraints.FilterBindingDelegate, resolutions);
+            diContainer.ResolveAllContainer(type, filterBindingDelegate, resolutions);
             return resolutions;
         }
     }

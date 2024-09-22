@@ -146,9 +146,21 @@ namespace ManualDi.Main
             parentDiContainer?.ResolveAllContainer(type, filterBindingDelegate, resolutions);
         }
 
-        public bool WouldResolveContainer(Type type, FilterBindingDelegate? filterBindingDelegate)
+        public bool WouldResolveContainer(
+            Type type, 
+            FilterBindingDelegate? filterBindingDelegate,
+            Type? overrideInjectedIntoType, 
+            FilterBindingDelegate? overrideFilterBindingDelegate)
         {
+            var previousInjectedTypeBinding = injectedTypeBinding;
+            if (overrideInjectedIntoType is not null)
+            {
+                injectedTypeBinding = null;
+                injectedTypeBinding = GetTypeForConstraint(overrideInjectedIntoType, overrideFilterBindingDelegate);
+            }
+            
             var typeBinding = GetTypeForConstraint(type, filterBindingDelegate);
+            injectedTypeBinding = previousInjectedTypeBinding;
             if (typeBinding is not null)
             {
                 return true;
@@ -159,7 +171,8 @@ namespace ManualDi.Main
                 return false;
             }
 
-            return parentDiContainer.WouldResolveContainer(type, filterBindingDelegate);
+            return parentDiContainer.WouldResolveContainer(type, filterBindingDelegate, overrideInjectedIntoType, 
+                overrideFilterBindingDelegate);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

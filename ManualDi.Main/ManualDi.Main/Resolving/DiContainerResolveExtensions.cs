@@ -8,28 +8,39 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool WouldResolve<T>(this IDiContainer diContainer)
         {
-            return diContainer.WouldResolveContainer(typeof(T), filterBindingDelegate: null);
+            return diContainer.WouldResolveContainer(typeof(T), null, null, null);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool WouldResolve<T>(this IDiContainer diContainer, Action<ResolutionConstraints> configureResolutionConstraints)
+        public static bool WouldResolve<T>(this IDiContainer diContainer, FilterBindingDelegate filterBindingDelegate)
         {
-            var resolutionConstraints = new ResolutionConstraints();
-            configureResolutionConstraints.Invoke(resolutionConstraints);
-
-            return diContainer.WouldResolveContainer(typeof(T), resolutionConstraints.FilterBindingDelegate);
+            return diContainer.WouldResolveContainer(typeof(T), filterBindingDelegate, null, null);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool WouldResolve<TResolve, TInjectedInto>(this IDiContainer diContainer, FilterBindingDelegate? filterBindingDelegate = null,
+            FilterBindingDelegate? injectedIntoFilterBindingDelegate = null)
+        {
+            return diContainer.WouldResolveContainer(typeof(TResolve), filterBindingDelegate, typeof(TInjectedInto), injectedIntoFilterBindingDelegate);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool WouldResolve(this IDiContainer diContainer, Type type)
         {
-            return diContainer.WouldResolveContainer(type, filterBindingDelegate: null);
+            return diContainer.WouldResolveContainer(type, null, null, null);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool WouldResolve(this IDiContainer diContainer, Type type, FilterBindingDelegate filterBindingDelegate)
         {
-            return diContainer.WouldResolveContainer(type, filterBindingDelegate: filterBindingDelegate);
+            return diContainer.WouldResolveContainer(type, filterBindingDelegate, null, null);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool WouldResolve(this IDiContainer diContainer, Type type, FilterBindingDelegate? filterBindingDelegate,
+            Type overrideInjectedIntoType, FilterBindingDelegate? overrideFilterBindingDelegate)
+        {
+            return diContainer.WouldResolveContainer(type, filterBindingDelegate, overrideInjectedIntoType, overrideFilterBindingDelegate);
         }
     }
     
@@ -47,12 +58,9 @@ namespace ManualDi.Main
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T Resolve<T>(this IDiContainer diContainer, Action<ResolutionConstraints> configureResolutionConstraints)
+        public static T Resolve<T>(this IDiContainer diContainer, FilterBindingDelegate filterBindingDelegate)
         {
-            var resolutionConstraints = new ResolutionConstraints();
-            configureResolutionConstraints.Invoke(resolutionConstraints);
-
-            var resolution = diContainer.ResolveContainer(typeof(T), resolutionConstraints.FilterBindingDelegate);
+            var resolution = diContainer.ResolveContainer(typeof(T), filterBindingDelegate);
             if (resolution is null)
             {
                 throw new InvalidOperationException($"Could not resolve element of type {typeof(T).FullName}");

@@ -31,7 +31,11 @@ namespace ManualDi.Main
         /// <param name="type">The type of the binding to resolve</param>
         /// <param name="resolutions">The list of resolutions to be populated from the operations done inside. Resolutions are added at the end of the list</param>
         /// <returns>True when resolving would succeed or throw, false when resolving returns null or empty list</returns>
-        bool WouldResolveContainer(Type type, FilterBindingDelegate? filterBindingDelegate);
+        bool WouldResolveContainer(
+            Type type, 
+            FilterBindingDelegate? filterBindingDelegate, 
+            Type? overrideInjectedIntoType, 
+            FilterBindingDelegate? overrideFilterBindingDelegate);
         
         /// <summary>
         /// Queues for disposal a disposable. They will be called in order when disposing the container.

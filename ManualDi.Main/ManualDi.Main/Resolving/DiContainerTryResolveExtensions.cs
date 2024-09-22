@@ -21,12 +21,9 @@ namespace ManualDi.Main
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryResolve<T>(this IDiContainer diContainer, Action<ResolutionConstraints> configureResolutionConstraints, [MaybeNullWhen(false)] out T resolution)
+        public static bool TryResolve<T>(this IDiContainer diContainer, FilterBindingDelegate filterBindingDelegate, [MaybeNullWhen(false)] out T resolution)
         {
-            var resolutionConstraints = new ResolutionConstraints();
-            configureResolutionConstraints.Invoke(resolutionConstraints);
-
-            var result = diContainer.ResolveContainer(typeof(T), resolutionConstraints.FilterBindingDelegate);
+            var result = diContainer.ResolveContainer(typeof(T), filterBindingDelegate);
             if (result is null)
             {
                 resolution = default;
@@ -45,12 +42,9 @@ namespace ManualDi.Main
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryResolve(this IDiContainer diContainer, Type type, Action<ResolutionConstraints> configureResolutionConstraints, [MaybeNullWhen(false)] out object resolution)
+        public static bool TryResolve(this IDiContainer diContainer, Type type, FilterBindingDelegate filterBindingDelegate, [MaybeNullWhen(false)] out object resolution)
         {
-            var resolutionConstraints = new ResolutionConstraints();
-            configureResolutionConstraints.Invoke(resolutionConstraints);
-
-            resolution = diContainer.ResolveContainer(type, resolutionConstraints.FilterBindingDelegate);
+            resolution = diContainer.ResolveContainer(type, filterBindingDelegate);
             return resolution is not null;
         }
     }

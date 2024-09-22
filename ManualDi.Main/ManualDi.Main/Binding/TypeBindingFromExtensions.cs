@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
 {
@@ -26,10 +25,10 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<TApparent, TConcrete> FromContainerResolve<TApparent, TConcrete>(
             this TypeBinding<TApparent, TConcrete> typeBinding,
-            Action<ResolutionConstraints> constraints
+            FilterBindingDelegate filterBindingDelegate
             )
         {
-            typeBinding.CreateConcreteDelegate = c => c.Resolve<TConcrete>(constraints);
+            typeBinding.CreateConcreteDelegate = c => c.Resolve<TConcrete>(filterBindingDelegate);
             return typeBinding;
         }
         

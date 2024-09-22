@@ -2,7 +2,7 @@
 
 namespace ManualDi.Main.Tests;
 
-public class TestDiContainerMetadata
+public class TestDiContainerId
 {
     [Test]
     public void TestId()

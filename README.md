@@ -477,8 +477,12 @@ b.Bind<A>().Default().FromConstructor();
 
 The source generator will inject all bound instances of a type if the dependency declared is one of the following types `List<T>` `IList<T>` `IReadOnlyList<T>` `IEnumerable<T>`
 The resolved dependencies will be resolved using `ResolveAll<T>`
-The underlying `T` type may NOT be nullable.
-The whole collection type may NOT be nullable
+If the whole collection is nullable, the provided collection will always have `Count > 0` otherwise null.
+If the underlying `T` is nullable, the resulting list will be converted from `T` to `T?`. This is not recommended, the nullable values will never be null.
+
+The differences between `TCollection<T?>` and `TCollection<T>?`:
+- `TCollection<T?>` does a single resolution but allocates a list every time
+- `TCollection<T>?` does a dry resolution at build time and thus may not allocate the list
 
 ```
 public class A
@@ -487,9 +491,8 @@ public class A
     [Inject] IList<int> IListInt {get; set;}
     [Inject] IReadOnlyList<obj> IReadOnlyListObj {get; set;}
     [Inject] IEnumerable<int> IEnumerableInt {get; set;}
-
-    //[Inject] List<object?> NullableList1 {get; set;} //DON'T do this
-    //[Inject] List<object>? NullableList2 {get; set;} //DON'T do this
+    [Inject] List<object>? NullableList {get; set;} //Either null or Count > 0
+    [Inject] List<object?> NullableGenericList {get; set;} //Possible but not recommended
 }
 
 b.Bind<A>().Default().FromConstructor();
@@ -499,9 +502,14 @@ b.Bind<A>().Default().FromConstructor();
 
 The source generator will lazily inject dependencies if the dependency is lazy itself.
 Lazy dependencies may have nullable contents.
-Lazy dependencies may NOT be nullable themselves
 Lazy dependencies are also compatible with collection .
 Lazy Collection dependencies are also supported
+Nullable lazy will only provide a lazy if resolving the lazy would provide a value
+Nullable lazy with nullable generic value is not recommended. The nullable values will never be null
+
+The differences between `Lazy<T?>` and `Lazy<T>?`:
+- `Lazy<T?>` does a single resolution but allocates a lazy every time
+- `Lazy<T>?` does a dry resolution at build time and thus may not allocate the lazy
 
 ```
 public class A
@@ -512,8 +520,8 @@ public class A
     [Inject] Lazy<int?> NullableValue {get; set;}
     [Inject] Lazy<List<object>> LazyObjectList {get; set;}
 
-    //[Inject] Lazy<object>? NullableObj {get; set;} //DON'T do this
-    //[Inject] Lazy<object?>? NullableObj {get; set;} //DON'T do this
+    [Inject] Lazy<object>? NullableObj {get; set;} //Null lazy when container does not have binding
+    [Inject] Lazy<object?>? NullableObj {get; set;} //Possible but not recommended
 }
 
 b.Bind<A>().Default().FromConstructor();

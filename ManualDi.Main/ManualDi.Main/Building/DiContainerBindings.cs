@@ -7,7 +7,7 @@ namespace ManualDi.Main
     
     public sealed class DiContainerBindings
     {
-        private readonly Dictionary<Type, List<TypeBinding>> typeBindings;
+        private readonly Dictionary<IntPtr, List<TypeBinding>> typeBindings;
         private readonly List<ContainerDelegate> injectDelegates;
         private readonly List<ContainerDelegate> initializationDelegates;
         private readonly List<ContainerDelegate> startupDelegates;
@@ -41,7 +41,7 @@ namespace ManualDi.Main
         
         public void AddBinding<TApparent, TConcrete>(TypeBinding<TApparent, TConcrete> typeBinding)
         {
-            var apparentType = typeof(TApparent);
+            var apparentType = typeof(TApparent).TypeHandle.Value;
             if (!typeBindings.TryGetValue(apparentType, out var bindings))
             {
                 bindings = new List<TypeBinding>(1);
@@ -53,7 +53,7 @@ namespace ManualDi.Main
         
         public void AddUnsafeBinding(UnsafeTypeBinding typeBinding)
         {
-            var apparentType = typeBinding.ApparentType;
+            var apparentType = typeBinding.ApparentType.TypeHandle.Value;
             if (!typeBindings.TryGetValue(apparentType, out var bindings))
             {
                 bindings = new List<TypeBinding>(1);

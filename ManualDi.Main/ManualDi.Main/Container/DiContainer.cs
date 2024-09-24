@@ -7,7 +7,7 @@ namespace ManualDi.Main
 {
     public sealed class DiContainer : IDiContainer
     {
-        private readonly Dictionary<Type, List<TypeBinding>> allTypeBindings;
+        private readonly Dictionary<IntPtr, List<TypeBinding>> allTypeBindings;
         private readonly IDiContainer? parentDiContainer;
         private readonly BindingContext bindingContext = new();
         
@@ -16,7 +16,7 @@ namespace ManualDi.Main
         private TypeBinding? injectedTypeBinding;
 
         public DiContainer(
-            Dictionary<Type, List<TypeBinding>> allTypeBindings, 
+            Dictionary<IntPtr, List<TypeBinding>> allTypeBindings, 
             IDiContainer? parentDiContainer,
             int? initializationsCount = null, 
             int? initializationsOnDepthCount = null,
@@ -94,7 +94,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private TypeBinding? GetTypeForConstraint(Type type, FilterBindingDelegate? filterBindingDelegate)
         {
-            if (!allTypeBindings.TryGetValue(type, out var typeBindings))
+            if (!allTypeBindings.TryGetValue(type.TypeHandle.Value, out var typeBindings))
             {
                 return null;
             }
@@ -136,7 +136,7 @@ namespace ManualDi.Main
 
         public void ResolveAllContainer(Type type, FilterBindingDelegate? filterBindingDelegate, IList resolutions)
         {
-            if (allTypeBindings.TryGetValue(type, out var typeBindings))
+            if (allTypeBindings.TryGetValue(type.TypeHandle.Value, out var typeBindings))
             {
                 bindingContext.InjectedIntoTypeBinding = injectedTypeBinding;
             

@@ -8,7 +8,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Resolve<T>(this IDiContainer diContainer)
         {
-            var resolution = diContainer.ResolveContainer(typeof(T), filterBindingDelegate: null);
+            var resolution = diContainer.ResolveContainer(typeof(T));
             if (resolution is null)
             {
                 throw new InvalidOperationException($"Could not resolve element of type {typeof(T).FullName}");
@@ -30,7 +30,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static object Resolve(this IDiContainer diContainer, Type type)
         {
-            var resolution = diContainer.ResolveContainer(type, filterBindingDelegate: null);
+            var resolution = diContainer.ResolveContainer(type);
             if (resolution is null)
             {
                 throw new InvalidOperationException($"Could not resolve element of type {type.FullName}");

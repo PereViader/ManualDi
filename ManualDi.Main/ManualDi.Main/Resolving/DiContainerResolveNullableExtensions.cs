@@ -9,7 +9,7 @@ namespace ManualDi.Main
         public static T? ResolveNullable<T>(this IDiContainer diContainer)
             where T : class
         {
-            var result = diContainer.ResolveContainer(typeof(T), filterBindingDelegate: null);
+            var result = diContainer.ResolveContainer(typeof(T));
             if (result is null)
             {
                 return null;
@@ -22,7 +22,7 @@ namespace ManualDi.Main
         public static T? ResolveNullableValue<T>(this IDiContainer diContainer)
             where T : struct
         {
-            var result = diContainer.ResolveContainer(typeof(T), filterBindingDelegate: null);
+            var result = diContainer.ResolveContainer(typeof(T));
             if (result is null)
             {
                 return null;
@@ -60,7 +60,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static object? ResolveNullable(this IDiContainer diContainer, Type type)
         {
-            return diContainer.ResolveContainer(type, filterBindingDelegate: null);
+            return diContainer.ResolveContainer(type);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

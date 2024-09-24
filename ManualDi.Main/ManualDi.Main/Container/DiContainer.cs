@@ -46,7 +46,18 @@ namespace ManualDi.Main
             }
         }
 
-        public object? ResolveContainer(Type type, FilterBindingDelegate? filterBindingDelegate)
+        public object? ResolveContainer(Type type)
+        {
+            var typeBinding = GetTypeForConstraint(type);
+            if (typeBinding is not null)
+            {
+                return ResolveBinding(typeBinding);
+            }
+
+            return parentDiContainer?.ResolveContainer(type);
+        }
+        
+        public object? ResolveContainer(Type type, FilterBindingDelegate filterBindingDelegate)
         {
             var typeBinding = GetTypeForConstraint(type, filterBindingDelegate);
             if (typeBinding is not null)
@@ -54,12 +65,7 @@ namespace ManualDi.Main
                 return ResolveBinding(typeBinding);
             }
 
-            if (parentDiContainer is null)
-            {
-                return null;
-            }
-
-            return parentDiContainer.ResolveContainer(type, filterBindingDelegate);
+            return parentDiContainer?.ResolveContainer(type, filterBindingDelegate);
         }
 
         private object ResolveBinding(TypeBinding typeBinding)
@@ -95,50 +101,55 @@ namespace ManualDi.Main
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private TypeBinding? GetTypeForConstraint(Type type, FilterBindingDelegate? filterBindingDelegate)
+        private TypeBinding? GetTypeForConstraint(Type type)
         {
             if (!allTypeBindings.TryGetValue(type.TypeHandle.Value, out TypeBinding? typeBinding))
             {
                 return null;
             }
 
-            if (filterBindingDelegate is null && typeBinding.FilterBindingDelegate is null)
+            if (typeBinding.FilterBindingDelegate is null)
             {
                 return typeBinding;
             }
 
+            bindingContext.InjectedIntoTypeBinding = injectedTypeBinding;
+            do
+            {
+                bindingContext.TypeBinding = typeBinding;
+
+                if (typeBinding.FilterBindingDelegate?.Invoke(bindingContext) ?? true)
+                {
+                    return typeBinding;
+                }
+
+                typeBinding = typeBinding.NextTypeBinding;
+            } while (typeBinding is not null);
             
+            return null;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private TypeBinding? GetTypeForConstraint(Type type, FilterBindingDelegate filterBindingDelegate)
+        {
+            if (!allTypeBindings.TryGetValue(type.TypeHandle.Value, out TypeBinding? typeBinding))
+            {
+                return null;
+            }
 
             bindingContext.InjectedIntoTypeBinding = injectedTypeBinding;
-
-            if (filterBindingDelegate is null)
+            do
             {
-                while (typeBinding is not null)
-                {
-                    bindingContext.TypeBinding = typeBinding;
+                bindingContext.TypeBinding = typeBinding;
 
-                    if (typeBinding.FilterBindingDelegate?.Invoke(bindingContext) ?? true)
-                    {
-                        return typeBinding;
-                    }
-                    
-                    typeBinding = typeBinding.NextTypeBinding;
-                }
-            }
-            else
-            {
-                while (typeBinding is not null)
+                if (filterBindingDelegate.Invoke(bindingContext) &&
+                    (typeBinding.FilterBindingDelegate?.Invoke(bindingContext) ?? true))
                 {
-                    bindingContext.TypeBinding = typeBinding;
-
-                    if (filterBindingDelegate.Invoke(bindingContext) && (typeBinding.FilterBindingDelegate?.Invoke(bindingContext) ?? true))
-                    {
-                        return typeBinding;
-                    }
-                    
-                    typeBinding = typeBinding.NextTypeBinding;
+                    return typeBinding;
                 }
-            }
+
+                typeBinding = typeBinding.NextTypeBinding;
+            } while (typeBinding is not null);
             
             return null;
         }
@@ -148,19 +159,18 @@ namespace ManualDi.Main
             if (allTypeBindings.TryGetValue(type.TypeHandle.Value, out TypeBinding? typeBinding))
             {
                 bindingContext.InjectedIntoTypeBinding = injectedTypeBinding;
-            
-                while (typeBinding is not null)
+                do
                 {
                     bindingContext.TypeBinding = typeBinding;
 
-                    if ((filterBindingDelegate?.Invoke(bindingContext) ?? true) && 
+                    if ((filterBindingDelegate?.Invoke(bindingContext) ?? true) &&
                         (typeBinding.FilterBindingDelegate?.Invoke(bindingContext) ?? true))
                     {
                         resolutions.Add(ResolveBinding(typeBinding));
                     }
-                    
+
                     typeBinding = typeBinding.NextTypeBinding;
-                }
+                } while (typeBinding is not null);
             }
 
             parentDiContainer?.ResolveAllContainer(type, filterBindingDelegate, resolutions);
@@ -176,10 +186,15 @@ namespace ManualDi.Main
             if (overrideInjectedIntoType is not null)
             {
                 injectedTypeBinding = null;
-                injectedTypeBinding = GetTypeForConstraint(overrideInjectedIntoType, overrideFilterBindingDelegate);
+                injectedTypeBinding = overrideFilterBindingDelegate is null 
+                    ? GetTypeForConstraint(overrideInjectedIntoType) 
+                    : GetTypeForConstraint(overrideInjectedIntoType, overrideFilterBindingDelegate);
             }
             
-            var typeBinding = GetTypeForConstraint(type, filterBindingDelegate);
+            var typeBinding = filterBindingDelegate is null 
+                ? GetTypeForConstraint(type)
+                : GetTypeForConstraint(type, filterBindingDelegate);
+            
             injectedTypeBinding = previousInjectedTypeBinding;
             if (typeBinding is not null)
             {

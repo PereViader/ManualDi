@@ -10,9 +10,17 @@ namespace ManualDi.Main
         /// </summary>
         /// <remarks>There are more versions of this Resolution using extension methods</remarks>
         /// <param name="type">The type of the binding to resolve</param>
+        /// <returns>The resolved instance for the binding</returns>
+        object? ResolveContainer(Type type);
+        
+        /// <summary>
+        /// Non-generic resolution of a binding for its registered instance
+        /// </summary>
+        /// <remarks>There are more versions of this Resolution using extension methods</remarks>
+        /// <param name="type">The type of the binding to resolve</param>
         /// <param name="filterBindingDelegate">Filter bindings to resolve according to these constraints. May be null</param>
         /// <returns>The resolved instance for the binding</returns>
-        object? ResolveContainer(Type type, FilterBindingDelegate? filterBindingDelegate);
+        object? ResolveContainer(Type type, FilterBindingDelegate filterBindingDelegate);
 
         /// <summary>
         /// Non-generic resolution of all bindings for their registered instances

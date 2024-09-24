@@ -9,7 +9,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryResolve<T>(this IDiContainer diContainer, [MaybeNullWhen(false)] out T resolution)
         {
-            var result = diContainer.ResolveContainer(typeof(T), filterBindingDelegate: null);
+            var result = diContainer.ResolveContainer(typeof(T));
             if (result is null)
             {
                 resolution = default;
@@ -37,7 +37,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryResolve(this IDiContainer diContainer, Type type, [MaybeNullWhen(false)] out object resolution)
         {
-            resolution = diContainer.ResolveContainer(type, filterBindingDelegate: null);
+            resolution = diContainer.ResolveContainer(type);
             return resolution is not null;
         }
 

@@ -7,7 +7,7 @@ namespace ManualDi.Main
 {
     public sealed class DiContainer : IDiContainer
     {
-        private readonly Dictionary<IntPtr, List<TypeBinding>> allTypeBindings;
+        private readonly Dictionary<IntPtr, TypeBinding> allTypeBindings;
         private readonly IDiContainer? parentDiContainer;
         private readonly BindingContext bindingContext = new();
         
@@ -16,7 +16,7 @@ namespace ManualDi.Main
         private TypeBinding? injectedTypeBinding;
 
         public DiContainer(
-            Dictionary<IntPtr, List<TypeBinding>> allTypeBindings, 
+            Dictionary<IntPtr, TypeBinding> allTypeBindings, 
             IDiContainer? parentDiContainer,
             int? initializationsCount = null, 
             int? initializationsOnDepthCount = null,
@@ -31,14 +31,17 @@ namespace ManualDi.Main
 
         public void Initialize()
         {
-            foreach (var bindings in allTypeBindings)
+            foreach (var firstTypeBinding in allTypeBindings)
             {
-                foreach (var binding in bindings.Value)
+                TypeBinding? typeBinding = firstTypeBinding.Value;
+                while (typeBinding is not null)
                 {
-                    if (!binding.IsLazy)
+                    if (!typeBinding.IsLazy)
                     {
-                        ResolveBinding(binding);
+                        ResolveBinding(typeBinding);
                     }
+
+                    typeBinding = typeBinding.NextTypeBinding;
                 }
             }
         }
@@ -94,21 +97,23 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private TypeBinding? GetTypeForConstraint(Type type, FilterBindingDelegate? filterBindingDelegate)
         {
-            if (!allTypeBindings.TryGetValue(type.TypeHandle.Value, out var typeBindings))
+            if (!allTypeBindings.TryGetValue(type.TypeHandle.Value, out TypeBinding? typeBinding))
             {
                 return null;
             }
 
-            if (filterBindingDelegate is null && typeBindings[0].FilterBindingDelegate is null)
+            if (filterBindingDelegate is null && typeBinding.FilterBindingDelegate is null)
             {
-                return typeBindings[0];
+                return typeBinding;
             }
+
+            
 
             bindingContext.InjectedIntoTypeBinding = injectedTypeBinding;
 
             if (filterBindingDelegate is null)
             {
-                foreach (var typeBinding in typeBindings)
+                while (typeBinding is not null)
                 {
                     bindingContext.TypeBinding = typeBinding;
 
@@ -116,11 +121,13 @@ namespace ManualDi.Main
                     {
                         return typeBinding;
                     }
+                    
+                    typeBinding = typeBinding.NextTypeBinding;
                 }
             }
             else
             {
-                foreach (var typeBinding in typeBindings)
+                while (typeBinding is not null)
                 {
                     bindingContext.TypeBinding = typeBinding;
 
@@ -128,6 +135,8 @@ namespace ManualDi.Main
                     {
                         return typeBinding;
                     }
+                    
+                    typeBinding = typeBinding.NextTypeBinding;
                 }
             }
             
@@ -136,11 +145,11 @@ namespace ManualDi.Main
 
         public void ResolveAllContainer(Type type, FilterBindingDelegate? filterBindingDelegate, IList resolutions)
         {
-            if (allTypeBindings.TryGetValue(type.TypeHandle.Value, out var typeBindings))
+            if (allTypeBindings.TryGetValue(type.TypeHandle.Value, out TypeBinding? typeBinding))
             {
                 bindingContext.InjectedIntoTypeBinding = injectedTypeBinding;
             
-                foreach (var typeBinding in typeBindings)
+                while (typeBinding is not null)
                 {
                     bindingContext.TypeBinding = typeBinding;
 
@@ -149,6 +158,8 @@ namespace ManualDi.Main
                     {
                         resolutions.Add(ResolveBinding(typeBinding));
                     }
+                    
+                    typeBinding = typeBinding.NextTypeBinding;
                 }
             }
 

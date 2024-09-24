@@ -30,6 +30,7 @@ namespace ManualDi.Main
         public object? Id;
         public FilterBindingDelegate? FilterBindingDelegate;
         internal object? SingleInstance;
+        internal TypeBinding? NextTypeBinding;
         
         public abstract object? CreateNew(IDiContainer container);
         public abstract bool NeedsInitialize();

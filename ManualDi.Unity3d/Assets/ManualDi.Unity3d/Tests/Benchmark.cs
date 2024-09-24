@@ -43,6 +43,35 @@ namespace ManualDi.Unity3d.Tests
                     .WarmupCount(WarmupCount)
                     .Run();
             }
+            
+            {
+                var reflexContainer = new Reflex.Container();
+                reflexContainer.Bind<IFirstService>().To<FirstService>().AsSingletonLazy();
+                reflexContainer.Bind<ISecondService>().To<SecondService>().AsSingletonLazy();
+                reflexContainer.Bind<IThirdService>().To<ThirdService>().AsSingletonLazy();
+                reflexContainer.Bind<ISubObjectA>().To<SubObjectA>().AsTransient();
+                reflexContainer.Bind<ISubObjectB>().To<SubObjectB>().AsTransient();
+                reflexContainer.Bind<ISubObjectC>().To<SubObjectC>().AsTransient();
+                reflexContainer.Bind<IComplex1>().To<Complex1>().AsTransient();
+                reflexContainer.Bind<IComplex2>().To<Complex2>().AsTransient();
+                reflexContainer.Bind<IComplex3>().To<Complex3>().AsTransient();
+                reflexContainer.Bind<ISubObjectOne>().To<SubObjectOne>().AsTransient();
+                reflexContainer.Bind<ISubObjectTwo>().To<SubObjectTwo>().AsTransient();
+                reflexContainer.Bind<ISubObjectThree>().To<SubObjectThree>().AsTransient();
+
+                Measure
+                    .Method(() =>
+                    {
+                        reflexContainer.Resolve<IComplex1>();
+                        reflexContainer.Resolve<IComplex2>();
+                        reflexContainer.Resolve<IComplex3>();
+                    })
+                    .SampleGroup(new SampleGroup("Reflex", SampleUnit.Nanosecond))
+                    .GC()
+                    .MeasurementCount(MeasurementCount)
+                    .WarmupCount(WarmupCount)
+                    .Run();
+            }
 
             {
                 var vContainerBuilder = new ContainerBuilder();
@@ -71,35 +100,6 @@ namespace ManualDi.Unity3d.Tests
                     .GC()
                     .WarmupCount(WarmupCount)
                     .MeasurementCount(MeasurementCount)
-                    .Run();
-            }
-
-            {
-                var reflexContainer = new Reflex.Container();
-                reflexContainer.Bind<IFirstService>().To<FirstService>().AsSingletonLazy();
-                reflexContainer.Bind<ISecondService>().To<SecondService>().AsSingletonLazy();
-                reflexContainer.Bind<IThirdService>().To<ThirdService>().AsSingletonLazy();
-                reflexContainer.Bind<ISubObjectA>().To<SubObjectA>().AsTransient();
-                reflexContainer.Bind<ISubObjectB>().To<SubObjectB>().AsTransient();
-                reflexContainer.Bind<ISubObjectC>().To<SubObjectC>().AsTransient();
-                reflexContainer.Bind<IComplex1>().To<Complex1>().AsTransient();
-                reflexContainer.Bind<IComplex2>().To<Complex2>().AsTransient();
-                reflexContainer.Bind<IComplex3>().To<Complex3>().AsTransient();
-                reflexContainer.Bind<ISubObjectOne>().To<SubObjectOne>().AsTransient();
-                reflexContainer.Bind<ISubObjectTwo>().To<SubObjectTwo>().AsTransient();
-                reflexContainer.Bind<ISubObjectThree>().To<SubObjectThree>().AsTransient();
-
-                Measure
-                    .Method(() =>
-                    {
-                        reflexContainer.Resolve<IComplex1>();
-                        reflexContainer.Resolve<IComplex2>();
-                        reflexContainer.Resolve<IComplex3>();
-                    })
-                    .SampleGroup(new SampleGroup("Reflex", SampleUnit.Nanosecond))
-                    .GC()
-                    .MeasurementCount(MeasurementCount)
-                    .WarmupCount(WarmupCount)
                     .Run();
             }
 
@@ -162,6 +162,28 @@ namespace ManualDi.Unity3d.Tests
             
             Measure.Method(() =>
                 {
+                    var b = new Reflex.Container();
+                    b.Bind<IFirstService>().To<FirstService>().AsSingletonLazy();
+                    b.Bind<ISecondService>().To<SecondService>().AsSingletonLazy();
+                    b.Bind<IThirdService>().To<ThirdService>().AsSingletonLazy();
+                    b.Bind<ISubObjectA>().To<SubObjectA>().AsTransient();
+                    b.Bind<ISubObjectB>().To<SubObjectB>().AsTransient();
+                    b.Bind<ISubObjectC>().To<SubObjectC>().AsTransient();
+                    b.Bind<IComplex1>().To<Complex1>().AsTransient();
+                    b.Bind<IComplex2>().To<Complex2>().AsTransient();
+                    b.Bind<IComplex3>().To<Complex3>().AsTransient();
+                    b.Bind<ISubObjectOne>().To<SubObjectOne>().AsTransient();
+                    b.Bind<ISubObjectTwo>().To<SubObjectTwo>().AsTransient();
+                    b.Bind<ISubObjectThree>().To<SubObjectThree>().AsTransient();
+                })
+                .SampleGroup(new SampleGroup("Reflex", SampleUnit.Nanosecond))
+                .GC()
+                .MeasurementCount(MeasurementCount)
+                .WarmupCount(WarmupCount)
+                .Run();
+            
+            Measure.Method(() =>
+                {
                     var b = new ContainerBuilder();
                     b.Register<IFirstService, FirstService>(Lifetime.Singleton);
                     b.Register<ISecondService, SecondService>(Lifetime.Singleton);
@@ -178,28 +200,6 @@ namespace ManualDi.Unity3d.Tests
                     _ = b.Build();
                 })
                 .SampleGroup(new SampleGroup("VContainer", SampleUnit.Nanosecond))
-                .GC()
-                .MeasurementCount(MeasurementCount)
-                .WarmupCount(WarmupCount)
-                .Run();
-
-            Measure.Method(() =>
-                {
-                    var b = new Reflex.Container();
-                    b.Bind<IFirstService>().To<FirstService>().AsSingletonLazy();
-                    b.Bind<ISecondService>().To<SecondService>().AsSingletonLazy();
-                    b.Bind<IThirdService>().To<ThirdService>().AsSingletonLazy();
-                    b.Bind<ISubObjectA>().To<SubObjectA>().AsTransient();
-                    b.Bind<ISubObjectB>().To<SubObjectB>().AsTransient();
-                    b.Bind<ISubObjectC>().To<SubObjectC>().AsTransient();
-                    b.Bind<IComplex1>().To<Complex1>().AsTransient();
-                    b.Bind<IComplex2>().To<Complex2>().AsTransient();
-                    b.Bind<IComplex3>().To<Complex3>().AsTransient();
-                    b.Bind<ISubObjectOne>().To<SubObjectOne>().AsTransient();
-                    b.Bind<ISubObjectTwo>().To<SubObjectTwo>().AsTransient();
-                    b.Bind<ISubObjectThree>().To<SubObjectThree>().AsTransient();
-                })
-                .SampleGroup(new SampleGroup("Reflex", SampleUnit.Nanosecond))
                 .GC()
                 .MeasurementCount(MeasurementCount)
                 .WarmupCount(WarmupCount)

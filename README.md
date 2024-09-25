@@ -90,6 +90,7 @@ static class Installer
         b.Bind<A>().Default().FromInstance(new A());
         b.Bind<B>().Default().FromConstructor();
         b.Bind<IC, C>().Default().FromConstructor();
+        return b;
     }
 }
 ```
@@ -188,14 +189,11 @@ An empty overload of the Inject method will be generated if:
 - The type has a single public/internal accessible Inject method. The method may have 0 or more dependencies.
 - The type has any amount of public/internal accessible properties that use the Inject attribute
 
-The generated method will first do property injection on the properties and then call the inject method.
+The generated method will first do property injection on the properties and then call the inject method and properties.
 
 ```csharp
 public class A
 {
-    [Inject] public object Object { get; set; }
-    [Inject] public int Value { get; set; }
-
     public void Inject(B b, C c) { }
 }
 
@@ -206,7 +204,7 @@ public class B
 
 public class C
 {
-    public void Inject() { }
+    [Inject] public int Value { get; set; }
 }
 
 b.Bind<object>().FromInstance(new object());
@@ -224,11 +222,12 @@ For this reason, derived types will usually resort to this kind of injection
 ```csharp
 public class SomethingGameRelated : MonoBehaviour  // this class derives from UnityEngine.Object
 {
-    [Inject] public SomeGameService SomeGameService { get; set; }
+    [Inject] public SomeService SomeService { get; set; }
+    private OtherService otherService;
 
-    public void Inject()
+    public void Inject(OtherService otherService)
     {
-        //Do something
+        this.otherService = otherService; 
     }
 }
 ```
@@ -357,7 +356,7 @@ int value = c.Resolve<GetPotatoInt>()();
 
 The id functionality can be used on method and property dependencies by using the Inject attribute and providing a string id to it
 
-```
+```csharp
 class A
 {
     [Inject("Potato")] public B B { get; set; }
@@ -482,7 +481,7 @@ The differences between `TCollection<T?>` and `TCollection<T>?`:
 - `TCollection<T?>` does a single resolution but allocates a list every time
 - `TCollection<T>?` does a dry resolution at build time and thus may not allocate the list
 
-```
+```csharp
 public class A
 {
     [Inject] List<object> ListObj {get; set;}
@@ -490,7 +489,7 @@ public class A
     [Inject] IReadOnlyList<obj> IReadOnlyListObj {get; set;}
     [Inject] IEnumerable<int> IEnumerableInt {get; set;}
     [Inject] List<object>? NullableList {get; set;} //Either null or Count > 0
-    [Inject] List<object?> NullableGenericList {get; set;} //Possible but not recommended
+    [Inject] List<object?> NullableGenericList {get; set;} //Valid but NOT recommended
 }
 
 b.Bind<A>().Default().FromConstructor();
@@ -509,7 +508,7 @@ The differences between `Lazy<T?>` and `Lazy<T>?`:
 - `Lazy<T?>` does a single resolution but allocates a lazy every time
 - `Lazy<T>?` does a dry resolution at build time and thus may not allocate the lazy
 
-```
+```csharp
 public class A
 {
     [Inject] Lazy<object> Obj {get; set;}
@@ -731,7 +730,7 @@ If the data provided to these entry points, implements `IInstaller`, then the da
 Otherwise, it will just be available through the `Data` property of the EntryPoint.
 If the subordinate container requires all the dependencies of the parent container, it is recommended to set the parent container on the EntryPointData object.
 
-```
+```csharp
 public class EntryPointData : IInstaller
 {
     public IDiContainer ParentDiContainer { get; set; }

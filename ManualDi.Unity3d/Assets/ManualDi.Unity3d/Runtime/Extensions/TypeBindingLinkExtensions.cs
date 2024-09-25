@@ -1,5 +1,7 @@
 using ManualDi.Main;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.UI;
 
 namespace ManualDi.Unity3d
 {
@@ -41,6 +43,28 @@ namespace ManualDi.Unity3d
                     o.transform.parent = previousParent;
                 });
             }
+            return typeBinding;
+        }
+        
+        public static TypeBinding<TInterface, TConcrete> LinkButtonOnClick<TInterface, TConcrete>(
+            this TypeBinding<TInterface, TConcrete> typeBinding,
+            Button button,
+            InstanceContainerDelegate<TConcrete> onClick
+            )
+        {
+            UnityAction? action = null;
+            typeBinding.Inject((o, c) =>
+            {
+                action = () => onClick.Invoke(o, c);
+                (button.onClick ??= new Button.ButtonClickedEvent()).AddListener(action);
+            });
+            typeBinding.Dispose((o, c) =>
+            {
+                if (action is not null)
+                {
+                    button.onClick.RemoveListener(action);
+                }
+            });
             return typeBinding;
         }
     }

@@ -67,5 +67,49 @@ namespace ManualDi.Unity3d
             });
             return typeBinding;
         }
+        
+        public static TypeBinding<TInterface, TConcrete> LinkToggleOnValueChanged<TInterface, TConcrete>(
+            this TypeBinding<TInterface, TConcrete> typeBinding,
+            Toggle toggle,
+            InstanceContainerDelegate<(bool value, TConcrete o)> onValueChanged
+        )
+        {
+            UnityAction<bool>? action = null;
+            typeBinding.Inject((o, c) =>
+            {
+                action = v => onValueChanged.Invoke((v, o), c);
+                (toggle.onValueChanged ??= new Toggle.ToggleEvent()).AddListener(action);
+            });
+            typeBinding.Dispose((o, c) =>
+            {
+                if (action is not null)
+                {
+                    toggle.onValueChanged.RemoveListener(action);
+                }
+            });
+            return typeBinding;
+        }
+        
+        public static TypeBinding<TInterface, TConcrete> LinkSliderOnValueChanged<TInterface, TConcrete>(
+            this TypeBinding<TInterface, TConcrete> typeBinding,
+            Slider slider,
+            InstanceContainerDelegate<(float value, TConcrete o)> onValueChanged
+        )
+        {
+            UnityAction<float>? action = null;
+            typeBinding.Inject((o, c) =>
+            {
+                action = v => onValueChanged.Invoke((v,o), c);
+                (slider.onValueChanged ??= new Slider.SliderEvent()).AddListener(action);
+            });
+            typeBinding.Dispose((o, c) =>
+            {
+                if (action is not null)
+                {
+                    slider.onValueChanged.RemoveListener(action);
+                }
+            });
+            return typeBinding;
+        }
     }
 }

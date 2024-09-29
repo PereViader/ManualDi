@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
 {
@@ -33,8 +32,8 @@ namespace ManualDi.Main
         internal TypeBinding? NextTypeBinding;
         
         public abstract object? CreateNew(IDiContainer container);
-        public abstract void InitializeObject(object instance, IDiContainer container);
         public abstract bool InjectObject(object instance, IDiContainer container);
+        public abstract void InitializeObject(object instance, IDiContainer container);
     }
     
     public sealed class TypeBinding<TApparent, TConcrete> : TypeBinding

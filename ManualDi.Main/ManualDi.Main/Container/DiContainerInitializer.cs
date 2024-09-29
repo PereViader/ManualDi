@@ -52,7 +52,6 @@ namespace ManualDi.Main
             o.Initializations.Add((typeBinding, instance));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void InitializeCurrentLevelQueued(ref this DiContainerInitializer o, IDiContainer container)
         {
             o.NestedCount++;

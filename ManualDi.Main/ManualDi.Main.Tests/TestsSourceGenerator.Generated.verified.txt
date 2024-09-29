@@ -14,7 +14,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<T, SomeNamespace.Subnamespace.Public> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.Public> typeBinding)
         {
-            return typeBinding;
+            return typeBinding.DontDispose();
         }
     }
 }
@@ -35,7 +35,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, SomeNamespace.Subnamespace.Internal> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.Internal> typeBinding)
         {
-            return typeBinding;
+            return typeBinding.DontDispose();
         }
     }
 }
@@ -50,7 +50,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, SomeNamespace.Subnamespace.InternalPrivateConstructor> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.InternalPrivateConstructor> typeBinding)
         {
-            return typeBinding;
+            return typeBinding.DontDispose();
         }
     }
 }
@@ -72,7 +72,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<T, SomeNamespace.Subnamespace.PublicAndPrivateConstructor> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.PublicAndPrivateConstructor> typeBinding)
         {
-            return typeBinding;
+            return typeBinding.DontDispose();
         }
     }
 }
@@ -93,7 +93,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, SomeNamespace.Subnamespace.Internal2> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.Internal2> typeBinding)
         {
-            return typeBinding;
+            return typeBinding.DontDispose();
         }
     }
 }
@@ -120,7 +120,28 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, SomeNamespace.Subnamespace.InternalInitialize> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.InternalInitialize> typeBinding)
         {
-            return typeBinding.Initialize();
+            return typeBinding.Initialize().DontDispose();
+        }
+    }
+}
+
+  
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Main
+{
+    public static partial class ManualDiGeneratedExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TypeBinding<T, SomeNamespace.Subnamespace.SomeDisposable> FromConstructor<T>(this TypeBinding<T, SomeNamespace.Subnamespace.SomeDisposable> typeBinding)
+        {
+            return typeBinding.FromMethod(static c => new SomeNamespace.Subnamespace.SomeDisposable());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TypeBinding<T, SomeNamespace.Subnamespace.SomeDisposable> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.SomeDisposable> typeBinding)
+        {
+            return typeBinding;
         }
     }
 }
@@ -156,7 +177,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, SomeNamespace.Subnamespace.PublicInitialize> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.PublicInitialize> typeBinding)
         {
-            return typeBinding.Initialize().Inject();
+            return typeBinding.Initialize().Inject().DontDispose();
         }
     }
 }
@@ -177,7 +198,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, SomeNamespace.Subnamespace.StaticInitialize> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.StaticInitialize> typeBinding)
         {
-            return typeBinding;
+            return typeBinding.DontDispose();
         }
     }
 }
@@ -207,7 +228,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, SomeNamespace.Subnamespace.InternalInject> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.InternalInject> typeBinding)
         {
-            return typeBinding.Inject();
+            return typeBinding.Inject().DontDispose();
         }
     }
 }
@@ -237,7 +258,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, SomeNamespace.Subnamespace.PublicInject> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.PublicInject> typeBinding)
         {
-            return typeBinding.Inject();
+            return typeBinding.Inject().DontDispose();
         }
     }
 }
@@ -258,7 +279,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, SomeNamespace.Subnamespace.StaticInject> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.StaticInject> typeBinding)
         {
-            return typeBinding;
+            return typeBinding.DontDispose();
         }
     }
 }
@@ -280,7 +301,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, SomeNamespace.Subnamespace.ConstructorWithGenericArgument> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.ConstructorWithGenericArgument> typeBinding)
         {
-            return typeBinding;
+            return typeBinding.DontDispose();
         }
     }
 }
@@ -312,7 +333,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, SomeNamespace.Subnamespace.InjectPropertyAndMethod> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.InjectPropertyAndMethod> typeBinding)
         {
-            return typeBinding.Inject();
+            return typeBinding.Inject().DontDispose();
         }
     }
 }
@@ -344,7 +365,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, SomeNamespace.Subnamespace.InjectReferencePropertyClass> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.InjectReferencePropertyClass> typeBinding)
         {
-            return typeBinding.Inject();
+            return typeBinding.Inject().DontDispose();
         }
     }
 }
@@ -377,7 +398,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, SomeNamespace.Subnamespace.InjectValueNullablePropertyClass> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.InjectValueNullablePropertyClass> typeBinding)
         {
-            return typeBinding.Inject();
+            return typeBinding.Inject().DontDispose();
         }
     }
 }
@@ -417,7 +438,7 @@ namespace ManualDi.Main
         [System.Obsolete]
         internal static TypeBinding<T, SomeNamespace.Subnamespace.Obsolete> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.Obsolete> typeBinding)
         {
-            return typeBinding.Initialize().Inject();
+            return typeBinding.Initialize().Inject().DontDispose();
         }
     }
 }
@@ -462,7 +483,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<T, SomeNamespace.Subnamespace.NullableDependency> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.NullableDependency> typeBinding)
         {
-            return typeBinding.Initialize().Inject();
+            return typeBinding.Initialize().Inject().DontDispose();
         }
     }
 }
@@ -483,7 +504,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, SomeNamespace.Subnamespace.Static.PublicNested> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.Static.PublicNested> typeBinding)
         {
-            return typeBinding;
+            return typeBinding.DontDispose();
         }
     }
 }
@@ -504,7 +525,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, SomeNamespace.Subnamespace.Static.InternalNested> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.Static.InternalNested> typeBinding)
         {
-            return typeBinding;
+            return typeBinding.DontDispose();
         }
     }
 }
@@ -603,7 +624,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, SomeNamespace.Subnamespace.ListInject> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.ListInject> typeBinding)
         {
-            return typeBinding.Initialize().Inject();
+            return typeBinding.Initialize().Inject().DontDispose();
         }
     }
 }
@@ -649,7 +670,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, SomeNamespace.Subnamespace.LazyDependencies> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.LazyDependencies> typeBinding)
         {
-            return typeBinding.Inject();
+            return typeBinding.Inject().DontDispose();
         }
     }
 }
@@ -694,7 +715,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, SomeNamespace.Subnamespace.InjectIdAttribute> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.InjectIdAttribute> typeBinding)
         {
-            return typeBinding.Initialize().Inject();
+            return typeBinding.Initialize().Inject().DontDispose();
         }
     }
 }
@@ -709,7 +730,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<T, UnityEngine.Object> Default<T>(this TypeBinding<T, UnityEngine.Object> typeBinding)
         {
-            return typeBinding;
+            return typeBinding.DontDispose();
         }
     }
 }
@@ -739,7 +760,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<T, UnityEngine.MonoBeheviour> Default<T>(this TypeBinding<T, UnityEngine.MonoBeheviour> typeBinding)
         {
-            return typeBinding.Initialize().Inject();
+            return typeBinding.Initialize().Inject().DontDispose();
         }
     }
 }

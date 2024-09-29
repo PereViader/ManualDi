@@ -50,6 +50,13 @@ namespace SomeNamespace.Subnamespace
         }
     }
 
+    public class SomeDisposable : IDisposable
+    {
+        public void Dispose()
+        {
+        }
+    }
+
     public class PublicInitialize
     {
         public void Initialize()

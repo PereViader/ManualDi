@@ -25,7 +25,8 @@ namespace ManualDi.Main.Generators
         private static INamedTypeSymbol ICollectionTypeSymbol = default!;
         private static INamedTypeSymbol InjectAttributeTypeSymbol = default!;
         private static INamedTypeSymbol ObsoleteAttributeTypeSymbol = default!;
-        
+        private static INamedTypeSymbol IDisposableTypeSymbol = default!;
+
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             //https://www.thinktecture.com/en/net/roslyn-source-generators-code-according-to-dependencies/
@@ -218,6 +219,14 @@ namespace ManualDi.Main.Generators
             }
             ObsoleteAttributeTypeSymbol = obsoleteAttributeTypeSymbol;
 
+            var iDisposableTypeSymbol = compilation.GetTypeByMetadataName("System.IDisposable");
+            if (iDisposableTypeSymbol is null)
+            {
+                ReportTypeNotFound("System.IDisposable", context);
+                return false;
+            }
+            IDisposableTypeSymbol = iDisposableTypeSymbol;
+            
             return true;
         }
 
@@ -251,6 +260,19 @@ namespace ManualDi.Main.Generators
                 }
                 baseType = baseType.BaseType;
             }
+            return false;
+        }
+        
+        private static bool ImplementsInterface(INamedTypeSymbol namedTypeSymbol, INamedTypeSymbol interfaceSymbol)
+        {
+            foreach (var implementedInterface in namedTypeSymbol.AllInterfaces)
+            {
+                if (SymbolEqualityComparer.Default.Equals(implementedInterface, interfaceSymbol))
+                {
+                    return true;
+                }
+            }
+
             return false;
         }
         
@@ -646,6 +668,11 @@ namespace ManualDi.Main.Generators
             if (inject.HasValue)
             {
                 generationClassContext.StringBuilder.Append(".Inject()");
+            }
+
+            if (!ImplementsInterface(generationClassContext.ClassSymbol, IDisposableTypeSymbol))
+            {
+                generationClassContext.StringBuilder.Append(".DontDispose()");
             }
 
             generationClassContext.StringBuilder.AppendLine("""

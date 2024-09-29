@@ -84,12 +84,15 @@ namespace ManualDi.Main
                 typeBinding.SingleInstance = instance;
             }
             
-            typeBinding.InjectObject(instance, this);
+            if (typeBinding.InjectObject(instance, this))
+            {
+                diContainerInitializer.QueueInitialize(typeBinding, instance);
+            }
+            
             if (typeBinding.TryToDispose && instance is IDisposable disposable)
             {
                 QueueDispose(disposable);
             }
-            diContainerInitializer.Queue(typeBinding, instance);
 
             injectedTypeBinding = previousInjectedTypeBinding;
             if (injectedTypeBinding is null)

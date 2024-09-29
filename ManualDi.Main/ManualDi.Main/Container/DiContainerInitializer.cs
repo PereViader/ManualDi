@@ -30,13 +30,8 @@ namespace ManualDi.Main
     internal static class DiContainerInitializerExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Queue(ref this DiContainerInitializer o, TypeBinding typeBinding, object instance)
+        public static void QueueInitialize(ref this DiContainerInitializer o, TypeBinding typeBinding, object instance)
         {
-            if (!typeBinding.NeedsInitialize())
-            {
-                return;
-            }
-            
             o.InitializationsOnDepth[o.NestedCount]++;
             o.Initializations.Add((typeBinding, instance));
         }

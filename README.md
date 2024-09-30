@@ -7,8 +7,7 @@ Welcome to ManualDi – the simple, fast and extensible C# dependency injection 
 - Seamless Unity3D game engine integration
 
 # Benchmark
-
-[Benchmark](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Main/ManualDi.Main.Benchmark/SimpleBenchmark.cs) against Microsoft's container
+[Benchmark](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Main/ManualDi.Main.Benchmark/Benchmark.cs) against Microsoft's container
 ```
 | Method      | Mean      | Error     | StdDev    | Gen0   | Gen1   | Allocated |
 |------------ |----------:|----------:|----------:|-------:|-------:|----------:|

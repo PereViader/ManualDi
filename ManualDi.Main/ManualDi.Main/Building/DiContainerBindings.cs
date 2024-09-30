@@ -13,7 +13,6 @@ namespace ManualDi.Main
         private readonly List<ContainerDelegate> startupDelegates;
         private readonly List<Action> disposeActions;
         private readonly int? containerInitializationsCount;
-        private readonly int? containerInitializationsOnDepthCount;
         private readonly int? containerDisposablesCount;
 
         private IDiContainer? parentDiContainer;
@@ -23,20 +22,18 @@ namespace ManualDi.Main
             int? injectCapacity = null,
             int? initializationCapacity = null,
             int? disposeCapacity = null,
-            int? entryPointCapacity = null,
+            int? startupCapacity = null,
             int? containerInitializationsCount = null, 
-            int? containerInitializationsOnDepthCount = null,
             int? containerDisposablesCount = null
             )
         {
-            this.containerInitializationsCount = containerInitializationsCount;
-            this.containerInitializationsOnDepthCount = containerInitializationsOnDepthCount;
-            this.containerDisposablesCount = containerDisposablesCount;
             typeBindings = bindingsCapacity.HasValue ? new(bindingsCapacity.Value) : new();
             injectDelegates = injectCapacity.HasValue ? new(injectCapacity.Value) : new();
             initializationDelegates = initializationCapacity.HasValue ? new(initializationCapacity.Value) : new();
-            startupDelegates = entryPointCapacity.HasValue ? new(entryPointCapacity.Value) : new();
             disposeActions = disposeCapacity.HasValue ? new(disposeCapacity.Value) : new();
+            startupDelegates = startupCapacity.HasValue ? new(startupCapacity.Value) : new();
+            this.containerInitializationsCount = containerInitializationsCount;
+            this.containerDisposablesCount = containerDisposablesCount;
         }
         
         public void AddBinding<TApparent, TConcrete>(TypeBinding<TApparent, TConcrete> typeBinding)

@@ -2,9 +2,11 @@
 
 Welcome to ManualDi – the simple, fast and extensible C# dependency injection library.
 - Source generation, no reflection - Faster and more memory efficient than most other dependency injection containers.
-- Fully compatible with all client and server platforms, including IL2CPP and WASM
+- Compatible with almost all client and server platforms, including IL2CPP and WASM*
 - Supercharge the container with your own custom extensions
 - Seamless Unity3D game engine integration
+
+\* [.Net Compact Framework](https://es.wikipedia.org/wiki/.NET_Compact_Framework) is [not compatible](https://learn.microsoft.com/en-us/dotnet/api/system.type.typehandle?view=net-8.0#system-type-typehandle) because of an [optimization](https://github.com/PereViader/ManualDi/commit/d7965d1b77b905084bb1fdf8fdad7c4f53f63fb5)
 
 # Benchmark
 [Benchmark](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Main/ManualDi.Main.Benchmark/Benchmark.cs) against Microsoft's container

@@ -1,27 +1,4 @@
-﻿using BenchmarkDotNet.Attributes;
-
-namespace ManualDi.Main.Benchmark;
-
-[MemoryDiagnoser]
-public class BenchmarkManualDi
-{
-    private IDiContainer manualDiContainer = default!;
-    
-    [Benchmark]
-    [IterationSetup(Targets = [nameof(ManualDi_Resolve)])]
-    public void ManualDi_Setup()
-    {
-        manualDiContainer = new DiContainerBindings(bindingsCapacity: 100)
-            .InstallServices()
-            .Build();
-    }
-    
-    [Benchmark]
-    public void ManualDi_Resolve()
-    {
-        manualDiContainer.Resolve<Service100>();
-    }
-}
+﻿namespace ManualDi.Main.Benchmark;
 
 public static class ManualDiInstallerExtensions
 {

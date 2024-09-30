@@ -10,16 +10,15 @@ Welcome to ManualDi – the simple, fast and extensible C# dependency injection 
 
 [Benchmark](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Main/ManualDi.Main.Benchmark/SimpleBenchmark.cs) against Microsoft's container
 ```
-| Method              | Mean       | Error     | StdDev     | Median     | Gen0   | Gen1   | Allocated |
-|-------------------- |-----------:|----------:|-----------:|-----------:|-------:|-------:|----------:|
-| ManualDi_Setup      |   2.543 us | 0.0127 us |  0.0113 us |   2.541 us | 0.2327 | 0.0153 |  11.46 KB |
-| MicrosoftDi_Setup   |   5.465 us | 0.0604 us |  0.0565 us |   5.452 us | 0.5951 | 0.1450 |  29.52 KB |
-| ManualDi_Resolve    |   9.235 us | 0.2451 us |  0.7033 us |   9.100 us |      - |      - |   2.97 KB |
-| MicrosoftDi_Resolve | 143.880 us | 5.7374 us | 16.8269 us | 136.200 us |      - |      - | 131.97 KB |
+| Method      | Mean      | Error     | StdDev    | Gen0   | Gen1   | Allocated |
+|------------ |----------:|----------:|----------:|-------:|-------:|----------:|
+| ManualDi    |  5.054 us | 0.0567 us | 0.0503 us | 0.2747 | 0.0076 |  13.73 KB |
+| MicrosoftDi | 40.553 us | 0.2401 us | 0.2246 us | 2.5024 | 0.6714 | 122.83 KB |
 ```
 
 [Benchmark](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Unity3d/Assets/ManualDi.Unity3d/Tests/Benchmark.cs) against Unity3d compatible containers.
-![Unity3d-Container-Benchmark](https://github.com/user-attachments/assets/73c9dfc7-978e-4050-ba21-4153ec07dfb8)
+
+![Unity3d-Container-Benchmark](https://github.com/user-attachments/assets/55170bd6-8185-43ce-a9ff-021c887425df)
 
 # Installation
 

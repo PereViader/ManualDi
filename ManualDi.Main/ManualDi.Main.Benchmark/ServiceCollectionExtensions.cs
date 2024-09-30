@@ -3,27 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ManualDi.Main.Benchmark;
 
-[MemoryDiagnoser]
-public class BenchmarkMicrosoft
-{
-    private ServiceProvider microsoftDiContainer = default!;
-    
-    [Benchmark]
-    [IterationSetup(Targets = [nameof(MicrosoftDi_Resolve)])]
-    public void MicrosoftDi_Setup()
-    {
-        microsoftDiContainer = new ServiceCollection()
-            .AddServices()
-            .BuildServiceProvider();
-    }
-    
-    [Benchmark]
-    public void MicrosoftDi_Resolve()
-    {
-        microsoftDiContainer.GetRequiredService<Service100>();
-    }
-}
-
 public static class ServiceCollectionExtensions
 {
     public static ServiceCollection AddServices(this ServiceCollection serviceCollection)

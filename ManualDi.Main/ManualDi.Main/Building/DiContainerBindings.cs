@@ -105,7 +105,6 @@ namespace ManualDi.Main
                 typeBindings,
                 parentDiContainer,
                 containerInitializationsCount,
-                containerInitializationsOnDepthCount,
                 containerDisposablesCount);
 
             diContainer.QueueDispose(new ActionDisposableWrapper(() =>

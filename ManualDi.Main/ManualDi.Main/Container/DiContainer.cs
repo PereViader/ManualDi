@@ -19,10 +19,9 @@ namespace ManualDi.Main
             Dictionary<IntPtr, TypeBinding> allTypeBindings, 
             IDiContainer? parentDiContainer,
             int? initializationsCount = null, 
-            int? initializationsOnDepthCount = null,
             int? disposablesCount = null)
         {
-            diContainerInitializer = new(initializationsCount, initializationsOnDepthCount);
+            diContainerInitializer = new(initializationsCount);
             diContainerDisposer = new(disposablesCount);
             
             this.allTypeBindings = allTypeBindings;

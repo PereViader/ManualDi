@@ -18,6 +18,11 @@ namespace ManualDi.Main
         Transient
     }
     
+    internal interface IInitializeBinding
+    {
+        void InitializeObject(object instance, DiContainer diContainer);
+    }
+    
     public abstract class TypeBinding
     {
         public abstract Type ApparentType { get; }
@@ -30,45 +35,33 @@ namespace ManualDi.Main
         public FilterBindingDelegate? FilterBindingDelegate;
         internal object? SingleInstance;
         internal TypeBinding? NextTypeBinding;
-        
-        public abstract object? CreateNew(IDiContainer container);
-        public abstract bool InjectObject(object instance, IDiContainer container);
-        public abstract void InitializeObject(object instance, IDiContainer container);
+
+        public abstract object? ResolveBinding(DiContainer diContainer);
     }
     
-    public sealed class TypeBinding<TApparent, TConcrete> : TypeBinding
+    public sealed class TypeBinding<TApparent, TConcrete> : TypeBinding, IInitializeBinding
     {
         public override Type ApparentType => typeof(TApparent);
         public override Type ConcreteType => typeof(TConcrete);
 
         public CreateDelegate<TConcrete>? CreateConcreteDelegate;
-        public InstanceContainerDelegate<TConcrete>? InjectionDelegates;
+        public InstanceContainerDelegate<TConcrete>? InjectionDelegate;
         public InstanceContainerDelegate<TConcrete>? InitializationDelegate;
         
-        public override object? CreateNew(IDiContainer container)
+        public override object? ResolveBinding(DiContainer diContainer)
         {
-            if (CreateConcreteDelegate is null)
-            {
-                return null;
-            }
-
-            return CreateConcreteDelegate.Invoke(container);
+            return diContainer.ResolveBinding(this);
         }
 
-        public override bool InjectObject(object instance, IDiContainer container)
+        public void InitializeObject(object instance, DiContainer diContainer)
         {
-            InjectionDelegates?.Invoke((TConcrete)instance, container);
-            return InitializationDelegate is not null;
-        }
-        
-        public override void InitializeObject(object instance, IDiContainer container)
-        {
-            InitializationDelegate?.Invoke((TConcrete)instance, container);
+            //Must only be used when not null, optimized for faster runtime
+            InitializationDelegate!.Invoke((TConcrete)instance, diContainer);
         }
     }
     
     // Attention Consider any methods that use this experimental. They may be removed in the future.
-    public sealed class UnsafeTypeBinding : TypeBinding
+    public sealed class UnsafeTypeBinding : TypeBinding, IInitializeBinding
     {
         public UnsafeTypeBinding(Type apparentType, Type concreteType)
         {
@@ -80,23 +73,18 @@ namespace ManualDi.Main
         public override Type ConcreteType { get; }
         
         public CreateDelegate<object>? CreateConcreteDelegate;
-        public InstanceContainerDelegate<object>? InjectionDelegates;
+        public InstanceContainerDelegate<object>? InjectionDelegate;
         public InstanceContainerDelegate<object>? InitializationDelegate;
         
-        public override object? CreateNew(IDiContainer container)
+        public override object? ResolveBinding(DiContainer diContainer)
         {
-            return CreateConcreteDelegate?.Invoke(container);
-        }
-
-        public override bool InjectObject(object instance, IDiContainer container)
-        {
-            InjectionDelegates?.Invoke(instance, container);
-            return InitializationDelegate is not null;
+            return diContainer.ResolveBinding(this);
         }
         
-        public override void InitializeObject(object instance, IDiContainer container)
+        public void InitializeObject(object instance, DiContainer diContainer)
         {
-            InitializationDelegate?.Invoke(instance, container);
+            //Must only be used when not null, optimized for faster runtime
+            InitializationDelegate!.Invoke(instance, diContainer);
         }
     }
 }

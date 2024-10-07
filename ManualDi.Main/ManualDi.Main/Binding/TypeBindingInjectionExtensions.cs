@@ -9,7 +9,7 @@ namespace ManualDi.Main
             this TypeBinding<TApparent, TConcrete> typeBinding, 
             InstanceContainerDelegate<TConcrete> injectionDelegate)
         {
-            typeBinding.InjectionDelegates += injectionDelegate;
+            typeBinding.InjectionDelegate += injectionDelegate;
             return typeBinding;
         }
         
@@ -18,7 +18,7 @@ namespace ManualDi.Main
             this UnsafeTypeBinding typeBinding, 
             InstanceContainerDelegate<object> injectionDelegate)
         {
-            typeBinding.InjectionDelegates += injectionDelegate;
+            typeBinding.InjectionDelegate += injectionDelegate;
             return typeBinding;
         }
     }

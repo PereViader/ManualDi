@@ -37,7 +37,7 @@ namespace ManualDi.Main
                 {
                     if (!typeBinding.IsLazy)
                     {
-                        ResolveBinding(typeBinding);
+                        typeBinding.ResolveBinding(this);
                     }
 
                     typeBinding = typeBinding.NextTypeBinding;
@@ -50,7 +50,7 @@ namespace ManualDi.Main
             var typeBinding = GetTypeForConstraint(type);
             if (typeBinding is not null)
             {
-                return ResolveBinding(typeBinding);
+                return typeBinding.ResolveBinding(this);
             }
 
             return parentDiContainer?.ResolveContainer(type);
@@ -61,13 +61,13 @@ namespace ManualDi.Main
             var typeBinding = GetTypeForConstraint(type, filterBindingDelegate);
             if (typeBinding is not null)
             {
-                return ResolveBinding(typeBinding);
+                return typeBinding.ResolveBinding(this);
             }
 
             return parentDiContainer?.ResolveContainer(type, filterBindingDelegate);
         }
 
-        private object ResolveBinding(TypeBinding typeBinding)
+        internal object ResolveBinding<TInterface, TConcrete>(TypeBinding<TInterface, TConcrete> typeBinding)
         {
             if (typeBinding.SingleInstance is not null) //Optimization: We don't check if Scope is Single
             {
@@ -76,14 +76,56 @@ namespace ManualDi.Main
             
             var previousInjectedTypeBinding = injectedTypeBinding;
             injectedTypeBinding = typeBinding;
+
+            var instance = typeBinding.CreateConcreteDelegate!.Invoke(this) ??
+                throw new InvalidOperationException($"Could not create object for {GetType().FullName}");
+            object objectInstance = instance;
+            
+            if (typeBinding.TypeScope is TypeScope.Single)
+            {
+                typeBinding.SingleInstance = objectInstance;
+            }
+            
+            typeBinding.InjectionDelegate?.Invoke(instance, this);
+            if (typeBinding.InitializationDelegate is not null)
+            {
+                diContainerInitializer.QueueInitialize(typeBinding, objectInstance);
+            }
+            
+            if (instance is IDisposable disposable && typeBinding.TryToDispose)
+            {
+                QueueDispose(disposable);
+            }
+
+            injectedTypeBinding = previousInjectedTypeBinding;
+            if (injectedTypeBinding is null)
+            {
+                diContainerInitializer.InitializeCurrentLevelQueued(this);
+            }
+
+            return objectInstance;
+        }
         
-            var instance = typeBinding.CreateNew(this) ?? throw new InvalidOperationException($"Could not create object for {GetType().FullName}");
+        internal object ResolveBinding(UnsafeTypeBinding typeBinding)
+        {
+            if (typeBinding.SingleInstance is not null) //Optimization: We don't check if Scope is Single
+            {
+                return typeBinding.SingleInstance;
+            }
+            
+            var previousInjectedTypeBinding = injectedTypeBinding;
+            injectedTypeBinding = typeBinding;
+
+            var instance = typeBinding.CreateConcreteDelegate!.Invoke(this) ??
+                           throw new InvalidOperationException($"Could not create object for {GetType().FullName}");
+            
             if (typeBinding.TypeScope is TypeScope.Single)
             {
                 typeBinding.SingleInstance = instance;
             }
             
-            if (typeBinding.InjectObject(instance, this))
+            typeBinding.InjectionDelegate?.Invoke(instance, this);
+            if (typeBinding.InitializationDelegate is not null)
             {
                 diContainerInitializer.QueueInitialize(typeBinding, instance);
             }
@@ -168,7 +210,7 @@ namespace ManualDi.Main
                     if ((filterBindingDelegate?.Invoke(bindingContext) ?? true) &&
                         (typeBinding.FilterBindingDelegate?.Invoke(bindingContext) ?? true))
                     {
-                        resolutions.Add(ResolveBinding(typeBinding));
+                        resolutions.Add(typeBinding.ResolveBinding(this));
                     }
 
                     typeBinding = typeBinding.NextTypeBinding;

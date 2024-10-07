@@ -10,7 +10,7 @@ namespace ManualDi.Main
         // in the same list, thus having them be closer in memory and thus more cache friendly
         // however this requires us to track how many of those commands happen on each depth level
         // so we can keep track of how many belong to each depth level
-        public readonly List<(TypeBinding typeBinding, object instance)> Initializations;
+        public readonly List<(IInitializeBinding initializeBinding, object instance)> Initializations;
         public int CurrentDepthInitializations;
 
         /// <summary>
@@ -27,13 +27,20 @@ namespace ManualDi.Main
     internal static class DiContainerInitializerExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void QueueInitialize(ref this DiContainerInitializer o, TypeBinding typeBinding, object instance)
+        public static void QueueInitialize<TInterface, TConcrete>(ref this DiContainerInitializer o, TypeBinding<TInterface, TConcrete> typeBinding, object instance)
         {
             o.CurrentDepthInitializations += 1;
-            o.Initializations.Add((typeBinding, instance));
+            o.Initializations.Add((initializeBinding: typeBinding, instance));
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void QueueInitialize(ref this DiContainerInitializer o, UnsafeTypeBinding typeBinding, object instance)
+        {
+            o.CurrentDepthInitializations += 1;
+            o.Initializations.Add((initializeBinding: typeBinding, instance));
         }
 
-        public static void InitializeCurrentLevelQueued(ref this DiContainerInitializer o, IDiContainer container)
+        public static void InitializeCurrentLevelQueued(ref this DiContainerInitializer o, DiContainer container)
         {
             var initializationCount = o.CurrentDepthInitializations;
             var initializationStartIndex = o.Initializations.Count - o.CurrentDepthInitializations;

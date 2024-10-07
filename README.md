@@ -13,13 +13,13 @@ Welcome to ManualDi – the simple, fast and extensible C# dependency injection 
 ```
 | Method      | Mean      | Error     | StdDev    | Gen0   | Gen1   | Allocated |
 |------------ |----------:|----------:|----------:|-------:|-------:|----------:|
-| ManualDi    |  5.054 us | 0.0567 us | 0.0503 us | 0.2747 | 0.0076 |  13.73 KB |
-| MicrosoftDi | 40.553 us | 0.2401 us | 0.2246 us | 2.5024 | 0.6714 | 122.83 KB |
+| ManualDi    |  4.890 us | 0.0969 us | 0.0952 us | 0.2747 | 0.0076 |  13.73 KB |
+| MicrosoftDi | 40.287 us | 0.4577 us | 0.4282 us | 2.5024 | 0.6714 | 122.87 KB |
 ```
 
 [Benchmark](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Unity3d/Assets/ManualDi.Unity3d/Tests/Benchmark.cs) against Unity3d compatible containers.
 
-![Unity3d-Container-Benchmark](https://github.com/user-attachments/assets/55170bd6-8185-43ce-a9ff-021c887425df)
+![Unity3d-Container-Benchmark](https://github.com/user-attachments/assets/67065b14-dea1-494a-b53e-469ebaf50101)
 
 # Installation
 

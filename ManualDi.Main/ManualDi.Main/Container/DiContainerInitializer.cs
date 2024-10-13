@@ -27,17 +27,10 @@ namespace ManualDi.Main
     internal static class DiContainerInitializerExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void QueueInitialize<TInterface, TConcrete>(ref this DiContainerInitializer o, TypeBinding<TInterface, TConcrete> typeBinding, object instance)
+        public static void QueueInitialize(ref this DiContainerInitializer o, IInitializeBinding typeBinding, object instance)
         {
             o.CurrentDepthInitializations += 1;
-            o.Initializations.Add((initializeBinding: typeBinding, instance));
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void QueueInitialize(ref this DiContainerInitializer o, UnsafeTypeBinding typeBinding, object instance)
-        {
-            o.CurrentDepthInitializations += 1;
-            o.Initializations.Add((initializeBinding: typeBinding, instance));
+            o.Initializations.Add((typeBinding, instance));
         }
 
         public static void InitializeCurrentLevelQueued(ref this DiContainerInitializer o, DiContainer container)

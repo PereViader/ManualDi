@@ -78,7 +78,7 @@ namespace ManualDi.Main
             injectedTypeBinding = typeBinding;
 
             var instance = typeBinding.CreateConcreteDelegate!.Invoke(this) ??
-                throw new InvalidOperationException($"Could not create object for {GetType().FullName}");
+                throw new InvalidOperationException($"Could not create object for {typeof(TypeBinding<TInterface, TConcrete>).FullName}");
             object objectInstance = instance;
             
             if (typeBinding.TypeScope is TypeScope.Single)
@@ -117,7 +117,7 @@ namespace ManualDi.Main
             injectedTypeBinding = typeBinding;
 
             var instance = typeBinding.CreateConcreteDelegate!.Invoke(this) ??
-                           throw new InvalidOperationException($"Could not create object for {GetType().FullName}");
+                throw new InvalidOperationException($"Could not create object for UnsafeTypeBinding of ApparentType {typeBinding.ApparentType.FullName} and ConcreteType {typeBinding.ConcreteType.FullName}");
             
             if (typeBinding.TypeScope is TypeScope.Single)
             {

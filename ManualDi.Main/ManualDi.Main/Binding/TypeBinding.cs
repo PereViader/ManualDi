@@ -36,7 +36,7 @@ namespace ManualDi.Main
         internal object? SingleInstance;
         internal TypeBinding? NextTypeBinding;
 
-        public abstract object? ResolveBinding(DiContainer diContainer);
+        internal abstract object? ResolveBinding(DiContainer diContainer);
     }
     
     public sealed class TypeBinding<TApparent, TConcrete> : TypeBinding, IInitializeBinding
@@ -48,12 +48,12 @@ namespace ManualDi.Main
         public InstanceContainerDelegate<TConcrete>? InjectionDelegate;
         public InstanceContainerDelegate<TConcrete>? InitializationDelegate;
         
-        public override object? ResolveBinding(DiContainer diContainer)
+        internal override object? ResolveBinding(DiContainer diContainer)
         {
             return diContainer.ResolveBinding(this);
         }
 
-        public void InitializeObject(object instance, DiContainer diContainer)
+        void IInitializeBinding.InitializeObject(object instance, DiContainer diContainer)
         {
             //Must only be used when not null, optimized for faster runtime
             InitializationDelegate!.Invoke((TConcrete)instance, diContainer);
@@ -76,12 +76,12 @@ namespace ManualDi.Main
         public InstanceContainerDelegate<object>? InjectionDelegate;
         public InstanceContainerDelegate<object>? InitializationDelegate;
         
-        public override object? ResolveBinding(DiContainer diContainer)
+        internal override object? ResolveBinding(DiContainer diContainer)
         {
             return diContainer.ResolveBinding(this);
         }
         
-        public void InitializeObject(object instance, DiContainer diContainer)
+        void IInitializeBinding.InitializeObject(object instance, DiContainer diContainer)
         {
             //Must only be used when not null, optimized for faster runtime
             InitializationDelegate!.Invoke(instance, diContainer);

@@ -147,6 +147,11 @@ namespace ManualDi.Main.Generators
 
         private static bool TryInitializeStaticTypeSymbols(Compilation compilation, SourceProductionContext context)
         {
+            if (IDisposableTypeSymbol is not null)
+            {
+                return true; // If the last one is already initialized, skip
+            }
+            
             var lazyTypeSymbol = compilation.GetTypeByMetadataName("System.Lazy`1");
             if (lazyTypeSymbol is null)
             {

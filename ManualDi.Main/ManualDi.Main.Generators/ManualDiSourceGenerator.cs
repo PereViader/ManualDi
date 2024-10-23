@@ -122,10 +122,8 @@ namespace ManualDi.Main.Generators
                 {
                     AddFromConstructor(generationContext);
                 }
-                var initialize = AddInitialize(generationContext);
-                var inject = AddInject(generationContext);
                 
-                AddDefault(generationContext, initialize, inject, accessibility);
+                AddDefault(generationContext, accessibility);
 
                 stringBuilder.AppendLine("""
                     }
@@ -358,7 +356,7 @@ namespace ManualDi.Main.Generators
             return visibility;
         }
 
-        private static Accessibility? AddFromConstructor(GenerationClassContext context)
+        private static void AddFromConstructor(GenerationClassContext context)
         {
             var constructor = context.ClassSymbol
                 .Constructors
@@ -366,12 +364,11 @@ namespace ManualDi.Main.Generators
 
             if (constructor is null)
             {
-                return null;
+                return;
             }
 
             var accessibility = GetSymbolAccessibility(constructor);
             var accessibilityString = GetAccessibilityString(accessibility);
-            var arguments = 
             
             context.StringBuilder.Append($$"""
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -387,7 +384,6 @@ namespace ManualDi.Main.Generators
                     }
             
             """);
-            return accessibility;
         }
 
         private static void CreateMethodResolution(IMethodSymbol constructor, string tabs, StringBuilder stringBuilder)
@@ -538,7 +534,7 @@ namespace ManualDi.Main.Generators
             return "ResolveNullable";
         }
 
-        private static Accessibility? AddInitialize(GenerationClassContext context)
+        private static void AddInitialize(GenerationClassContext context)
         {
             var initializeMethod = context.ClassSymbol
                 .GetMembers()
@@ -547,31 +543,20 @@ namespace ManualDi.Main.Generators
 
             if (initializeMethod is null)
             {
-                return null;
+                return;
             }
-
-            var accessibility = GetSymbolAccessibility(initializeMethod);
-            var accessibilityString = GetAccessibilityString(accessibility);
             
             context.StringBuilder.Append($$"""
-                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    {{context.ObsoleteText}}{{accessibilityString}} static TypeBinding<T, {{context.ClassName}}> Initialize<T>(this TypeBinding<T, {{context.ClassName}}> typeBinding)
-                    {
-                        return typeBinding.Initialize(static (o, c) => o.Initialize(
+            
+                    .Initialize(static (o, c) => o.Initialize(
             """);
             
             CreateMethodResolution(initializeMethod, "                ", context.StringBuilder);
             
-            context.StringBuilder.AppendLine($$"""
-            ));
-                    }
-            
-            """);
-            
-            return accessibility;
+            context.StringBuilder.AppendLine("))");
         }
 
-        private static Accessibility? AddInject(GenerationClassContext context)
+        private static void AddInject(GenerationClassContext context)
         {
             var injectMethod = context.ClassSymbol
                 .GetMembers()
@@ -587,28 +572,11 @@ namespace ManualDi.Main.Generators
 
             if (injectMethod is null && injectProperties.Length == 0)
             {
-                return null;
+                return;
             }
-
-            var injectPropertiesAccessibility = injectProperties.Length == 0
-                ? Accessibility.Public
-                : injectProperties
-                    .Select(x => GetSymbolAccessibility(x.propertySymbol))
-                    .Min();
-            
-            var methodAccessibility = injectMethod is null
-                ? Accessibility.Public
-                : GetSymbolAccessibility(injectMethod);
-
-            var accessibility = (Accessibility)Math.Min((int)injectPropertiesAccessibility, (int)methodAccessibility);
-            
-            var accessibilityString = GetAccessibilityString(accessibility);
             
             context.StringBuilder.AppendLine($$"""
-                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    {{context.ObsoleteText}}{{accessibilityString}} static TypeBinding<T, {{context.ClassName}}> Inject<T>(this TypeBinding<T, {{context.ClassName}}> typeBinding)
-                    {
-                        return typeBinding.Inject(static (o, c) => 
+            .Inject(static (o, c) => 
                         {
             """);
 
@@ -626,29 +594,13 @@ namespace ManualDi.Main.Generators
                 CreateMethodResolution(injectMethod, "                    ", context.StringBuilder);
                 context.StringBuilder.AppendLine(");");
             }
-                        
-            context.StringBuilder.AppendLine("""
-                        });
-                    }
-                    
-            """);
-            return accessibility;
+
+            context.StringBuilder.AppendLine("            })");
         }
 
-        private static void AddDefault(GenerationClassContext generationClassContext, Accessibility? initialize,
-            Accessibility? inject, Accessibility typeAccessibility)
+        private static void AddDefault(GenerationClassContext generationClassContext, Accessibility typeAccessibility)
         {
             var accessibility = typeAccessibility;
-            if (initialize.HasValue && initialize.Value < accessibility)
-            {
-                accessibility = initialize.Value;
-            }
-            
-            if (inject.HasValue && inject.Value < accessibility)
-            {
-                accessibility = inject.Value;
-            }
-
             var accessibilityString = GetAccessibilityString(accessibility);
             
             generationClassContext.StringBuilder.Append($$"""
@@ -658,15 +610,8 @@ namespace ManualDi.Main.Generators
                         return typeBinding
             """);
 
-            if (initialize.HasValue)
-            {
-                generationClassContext.StringBuilder.Append(".Initialize()");
-            }
-
-            if (inject.HasValue)
-            {
-                generationClassContext.StringBuilder.Append(".Inject()");
-            }
+            AddInitialize(generationClassContext);
+            AddInject(generationClassContext);
 
             if (!ImplementsInterface(generationClassContext.ClassSymbol, IDisposableTypeSymbol))
             {

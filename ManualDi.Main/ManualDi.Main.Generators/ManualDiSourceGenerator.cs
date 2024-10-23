@@ -93,33 +93,32 @@ namespace ManualDi.Main.Generators
                     return;
                 }
                 
-                var stringBuilder = new StringBuilder();
-
-                stringBuilder.AppendLine("""
-                #nullable enable
-                using System.Runtime.CompilerServices;
-                
-                namespace ManualDi.Main
-                {
-                    public static partial class ManualDiGeneratedExtensions
-                    {
-                """);
-                
                 var accessibility = GetSymbolAccessibility(classSymbol);
                 if (accessibility is not (Accessibility.Public or Accessibility.Internal))
                 {
                     continue;
                 }
 
-                bool inheritsUnityObject = InheritsFromSymbol(classSymbol, UnityEngineObjectTypeSymbol);
                 var className = FullyQualifyTypeWithoutNullable(classSymbol);
                 var obsoleteText = IsSymbolObsolete(classSymbol)
-                    ? "[System.Obsolete]\r\n        " 
+                    ? "[System.Obsolete]\r\n" 
                     : "";
+                
+                var stringBuilder = new StringBuilder();
+
+                stringBuilder.AppendLine($$"""
+                #nullable enable
+                using System.Runtime.CompilerServices;
+
+                namespace ManualDi.Main
+                {
+                    public static class ManualDiGenerated{{className.Replace(".","")}}Extensions
+                    {
+                """);
 
                 var generationContext = new GenerationClassContext(stringBuilder, className, classSymbol, obsoleteText);
 
-                if (!inheritsUnityObject)
+                if (!InheritsFromSymbol(classSymbol, UnityEngineObjectTypeSymbol))
                 {
                     AddFromConstructor(generationContext);
                 }

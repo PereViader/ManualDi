@@ -53,13 +53,13 @@ namespace ManualDi.Main.Generators
             {
                 return false;
             }
-
-            if (classDeclarationSyntax.Modifiers.Any(SyntaxKind.StaticKeyword))
+            
+            if (classDeclarationSyntax.TypeParameterList is not null)
             {
                 return false;
             }
 
-            if (classDeclarationSyntax.TypeParameterList?.Parameters.Count > 0)
+            if (classDeclarationSyntax.Modifiers.Any(SyntaxKind.StaticKeyword))
             {
                 return false;
             }

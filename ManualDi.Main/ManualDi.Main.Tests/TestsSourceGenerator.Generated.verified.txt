@@ -1,4 +1,5 @@
 ﻿[  
+#nullable enable
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
@@ -20,6 +21,7 @@ namespace ManualDi.Main
 }
 
   
+#nullable enable
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
@@ -41,6 +43,7 @@ namespace ManualDi.Main
 }
 
   
+#nullable enable
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
@@ -56,6 +59,7 @@ namespace ManualDi.Main
 }
 
   
+#nullable enable
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
@@ -78,6 +82,7 @@ namespace ManualDi.Main
 }
 
   
+#nullable enable
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
@@ -99,6 +104,7 @@ namespace ManualDi.Main
 }
 
   
+#nullable enable
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
@@ -126,6 +132,7 @@ namespace ManualDi.Main
 }
 
   
+#nullable enable
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
@@ -147,6 +154,7 @@ namespace ManualDi.Main
 }
 
   
+#nullable enable
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
@@ -183,6 +191,7 @@ namespace ManualDi.Main
 }
 
   
+#nullable enable
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
@@ -204,6 +213,7 @@ namespace ManualDi.Main
 }
 
   
+#nullable enable
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
@@ -234,6 +244,7 @@ namespace ManualDi.Main
 }
 
   
+#nullable enable
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
@@ -264,6 +275,7 @@ namespace ManualDi.Main
 }
 
   
+#nullable enable
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
@@ -285,6 +297,7 @@ namespace ManualDi.Main
 }
 
   
+#nullable enable
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
@@ -307,6 +320,7 @@ namespace ManualDi.Main
 }
 
   
+#nullable enable
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
@@ -339,6 +353,7 @@ namespace ManualDi.Main
 }
 
   
+#nullable enable
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
@@ -371,6 +386,7 @@ namespace ManualDi.Main
 }
 
   
+#nullable enable
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
@@ -404,6 +420,7 @@ namespace ManualDi.Main
 }
 
   
+#nullable enable
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
@@ -444,6 +461,7 @@ namespace ManualDi.Main
 }
 
   
+#nullable enable
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
@@ -489,6 +507,7 @@ namespace ManualDi.Main
 }
 
   
+#nullable enable
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
@@ -510,6 +529,7 @@ namespace ManualDi.Main
 }
 
   
+#nullable enable
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
@@ -531,6 +551,7 @@ namespace ManualDi.Main
 }
 
   
+#nullable enable
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
@@ -630,6 +651,7 @@ namespace ManualDi.Main
 }
 
   
+#nullable enable
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
@@ -676,6 +698,7 @@ namespace ManualDi.Main
 }
 
   
+#nullable enable
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
@@ -721,6 +744,7 @@ namespace ManualDi.Main
 }
 
   
+#nullable enable
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
@@ -736,6 +760,7 @@ namespace ManualDi.Main
 }
 
   
+#nullable enable
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main

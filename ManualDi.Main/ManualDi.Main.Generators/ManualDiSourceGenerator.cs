@@ -16,6 +16,7 @@ namespace ManualDi.Main.Generators
     [Generator]
     public class ManualDiSourceGenerator : IIncrementalGenerator
     {
+        private static INamedTypeSymbol? UnityEngineObjectTypeSymbol = default!;
         private static INamedTypeSymbol LazyTypeSymbol = default!;
         private static INamedTypeSymbol ListTypeSymbol = default!;
         private static INamedTypeSymbol IListTypeSymbol = default!;
@@ -26,9 +27,13 @@ namespace ManualDi.Main.Generators
         private static INamedTypeSymbol InjectAttributeTypeSymbol = default!;
         private static INamedTypeSymbol ObsoleteAttributeTypeSymbol = default!;
         private static INamedTypeSymbol IDisposableTypeSymbol = default!;
-
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
+            context.RegisterSourceOutput(context.CompilationProvider, (context, compilation) =>
+            {
+                TryInitializeStaticTypeSymbols(compilation, context);
+            });
+            
             //https://www.thinktecture.com/en/net/roslyn-source-generators-code-according-to-dependencies/
             // Create a provider for metadata references
             var manualDiMainReferenceModule = context.GetMetadataReferencesProvider()
@@ -40,13 +45,12 @@ namespace ManualDi.Main.Generators
                 .CreateSyntaxProvider(IsSyntaxNodeValid, GetClassDeclaration)
                 .Collect();
 
-            var providers = context.CompilationProvider
-                .Combine(manualDiMainReferenceModule)
+            var providers = manualDiMainReferenceModule
                 .Combine(classDeclarations);
 
             context.RegisterSourceOutput(providers, Generate);
         }
-        
+
         private static bool IsSyntaxNodeValid(SyntaxNode node, CancellationToken ct)
         {
             if (node is not ClassDeclarationSyntax classDeclarationSyntax)
@@ -67,29 +71,22 @@ namespace ManualDi.Main.Generators
             return true;
         }
         
-        private static ClassDeclarationSyntax GetClassDeclaration(GeneratorSyntaxContext context, CancellationToken ct)
+        private static INamedTypeSymbol GetClassDeclaration(GeneratorSyntaxContext context, CancellationToken ct)
         {
-            return (ClassDeclarationSyntax)context.Node;
+            return (INamedTypeSymbol)context.SemanticModel.GetDeclaredSymbol(context.Node)!;
         }
         
-        private void Generate(SourceProductionContext context, ((Compilation, ImmutableArray<ModuleInfo>), ImmutableArray<ClassDeclarationSyntax>) arg)
+        private void Generate(SourceProductionContext context, (ImmutableArray<ModuleInfo>, ImmutableArray<INamedTypeSymbol>) arg)
         {
-            var ((compilation, moduleInfos), classDeclarations) = arg;
+            var (moduleInfos, classSymbols) = arg;
 
             //We don't generate if the ManualDi reference is not there
             if (moduleInfos.Length == 0)
             {
                 return;
             }
-
-            if (!TryInitializeStaticTypeSymbols(compilation, context))
-            {
-                return;
-            }
-
-            var unityEngineObjectSymbol = compilation.GetTypeByMetadataName("UnityEngine.Object");
-
-            foreach (var classDeclaration in classDeclarations)
+            
+            foreach (var classSymbol in classSymbols)
             {
                 if (context.CancellationToken.IsCancellationRequested)
                 {
@@ -99,6 +96,7 @@ namespace ManualDi.Main.Generators
                 var stringBuilder = new StringBuilder();
 
                 stringBuilder.AppendLine("""
+                #nullable enable
                 using System.Runtime.CompilerServices;
                 
                 namespace ManualDi.Main
@@ -107,19 +105,13 @@ namespace ManualDi.Main.Generators
                     {
                 """);
                 
-                var model = compilation.GetSemanticModel(classDeclaration.SyntaxTree);
-                if (ModelExtensions.GetDeclaredSymbol(model, classDeclaration) is not INamedTypeSymbol classSymbol)
-                {
-                    continue;
-                }
-                
                 var accessibility = GetSymbolAccessibility(classSymbol);
                 if (accessibility is not (Accessibility.Public or Accessibility.Internal))
                 {
                     continue;
                 }
 
-                bool inheritsUnityObject = InheritsFromSymbol(classSymbol, unityEngineObjectSymbol);
+                bool inheritsUnityObject = InheritsFromSymbol(classSymbol, UnityEngineObjectTypeSymbol);
                 var className = FullyQualifyTypeWithoutNullable(classSymbol);
                 var obsoleteText = IsSymbolObsolete(classSymbol)
                     ? "[System.Obsolete]\r\n        " 
@@ -141,7 +133,7 @@ namespace ManualDi.Main.Generators
                 }
                 """);
                 
-                context.AddSource($"ManualDiGeneratedExtensions.{className}.cs", SourceText.From(stringBuilder.ToString(), Encoding.UTF8));
+                context.AddSource($"ManualDiGeneratedExtensions.{className}.g.cs", SourceText.From(stringBuilder.ToString(), Encoding.UTF8));
             }
         }
 
@@ -151,6 +143,8 @@ namespace ManualDi.Main.Generators
             {
                 return true; // If the last one is already initialized, skip
             }
+
+            UnityEngineObjectTypeSymbol = compilation.GetTypeByMetadataName("UnityEngine.Object");
             
             var lazyTypeSymbol = compilation.GetTypeByMetadataName("System.Lazy`1");
             if (lazyTypeSymbol is null)

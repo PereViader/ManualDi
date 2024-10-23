@@ -6,6 +6,7 @@
     <IsPackable>false</IsPackable>
     <RootNamespace>ManualDi.Main.Tests</RootNamespace>
     <AssemblyName>ManualDi.Main.Tests</AssemblyName>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

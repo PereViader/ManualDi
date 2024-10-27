@@ -9,7 +9,7 @@ namespace ManualDi.Main
         public static TypeBinding<TConcrete, TConcrete> Bind<TConcrete>(this DiContainerBindings diContainerBindings)
         {
             TypeBinding<TConcrete, TConcrete> typeBinding = new();
-            diContainerBindings.AddBinding(typeBinding);
+            diContainerBindings.AddBinding(typeBinding, typeof(TConcrete));
             return typeBinding;
         }
 
@@ -18,7 +18,7 @@ namespace ManualDi.Main
             where TConcrete : TApparent
         {
             TypeBinding<TApparent, TConcrete> typeBinding = new();
-            diContainerBindings.AddBinding(typeBinding);
+            diContainerBindings.AddBinding(typeBinding, typeof(TApparent));
             return typeBinding;
         }
         
@@ -26,7 +26,7 @@ namespace ManualDi.Main
         public static UnsafeTypeBinding Bind(this DiContainerBindings diContainerBindings, Type concreteType)
         {
             UnsafeTypeBinding typeBinding = new(concreteType, concreteType);
-            diContainerBindings.AddUnsafeBinding(typeBinding);
+            diContainerBindings.AddBinding(typeBinding, concreteType);
             return typeBinding;
         }
         
@@ -34,7 +34,7 @@ namespace ManualDi.Main
         public static UnsafeTypeBinding Bind(this DiContainerBindings diContainerBindings, Type apparentType, Type concreteType)
         {
             UnsafeTypeBinding typeBinding = new(apparentType, concreteType);
-            diContainerBindings.AddUnsafeBinding(typeBinding);
+            diContainerBindings.AddBinding(typeBinding, apparentType);
             return typeBinding;
         }
         

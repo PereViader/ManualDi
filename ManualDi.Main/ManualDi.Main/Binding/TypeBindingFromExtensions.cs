@@ -9,7 +9,7 @@ namespace ManualDi.Main
             this TypeBinding<TApparent, TConcrete> typeBinding
             )
         {
-            typeBinding.CreateConcreteDelegate = c => c.Resolve<TConcrete>();
+            typeBinding.CreateConcreteDelegate = static c => c.Resolve<TConcrete>();
             return typeBinding;
         }
         

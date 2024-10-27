@@ -36,26 +36,9 @@ namespace ManualDi.Main
             this.containerDisposablesCount = containerDisposablesCount;
         }
         
-        public void AddBinding<TApparent, TConcrete>(TypeBinding<TApparent, TConcrete> typeBinding)
+        internal void AddBinding(TypeBinding typeBinding, Type type)
         {
-            var apparentType = typeof(TApparent).TypeHandle.Value;
-            if (!typeBindings.TryGetValue(apparentType, out var innerTypeBinding))
-            {
-                typeBindings.Add(apparentType, typeBinding);
-                return;
-            }
-
-            while (innerTypeBinding.NextTypeBinding is not null)
-            {
-                innerTypeBinding = innerTypeBinding.NextTypeBinding;
-            }
-            
-            innerTypeBinding.NextTypeBinding = typeBinding;
-        }
-        
-        public void AddUnsafeBinding(UnsafeTypeBinding typeBinding)
-        {
-            var apparentType = typeBinding.ApparentType.TypeHandle.Value;
+            var apparentType = type.TypeHandle.Value;
             if (!typeBindings.TryGetValue(apparentType, out var innerTypeBinding))
             {
                 typeBindings.Add(apparentType, typeBinding);

@@ -36,7 +36,8 @@ namespace ManualDi.Main
         internal object? SingleInstance;
         internal TypeBinding? NextTypeBinding;
 
-        internal abstract object? ResolveBinding(DiContainer diContainer);
+        internal abstract object? Create(DiContainer diContainer);
+        internal abstract bool Inject(DiContainer diContainer, object instance);
     }
     
     public sealed class TypeBinding<TApparent, TConcrete> : TypeBinding, IInitializeBinding
@@ -48,9 +49,15 @@ namespace ManualDi.Main
         public InstanceContainerDelegate<TConcrete>? InjectionDelegate;
         public InstanceContainerDelegate<TConcrete>? InitializationDelegate;
         
-        internal override object? ResolveBinding(DiContainer diContainer)
+        internal override object? Create(DiContainer diContainer)
         {
-            return diContainer.ResolveBinding(this);
+            return CreateConcreteDelegate!.Invoke(diContainer);
+        }
+
+        internal override bool Inject(DiContainer diContainer, object instance)
+        {
+            InjectionDelegate?.Invoke((TConcrete)instance, diContainer);
+            return InitializationDelegate is not null;
         }
 
         void IInitializeBinding.InitializeObject(object instance, DiContainer diContainer)
@@ -76,11 +83,17 @@ namespace ManualDi.Main
         public InstanceContainerDelegate<object>? InjectionDelegate;
         public InstanceContainerDelegate<object>? InitializationDelegate;
         
-        internal override object? ResolveBinding(DiContainer diContainer)
+        internal override object? Create(DiContainer diContainer)
         {
-            return diContainer.ResolveBinding(this);
+            return CreateConcreteDelegate!.Invoke(diContainer);
         }
-        
+
+        internal override bool Inject(DiContainer diContainer, object instance)
+        {
+            InjectionDelegate?.Invoke(instance, diContainer);
+            return InitializationDelegate is not null;
+        }
+
         void IInitializeBinding.InitializeObject(object instance, DiContainer diContainer)
         {
             //Must only be used when not null, optimized for faster runtime

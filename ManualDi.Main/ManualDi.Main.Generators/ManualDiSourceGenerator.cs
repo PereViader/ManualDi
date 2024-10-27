@@ -534,7 +534,7 @@ namespace ManualDi.Main.Generators
             return "ResolveNullable";
         }
 
-        private static void AddInitialize(GenerationClassContext context)
+        private static bool AddInitialize(GenerationClassContext context, bool isOnNewLine)
         {
             var initializeMethod = context.ClassSymbol
                 .GetMembers()
@@ -543,20 +543,24 @@ namespace ManualDi.Main.Generators
 
             if (initializeMethod is null)
             {
-                return;
+                return isOnNewLine;
+            }
+
+            if (isOnNewLine)
+            {
+                context.StringBuilder.AppendLine();
+                context.StringBuilder.Append("                    ");
             }
             
-            context.StringBuilder.Append($$"""
+            context.StringBuilder.Append(".Initialize(static (o, c) => o.Initialize(");
             
-                    .Initialize(static (o, c) => o.Initialize(
-            """);
+            CreateMethodResolution(initializeMethod, "                    ", context.StringBuilder);
             
-            CreateMethodResolution(initializeMethod, "                ", context.StringBuilder);
-            
-            context.StringBuilder.AppendLine("))");
+            context.StringBuilder.Append("))");
+            return true;
         }
 
-        private static void AddInject(GenerationClassContext context)
+        private static bool AddInject(GenerationClassContext context, bool isOnNewLine)
         {
             var injectMethod = context.ClassSymbol
                 .GetMembers()
@@ -572,30 +576,37 @@ namespace ManualDi.Main.Generators
 
             if (injectMethod is null && injectProperties.Length == 0)
             {
-                return;
+                return isOnNewLine;
+            }
+
+            if (isOnNewLine)
+            {
+                context.StringBuilder.AppendLine();
+                context.StringBuilder.Append("                ");
             }
             
             context.StringBuilder.AppendLine($$"""
             .Inject(static (o, c) => 
-                        {
+                            {
             """);
 
             foreach (var (injectProperty, attribute) in injectProperties)
             {
                 var id = attribute is null ? null : GetInjectId(attribute);
-                context.StringBuilder.Append($"                o.{injectProperty.Name} = ");
+                context.StringBuilder.Append($"                    o.{injectProperty.Name} = ");
                 CreteTypeResolution(injectProperty.Type, id, context.StringBuilder);
                 context.StringBuilder.AppendLine(";");
             }
-            
+                        
             if (injectMethod is not null)
             {
-                context.StringBuilder.Append("                o.Inject(");
-                CreateMethodResolution(injectMethod, "                    ", context.StringBuilder);
+                context.StringBuilder.Append("                    o.Inject(");
+                CreateMethodResolution(injectMethod, "                        ", context.StringBuilder);
                 context.StringBuilder.AppendLine(");");
             }
 
-            context.StringBuilder.AppendLine("            })");
+            context.StringBuilder.Append("                })");
+            return true;
         }
 
         private static void AddDefault(GenerationClassContext generationClassContext, Accessibility typeAccessibility)
@@ -610,20 +621,32 @@ namespace ManualDi.Main.Generators
                         return typeBinding
             """);
 
-            AddInitialize(generationClassContext);
-            AddInject(generationClassContext);
-
-            if (!ImplementsInterface(generationClassContext.ClassSymbol, IDisposableTypeSymbol))
-            {
-                generationClassContext.StringBuilder.Append(".DontDispose()");
-            }
+            var isOnNewLine = AddInitialize(generationClassContext, false);
+            isOnNewLine = AddInject(generationClassContext, isOnNewLine);
+            _ = AddDontDispose(generationClassContext, isOnNewLine);
 
             generationClassContext.StringBuilder.AppendLine("""
             ;
                     }
             """);
         }
-        
+
+        private static bool AddDontDispose(GenerationClassContext context, bool isOnNewLine)
+        {
+            if (ImplementsInterface(context.ClassSymbol, IDisposableTypeSymbol))
+            {
+                return isOnNewLine;
+            }
+                    
+            if (isOnNewLine)
+            {
+                context.StringBuilder.AppendLine();
+                context.StringBuilder.Append("                ");
+            }
+            context.StringBuilder.Append(".DontDispose()");
+            return true;
+        }
+
         private static string FullyQualifyTypeWithoutNullable(ITypeSymbol typeSymbol)
         {
             var nonNullableType = GetNonNullableType(typeSymbol);

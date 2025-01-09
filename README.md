@@ -65,8 +65,8 @@ Bind<(TApparent,)? TConcrete>() // TApparent is optional and will be equal to TC
     .Default   // Source generated
     .[Single*|Transient]
     .From[Constructor|Instance|Method|ContainerResolve|SubContainerResolve|...]  //Constructor is source generated
-    .Inject   //Empty overload is source generated
-    .Initialize  //Empty overload is source generated
+    .Inject
+    .Initialize
     .Dispose
     .WithId
     .When([InjectedIntoId|InjectedIntoType])

@@ -24,6 +24,7 @@ namespace ManualDi.Unity3d
             {
                 bindings.Install(dataInstaller);
             }
+            bindings.Install(this);
             Container = bindings.Build();
         }
 
@@ -64,6 +65,7 @@ namespace ManualDi.Unity3d
             {
                 bindings.Install(dataInstaller);
             }
+            bindings.Install(this);
             Container = bindings.Build();
 
             Context = Container.Resolve<TContext>();

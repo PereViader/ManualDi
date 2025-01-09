@@ -21,7 +21,7 @@ done
 CSPROJ_FILE="ManualDi.Main/ManualDi.Main/ManualDi.Main.csproj"
 
 # Extract version from the .csproj file
-version=$(grep -oP '(?<=<Version>)[^<]+' "$CSPROJ_FILE")
+version=$(sed -n 's|.*<Version>\(.*\)</Version>.*|\1|p' "$CSPROJ_FILE")
 
 # Check if we extracted a version
 if [ -z "$version" ]; then

@@ -97,6 +97,36 @@ static class Installer
 
 ## Binding
 
+## Default
+
+This source generated method is a shorthand for calling Inject and Initialize when they are available without needing to manually update the container bindings.
+
+This means that
+
+```csharp
+public class A { }
+public class B { 
+    void Inject(A a) { }
+}
+public class C { 
+    void Initialize(A a) { }
+}
+public class D {
+    void Inject(A a) { }
+    void Initialize(A a) { }
+}
+
+
+b.Bind<A>().Default().FromConstructor(); // Default does not call anything
+b.Bind<B>().Default().FromConstructor(); // Default calls Inject
+b.Bind<C>().Default().FromConstructor(); // Default calls Initialize
+b.Bind<D>().Default().FromConstructor(); // Default calls Inject and Initialize
+```
+
+Using default is not mandatory, but it helps development by taking the responsibility of updating the bindings away from the developer any time a new Inject / Initialize method is introduced.
+
+Thus, it is recommended to always add it even if the type does not currently have any of the methods.
+
 ## Scope
 
 The scope of a binding defines the rules for instance creation.
@@ -117,7 +147,7 @@ The instance is created using the constructor of the concrete type.
 The necessary dependencies of the constructor are resolved using the container.
 
 ```csharp
-b.Bind<T>().FromConstructor() 
+b.Bind<T>().Default().FromConstructor() 
 ```
 
 ### Instance
@@ -126,7 +156,7 @@ No new instances will be created, the instance provided during the binding stage
 Note: If used with `Transient` scope, the container will still return the same instance.
 
 ```csharp
-b.Bind<T>().FromInstance(new T())
+b.Bind<T>().Default().FromInstance(new T())
 ```
 
 ### Method
@@ -134,7 +164,7 @@ b.Bind<T>().FromInstance(new T())
 The instance is created using the delegate provided. The container is provided as a parameter thus allowing it to Resolve required dependencies.
 
 ```csharp
-b.Bind<T>().FromMethod(c => new T(c.Resolve<SomeService>()))
+b.Bind<T>().Default().FromMethod(c => new T(c.Resolve<SomeService>()))
 ```
 
 ### ContainerResolve
@@ -143,12 +173,12 @@ Used for apparent type remapping.
 Commonly used to bind multiple relevant interfaces of some type to the container.
 
 ```csharp
-inteface IFirst { }
+interface IFirst { }
 interface ISecond { }
 public class SomeClass : IFirst, ISecond { }
-b.Bind<SomeClass>().FromConstructor();
-b.Bind<IFirst, SomeClass>().FromContainerResolve();
-b.Bind<ISecond, SomeClass>().FromContainerResolve();
+b.Bind<SomeClass>().Default().FromConstructor();
+b.Bind<IFirst, SomeClass>().Default().FromContainerResolve();
+b.Bind<ISecond, SomeClass>().Default().FromContainerResolve();
 ```
 
 ### SubContainerResolve
@@ -156,11 +186,11 @@ b.Bind<ISecond, SomeClass>().FromContainerResolve();
 The instance is created using a sub container built using the installer parameter.
 Useful for encapsulating parts of object graph definition into sub-containers.
 
-```
+```csharp
 class SomeService(Dependency dependency) { }
 class Dependency { }
 
-b.Bind<SomeService>().FromSubContainerResolve(sub => {
+b.Bind<SomeService>().Default().FromSubContainerResolve(sub => {
     sub.Bind<SomeService>().Default().FromConstructor();
     sub.Bind<Dependency>().Default().FromConstructor();
 })
@@ -183,14 +213,6 @@ b.Bind<object>()
     .Inject((o, c) => Console.WriteLine("2"));
 ```
 
-### Source Generator
-
-An empty overload of the Inject method will be generated if:
-- The type has a single public/internal accessible Inject method. The method may have 0 or more dependencies.
-- The type has any amount of public/internal accessible properties that use the Inject attribute
-
-The generated method will first do property injection on the properties and then call the inject method and properties.
-
 ```csharp
 public class A
 {
@@ -209,9 +231,9 @@ public class C
 
 b.Bind<object>().FromInstance(new object());
 b.Bind<int>().FromInstance(3);
-b.Bind<A>().FromConstructor().Inject();
-b.Bind<B>().FromConstructor().Inject();
-b.Bind<C>().FromConstructor().Inject();
+b.Bind<A>().Default().FromConstructor().Inject();
+b.Bind<B>().Default().FromConstructor().Inject();
+b.Bind<C>().Default().FromConstructor().Inject();
 ```
 
 ### Example1: Cannot change the constructor
@@ -239,16 +261,16 @@ Warning: Cyclic dependencies usually highlight a problem in the design of the co
 This will throw a stack trace exception when any of the types involved in the cyclic chain is resolved.
 
 ```csharp
-b.Bind<A>().FromMethod(c => new A(c.Resolve<B>()));
-b.Bind<B>().FromMethod(c => new B(c.Resolve<A>()));
+b.Bind<A>().Default().FromMethod(c => new A(c.Resolve<B>()));
+b.Bind<B>().Default().FromMethod(c => new B(c.Resolve<A>()));
 ```
 
 This will work.
 As long as a single object in the cyclic chain breaks the chain, the resolution will be able to complete successfully.
 
 ```csharp
-b.Bind<A>().FromMethod(c => new A())).Inject((o,c) => o.B = c.Resolve<B>());
-b.Bind<B>().FromMethod(c => new B(c.Resolve<A>()));
+b.Bind<A>().Default().FromMethod(c => new A())).Inject((o,c) => o.B = c.Resolve<B>());
+b.Bind<B>().Default().FromMethod(c => new B(c.Resolve<A>()));
 ```
 
 ## Initialize
@@ -262,6 +284,7 @@ Any amount of initialization callback can be registered
 
 ```csharp
 b.Bind<A>()
+    .Default()
     .FromInstance(new A())
     .Initialize((o, c) => o.Init())
     .Initialize((o, c) => Console.WriteLine("After init"));
@@ -269,25 +292,21 @@ b.Bind<A>()
 c.Resolve<A>()
 ```
 
-### Source Generation
+Creating custom extension methods that call Initialize is the recommended way to supercharge the container.
 
-An empty overload of the Initialize method will be generated if:
-- The type has a single public/internal accessible Initialize method. The method may have 0 or more dependencies.
+### Example: Interconnect some features
 
 ```csharp
-public class A
-{
-    public void Initialize() { }
-}
+class SomeFeature : IFeature { }
 
-public class B
-{
-    public void Initialize(A a) { }
-}
-
-b.Bind<A>().FromConstructor().Initialize();
-b.Bind<B>().FromConstructor().Initialize();
+b.Bind<SomeFeature>()
+    .Default()
+    .FromConstructor()
+    .LinkFeature();
 ```
+
+Imagine you have some `IFeature` interface in your project and you want to some shared initialization code to the ones that have it. You can add this code in an "Link" extension method. Internally this extension method should just call the `Initialize` method and add whatever extra logic the feature requires.
+
 
 ## Dispose
 
@@ -310,8 +329,8 @@ class B
     public void DoCleanup() { }
 }
 
-b.Bind<A>().FromConstructor(); // No need to call Dispose because the object is IDisposable
-b.Bind<B>().FromConstructor().Dispose((o,c) => o.DoCleanup());
+b.Bind<A>().Default().FromConstructor(); // No need to call Dispose because the object is IDisposable
+b.Bind<B>().Default().FromConstructor().Dispose((o,c) => o.DoCleanup());
 
 // ...
 
@@ -421,36 +440,6 @@ By default, bindings are Lazy so calling this method is usually not necessary.
 
 The object will be built simultaneously with the container.
 
-## Default
-
-This source generated method is a shorthand for calling Inject and Initialize when they are available without needing to manually update the container bindings.
-
-This means that
-
-```csharp
-public class A { }
-public class B { 
-    void Inject(A a) { }
-}
-public class C { 
-    void Initialize(A a) { }
-}
-public class D {
-    void Inject(A a) { }
-    void Initialize(A a) { }
-}
-
-
-b.Bind<A>().Default().FromConstructor(); // Default does not call anything
-b.Bind<B>().Default().FromConstructor(); // Default calls Inject
-b.Bind<C>().Default().FromConstructor(); // Default calls Initialize
-b.Bind<D>().Default().FromConstructor(); // Default calls Inject and Initialize
-```
-
-Using default is not mandatory, but it helps development by taking the responsibility of updating the bindings away from the developer any time a new Inject / Initialize method is introduced.
-
-Thus, it is recommended to always add it even if the type does not currently have any of the methods.
-
 ## Extra Source Generator features
 
 ### Nullable
@@ -459,7 +448,7 @@ The source generator will take into account the nullability of the dependencies.
 If a dependency is nullable, the resolution will not fail if it is missing.
 If a dependency is not nullable, the resolution will fail if it is missing.
 
-```
+```csharp
 public class A
 {
     //object MUST be registered on the container

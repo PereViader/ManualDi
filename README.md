@@ -24,8 +24,8 @@ Welcome to ManualDi – the simple, fast and extensible C# dependency injection 
 # Installation
 
 - Plain C#: Install it using [Nuget](https://www.nuget.org/packages/ManualDi.Main/)
-- Unity3d [2022.3.29](https://github.com/PereViader/ManualDi/issues/25) or later
-  - Install it using [Unity Package Manager](https://docs.unity3d.com/Manual/upm-ui-giturl.html) 
+- Unity3d [2022.3.29](https://github.com/PereViader/ManualDi/issues/25) or later [Unity Package Manager](https://docs.unity3d.com/Manual/upm-ui-giturl.html) 
+  - OpenUPM: https://openupm.com/packages/com.pereviader.manualdi.unity3d/
   - Git URL: https://github.com/PereViader/ManualDi.Unity3d.git
 
 Note: Source generation will only happen in csproj that depend both on the source generator and is linked with the ManualDi library.

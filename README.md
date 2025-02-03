@@ -28,12 +28,17 @@ Welcome to ManualDi – the simple, fast and extensible C# dependency injection 
   - Install it using [Unity Package Manager](https://docs.unity3d.com/Manual/upm-ui-giturl.html) 
   - Git URL: https://github.com/PereViader/ManualDi.Unity3d.git
 
+Note: Source generation will only happen in csproj that depend both on the source generator and is linked with the ManualDi library.
+- In a regular C# project, this requires referencing the library on the csproj as a nuget package
+- In a Unity3d project, this requires adding the library to the project through the Package Manager and then referencing ManualDi on each assembly definition where you want to use it
+
 # Container Lifecycle
 
-- Installation Phase: Container configuration is defined.
-- Building Phase: Container configuration is ingested. Non-lazy Bindings are resolved.
-- Startup Phase: Configured startup callbacks are run.
-- Resolution Phase: Container is provided and explicit resolutions can be done.
+- Binding Phase: Container binding configuration is defined 
+- Building Phase: Container is created
+- NonLazy Phase: Non-lazy Bindings are resolved.
+- Startup Phase: Startup startup callbacks are run.
+- Usage Phase: Container is provided to the user and can be used.
 - Disposal Phase: The container and its resources are released.
 
 # Usage
@@ -41,12 +46,14 @@ Welcome to ManualDi – the simple, fast and extensible C# dependency injection 
 The container is created using a synchronous fluent Builder
 
 ```csharp
-IDiContainer container = new DiContainerBindings()  // Create the builder
+DiContainer container = new DiContainerBindings()  // Create the builder
     .InstallSomeFunctionality() // Configure with an extension method implemented in your project
     .Install(new SomeOtherInstaller()) // Configure with an instance of `IInstaller` implemented your project
     .Build(); // Build the container
 
 SomeService service = container.Resolve<SomeService>();
+
+container.Dispose();
 ```
 
 # Binding
@@ -99,21 +106,27 @@ static class Installer
 
 ## Default
 
-This source generated method is a shorthand for calling Inject and Initialize when they are available without needing to manually update the container bindings.
+This source generated method is a shorthand for calling Inject and Initialize that classes may have.
+Think of it as a "duck typed" source generated approach.
 
-This means that
+For an Inject / Initialize method to be called, there must be a single one of each that is either public or internal. The methods may have 0 or N parameters.
+
+When injecting dependencies to the class, it is preferred that it is done on the Inject method and not on the Initialize. The Initialize can also have dependencies provided as paramteres, but those should usually only be used in the body of the Initialize method.
+
+In any case, injection should preferably happen during the construction of objects. For instance, in Unity3d, `MonoBehaviour` derived types are unable to use the consturctor and thus injection is fine to happen separetly.
 
 ```csharp
 public class A { }
 public class B { 
-    void Inject(A a) { }
+    public void Inject(A a) { }
 }
 public class C { 
-    void Initialize(A a) { }
+    public void Initialize() { }
 }
 public class D {
-    void Inject(A a) { }
-    void Initialize(A a) { }
+    public D(A a) { }
+    public void Inject(C c) { }
+    public void Initialize(B b) { }
 }
 
 
@@ -123,9 +136,11 @@ b.Bind<C>().Default().FromConstructor(); // Default calls Initialize
 b.Bind<D>().Default().FromConstructor(); // Default calls Inject and Initialize
 ```
 
-Using default is not mandatory, but it helps development by taking the responsibility of updating the bindings away from the developer any time a new Inject / Initialize method is introduced.
+Using default is not required, but it helps speed up development because the developer are only required to implement standardized DI boilerplate once and then then the actual DI resolution code will be updated automatically. 
+For this reason, it is recommended to always add it even if the type does not currently have any of the methods.
 
-Thus, it is recommended to always add it even if the type does not currently have any of the methods.
+Note: The default method will only be built for classes that live in the developers code and not for C# System classes or 3rd party code.
+
 
 ## Scope
 
@@ -206,11 +221,15 @@ The injection will not happen more than once for any instance.
 The injection can also be used to run other custom user code during the object creation lifecycle.
 Any amount of injection callbacks can be registered
 
+As stated on the `Default` section, calling the source generated method will handle the Inject method automatically.
+
+Some users prefer not using Method Injection and prefer Property injection. ManualDi also provides an `Inject` attribute that allows for equivalent functionality. Both method and property injection can be used on the same type and the Default method will call all of them.
+
 ```csharp
 b.Bind<object>()
     .FromInstance(new object())
-    .Inject((o, c) => Console.WriteLine("1"))
-    .Inject((o, c) => Console.WriteLine("2"));
+    .Inject((o, c) => Console.WriteLine("1"))  // When object is resolved this is called first
+    .Inject((o, c) => Console.WriteLine("2")); // And then this is called
 ```
 
 ```csharp
@@ -227,13 +246,25 @@ public class B
 public class C
 {
     [Inject] public int Value { get; set; }
+    public void Inject(B b) { }
 }
 
+//This is the manual implementation without Default
 b.Bind<object>().FromInstance(new object());
 b.Bind<int>().FromInstance(3);
-b.Bind<A>().Default().FromConstructor().Inject();
-b.Bind<B>().Default().FromConstructor().Inject();
-b.Bind<C>().Default().FromConstructor().Inject();
+b.Bind<A>().FromConstructor().Inject((o, c) => o.Inject(c.Resolve<B>(), c.Resolve<C>()));
+b.Bind<B>().FromConstructor().Inject((o, c) => o.Object = c.Resolve<object>());
+b.Bind<C>().FromConstructor().Inject((o, c) => {
+    o.Value = c.Resolve<int>();
+    o.Inject(c.Resolve<B>())
+});
+
+//And this is the equivalent and simpler implementation with Default
+b.Bind<object>().FromInstance(new object());
+b.Bind<int>().FromInstance(3);
+b.Bind<A>().Default().FromConstructor();
+b.Bind<B>().Default().FromConstructor();
+b.Bind<C>().Default().FromConstructor();
 ```
 
 ### Example1: Cannot change the constructor
@@ -261,16 +292,16 @@ Warning: Cyclic dependencies usually highlight a problem in the design of the co
 This will throw a stack trace exception when any of the types involved in the cyclic chain is resolved.
 
 ```csharp
-b.Bind<A>().Default().FromMethod(c => new A(c.Resolve<B>()));
-b.Bind<B>().Default().FromMethod(c => new B(c.Resolve<A>()));
+b.Bind<A>().FromMethod(c => new A(c.Resolve<B>()));
+b.Bind<B>().FromMethod(c => new B(c.Resolve<A>()));
 ```
 
 This will work.
 As long as a single object in the cyclic chain breaks the chain, the resolution will be able to complete successfully.
 
 ```csharp
-b.Bind<A>().Default().FromMethod(c => new A())).Inject((o,c) => o.B = c.Resolve<B>());
-b.Bind<B>().Default().FromMethod(c => new B(c.Resolve<A>()));
+b.Bind<A>().FromMethod(c => new A())).Inject((o,c) => o.B = c.Resolve<B>());
+b.Bind<B>().FromMethod(c => new B(c.Resolve<A>()));
 ```
 
 ## Initialize
@@ -282,14 +313,34 @@ The initialization will not happen more than once for any instance.
 The initialization can also be used to hook into the object creation lifecycle and run other custom user code.
 Any amount of initialization callback can be registered
 
-```csharp
-b.Bind<A>()
-    .Default()
-    .FromInstance(new A())
-    .Initialize((o, c) => o.Init())
-    .Initialize((o, c) => Console.WriteLine("After init"));
+As stated on the `Default` section, calling the source generated method will handle the Initialize method automatically.
 
-c.Resolve<A>()
+
+```csharp
+b.Bind<object>()
+    .FromInstance(new object())
+    .Initialize((o, c) => Console.WriteLine("1"))  // When object is resolved this is called first
+    .Initialize((o, c) => Console.WriteLine("2")); // And then this is called
+```
+
+```csharp
+public class A
+{
+    public void Initialize() { }
+}
+
+public class B
+{
+    public void Inject(A a) { }
+}
+
+//This is the manual implementation without Default
+b.Bind<A>().FromConstructor().Initialize((o, c) => o.Initialize()));
+b.Bind<B>().FromConstructor().Initialize((o, c) => o.Initialize(c.Resolve<A>()));
+
+//And this is the equivalent and simpler implementation with Default
+b.Bind<A>().Default().FromConstructor();
+b.Bind<B>().Default().FromConstructor();
 ```
 
 Creating custom extension methods that call Initialize is the recommended way to supercharge the container.
@@ -307,6 +358,7 @@ b.Bind<SomeFeature>()
 
 Imagine you have some `IFeature` interface in your project and you want to some shared initialization code to the ones that have it. You can add this code in an "Link" extension method. Internally this extension method should just call the `Initialize` method and add whatever extra logic the feature requires.
 
+You may find further Link examples already present in the library [here](https://github.com/PereViader/ManualDi/blob/540cb3d3155d81dc8925d9ab5769d2a18e61e81b/ManualDi.Unity3d/Assets/ManualDi.Unity3d/Runtime/Extensions/TypeBindingLinkExtensions.cs#L8)
 
 ## Dispose
 
@@ -316,6 +368,8 @@ The container will dispose of the objects when itself is disposed.
 The objects will be disposed in reverse resolution order.
 
 If an object implements the IDisposable interface, it doesn't need to call Dispose, it will be Disposed automatically.
+
+The default source generated method will apply a very slight optimization by precalculating types implementing IDisposable. However calling Default is not required.
 
 ```csharp
 class A : IDisposable 
@@ -563,8 +617,8 @@ List<SomeService> services = container.ResolveAll<SomeService>();
 
 # Startups
 
-The container also provides an extension method so it can queue some delegate to be run during the Startups lifecycle of the container.
-This step is useful to make sure that some object's method is run after all the NonLazy objects have been created and initialized.
+The container provides functionality that queues work to be done once the continer is built and ready.
+By using this you can define the entry points of your application declarativly during the installation of the container.
 
 ```csharp
 class Startup
@@ -583,7 +637,7 @@ b.Bind<Startup>().Default().FromConstructor();
 b.WithStartup<Startup>(o => o.Start());
 ```
 
-In the snippet above, the following will happen once the container is built:
+In the snippet above, the following will happen when the container is built:
 - `SomeNonLazy` is created
 - `SomeNonLazy`'s `Initialize` method is called
 - `Startup` is created
@@ -592,7 +646,9 @@ In the snippet above, the following will happen once the container is built:
 # ManualDi.Unity3d
 
 When using the container in unity, do not rely on Awake / Start. Instead, rely on Inject / Initialize.
-You can still use Awake / Start if the classes involved are not injected through the container.
+You may still use Awake / Start if the classes involved are not injected through the container.
+
+By relying on the container and not on native Unity3d callbacks you can be certain that the dependencies of your classes are Injected and Initialized in the proper order.
 
 ## Installers
 
@@ -643,7 +699,7 @@ When using the container in the Unity3d game engine the library provides special
 - `FromInstantiateGameObjectResourceGetComponentsInChildren`: Instantiates a GameObject from a resource and retrieves all components from its children.
 - `FromInstantiateGameObjectResourceAddComponent`: Instantiates a GameObject from a resource and adds a component to it.
 
-Use them like this
+Use them like this.
 
 ```csharp
 public class SomeFeatureInstaller : MonoBehaviourInstaller
@@ -662,15 +718,17 @@ public class SomeFeatureInstaller : MonoBehaviourInstaller
 }
 ```
 
+As seen in the snippet above, my recommendation is that whatever dependencies may be necessary on an installer are provided as public members.
+This way Unity3d will serialize them so they can be linked through the inspector. Private serialize field members may be used but they add extra unnecesary boilerplate. 
+
 Most methods have several optional parameters.
 
-Also, special attention to `Transform? parent = null`. This one will define the parent transform used when instantiating new instances.
-
+Special attention to `Transform? parent = null`. This one will define the parent transform used when instantiating new instances.
 
 Special attention to `bool destroyOnDispose = true` one. This one will be available on creation strategies that create new instances.
 If the parameter is left as `true`, when the container is disposed, it will first destroy the instance.
 This is the necessary default behaviour due to the game likely needing those resources cleaned up for example from shared Additive scenes and wanting the default behaviour to be the safest.
-If the scene the resource is created on will then be deleted, there is no need to destroy it during the disposal of the container, so feel free to set the parameter as `false`.
+If the scene the resource is created on will then be deleted, there is no need to destroy it during the disposal of the container, so feel free to set the parameter as `false` for a faster disposal.
 
 ## EntryPoints
 

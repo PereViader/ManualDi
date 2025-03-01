@@ -117,6 +117,16 @@ namespace ManualDi.Main
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static AsyncTypeBinding<TApparent, TConcrete> FromMethodAsync<TApparent, TConcrete>(
+            this AsyncTypeBinding<TApparent, TConcrete> typeBinding,
+            CreateDelegateAsync<TConcrete> createDelegate
+        )
+        {
+            typeBinding.CreateConcreteDelegate = async c => await createDelegate(c);
+            return typeBinding;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static UnsafeTypeBinding FromMethod(
             this UnsafeTypeBinding typeBinding,
             CreateDelegate<object> createDelegate

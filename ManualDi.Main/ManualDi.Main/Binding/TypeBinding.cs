@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace ManualDi.Main
 {
     public delegate T? CreateDelegate<out T>(IDiContainer diContainer);
+    public delegate Task<T?> CreateDelegateAsync<T>(IDiContainer diContainer);
     public delegate void InstanceContainerDelegate<in T>(T instance, IDiContainer diContainer);
     public delegate bool FilterBindingDelegate(BindingContext context);
 
@@ -40,21 +42,21 @@ namespace ManualDi.Main
         internal abstract bool Inject(DiContainer diContainer, object instance);
     }
     
-    public sealed class TypeBinding<TApparent, TConcrete> : TypeBinding, IInitializeBinding
+    public class TypeBinding<TApparent, TConcrete> : TypeBinding, IInitializeBinding
     {
-        public override Type ApparentType => typeof(TApparent);
-        public override Type ConcreteType => typeof(TConcrete);
+        public sealed override Type ApparentType => typeof(TApparent);
+        public sealed override Type ConcreteType => typeof(TConcrete);
 
         public CreateDelegate<TConcrete>? CreateConcreteDelegate;
         public InstanceContainerDelegate<TConcrete>? InjectionDelegate;
         public InstanceContainerDelegate<TConcrete>? InitializationDelegate;
         
-        internal override object? Create(DiContainer diContainer)
+        internal sealed override object? Create(DiContainer diContainer)
         {
             return CreateConcreteDelegate!.Invoke(diContainer);
         }
 
-        internal override bool Inject(DiContainer diContainer, object instance)
+        internal sealed override bool Inject(DiContainer diContainer, object instance)
         {
             InjectionDelegate?.Invoke((TConcrete)instance, diContainer);
             return InitializationDelegate is not null;
@@ -65,6 +67,10 @@ namespace ManualDi.Main
             //Must only be used when not null, optimized for faster runtime
             InitializationDelegate!.Invoke((TConcrete)instance, diContainer);
         }
+    }
+
+    public sealed class AsyncTypeBinding<TApparent, TConcrete> : TypeBinding<Task<TApparent>, Task<object?>>
+    {
     }
     
     // Attention Consider any methods that use this experimental. They may be removed in the future.

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace ManualDi.Main
 {
@@ -35,6 +36,24 @@ namespace ManualDi.Main
         {
             UnsafeTypeBinding typeBinding = new(apparentType, concreteType);
             diContainerBindings.AddBinding(typeBinding, apparentType);
+            return typeBinding;
+        }
+        
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static AsyncTypeBinding<TConcrete, TConcrete> BindAsync<TConcrete>(this DiContainerBindings diContainerBindings)
+        {
+            AsyncTypeBinding<TConcrete, TConcrete> typeBinding = new();
+            diContainerBindings.AddBinding(typeBinding, typeof(Task<TConcrete>));
+            return typeBinding;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static AsyncTypeBinding<TApparent, TConcrete> BindAsync<TApparent, TConcrete>(this DiContainerBindings diContainerBindings)
+            where TConcrete : TApparent
+        {
+            AsyncTypeBinding<TApparent, TConcrete> typeBinding = new();
+            diContainerBindings.AddBinding(typeBinding, typeof(Task<TApparent>));
             return typeBinding;
         }
         

@@ -2,9 +2,55 @@
 using System;
 using System.Collections.Generic;
 
-var container = new DiContainerBindings().Install(b =>
+
+
+await using var container = new DiContainerBindings().Install(b =>
 {
+    b.BindAsync<int>()
+        .FromMethodAsync(async (c, ct) =>
+        {
+            await Task.Delay(1000, ct);
+            return 42;
+        })
+        .InjectAsync((o, c, ct) =>
+        {
+            Console.WriteLine("Injecting Async");
+            return Task.CompletedTask;
+        })
+        .Inject((o, c) =>
+        {
+            Console.WriteLine("Injecting");
+        })
+        .InitializeAsync((instance, diContainer, token) =>
+        {
+            Console.WriteLine("Initializing Async");
+            return Task.CompletedTask;
+        })
+        .Initialize((instance, diContainer) =>
+        {
+            Console.WriteLine("Initializing");
+        })
+        .DisposeAsync(o =>
+        {
+            Console.WriteLine("Disposing Async");
+            return ValueTask.CompletedTask;
+        })
+        .Dispose(o => Console.WriteLine("Disposing"))
+        .Transient();
+    b.BindAsync<EntryPointAsync>().FromMethod(c => new EntryPointAsync(c.ResolveAsync<int>()));
 }).Build();
+
+var entryPointAsync = (await container.ResolveAsync<EntryPointAsync>());
+await entryPointAsync.Run();
+
+class EntryPointAsync(Task<int> hardValueToCompute)
+{
+    public async Task Run()
+    {
+        var value = await hardValueToCompute;
+        Console.WriteLine(value);
+    }
+}
 
 namespace SomeNamespace.Subnamespace
 {
@@ -315,6 +361,17 @@ namespace SomeNamespace.Subnamespace
     }
 }
 
+
+public class TaskInjection
+{
+    public TaskInjection(Task<int> arg1, Task<int?> arg2, Task<int?>? arg3, Task<object> arg4, Task<object?> arg5, Task<object?>? arg6)
+    {
+    }
+
+    public void Inject(Lazy<Task<int>> arg1, Lazy<Task<int?>> arg2, Lazy<Task<int?>?> arg3, Lazy<Task<object>> arg4,
+        Lazy<Task<object?>> arg5, Lazy<Task<object?>?> arg6)
+    {
+    }
 class MultipleOfEach
 {
     internal MultipleOfEach(object o) {}

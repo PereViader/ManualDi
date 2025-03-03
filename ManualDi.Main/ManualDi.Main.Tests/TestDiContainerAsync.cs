@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using NSubstitute;
 using NUnit.Framework;
@@ -12,7 +13,7 @@ public class TestDiContainerAsync
     {
         var container = new DiContainerBindings().Install(b =>
         {
-            b.BindAsync<int>().FromMethodAsync(_ => Task.FromResult(1));
+            b.BindAsync<int>().FromMethodAsync((_, _) => Task.FromResult(1));
         }).Build();
 
         var value = await container.ResolveAsync<int>();
@@ -22,8 +23,10 @@ public class TestDiContainerAsync
     [Test]
     public async Task TestAsyncSingleCalledOnce()
     {
-        var createDelegate = Substitute.For<CreateDelegateAsync<int>>();
-        createDelegate.Invoke(Arg.Any<IDiContainer>()).Returns(Task.FromResult(1));
+        var createDelegate = Substitute.For<CreateAsyncDelegate<int>>();
+        createDelegate
+            .Invoke(Arg.Any<IDiContainer>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(1));
         
         var container = new DiContainerBindings().Install(b =>
         {
@@ -33,14 +36,16 @@ public class TestDiContainerAsync
         await container.ResolveAsync<int>();
         await container.ResolveAsync<int>();
         
-        await createDelegate.Received(1).Invoke(Arg.Any<IDiContainer>())!;
+        await createDelegate.Received(1).Invoke(Arg.Any<IDiContainer>(), Arg.Any<CancellationToken>())!;
     }
     
     [Test]
     public async Task TestAsyncTransientCalledTwice()
     {
-        var createDelegate = Substitute.For<CreateDelegateAsync<int>>();
-        createDelegate.Invoke(Arg.Any<IDiContainer>()).Returns(Task.FromResult(1));
+        var createDelegate = Substitute.For<CreateAsyncDelegate<int>>();
+        createDelegate
+            .Invoke(Arg.Any<IDiContainer>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(1));
         
         var container = new DiContainerBindings().Install(b =>
         {
@@ -50,14 +55,16 @@ public class TestDiContainerAsync
         await container.ResolveAsync<int>();
         await container.ResolveAsync<int>();
         
-        await createDelegate.Received(2).Invoke(Arg.Any<IDiContainer>())!;
+        await createDelegate.Received(2).Invoke(Arg.Any<IDiContainer>(), Arg.Any<CancellationToken>())!;
     }
     
     [Test]
     public async Task TestAsyncDifferentApparentAndConcrete()
     {
-        var createDelegate = Substitute.For<CreateDelegateAsync<int>>();
-        createDelegate.Invoke(Arg.Any<IDiContainer>()).Returns(Task.FromResult(1));
+        var createDelegate = Substitute.For<CreateAsyncDelegate<int>>();
+        createDelegate
+            .Invoke(Arg.Any<IDiContainer>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(1));
         
         var container = new DiContainerBindings().Install(b =>
         {

@@ -23,9 +23,13 @@ namespace ManualDi.Main
             var resolution = diContainer.ResolveContainer(typeof(Task<T>));
             if (resolution is null)
             {
+                throw new InvalidOperationException($"Could not resolve element of type {typeof(T).FullName}");
+            }
+            var result = await (Task<object?>)resolution;
+            if (result is null)
+            {
                 throw new InvalidOperationException($"Could not resolve async element of type {typeof(T).FullName}");
             }
-            var result = await (Task<object>)resolution;
             return (T)result;
         }
 
@@ -46,9 +50,13 @@ namespace ManualDi.Main
             var resolution = diContainer.ResolveContainer(typeof(Task<T>), filterBindingDelegate);
             if (resolution is null)
             {
+                throw new InvalidOperationException($"Could not resolve element of type {typeof(T).FullName}");
+            }
+            var result = await (Task<object?>)resolution;
+            if (result is null)
+            {
                 throw new InvalidOperationException($"Could not resolve async element of type {typeof(T).FullName}");
             }
-            var result = await (Task<object>)resolution;
             return (T)result;
         }
         
@@ -64,14 +72,19 @@ namespace ManualDi.Main
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Task<object> ResolveAsync(this IDiContainer diContainer, Type type)
+        public static async Task<object> ResolveAsync(this IDiContainer diContainer, Type type)
         {
-            var resolution = diContainer.ResolveContainer(type);
+            var resolution = diContainer.ResolveContainer(typeof(Task<>).MakeGenericType(type));
             if (resolution is null)
+            {
+                throw new InvalidOperationException($"Could not resolve element of type {type.FullName}");
+            }
+            var result = await (Task<object?>)resolution;
+            if (result is null)
             {
                 throw new InvalidOperationException($"Could not resolve async element of type {type.FullName}");
             }
-            return (Task<object>)resolution;
+            return result;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -86,14 +99,19 @@ namespace ManualDi.Main
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Task<object> ResolveAsync(this IDiContainer diContainer, Type type, FilterBindingDelegate filterBindingDelegate)
+        public static async Task<object> ResolveAsync(this IDiContainer diContainer, Type type, FilterBindingDelegate filterBindingDelegate)
         {
-            var resolution = diContainer.ResolveContainer(type, filterBindingDelegate);
+            var resolution = diContainer.ResolveContainer(typeof(Task<>).MakeGenericType(type), filterBindingDelegate);
             if (resolution is null)
+            {
+                throw new InvalidOperationException($"Could not resolve element of type {type.FullName}");
+            }
+            var result = await (Task<object?>)resolution;
+            if (result is null)
             {
                 throw new InvalidOperationException($"Could not resolve async element of type {type.FullName}");
             }
-            return (Task<object>)resolution;
+            return result;
         }
     }
 }

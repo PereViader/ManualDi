@@ -5,23 +5,33 @@ namespace ManualDi.Main
     public static class TypeBindingInitializationExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<TApparent, TConcrete> Initialize<TApparent, TConcrete>(
-            this TypeBinding<TApparent, TConcrete> typeBinding,
+        public static TypeBindingSync<TApparent, TConcrete> Initialize<TApparent, TConcrete>(
+            this TypeBindingSync<TApparent, TConcrete> typeBindingSync,
             InstanceContainerDelegate<TConcrete> initializationDelegate
             )
         {
-            typeBinding.InitializationDelegate += initializationDelegate;
-            return typeBinding;
+            typeBindingSync.InitializationDelegate += initializationDelegate;
+            return typeBindingSync;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static UnsafeTypeBinding Initialize(
-            this UnsafeTypeBinding typeBinding,
-            InstanceContainerDelegate<object> initializationDelegate
-            )
+        public static TypeBindingAsync<TApparent, TConcrete> Initialize<TApparent, TConcrete>(
+            this TypeBindingAsync<TApparent, TConcrete> typeBindingSync,
+            InstanceContainerDelegate<TConcrete> initializationDelegate
+        )
         {
-            typeBinding.InitializationDelegate += initializationDelegate;
-            return typeBinding;
+            typeBindingSync.InitializationDelegate += initializationDelegate;
+            return typeBindingSync;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TypeBindingAsync<TApparent, TConcrete> InitializeAsync<TApparent, TConcrete>(
+            this TypeBindingAsync<TApparent, TConcrete> typeBindingSync,
+            InstanceContainerAsyncDelegate<TConcrete> initializationAsyncDelegate
+        )
+        {
+            typeBindingSync.InitializationAsyncDelegate += initializationAsyncDelegate;
+            return typeBindingSync;
         }
     }
 }

@@ -3,6 +3,11 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
 {
+    internal interface IInitializeBinding
+    {
+        void InitializeObject(object instance, DiContainer diContainer);
+    }
+    
     //In order to optimize the container, this is a struct that is modified by static ref extensions
     internal struct DiContainerInitializer
     {

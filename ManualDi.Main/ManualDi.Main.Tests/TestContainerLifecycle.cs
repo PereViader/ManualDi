@@ -54,28 +54,28 @@ public class TestContainerLifecycle
                 .FromInstance(nonLazy)
                 .Inject((o, c) => o.Inject(c.Resolve<IInjectChild>()))
                 .Initialize((o, c) => o.Initialize(c.Resolve<IInitChild>()))
-                .Dispose((o, c) => o.Dispose())
+                .Dispose(o => o.Dispose())
                 .NonLazy();
 
             b.Bind<IInjectChild>()
                 .FromInstance(injectChild)
                 .Inject((o, c) => o.Inject())
                 .Initialize((o, c) => o.Initialize())
-                .Dispose((o, c) => o.Dispose());
+                .Dispose(o => o.Dispose());
 
             b.Bind<IInitChild>()
                 .FromInstance(initChild)
                 .Inject((o, c) => o.Inject())
                 .Initialize((o, c) => o.Initialize())
-                .Dispose((o, c) => o.Dispose());
+                .Dispose(o => o.Dispose());
 
             b.Bind<IStartup>()
                 .FromInstance(startup)
-                .Dispose((o, c) => o.Dispose());
+                .Dispose(o=> o.Dispose());
 
             b.Bind<IResolveAfter>()
                 .FromInstance(resolveAfter)
-                .Dispose((o, c) => o.Dispose());
+                .Dispose(o=> o.Dispose());
             
             b.WithStartup<IStartup>(e => e.Run());
         }).Build();

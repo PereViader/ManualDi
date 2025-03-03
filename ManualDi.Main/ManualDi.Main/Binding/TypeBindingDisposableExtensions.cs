@@ -13,23 +13,81 @@ namespace ManualDi.Main
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<TApparent, TConcrete> Dispose<TApparent, TConcrete>(
-            this TypeBinding<TApparent, TConcrete> typeBinding,
-            InstanceContainerDelegate<TConcrete> disposeDelegate
+        public static TypeBindingSync<TApparent, TConcrete> Dispose<TApparent, TConcrete>(
+            this TypeBindingSync<TApparent, TConcrete> typeBindingSync,
+            DisposeObjectDelegate<TConcrete> disposeObjectDelegate
             )
         {
-            typeBinding.Inject((o, c) => c.QueueDispose(() => disposeDelegate.Invoke(o, c)));
-            return typeBinding;
+            typeBindingSync.Inject((o, c) =>
+            {
+                c.QueueDispose(() => disposeObjectDelegate.Invoke(o));
+            });
+            return typeBindingSync;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static UnsafeTypeBinding Dispose(
-            this UnsafeTypeBinding typeBinding,
-            InstanceContainerDelegate<object> disposeDelegate
-            )
+        public static TypeBindingSync<TApparent, TConcrete> Dispose<TApparent, TConcrete>(
+            this TypeBindingSync<TApparent, TConcrete> typeBindingSync,
+            DisposeObjectContextDelegate<TConcrete> disposeObjectContextDelegate
+        )
         {
-            typeBinding.Inject((o, c) => c.QueueDispose(() => disposeDelegate.Invoke(o, c)));
-            return typeBinding;
+            typeBindingSync.Inject((o, c) =>
+            {
+                c.QueueDispose(disposeObjectContextDelegate.Invoke(o, c));
+            });
+            return typeBindingSync;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TypeBindingAsync<TApparent, TConcrete> Dispose<TApparent, TConcrete>(
+            this TypeBindingAsync<TApparent, TConcrete> typeBindingAsync,
+            DisposeObjectDelegate<TConcrete> disposeObjectDelegate
+        )
+        {
+            typeBindingAsync.Inject((o, c) =>
+            {
+                c.QueueDispose(() => disposeObjectDelegate.Invoke(o));
+            });
+            return typeBindingAsync;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TypeBindingAsync<TApparent, TConcrete> Dispose<TApparent, TConcrete>(
+            this TypeBindingAsync<TApparent, TConcrete> typeBindingAsync,
+            DisposeObjectContextDelegate<TConcrete> disposeObjectContextDelegate
+        )
+        {
+            typeBindingAsync.Inject((o, c) =>
+            {
+                c.QueueDispose(disposeObjectContextDelegate.Invoke(o, c));
+            });
+            return typeBindingAsync;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TypeBindingAsync<TApparent, TConcrete> DisposeAsync<TApparent, TConcrete>(
+            this TypeBindingAsync<TApparent, TConcrete> typeBindingAsync,
+            AsyncDisposeObjectDelegate<TConcrete> asyncDisposeObjectDelegate
+        )
+        {
+            typeBindingAsync.Inject((o, c) =>
+            {
+                c.QueueAsyncDispose(async () => await asyncDisposeObjectDelegate.Invoke(o));
+            });
+            return typeBindingAsync;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TypeBindingAsync<TApparent, TConcrete> DisposeAsync<TApparent, TConcrete>(
+            this TypeBindingAsync<TApparent, TConcrete> typeBindingAsync,
+            AsyncDisposeObjectContextDelegate<TConcrete> asyncDisposeObjectContextDelegate
+        )
+        {
+            typeBindingAsync.Inject((o, c) =>
+            {
+                c.QueueAsyncDispose(asyncDisposeObjectContextDelegate.Invoke(o, c));
+            });
+            return typeBindingAsync;
         }
     }
 }

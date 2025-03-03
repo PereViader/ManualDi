@@ -1,16 +1,26 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ManualDi.Main
 {
-    public delegate T? CreateDelegate<out T>(IDiContainer diContainer);
-    public delegate Task<T?> CreateDelegateAsync<T>(IDiContainer diContainer);
-    public delegate void InstanceContainerDelegate<in T>(T instance, IDiContainer diContainer);
+    // Note: By having short parameter names on delegates, IDE autocomplete will create lambdas with these short names
+    // We usually don't want abbreviated parameter names, but in this case because we are very likely to need to write
+    // lots of lambdas, and the lambda parameters are always the same, short parameter names will be more readable
+    public delegate T? CreateDelegate<out T>(IDiContainer c);
+    public delegate Task<T?> CreateAsyncDelegate<T>(IDiContainer c, CancellationToken ct);
+    public delegate void InstanceContainerDelegate<in T>(T o, IDiContainer c);
+    public delegate Task InstanceContainerAsyncDelegate<in T>(T o, IDiContainer c, CancellationToken ct);
+    public delegate void DisposeObjectDelegate<in T>(T o);
+    public delegate Action DisposeObjectContextDelegate<in T>(T o, IDiContainer c);
+    public delegate ValueTask AsyncDisposeObjectDelegate<in T>(T o);
+    public delegate Func<ValueTask> AsyncDisposeObjectContextDelegate<in T>(T o, IDiContainer c);
+    
     public delegate bool FilterBindingDelegate(BindingContext context);
 
     public sealed class BindingContext
     {
-        public TypeBinding TypeBinding = default!;
+        public TypeBinding TypeBinding = default!; // Optimization: we assume that it will be filled
         public TypeBinding? InjectedIntoTypeBinding;
     }
 
@@ -18,11 +28,6 @@ namespace ManualDi.Main
     {
         Single,
         Transient
-    }
-    
-    internal interface IInitializeBinding
-    {
-        void InitializeObject(object instance, DiContainer diContainer);
     }
     
     public abstract class TypeBinding
@@ -38,72 +43,6 @@ namespace ManualDi.Main
         internal object? SingleInstance;
         internal TypeBinding? NextTypeBinding;
 
-        internal abstract object? Create(DiContainer diContainer);
-        internal abstract bool Inject(DiContainer diContainer, object instance);
-    }
-    
-    public class TypeBinding<TApparent, TConcrete> : TypeBinding, IInitializeBinding
-    {
-        public sealed override Type ApparentType => typeof(TApparent);
-        public sealed override Type ConcreteType => typeof(TConcrete);
-
-        public CreateDelegate<TConcrete>? CreateConcreteDelegate;
-        public InstanceContainerDelegate<TConcrete>? InjectionDelegate;
-        public InstanceContainerDelegate<TConcrete>? InitializationDelegate;
-        
-        internal sealed override object? Create(DiContainer diContainer)
-        {
-            return CreateConcreteDelegate!.Invoke(diContainer);
-        }
-
-        internal sealed override bool Inject(DiContainer diContainer, object instance)
-        {
-            InjectionDelegate?.Invoke((TConcrete)instance, diContainer);
-            return InitializationDelegate is not null;
-        }
-
-        void IInitializeBinding.InitializeObject(object instance, DiContainer diContainer)
-        {
-            //Must only be used when not null, optimized for faster runtime
-            InitializationDelegate!.Invoke((TConcrete)instance, diContainer);
-        }
-    }
-
-    public sealed class AsyncTypeBinding<TApparent, TConcrete> : TypeBinding<Task<TApparent>, Task<object?>>
-    {
-    }
-    
-    // Attention Consider any methods that use this experimental. They may be removed in the future.
-    public sealed class UnsafeTypeBinding : TypeBinding, IInitializeBinding
-    {
-        public UnsafeTypeBinding(Type apparentType, Type concreteType)
-        {
-            ApparentType = apparentType;
-            ConcreteType = concreteType;
-        }
-
-        public override Type ApparentType { get; }
-        public override Type ConcreteType { get; }
-        
-        public CreateDelegate<object>? CreateConcreteDelegate;
-        public InstanceContainerDelegate<object>? InjectionDelegate;
-        public InstanceContainerDelegate<object>? InitializationDelegate;
-        
-        internal override object? Create(DiContainer diContainer)
-        {
-            return CreateConcreteDelegate!.Invoke(diContainer);
-        }
-
-        internal override bool Inject(DiContainer diContainer, object instance)
-        {
-            InjectionDelegate?.Invoke(instance, diContainer);
-            return InitializationDelegate is not null;
-        }
-
-        void IInitializeBinding.InitializeObject(object instance, DiContainer diContainer)
-        {
-            //Must only be used when not null, optimized for faster runtime
-            InitializationDelegate!.Invoke(instance, diContainer);
-        }
+        internal abstract object Resolve(DiContainer diContainer);
     }
 }

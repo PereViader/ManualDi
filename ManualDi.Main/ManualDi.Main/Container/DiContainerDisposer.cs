@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace ManualDi.Main
 {
@@ -8,11 +9,13 @@ namespace ManualDi.Main
     internal struct DiContainerDisposer
     {
         public readonly List<IDisposable> Disposables;
+        public readonly List<IAsyncDisposable> AsyncDisposables;
         public bool DisposedValue;
 
-        public DiContainerDisposer(int? disposablesCount = null)
+        public DiContainerDisposer(int? disposablesCount = null, int? asyncDisposablesCount = null)
         {
             Disposables = disposablesCount.HasValue ? new(disposablesCount.Value) : new();
+            AsyncDisposables = asyncDisposablesCount.HasValue ? new(asyncDisposablesCount.Value) : new();
             DisposedValue = false;
         }
     }
@@ -30,22 +33,17 @@ namespace ManualDi.Main
         {
             o.Disposables.Add(new ActionDisposableWrapper(disposableAction));
         }
-
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Dispose(ref this DiContainerDisposer o)
+        public static void QueueAsyncDispose(ref this DiContainerDisposer o, IAsyncDisposable asyncDisposable)
         {
-            if (o.DisposedValue)
-            {
-                return;
-            }
-            o.DisposedValue = true;
-            
-            foreach (var disposable in o.Disposables)
-            {
-                disposable.Dispose();
-            }
-
-            o.Disposables.Clear();
+            o.AsyncDisposables.Add(asyncDisposable);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void QueueAsyncDispose(ref this DiContainerDisposer o, Func<ValueTask> asyncDisposable)
+        {
+            o.AsyncDisposables.Add(new FuncAsyncDisposableWrapper(asyncDisposable));
         }
     }
 }

@@ -18,6 +18,7 @@ namespace ManualDi.Main.Generators
     {
         private static INamedTypeSymbol? UnityEngineObjectTypeSymbol = default!;
         private static INamedTypeSymbol LazyTypeSymbol = default!;
+        private static INamedTypeSymbol TaskTypeSymbol = default!;
         private static INamedTypeSymbol ListTypeSymbol = default!;
         private static INamedTypeSymbol IListTypeSymbol = default!;
         private static INamedTypeSymbol IReadOnlyListTypeSymbol = default!;
@@ -150,6 +151,14 @@ namespace ManualDi.Main.Generators
                 return false;
             }
             LazyTypeSymbol = lazyTypeSymbol;
+            
+            var taskTypeSymbol = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task`1");
+            if (taskTypeSymbol is null)
+            {
+                ReportTypeNotFound("System.Threading.Tasks.Task<T>", context);
+                return false;
+            }
+            TaskTypeSymbol = taskTypeSymbol;
 
             var listTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.List`1");
             if (listTypeSymbol is null)
@@ -375,7 +384,7 @@ namespace ManualDi.Main.Generators
             
             context.StringBuilder.Append($$"""
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    {{context.ObsoleteText}}{{accessibilityString}} static TypeBinding<T, {{context.ClassName}}> FromConstructor<T>(this TypeBinding<T, {{context.ClassName}}> typeBinding)
+                    {{context.ObsoleteText}}{{accessibilityString}} static TypeBindingSync<T, {{context.ClassName}}> FromConstructor<T>(this TypeBindingSync<T, {{context.ClassName}}> typeBinding)
                     {
                         return typeBinding.FromMethod(static c => new {{context.ClassName}}(
             """);
@@ -447,6 +456,19 @@ namespace ManualDi.Main.Generators
                 stringBuilder.Append(")");
                 return;
             }
+            
+            var taskGenericType = TryGenericTaskType(typeSymbol);
+            if (taskGenericType is not null)
+            {
+                stringBuilder.Append("c.");
+                stringBuilder.Append(CreateContainerResolutionAsyncMethod(taskGenericType));
+                stringBuilder.Append("<");
+                stringBuilder.Append(FullyQualifyTypeWithoutNullable(taskGenericType));
+                stringBuilder.Append(">(");
+                CreateIdResolution(id, stringBuilder);
+                stringBuilder.Append(")");
+                return;
+            }
 
             // Updated code below
             var listGenericType = TryGetEnumerableType(typeSymbol);
@@ -503,6 +525,19 @@ namespace ManualDi.Main.Generators
 
             return null;
         }
+        
+        private static ITypeSymbol? TryGenericTaskType(ITypeSymbol typeSymbol)
+        {
+            if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
+            {
+                if (SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, TaskTypeSymbol))
+                {
+                    return namedTypeSymbol.TypeArguments[0];
+                }
+            }
+
+            return null;
+        }
 
         private static ITypeSymbol? TryGetEnumerableType(ITypeSymbol typeSymbol)
         {
@@ -535,6 +570,21 @@ namespace ManualDi.Main.Generators
             }
 
             return "ResolveNullable";
+        }
+        
+        private static string CreateContainerResolutionAsyncMethod(ITypeSymbol typeSymbol)
+        {
+            if (!IsNullableTypeSymbol(typeSymbol))
+            {
+                return "ResolveAsync";
+            }
+
+            if (typeSymbol.IsValueType)
+            {
+                return "ResolveNullableValueAsync";
+            }
+
+            return "ResolveNullableAsync";
         }
 
         private static bool AddInitialize(GenerationClassContext context, bool isOnNewLine)
@@ -627,7 +677,7 @@ namespace ManualDi.Main.Generators
             
             generationClassContext.StringBuilder.Append($$"""
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    {{generationClassContext.ObsoleteText}}{{accessibilityString}} static TypeBinding<T, {{generationClassContext.ClassName}}> Default<T>(this TypeBinding<T, {{generationClassContext.ClassName}}> typeBinding)
+                    {{generationClassContext.ObsoleteText}}{{accessibilityString}} static TypeBindingSync<T, {{generationClassContext.ClassName}}> Default<T>(this TypeBindingSync<T, {{generationClassContext.ClassName}}> typeBinding)
                     {
                         return typeBinding
             """);

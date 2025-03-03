@@ -7,7 +7,7 @@ namespace ManualDi.Main
         public override Type ApparentType => typeof(TApparent);
         public override Type ConcreteType => typeof(TConcrete);
 
-        public CreateDelegate<TConcrete> CreateDelegate = default!; //Optimization: Assumes it will be initialized
+        public CreateDelegate<TConcrete>? CreateDelegate;
         public InstanceContainerDelegate<TConcrete>? InjectionDelegate;
         public InstanceContainerDelegate<TConcrete>? InitializationDelegate;
 
@@ -21,7 +21,7 @@ namespace ManualDi.Main
             var previousInjectedTypeBinding = diContainer.injectedTypeBinding;
             diContainer.injectedTypeBinding = this;
 
-            var instance = CreateDelegate.Invoke(diContainer)
+            var instance = CreateDelegate!.Invoke(diContainer) //Optimization: Assumes it will be initialized
                            ?? throw new InvalidOperationException($"Could not create object for TypeBinding with Apparent type {typeof(TApparent)} and Concrete type {typeof(TConcrete)}");
 
             if (TypeScope is TypeScope.Single)

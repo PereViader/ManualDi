@@ -315,6 +315,18 @@ namespace SomeNamespace.Subnamespace
     }
 }
 
+class MultipleOfEach
+{
+    internal MultipleOfEach(object o) {}
+    public MultipleOfEach(object o, object o2) {}  // <- it should use this one
+    
+    internal void Inject() {}
+    public void Inject(object o) {} // <- it should use this one
+    
+    internal void Initialize(object o, object o2) {}
+    public void Initialize(object o, object o2, object o3, object o4) {} // <- it should use this one
+}
+
 namespace UnityEngine
 {
     public class Object

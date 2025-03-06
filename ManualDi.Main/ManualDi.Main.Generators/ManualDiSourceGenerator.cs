@@ -358,14 +358,17 @@ namespace ManualDi.Main.Generators
 
         private static void AddFromConstructor(GenerationClassContext context)
         {
-            var constructor = context.ClassSymbol
+            var constructors = context.ClassSymbol
                 .Constructors
-                .SingleOrDefault(c => c.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal);
-
-            if (constructor is null)
+                .Where(c => c.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal)
+                .OrderByDescending(x => x.DeclaredAccessibility)
+                .ToArray();
+                
+            if (constructors.Length == 0)
             {
                 return;
             }
+            var constructor = constructors[0];
 
             var accessibility = GetSymbolAccessibility(constructor);
             var accessibilityString = GetAccessibilityString(accessibility);
@@ -536,15 +539,19 @@ namespace ManualDi.Main.Generators
 
         private static bool AddInitialize(GenerationClassContext context, bool isOnNewLine)
         {
-            var initializeMethod = context.ClassSymbol
+            var initializeMethods = context.ClassSymbol
                 .GetMembers()
                 .OfType<IMethodSymbol>()
-                .SingleOrDefault(m => m is { Name: "Initialize", DeclaredAccessibility: Accessibility.Public or Accessibility.Internal, IsStatic: false });
-
-            if (initializeMethod is null)
+                .Where(x => x is { Name: "Initialize", DeclaredAccessibility: Accessibility.Public or Accessibility.Internal, IsStatic: false })
+                .OrderByDescending(x => x.DeclaredAccessibility)
+                .ToArray();
+                
+            if (initializeMethods.Length == 0)
             {
                 return isOnNewLine;
             }
+            
+            var initializeMethod = initializeMethods[0];
 
             if (isOnNewLine)
             {
@@ -554,7 +561,7 @@ namespace ManualDi.Main.Generators
             
             context.StringBuilder.Append(".Initialize(static (o, c) => o.Initialize(");
             
-            CreateMethodResolution(initializeMethod, "                    ", context.StringBuilder);
+            CreateMethodResolution(initializeMethods[0], "                    ", context.StringBuilder);
             
             context.StringBuilder.Append("))");
             return true;
@@ -562,11 +569,13 @@ namespace ManualDi.Main.Generators
 
         private static bool AddInject(GenerationClassContext context, bool isOnNewLine)
         {
-            var injectMethod = context.ClassSymbol
+            var injectMethods = context.ClassSymbol
                 .GetMembers()
                 .OfType<IMethodSymbol>()
-                .SingleOrDefault(m => m is { Name: "Inject", DeclaredAccessibility: Accessibility.Public or Accessibility.Internal, IsStatic: false });
-
+                .Where(x => x is { Name: "Inject", DeclaredAccessibility: Accessibility.Public or Accessibility.Internal, IsStatic: false })
+                .OrderByDescending(x => x.DeclaredAccessibility)
+                .ToArray();
+            
             var injectProperties = context.ClassSymbol
                 .GetMembers()
                 .OfType<IPropertySymbol>()
@@ -574,10 +583,12 @@ namespace ManualDi.Main.Generators
                 .Where(x => x.attribute is not null)
                 .ToArray();
 
-            if (injectMethod is null && injectProperties.Length == 0)
+            if (injectMethods.Length == 0 && injectProperties.Length == 0)
             {
                 return isOnNewLine;
             }
+
+            var injectMethod = injectMethods.FirstOrDefault();
 
             if (isOnNewLine)
             {

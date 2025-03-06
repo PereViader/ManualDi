@@ -108,13 +108,19 @@ static class Installer
 ## Default
 
 This source generated method is a shorthand for calling Inject and Initialize that classes may have.
+Those Inject and Initialize methods may have 0 or N parameters and the parameters will be supplied by resolving them from the container.
 Think of it as a "duck typed" source generated approach.
+It will only consider `public` or `ìnternal` methods that it can access regularly meaning  methods.
 
-For an Inject / Initialize method to be called, there must be a single one of each that is either public or internal. The methods may have 0 or N parameters.
+In case there is more than one Inject / Initialize method the following rules will apply:
+- It will prefer `public` methods over `internal` ones
+- It will take the first one vertically in case there is more than one
 
 When injecting dependencies to the class, it is preferred that it is done on the Inject method and not on the Initialize. The Initialize can also have dependencies provided as paramteres, but those should usually only be used in the body of the Initialize method.
 
 In any case, injection should preferably happen during the construction of objects. For instance, in Unity3d, `MonoBehaviour` derived types are unable to use the consturctor and thus injection is fine to happen separetly.
+
+For more concrete details on the Inject and Initialize functionality read the sections on the topics below.
 
 ```csharp
 public class A { }
@@ -140,7 +146,8 @@ b.Bind<D>().Default().FromConstructor(); // Default calls Inject and Initialize
 Using default is not required, but it helps speed up development because the developer are only required to implement standardized DI boilerplate once and then then the actual DI resolution code will be updated automatically. 
 For this reason, it is recommended to always add it even if the type does not currently have any of the methods.
 
-Note: The default method will only be built for classes that live in the developers code and not for C# System classes or 3rd party code.
+Note: As stated on the installation section, the default method will only be generated for classes that live in assamblies that reference both ManualDi and the source generator.
+In other words, 3rd party libraries and System classes will not have any generated code on them.
 
 
 ## Scope
@@ -161,6 +168,10 @@ This method is source generated ONLY if there is a single public/internal access
 
 The instance is created using the constructor of the concrete type. 
 The necessary dependencies of the constructor are resolved using the container.
+
+Like the on the Default method the following rules for constructor selection will apply:
+- It will prefer `public` methods over `internal` ones
+- It will take the first one vertically in case there is more than one
 
 ```csharp
 b.Bind<T>().Default().FromConstructor() 

@@ -1,6 +1,8 @@
 ﻿using NSubstitute;
 using NUnit.Framework;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ManualDi.Main.Tests;
 
@@ -10,42 +12,42 @@ public class TestDiContainerDispose
     public interface IB : IDisposable { }
 
     [Test]
-    public void TestDisposeCalledByDefault()
+    public async Task TestDisposeCalledByDefault()
     {
-        IDiContainer container = new DiContainerBindings().Install(b =>
+        IDiContainer container = await new DiContainerBindings().Install(b =>
         {
             b.Bind<IDisposable>().FromInstance(Substitute.For<IDisposable>());
-        }).Build();
+        }).Build(CancellationToken.None);
 
         var disposable = container.Resolve<IDisposable>();
             
-        container.Dispose();
+        await container.DisposeAsync();
             
         disposable.Received(1).Dispose();
     }
         
     [Test]
-    public void TestDontDisposePreventsDispose()
+    public async Task TestDontDisposePreventsDispose()
     {
-        IDiContainer container = new DiContainerBindings().Install(b =>
+        IDiContainer container = await new DiContainerBindings().Install(b =>
         {
             b.Bind<IDisposable>().FromInstance(Substitute.For<IDisposable>()).DontDispose();
-        }).Build();
+        }).Build(CancellationToken.None);
 
         var disposable = container.Resolve<IDisposable>();
             
-        container.Dispose();
+        await container.DisposeAsync();
             
         disposable.DidNotReceive().Dispose();
     }
         
     [Test]
-    public void TestDisposeOrder()
+    public async Task TestDisposeOrder()
     {
         var disposable1 = Substitute.For<IA>();
         var disposable2 = Substitute.For<IB>();
             
-        IDiContainer container = new DiContainerBindings().Install(b =>
+        IDiContainer container = await new DiContainerBindings().Install(b =>
         {
             b.Bind<IA>().FromMethod(c =>
             {
@@ -54,11 +56,9 @@ public class TestDiContainerDispose
             });
 
             b.Bind<IB>().FromInstance(disposable2);
-        }).Build();
-
-        _ = container.Resolve<IA>();
-            
-        container.Dispose();
+        }).Build(CancellationToken.None);
+        
+        await container.DisposeAsync();
             
         Received.InOrder(() => {
             disposable2.Dispose();
@@ -67,28 +67,28 @@ public class TestDiContainerDispose
     }
         
     [Test]
-    public void TestDisposeCustom()
+    public async Task TestDisposeCustom()
     {
         var instance = new object();
         var disposeAction = Substitute.For<DisposeObjectDelegate<object>>();
 
-        IDiContainer container = new DiContainerBindings().Install(b =>
+        IDiContainer container = await new DiContainerBindings().Install(b =>
         {
             b.Bind<object>()
                 .FromInstance(instance)
                 .Dispose(disposeAction);
-        }).Build();
+        }).Build(CancellationToken.None);
 
         _ = container.Resolve<object>();
 
         disposeAction.DidNotReceive().Invoke(Arg.Any<object>());
 
-        container.Dispose();
+        await container.DisposeAsync();
 
         disposeAction.Received(1).Invoke(Arg.Is<object>(instance));
         disposeAction.ClearReceivedCalls();
 
-        container.Dispose();
+        await container.DisposeAsync();
 
         disposeAction.DidNotReceive().Invoke(Arg.Any<object>());
     }

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -9,7 +11,7 @@ public class TestContainerLifecycle
     public interface INonLazy
     {
         void Inject(IInjectChild injectChild);
-        void Initialize(IInitChild initChild);
+        void Initialize();
         void Dispose();
     }
 
@@ -40,7 +42,7 @@ public class TestContainerLifecycle
     }
 
     [Test]
-    public void TestLifecycle()
+    public async Task TestLifecycle()
     {
         var nonLazy = Substitute.For<INonLazy>();
         var injectChild = Substitute.For<IInjectChild>();
@@ -48,25 +50,23 @@ public class TestContainerLifecycle
         var startup = Substitute.For<IStartup>();
         var resolveAfter = Substitute.For<IResolveAfter>();
 
-        var container = new DiContainerBindings().Install(b =>
+        await using var container = await new DiContainerBindings().Install(b =>
         {
             b.Bind<INonLazy>()
                 .FromInstance(nonLazy)
                 .Inject((o, c) => o.Inject(c.Resolve<IInjectChild>()))
-                .Initialize((o, c) => o.Initialize(c.Resolve<IInitChild>()))
-                .Dispose(o => o.Dispose())
-                .NonLazy();
-
+                .Initialize(o => o.Initialize())
+                .Dispose(o => o.Dispose());
             b.Bind<IInjectChild>()
                 .FromInstance(injectChild)
                 .Inject((o, c) => o.Inject())
-                .Initialize((o, c) => o.Initialize())
+                .Initialize(o => o.Initialize())
                 .Dispose(o => o.Dispose());
 
             b.Bind<IInitChild>()
                 .FromInstance(initChild)
                 .Inject((o, c) => o.Inject())
-                .Initialize((o, c) => o.Initialize())
+                .Initialize(o => o.Initialize())
                 .Dispose(o => o.Dispose());
 
             b.Bind<IStartup>()
@@ -78,11 +78,11 @@ public class TestContainerLifecycle
                 .Dispose(o=> o.Dispose());
             
             b.WithStartup<IStartup>(e => e.Run());
-        }).Build();
+        }).Build(CancellationToken.None);
 
         container.Resolve<IResolveAfter>().Run();
         
-        container.Dispose();
+        await container.DisposeAsync();
         
         Received.InOrder(() =>
         {
@@ -91,7 +91,7 @@ public class TestContainerLifecycle
             injectChild.Initialize();
             initChild.Inject();
             initChild.Initialize();
-            nonLazy.Initialize(Arg.Is(initChild));
+            nonLazy.Initialize();
             
             startup.Run();
             

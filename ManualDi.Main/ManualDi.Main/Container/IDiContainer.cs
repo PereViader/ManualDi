@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace ManualDi.Main
 {
-    public interface IDiContainer : IDisposable, IAsyncDisposable // Only use IDisposable if you are certain that there are no IAsyncDisposables registered
+    public interface IDiContainer : IAsyncDisposable // Only use IDisposable if you are certain that there are no IAsyncDisposables registered
     {
         /// <summary>
         /// Non-generic resolution of a binding for its registered instance

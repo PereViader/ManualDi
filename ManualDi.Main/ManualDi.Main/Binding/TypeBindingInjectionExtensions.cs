@@ -7,7 +7,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBindingSync<TApparent, TConcrete> Inject<TApparent, TConcrete>(
             this TypeBindingSync<TApparent, TConcrete> typeBindingSync, 
-            InstanceContainerDelegate<TConcrete> injectionDelegate)
+            InjectDelegate<TConcrete> injectionDelegate)
         {
             typeBindingSync.InjectionDelegate += injectionDelegate;
             return typeBindingSync;
@@ -16,7 +16,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBindingAsync<TApparent, TConcrete> Inject<TApparent, TConcrete>(
             this TypeBindingAsync<TApparent, TConcrete> typeBindingAsync, 
-            InstanceContainerDelegate<TConcrete> injectionDelegate)
+            InjectDelegate<TConcrete> injectionDelegate)
         {
             typeBindingAsync.InjectionDelegate += injectionDelegate;
             return typeBindingAsync;
@@ -25,7 +25,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBindingAsync<TApparent, TConcrete> InjectAsync<TApparent, TConcrete>(
             this TypeBindingAsync<TApparent, TConcrete> typeBindingAsync, 
-            InstanceContainerAsyncDelegate<TConcrete> injectionAsyncDelegate)
+            InjectAsyncDelegate<TConcrete> injectionAsyncDelegate)
         {
             typeBindingAsync.InjectionAsyncDelegate += injectionAsyncDelegate;
             return typeBindingAsync;

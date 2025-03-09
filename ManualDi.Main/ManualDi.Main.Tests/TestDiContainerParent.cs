@@ -1,24 +1,26 @@
-﻿using NUnit.Framework;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using NUnit.Framework;
 
 namespace ManualDi.Main.Tests;
 
 public class TestDiContainerParent
 {
     [Test]
-    public void TestResolve()
+    public async Task TestResolve()
     {
         var instance = new object();
 
-        var parentContainer = new DiContainerBindings()
+        await using var parentContainer = await new DiContainerBindings()
             .Install(b =>
             {
                 b.Bind<object>().FromInstance(instance);
             })
-            .Build();
+            .Build(CancellationToken.None);
 
-        var childContainer = new DiContainerBindings()
+        await using var childContainer = await new DiContainerBindings()
             .WithParentContainer(parentContainer)
-            .Build();
+            .Build(CancellationToken.None);
 
         var resolution = childContainer.Resolve<object>();
 
@@ -26,28 +28,28 @@ public class TestDiContainerParent
     }
 
     [Test]
-    public void TestResolveAll()
+    public async Task TestResolveAll()
     {
         var instanceParent = new object();
         var instanceChild = new object();
 
-        var parentContainer = new DiContainerBindings()
+        await using var parentContainer = await new DiContainerBindings()
             .Install(b =>
             {
                 b.Bind<object>().FromInstance(instanceParent);
             })
-            .Build();
+            .Build(CancellationToken.None);
 
-        var childContainer = new DiContainerBindings()
+        await using var childContainer = await new DiContainerBindings()
             .WithParentContainer(parentContainer)
             .Install(b =>
             {
                 b.Bind<object>().FromInstance(instanceChild);
             })
-            .Build();
+            .Build(CancellationToken.None);
 
         var resolution = childContainer.ResolveAll<object>();
 
-        Assert.That(resolution, Is.EquivalentTo(new [] { instanceParent, instanceChild }));
+        Assert.That(resolution, Is.EquivalentTo([instanceParent, instanceChild]));
     }
 }

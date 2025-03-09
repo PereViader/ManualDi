@@ -13,7 +13,7 @@ namespace ManualDi.Main
         private readonly Dictionary<IntPtr, TypeBinding> allTypeBindings;
         private readonly IDiContainer? parentDiContainer;
         private readonly BindingContext bindingContext = new();
-        private readonly CancellationTokenSource _cancellationTokenSource = new();
+        private readonly CancellationTokenSource _cancellationTokenSource;
         internal DiContainerInitializer diContainerInitializer; //Optimization: ref struct. Can't be readonly
         internal DiContainerDisposer diContainerDisposer; //Optimization: ref struct. Can't be readonly
         
@@ -21,33 +21,44 @@ namespace ManualDi.Main
         
         public CancellationToken CancellationToken => _cancellationTokenSource.Token;
 
-        public DiContainer(
-            Dictionary<IntPtr, TypeBinding> allTypeBindings, 
+        internal DiContainer(
+            Dictionary<IntPtr, TypeBinding> allTypeBindings,
             IDiContainer? parentDiContainer,
+            CancellationToken cancellationToken,
             int? initializationsCount = null, 
-            int? disposablesCount = null)
+            int? disposablesCount = null
+            )
         {
             diContainerInitializer = new(initializationsCount);
             diContainerDisposer = new(disposablesCount);
+            _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             
             this.allTypeBindings = allTypeBindings;
             this.parentDiContainer = parentDiContainer;
         }
 
-        public void Initialize()
+        internal async Task InitializeAsync(
+            List<ITypeBindingSyncSetup> syncSetups,
+            List<ITypeBindingAsyncSetup> asyncSetups)
         {
-            foreach (var firstTypeBinding in allTypeBindings)
+            var ct = _cancellationTokenSource.Token;
+            var tasks = new List<Task>();
+            
+            foreach (var typeBinding in asyncSetups)
             {
-                TypeBinding? typeBinding = firstTypeBinding.Value;
-                while (typeBinding is not null)
+                var task = typeBinding.CreateAsync(this, ct);
+                if (!task.IsCompletedSuccessfully)
                 {
-                    if (!typeBinding.IsLazy)
-                    {
-                        typeBinding.Resolve(this);
-                    }
-
-                    typeBinding = typeBinding.NextTypeBinding;
+                    tasks.Add(task.AsTask());
                 }
+            }
+
+            await Task.WhenAll(tasks);
+            tasks.Clear();
+
+            foreach (var syncSetup in syncSetups)
+            {
+                syncSetup.CreateAndInject(this);
             }
         }
 
@@ -56,7 +67,7 @@ namespace ManualDi.Main
             var typeBinding = GetTypeForConstraint(type);
             if (typeBinding is not null)
             {
-                return typeBinding.Resolve(this);;
+                return typeBinding.Instance;
             }
 
             return parentDiContainer?.ResolveContainer(type);
@@ -67,7 +78,7 @@ namespace ManualDi.Main
             var typeBinding = GetTypeForConstraint(type, filterBindingDelegate);
             if (typeBinding is not null)
             {
-                return typeBinding.Resolve(this);
+                return typeBinding.Instance;
             }
 
             return parentDiContainer?.ResolveContainer(type, filterBindingDelegate);
@@ -139,7 +150,7 @@ namespace ManualDi.Main
                     if ((filterBindingDelegate?.Invoke(bindingContext) ?? true) &&
                         (typeBinding.FilterBindingDelegate?.Invoke(bindingContext) ?? true))
                     {
-                        resolutions.Add(typeBinding.Resolve(this));
+                        resolutions.Add(typeBinding.Instance);
                     }
 
                     typeBinding = typeBinding.NextTypeBinding;
@@ -201,31 +212,6 @@ namespace ManualDi.Main
         public void QueueAsyncDispose(IAsyncDisposable asyncDisposable)
         {
             diContainerDisposer.QueueAsyncDispose(asyncDisposable);
-        }
-
-        public void Dispose()
-        {
-            if (diContainerDisposer.DisposedValue)
-            {
-                return;
-            }
-
-            if (diContainerDisposer.AsyncDisposables.Count > 0)
-            {
-                throw new InvalidOperationException("Trying to Dispose of DiContainer but there are IAsyncDisposables registered. Use DisposeAsync instead.");
-            }
-            
-            diContainerDisposer.DisposedValue = true;
-            
-            _cancellationTokenSource.Cancel();
-            _cancellationTokenSource.Dispose();
-            
-            foreach (var disposable in diContainerDisposer.Disposables)
-            {
-                disposable.Dispose();
-            }
-
-            diContainerDisposer.Disposables.Clear();
         }
         
         public async ValueTask DisposeAsync()

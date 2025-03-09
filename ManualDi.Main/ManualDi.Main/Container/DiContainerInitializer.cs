@@ -1,13 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ManualDi.Main
 {
-    internal interface IInitializeBinding
-    {
-        void InitializeObject(object instance, DiContainer diContainer);
-    }
-    
     //In order to optimize the container, this is a struct that is modified by static ref extensions
     internal struct DiContainerInitializer
     {
@@ -15,7 +12,7 @@ namespace ManualDi.Main
         // in the same list, thus having them be closer in memory and thus more cache friendly
         // however this requires us to track how many of those commands happen on each depth level
         // so we can keep track of how many belong to each depth level
-        public readonly List<(IInitializeBinding initializeBinding, object instance)> Initializations;
+        public readonly List<ITypeBindingSyncSetup> Initializations;
         public int CurrentDepthInitializations;
 
         /// <summary>
@@ -32,10 +29,10 @@ namespace ManualDi.Main
     internal static class DiContainerInitializerExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void QueueInitialize(ref this DiContainerInitializer o, IInitializeBinding typeBinding, object instance)
+        public static void QueueInitialize(ref this DiContainerInitializer o, ITypeBindingSyncSetup typeBinding)
         {
             o.CurrentDepthInitializations += 1;
-            o.Initializations.Add((typeBinding, instance));
+            o.Initializations.Add(typeBinding);
         }
 
         public static void InitializeCurrentLevelQueued(ref this DiContainerInitializer o, DiContainer container)
@@ -46,8 +43,8 @@ namespace ManualDi.Main
             
             for (int i = initializationStartIndex; i < o.Initializations.Count; i++)
             {
-                var (typeBinding, instance) = o.Initializations[i];
-                typeBinding.InitializeObject(instance, container);
+                var typeBinding = o.Initializations[i];
+                typeBinding.InitializeInstance(container);
             }
             
             o.Initializations.RemoveRange(initializationStartIndex, initializationCount);

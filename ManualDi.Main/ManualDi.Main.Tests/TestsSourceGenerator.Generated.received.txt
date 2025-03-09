@@ -120,7 +120,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBindingSync<T, SomeNamespace.Subnamespace.InternalInitialize> Default<T>(this TypeBindingSync<T, SomeNamespace.Subnamespace.InternalInitialize> typeBinding)
         {
-            return typeBinding.Initialize(static (o, c) => o.Initialize())
+            return typeBinding.Initialize(static o => o.Initialize())
                 .DontDispose();
         }
     }
@@ -165,7 +165,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBindingSync<T, SomeNamespace.Subnamespace.PublicInitialize> Default<T>(this TypeBindingSync<T, SomeNamespace.Subnamespace.PublicInitialize> typeBinding)
         {
-            return typeBinding.Initialize(static (o, c) => o.Initialize())
+            return typeBinding.Initialize(static o => o.Initialize())
                 .Inject(static (o, c) => 
                 {
                     o.Inject();
@@ -398,7 +398,7 @@ internal static TypeBindingSync<T, SomeNamespace.Subnamespace.Obsolete> FromCons
         [System.Obsolete]
 internal static TypeBindingSync<T, SomeNamespace.Subnamespace.Obsolete> Default<T>(this TypeBindingSync<T, SomeNamespace.Subnamespace.Obsolete> typeBinding)
         {
-            return typeBinding.Initialize(static (o, c) => o.Initialize())
+            return typeBinding.Initialize(static o => o.Initialize())
                 .Inject(static (o, c) => 
                 {
                     o.Inject();
@@ -427,10 +427,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBindingSync<T, SomeNamespace.Subnamespace.NullableDependency> Default<T>(this TypeBindingSync<T, SomeNamespace.Subnamespace.NullableDependency> typeBinding)
         {
-            return typeBinding.Initialize(static (o, c) => o.Initialize(
-                    c.ResolveNullable<object>(),
-                    c.ResolveNullableValue<int>()))
-                .Inject(static (o, c) => 
+            return typeBinding.Inject(static (o, c) => 
                 {
                     o.Object = c.ResolveNullable<object>();
                     o.Int = c.ResolveNullableValue<int>();
@@ -506,9 +503,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBindingSync<T, SomeNamespace.Subnamespace.ListInject> Default<T>(this TypeBindingSync<T, SomeNamespace.Subnamespace.ListInject> typeBinding)
         {
-            return typeBinding.Initialize(static (o, c) => o.Initialize(
-                    c.ResolveAll<object>()))
-                .Inject(static (o, c) => 
+            return typeBinding.Inject(static (o, c) => 
                 {
                     o.IEnumerableObject = c.ResolveAll<object>();
                     o.IEnumerableInt = c.ResolveAll<int>();
@@ -637,11 +632,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBindingSync<T, SomeNamespace.Subnamespace.InjectIdAttribute> Default<T>(this TypeBindingSync<T, SomeNamespace.Subnamespace.InjectIdAttribute> typeBinding)
         {
-            return typeBinding.Initialize(static (o, c) => o.Initialize(
-                    c.Resolve<object>(x => x.Id("Potato")),
-                    c.Resolve<float>(x => x.Id("Banana")),
-                    c.Resolve<object>()))
-                .Inject(static (o, c) => 
+            return typeBinding.Inject(static (o, c) => 
                 {
                     o.HelloIdValue = c.Resolve<int>(x => x.Id("A"));
                     o.LazyInt = new System.Lazy<int>(() => c.Resolve<int>(x => x.Id("A")));
@@ -683,7 +674,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBindingSync<T, UnityEngine.MonoBeheviour> Default<T>(this TypeBindingSync<T, UnityEngine.MonoBeheviour> typeBinding)
         {
-            return typeBinding.Initialize(static (o, c) => o.Initialize())
+            return typeBinding.Initialize(static o => o.Initialize())
                 .Inject(static (o, c) => 
                 {
                     o.Something = c.Resolve<object>();

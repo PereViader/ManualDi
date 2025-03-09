@@ -1,45 +1,52 @@
-﻿using NUnit.Framework;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using NSubstitute;
+using NUnit.Framework;
 
 namespace ManualDi.Main.Tests;
 
 public class TestDiContainerFromMethods
 {
     [Test]
-    public void TestFromInstance()
+    public async Task TestFromInstance()
     {
         var instance = new object();
 
-        var container = new DiContainerBindings().Install(b =>
+        await using var container = await new DiContainerBindings().Install(b =>
         {
             b.Bind<object>().FromInstance(instance);
-        }).Build();
+        }).Build(CancellationToken.None);
 
         var resolved = container.Resolve<object>();
         Assert.That(resolved, Is.EqualTo(instance));
     }
 
     [Test]
-    public void TestFromMethod()
+    public async Task TestFromMethod()
     {
         var instance = new object();
-        var container = new DiContainerBindings().Install(b =>
+        var fromDelegate = Substitute.For<FromDelegate<object>>();
+        fromDelegate.Invoke(Arg.Any<IDiContainer>()).Returns(instance);
+        
+        await using var container = await new DiContainerBindings().Install(b =>
         {
-            b.Bind<object>().FromMethod(c => instance);
-        }).Build();
+            b.Bind<object>().FromMethod(fromDelegate);
+        }).Build(CancellationToken.None);
 
         var resolved = container.Resolve<object>();
         Assert.That(resolved, Is.EqualTo(instance));
+        fromDelegate.Received(1).Invoke(Arg.Any<IDiContainer>());
     }
 
     [Test]
-    public void TestFromContainer()
+    public async Task TestFromContainer()
     {
         int instance = 5;
-        var container = new DiContainerBindings().Install(b =>
+        await using var container = await new DiContainerBindings().Install(b =>
         {
             b.Bind<int>().FromInstance(instance);
             b.Bind<object, int>().FromContainerResolve();
-        }).Build();
+        }).Build(CancellationToken.None);
 
         var resolved = container.Resolve<object>();
         Assert.That(resolved, Is.EqualTo(instance));

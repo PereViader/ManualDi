@@ -456,19 +456,6 @@ namespace ManualDi.Main.Generators
                 stringBuilder.Append(")");
                 return;
             }
-            
-            var taskGenericType = TryGenericTaskType(typeSymbol);
-            if (taskGenericType is not null)
-            {
-                stringBuilder.Append("c.");
-                stringBuilder.Append(CreateContainerResolutionAsyncMethod(taskGenericType));
-                stringBuilder.Append("<");
-                stringBuilder.Append(FullyQualifyTypeWithoutNullable(taskGenericType));
-                stringBuilder.Append(">(");
-                CreateIdResolution(id, stringBuilder);
-                stringBuilder.Append(")");
-                return;
-            }
 
             // Updated code below
             var listGenericType = TryGetEnumerableType(typeSymbol);
@@ -571,49 +558,30 @@ namespace ManualDi.Main.Generators
 
             return "ResolveNullable";
         }
-        
-        private static string CreateContainerResolutionAsyncMethod(ITypeSymbol typeSymbol)
-        {
-            if (!IsNullableTypeSymbol(typeSymbol))
-            {
-                return "ResolveAsync";
-            }
-
-            if (typeSymbol.IsValueType)
-            {
-                return "ResolveNullableValueAsync";
-            }
-
-            return "ResolveNullableAsync";
-        }
 
         private static bool AddInitialize(GenerationClassContext context, bool isOnNewLine)
         {
-            var initializeMethods = context.ClassSymbol
+            var initializeMethod = context.ClassSymbol
                 .GetMembers()
                 .OfType<IMethodSymbol>()
-                .Where(x => x is { Name: "Initialize", DeclaredAccessibility: Accessibility.Public or Accessibility.Internal, IsStatic: false })
-                .OrderByDescending(x => x.DeclaredAccessibility)
-                .ToArray();
+                .FirstOrDefault(x => x is
+                {
+                    Name: "Initialize", DeclaredAccessibility: Accessibility.Public or Accessibility.Internal,
+                    IsStatic: false, Parameters: { Length: 0 }
+                });
                 
-            if (initializeMethods.Length == 0)
+            if (initializeMethod is null)
             {
                 return isOnNewLine;
             }
             
-            var initializeMethod = initializeMethods[0];
-
             if (isOnNewLine)
             {
                 context.StringBuilder.AppendLine();
                 context.StringBuilder.Append("                    ");
             }
             
-            context.StringBuilder.Append(".Initialize(static (o, c) => o.Initialize(");
-            
-            CreateMethodResolution(initializeMethods[0], "                    ", context.StringBuilder);
-            
-            context.StringBuilder.Append("))");
+            context.StringBuilder.Append(".Initialize(static o => o.Initialize())");
             return true;
         }
 

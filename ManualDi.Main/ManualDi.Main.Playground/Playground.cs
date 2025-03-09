@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 
 
-await using var container = new DiContainerBindings().Install(b =>
+await using var container = await new DiContainerBindings().Install(b =>
 {
     b.BindAsync<int>()
         .FromMethodAsync(async (c, ct) =>
@@ -21,12 +21,12 @@ await using var container = new DiContainerBindings().Install(b =>
         {
             Console.WriteLine("Injecting");
         })
-        .InitializeAsync((instance, diContainer, token) =>
+        .InitializeAsync((instance, token) =>
         {
             Console.WriteLine("Initializing Async");
             return Task.CompletedTask;
         })
-        .Initialize((instance, diContainer) =>
+        .Initialize(instance =>
         {
             Console.WriteLine("Initializing");
         })
@@ -35,20 +35,20 @@ await using var container = new DiContainerBindings().Install(b =>
             Console.WriteLine("Disposing Async");
             return ValueTask.CompletedTask;
         })
-        .Dispose(o => Console.WriteLine("Disposing"))
-        .Transient();
-    b.BindAsync<EntryPointAsync>().FromMethod(c => new EntryPointAsync(c.ResolveAsync<int>()));
-}).Build();
+        .Dispose(o => Console.WriteLine("Disposing"));
+    
+    b.BindAsync<EntryPointAsync>().FromMethod(c => new EntryPointAsync(c.Resolve<int>()));
+}).Build(CancellationToken.None);
 
-var entryPointAsync = (await container.ResolveAsync<EntryPointAsync>());
+var entryPointAsync = container.Resolve<EntryPointAsync>();
 await entryPointAsync.Run();
 
-class EntryPointAsync(Task<int> hardValueToCompute)
+class EntryPointAsync(int hardValueToCompute)
 {
-    public async Task Run()
+    public Task Run()
     {
-        var value = await hardValueToCompute;
-        Console.WriteLine(value);
+        Console.WriteLine(hardValueToCompute);
+        return Task.CompletedTask;
     }
 }
 
@@ -211,7 +211,7 @@ namespace SomeNamespace.Subnamespace
         {
         }
 
-        public void Initialize(object? obj, int? value)
+        public void Initialize()
         {
         }
     }
@@ -311,7 +311,7 @@ namespace SomeNamespace.Subnamespace
         {
         }
 
-        public void Initialize(List<object> objects)
+        public void Initialize()
         {
         }
     }
@@ -364,7 +364,8 @@ namespace SomeNamespace.Subnamespace
 
 public class TaskInjection
 {
-    public TaskInjection(Task<int> arg1, Task<int?> arg2, Task<int?>? arg3, Task<object> arg4, Task<object?> arg5, Task<object?>? arg6)
+    public TaskInjection(Task<int> arg1, Task<int?> arg2, Task<int?>? arg3, Task<object> arg4, Task<object?> arg5,
+        Task<object?>? arg6)
     {
     }
 
@@ -372,6 +373,8 @@ public class TaskInjection
         Lazy<Task<object?>> arg5, Lazy<Task<object?>?> arg6)
     {
     }
+}
+
 class MultipleOfEach
 {
     internal MultipleOfEach(object o) {}
@@ -380,8 +383,8 @@ class MultipleOfEach
     internal void Inject() {}
     public void Inject(object o) {} // <- it should use this one
     
-    internal void Initialize(object o, object o2) {}
-    public void Initialize(object o, object o2, object o3, object o4) {} // <- it should use this one
+    internal void Initialize() {} // <- it should use this one
+    public void Initialize(object arg1) {}
 }
 
 namespace UnityEngine

@@ -7,7 +7,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBindingSync<TApparent, TConcrete> Initialize<TApparent, TConcrete>(
             this TypeBindingSync<TApparent, TConcrete> typeBindingSync,
-            InstanceContainerDelegate<TConcrete> initializationDelegate
+            InitializeDelegate<TConcrete> initializationDelegate
             )
         {
             typeBindingSync.InitializationDelegate += initializationDelegate;
@@ -17,7 +17,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBindingAsync<TApparent, TConcrete> Initialize<TApparent, TConcrete>(
             this TypeBindingAsync<TApparent, TConcrete> typeBindingSync,
-            InstanceContainerDelegate<TConcrete> initializationDelegate
+            InitializeDelegate<TConcrete> initializationDelegate
         )
         {
             typeBindingSync.InitializationDelegate += initializationDelegate;
@@ -27,7 +27,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBindingAsync<TApparent, TConcrete> InitializeAsync<TApparent, TConcrete>(
             this TypeBindingAsync<TApparent, TConcrete> typeBindingSync,
-            InstanceContainerAsyncDelegate<TConcrete> initializationAsyncDelegate
+            InitializeAsyncDelegate<TConcrete> initializationAsyncDelegate
         )
         {
             typeBindingSync.InitializationAsyncDelegate += initializationAsyncDelegate;

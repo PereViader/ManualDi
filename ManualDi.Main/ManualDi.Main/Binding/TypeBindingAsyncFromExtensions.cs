@@ -31,15 +31,15 @@ namespace ManualDi.Main
         )
         {
             IDiContainer? subContainer = null;
-            typeBindingAsync.CreateDelegate = c =>
+            typeBindingAsync.CreateAsyncDelegate = async (c, ct) =>
             {
                 var bindings = new DiContainerBindings().Install(installDelegate);
                 if (isContainerParent)
                 {
                     bindings.WithParentContainer(c);
                 }
-                subContainer = bindings.Build();
-                c.QueueDispose(subContainer);
+                subContainer = await bindings.Build(ct);
+                c.QueueAsyncDispose(subContainer);
                 return subContainer.Resolve<TConcrete>();
             };
             return typeBindingAsync;
@@ -58,20 +58,20 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBindingAsync<TApparent, TConcrete> FromMethod<TApparent, TConcrete>(
             this TypeBindingAsync<TApparent, TConcrete> typeBindingAsync,
-            CreateDelegate<TConcrete> createDelegate
+            FromDelegate<TConcrete> fromDelegate
         )
         {
-            typeBindingAsync.CreateDelegate = createDelegate;
+            typeBindingAsync.CreateDelegate = fromDelegate;
             return typeBindingAsync;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBindingAsync<TApparent, TConcrete> FromMethodAsync<TApparent, TConcrete>(
             this TypeBindingAsync<TApparent, TConcrete> typeBindingAsync,
-            CreateAsyncDelegate<TConcrete> createAsyncDelegate
+            FromAsyncDelegate<TConcrete> fromAsyncDelegate
         )
         {
-            typeBindingAsync.CreateAsyncDelegate = createAsyncDelegate;
+            typeBindingAsync.CreateAsyncDelegate = fromAsyncDelegate;
             return typeBindingAsync;
         }
     }

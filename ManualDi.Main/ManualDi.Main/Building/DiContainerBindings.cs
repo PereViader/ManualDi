@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ManualDi.Main
 {
@@ -14,6 +16,8 @@ namespace ManualDi.Main
         private readonly List<Action> disposeActions;
         private readonly int? containerInitializationsCount;
         private readonly int? containerDisposablesCount;
+        private readonly List<ITypeBindingSyncSetup> syncSetups = new();
+        private readonly List<ITypeBindingAsyncSetup> asyncSetups = new();
 
         private IDiContainer? parentDiContainer;
 
@@ -38,6 +42,15 @@ namespace ManualDi.Main
         
         internal void AddBinding(TypeBinding typeBinding, Type type)
         {
+            if (typeBinding is ITypeBindingSyncSetup syncSetup)
+            {
+                syncSetups.Add(syncSetup);
+            }
+            else
+            {
+                asyncSetups.Add((ITypeBindingAsyncSetup) typeBinding);    
+            }
+            
             var apparentType = type.TypeHandle.Value;
             if (!typeBindings.TryGetValue(apparentType, out var innerTypeBinding))
             {
@@ -79,11 +92,12 @@ namespace ManualDi.Main
             return this;
         }
         
-        public IDiContainer Build()
+        public async ValueTask<IDiContainer> Build(CancellationToken cancellationToken)
         {
             var diContainer = new DiContainer(
                 typeBindings,
                 parentDiContainer,
+                cancellationToken,
                 containerInitializationsCount,
                 containerDisposablesCount);
 
@@ -95,7 +109,7 @@ namespace ManualDi.Main
                 }
             }));
 
-            diContainer.Initialize();
+            await diContainer.InitializeAsync(syncSetups, asyncSetups);
             
             foreach (var injectDelegate in injectDelegates)
             {

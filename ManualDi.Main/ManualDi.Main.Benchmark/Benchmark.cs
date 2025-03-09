@@ -7,11 +7,11 @@ namespace ManualDi.Main.Benchmark;
 public class Benchmark
 {
     [Benchmark]
-    public Service100 ManualDi()
+    public async Task<Service100> ManualDi()
     {
-        var manualDiContainer = new DiContainerBindings(bindingsCapacity: 100)
+        var manualDiContainer = await new DiContainerBindings(bindingsCapacity: 100)
             .InstallServices()
-            .Build();
+            .Build(CancellationToken.None);
         
         return manualDiContainer.Resolve<Service100>();
     }

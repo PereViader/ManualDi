@@ -1,72 +1,74 @@
 ﻿using NSubstitute;
 using NUnit.Framework;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ManualDi.Main.Tests;
 
 public class TestDiContainerBindings
 {
     [Test]
-    public void TestQueueDispose()
+    public async Task TestQueueDispose()
     {
         var action = Substitute.For<Action>();
 
-        var container = new DiContainerBindings()
+        var container = await new DiContainerBindings()
             .Install(b => b.QueueDispose(action))
-            .Build();
+            .Build(CancellationToken.None);
 
         action.DidNotReceive().Invoke();
 
-        container.Dispose();
+        await container.DisposeAsync();
 
         action.Received(1).Invoke();
     }
     
     [Test]
-    public void TestQueueInject()
+    public async Task TestQueueInject()
     {
         var injectionDelegate = Substitute.For<ContainerDelegate>();
 
-        var container = new DiContainerBindings()
+        await using var container = await new DiContainerBindings()
             .Install(b => b.QueueInjection(injectionDelegate))
-            .Build();
+            .Build(CancellationToken.None);
 
         injectionDelegate.Received(1).Invoke(Arg.Is<IDiContainer>(container));
     }
 
     [Test]
-    public void TestQueueInitialization()
+    public async Task TestQueueInitialization()
     {
         var initializationDelegate = Substitute.For<ContainerDelegate>();
 
-        var container = new DiContainerBindings()
+        await using var container = await new DiContainerBindings()
             .Install(b => b.QueueInitialization(initializationDelegate))
-            .Build();
+            .Build(CancellationToken.None);
 
         initializationDelegate.Received(1).Invoke(Arg.Is<IDiContainer>(container));
     }
     
     [Test]
-    public void TestQueueStartup()
+    public async Task TestQueueStartup()
     {
         var startupDelegate = Substitute.For<ContainerDelegate>();
 
-        var container = new DiContainerBindings()
+        await using var container = await new DiContainerBindings()
             .Install(b => b.QueueStartup(startupDelegate))
-            .Build();
+            .Build(CancellationToken.None);
 
         startupDelegate.Received(1).Invoke(Arg.Is<IDiContainer>(container));
     }
     
     [Test]
-    public void TestQueueOrder()
+    public async Task TestQueueOrder()
     {
         var injectionDelegate = Substitute.For<ContainerDelegate>();
         var initializationDelegate = Substitute.For<ContainerDelegate>();
         var startupDelegate = Substitute.For<ContainerDelegate>();
         var disposeDelegate = Substitute.For<Action>();
 
-        var container = new DiContainerBindings()
+        var container = await new DiContainerBindings()
             .Install(b =>
             {
                 b.QueueInjection(injectionDelegate);
@@ -74,9 +76,9 @@ public class TestDiContainerBindings
                 b.QueueStartup(startupDelegate);
                 b.QueueDispose(disposeDelegate);
             })
-            .Build();
+            .Build(CancellationToken.None);
         
-        container.Dispose();
+        await container.DisposeAsync();
         
         Received.InOrder(() =>
         {

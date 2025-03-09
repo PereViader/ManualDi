@@ -4,96 +4,54 @@ using System.Threading.Tasks;
 
 namespace ManualDi.Main
 {
-    public sealed class TypeBindingAsync<TApparent, TConcrete> : TypeBinding
+    public interface ITypeBindingAsyncSetup
+    {
+        ValueTask CreateAsync(DiContainer diContainer, CancellationToken ct);
+        ValueTask InjectAsync(DiContainer diContainer, CancellationToken ct);
+        ValueTask InitializeAsync(DiContainer diContainer, CancellationToken ct);
+    }
+
+    public sealed class TypeBindingAsync<TApparent, TConcrete> : TypeBinding, ITypeBindingAsyncSetup
     {
         public override Type ApparentType => typeof(Task<TApparent>);
         public override Type ConcreteType => typeof(Task<object?>);
 
-        public CreateDelegate<TConcrete>? CreateDelegate;
-        public CreateAsyncDelegate<TConcrete>? CreateAsyncDelegate;
-        public InstanceContainerDelegate<TConcrete>? InjectionDelegate;
-        public InstanceContainerAsyncDelegate<TConcrete>? InjectionAsyncDelegate;
-        public InstanceContainerDelegate<TConcrete>? InitializationDelegate;
-        public InstanceContainerAsyncDelegate<TConcrete>? InitializationAsyncDelegate;
-        
-        internal override object Resolve(DiContainer diContainer)
-        {
-            if (SingleInstance is not null) //Optimization: We don't check if Scope is Single
-            {
-                return SingleInstance;
-            }
-            
-            var previousInjectedTypeBinding = diContainer.injectedTypeBinding;
-            diContainer.injectedTypeBinding = this;
+        public FromDelegate<TConcrete>? CreateDelegate;
+        public FromAsyncDelegate<TConcrete>? CreateAsyncDelegate;
+        public InjectDelegate<TConcrete>? InjectionDelegate;
+        public InjectAsyncDelegate<TConcrete>? InjectionAsyncDelegate;
+        public InitializeDelegate<TConcrete>? InitializationDelegate;
+        public InitializeAsyncDelegate<TConcrete>? InitializationAsyncDelegate;
 
-            var task = ResolveAsync(diContainer, diContainer.CancellationToken); 
-            
-            if (TypeScope is TypeScope.Single)
-            {
-                SingleInstance = task;
-            }
-            
-            diContainer.injectedTypeBinding = previousInjectedTypeBinding;
-            if (diContainer.injectedTypeBinding is null)
-            {
-                diContainer.diContainerInitializer.InitializeCurrentLevelQueued(diContainer);
-            }
-            
-            return task;
-        }
-        
-        private async Task<object?> ResolveAsync(DiContainer diContainer, CancellationToken ct)
+        async ValueTask ITypeBindingAsyncSetup.CreateAsync(DiContainer diContainer, CancellationToken ct)
         {
-            var instance = (CreateDelegate, CreateAsyncDelegate) switch
+            Instance = (CreateDelegate, CreateAsyncDelegate) switch
             {
                 (not null, not null) => throw new InvalidOperationException($"TypeBindingAsync with Apparent type {typeof(TApparent)} and Concrete type {typeof(TConcrete)} has both sync and async creation delegates. It should only have one."),
                 (null, null) => throw new InvalidOperationException($"TypeBindingAsync with Apparent type {typeof(TApparent)} and Concrete type {typeof(TConcrete)} has no creation delegates defined."),
                 (not null, null) => CreateDelegate.Invoke(diContainer) ?? throw new InvalidOperationException($"Could not create object for TypeBindingAsync with Apparent type {typeof(TApparent)} and Concrete type {typeof(TConcrete)}"),
                 (null, not null) => await CreateAsyncDelegate.Invoke(diContainer, ct) ?? throw new InvalidOperationException($"Could not create object for TypeBindingAsync with Apparent type {typeof(TApparent)} and Concrete type {typeof(TConcrete)}"),
             };
-            
-            try
+        }
+
+        async ValueTask ITypeBindingAsyncSetup.InjectAsync(DiContainer diContainer, CancellationToken ct)
+        {
+            var instance = (TConcrete)Instance;
+            if (InjectionAsyncDelegate is not null)
             {
-                if (InjectionAsyncDelegate is not null)
-                {
-                    await InjectionAsyncDelegate.Invoke(instance, diContainer, ct);
-                }
-                InjectionDelegate?.Invoke(instance, diContainer);
-                
-                if (InitializationAsyncDelegate is not null)
-                {
-                    await InitializationAsyncDelegate.Invoke(instance, diContainer, ct);
-                }
-                InitializationDelegate?.Invoke(instance, diContainer);
-            
-                if (TryToDispose && instance is IDisposable disposable)
-                {
-                    diContainer.diContainerDisposer.QueueDispose(disposable);
-                }
-            
-                if (TryToDispose && instance is IAsyncDisposable asyncDisposable)
-                {
-                    diContainer.diContainerDisposer.QueueAsyncDispose(asyncDisposable);
-                }
+                await InjectionAsyncDelegate.Invoke(instance, diContainer, ct);
             }
-            finally
+            InjectionDelegate?.Invoke(instance, diContainer);
+        }
+
+        async ValueTask ITypeBindingAsyncSetup.InitializeAsync(DiContainer diContainer, CancellationToken ct)
+        {
+            var instance = (TConcrete)Instance;
+            if (InitializationAsyncDelegate is not null)
             {
-                if (ct.IsCancellationRequested)
-                {
-                    if (instance is IAsyncDisposable asyncDisposable)
-                    {
-                        await asyncDisposable.DisposeAsync();   
-                    }
-                    else if (instance is IDisposable disposable)
-                    {
-                        disposable.Dispose();
-                    }
-                    
-                    instance = default;
-                }
+                await InitializationAsyncDelegate.Invoke(instance, ct);
             }
-            
-            return instance;
+            InitializationDelegate?.Invoke(instance);
         }
     }
 }

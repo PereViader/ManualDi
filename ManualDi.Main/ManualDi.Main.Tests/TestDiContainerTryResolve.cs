@@ -1,16 +1,18 @@
-﻿using NUnit.Framework;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using NUnit.Framework;
 
 namespace ManualDi.Main.Tests;
 
 public class TestDiContainerTryResolve
 {
     [Test]
-    public void TestTryResolveSuccess()
+    public async Task TestTryResolveSuccess()
     {
-        var container = new DiContainerBindings().Install(b =>
+        await using var container = await new DiContainerBindings().Install(b =>
         {
             b.Bind<int>().FromInstance(1);
-        }).Build();
+        }).Build(CancellationToken.None);
 
         var success = container.TryResolve<int>(out int resolution);
         Assert.That(success, Is.True);
@@ -18,9 +20,9 @@ public class TestDiContainerTryResolve
     }
 
     [Test]
-    public void TestTryResolveFailure()
+    public async Task TestTryResolveFailure()
     {
-        var container = new DiContainerBindings().Build();
+        await using var container = await new DiContainerBindings().Build(CancellationToken.None);
 
         var success = container.TryResolve<int>(out _);
         Assert.That(success, Is.False);

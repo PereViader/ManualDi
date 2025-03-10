@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,15 +10,14 @@ namespace ManualDi.Main
     
     public sealed class DiContainerBindings
     {
-        private readonly Dictionary<IntPtr, TypeBinding> typeBindings;
+        private readonly Dictionary<IntPtr, TypeBinding> bindingsByType;
         private readonly List<ContainerDelegate> injectDelegates;
         private readonly List<ContainerDelegate> initializationDelegates;
         private readonly List<ContainerDelegate> startupDelegates;
         private readonly List<Action> disposeActions;
-        private readonly int? containerInitializationsCount;
         private readonly int? containerDisposablesCount;
-        private readonly List<ITypeBindingSyncSetup> syncSetups = new();
-        private readonly List<ITypeBindingAsyncSetup> asyncSetups = new();
+        
+        int bindingCount;
 
         private IDiContainer? parentDiContainer;
 
@@ -27,34 +27,25 @@ namespace ManualDi.Main
             int? initializationCapacity = null,
             int? disposeCapacity = null,
             int? startupCapacity = null,
-            int? containerInitializationsCount = null, 
             int? containerDisposablesCount = null
             )
         {
-            typeBindings = bindingsCapacity.HasValue ? new(bindingsCapacity.Value) : new();
+            bindingsByType = bindingsCapacity.HasValue ? new(bindingsCapacity.Value) : new();
             injectDelegates = injectCapacity.HasValue ? new(injectCapacity.Value) : new();
             initializationDelegates = initializationCapacity.HasValue ? new(initializationCapacity.Value) : new();
             disposeActions = disposeCapacity.HasValue ? new(disposeCapacity.Value) : new();
             startupDelegates = startupCapacity.HasValue ? new(startupCapacity.Value) : new();
-            this.containerInitializationsCount = containerInitializationsCount;
             this.containerDisposablesCount = containerDisposablesCount;
         }
         
         internal void AddBinding(TypeBinding typeBinding, Type type)
         {
-            if (typeBinding is ITypeBindingSyncSetup syncSetup)
-            {
-                syncSetups.Add(syncSetup);
-            }
-            else
-            {
-                asyncSetups.Add((ITypeBindingAsyncSetup) typeBinding);    
-            }
+            bindingCount++;
             
             var apparentType = type.TypeHandle.Value;
-            if (!typeBindings.TryGetValue(apparentType, out var innerTypeBinding))
+            if (!bindingsByType.TryGetValue(apparentType, out var innerTypeBinding)) //TODO: Maybe this is more efficient if we do a TryAdd instead (common case)
             {
-                typeBindings.Add(apparentType, typeBinding);
+                bindingsByType.Add(apparentType, typeBinding);
                 return;
             }
 
@@ -95,10 +86,9 @@ namespace ManualDi.Main
         public async ValueTask<IDiContainer> Build(CancellationToken cancellationToken)
         {
             var diContainer = new DiContainer(
-                typeBindings,
+                bindingsByType,
                 parentDiContainer,
                 cancellationToken,
-                containerInitializationsCount,
                 containerDisposablesCount);
 
             diContainer.QueueDispose(new ActionDisposableWrapper(() =>
@@ -109,7 +99,7 @@ namespace ManualDi.Main
                 }
             }));
 
-            await diContainer.InitializeAsync(syncSetups, asyncSetups);
+            await diContainer.InitializeAsync();
             
             foreach (var injectDelegate in injectDelegates)
             {

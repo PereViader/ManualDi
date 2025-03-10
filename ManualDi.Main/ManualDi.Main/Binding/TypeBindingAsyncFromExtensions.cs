@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
 {
@@ -9,6 +10,7 @@ namespace ManualDi.Main
             this TypeBindingAsync<TApparent, TConcrete> typeBindingAsync
         )
         {
+            typeBindingAsync.Dependencies = new []{ (typeof(TConcrete), default(FilterBindingDelegate?)) };
             typeBindingAsync.CreateDelegate = static c => c.Resolve<TConcrete>();
             return typeBindingAsync;
         }
@@ -19,6 +21,7 @@ namespace ManualDi.Main
             FilterBindingDelegate filterBindingDelegate
         )
         {
+            typeBindingAsync.Dependencies = new []{ (typeof(TConcrete), default(FilterBindingDelegate?)) };
             typeBindingAsync.CreateDelegate = c => c.Resolve<TConcrete>(filterBindingDelegate);
             return typeBindingAsync;
         }
@@ -27,9 +30,11 @@ namespace ManualDi.Main
         public static TypeBindingAsync<TApparent, TConcrete> FromSubContainerResolve<TApparent, TConcrete>(
             this TypeBindingAsync<TApparent, TConcrete> typeBindingAsync,
             InstallDelegate installDelegate,
-            bool isContainerParent = true
+            bool isContainerParent = true,
+            Type[]? parentDependencies = null
         )
         {
+            typeBindingAsync.Dependencies = parentDependencies ?? Array.Empty<Type>();
             IDiContainer? subContainer = null;
             typeBindingAsync.CreateAsyncDelegate = async (c, ct) =>
             {
@@ -51,6 +56,7 @@ namespace ManualDi.Main
             TConcrete instance
         )
         {
+            typeBindingAsync.Dependencies = Array.Empty<Type>();
             typeBindingAsync.CreateDelegate = _ => instance;
             return typeBindingAsync;
         }
@@ -58,9 +64,11 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBindingAsync<TApparent, TConcrete> FromMethod<TApparent, TConcrete>(
             this TypeBindingAsync<TApparent, TConcrete> typeBindingAsync,
-            FromDelegate<TConcrete> fromDelegate
+            FromDelegate<TConcrete> fromDelegate,
+            Type[] dependencies
         )
         {
+            typeBindingAsync.Dependencies = dependencies;
             typeBindingAsync.CreateDelegate = fromDelegate;
             return typeBindingAsync;
         }
@@ -68,9 +76,11 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBindingAsync<TApparent, TConcrete> FromMethodAsync<TApparent, TConcrete>(
             this TypeBindingAsync<TApparent, TConcrete> typeBindingAsync,
-            FromAsyncDelegate<TConcrete> fromAsyncDelegate
+            FromAsyncDelegate<TConcrete> fromAsyncDelegate,
+            Type[] dependencies
         )
         {
+            typeBindingAsync.Dependencies = dependencies;
             typeBindingAsync.CreateAsyncDelegate = fromAsyncDelegate;
             return typeBindingAsync;
         }

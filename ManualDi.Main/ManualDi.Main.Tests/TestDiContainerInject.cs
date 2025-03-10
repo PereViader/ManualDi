@@ -25,6 +25,4 @@ public class TestDiContainerInject
 
         injectMethod.Received(2).Invoke(Arg.Is(instance), Arg.Is(container));
     }
-    
-    
 }

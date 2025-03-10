@@ -10,11 +10,10 @@ namespace ManualDi.Main
 {
     public sealed class DiContainer : IDiContainer
     {
-        private readonly Dictionary<IntPtr, TypeBinding> allTypeBindings;
+        private readonly Dictionary<IntPtr, TypeBinding> bindingsByType;
         private readonly IDiContainer? parentDiContainer;
         private readonly BindingContext bindingContext = new();
         private readonly CancellationTokenSource _cancellationTokenSource;
-        internal DiContainerInitializer diContainerInitializer; //Optimization: ref struct. Can't be readonly
         internal DiContainerDisposer diContainerDisposer; //Optimization: ref struct. Can't be readonly
         
         internal TypeBinding? injectedTypeBinding;
@@ -22,44 +21,155 @@ namespace ManualDi.Main
         public CancellationToken CancellationToken => _cancellationTokenSource.Token;
 
         internal DiContainer(
-            Dictionary<IntPtr, TypeBinding> allTypeBindings,
+            Dictionary<IntPtr, TypeBinding> bindingsByType,
             IDiContainer? parentDiContainer,
             CancellationToken cancellationToken,
-            int? initializationsCount = null, 
-            int? disposablesCount = null
-            )
+            int? disposablesCount = null)
         {
-            diContainerInitializer = new(initializationsCount);
             diContainerDisposer = new(disposablesCount);
             _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             
-            this.allTypeBindings = allTypeBindings;
+            this.bindingsByType = bindingsByType;
             this.parentDiContainer = parentDiContainer;
         }
 
-        internal async Task InitializeAsync(
-            List<ITypeBindingSyncSetup> syncSetups,
-            List<ITypeBindingAsyncSetup> asyncSetups)
+        internal async Task InitializeAsync()
         {
-            var ct = _cancellationTokenSource.Token;
-            var tasks = new List<Task>();
+            WireBindingDependencies();
+            var bindings = CreateSortedBindings();
             
-            foreach (var typeBinding in asyncSetups)
+            foreach (var binding in bindings)
             {
-                var task = typeBinding.CreateAsync(this, ct);
-                if (!task.IsCompletedSuccessfully)
+                injectedTypeBinding = binding;
+                
+                switch (binding)
                 {
-                    tasks.Add(task.AsTask());
+                    case ITypeBindingAsyncSetup asyncSetup:
+                    {
+                        await asyncSetup.CreateAsync(this);
+                        break;
+                    }
+
+                    case ITypeBindingSyncSetup syncSetup:
+                    {
+                        syncSetup.Create(this);
+                        break;
+                    }
                 }
             }
 
-            await Task.WhenAll(tasks);
-            tasks.Clear();
-
-            foreach (var syncSetup in syncSetups)
+            foreach (var binding in bindings)
             {
-                syncSetup.CreateAndInject(this);
+                injectedTypeBinding = binding;
+
+                switch (binding)
+                {
+                    case ITypeBindingAsyncSetup asyncSetup:
+                    {
+                        await asyncSetup.InjectAsync(this);
+                        break;
+                    }
+
+                    case ITypeBindingSyncSetup syncSetup:
+                    {
+                        syncSetup.Inject(this);
+                        break;
+                    }
+                }
             }
+            
+            injectedTypeBinding = null;
+            
+            var ct = CancellationToken;
+            foreach (var binding in bindings)
+            {
+                switch (binding)
+                {
+                    case ITypeBindingAsyncSetup asyncSetup:
+                    {
+                        await asyncSetup.InitializeAsync(ct);
+                        break;
+                    }
+
+                    case ITypeBindingSyncSetup syncSetup:
+                    {
+                        syncSetup.Initialize();
+                        break;
+                    }
+                }
+            }
+        }
+
+        private void WireBindingDependencies()
+        {
+            foreach (var binding in bindingsByType.Values)
+            {
+                var iterationBinding = binding;
+                while (iterationBinding is not null)
+                {
+                    TypeBinding[] bindingDependencies;
+                    if (binding.Dependencies.Length > 0)
+                    {
+                        bindingDependencies = new TypeBinding[binding.Dependencies.Length];
+                        for (var i = 0; i < binding.Dependencies.Length; i++)
+                        {
+                            var searchDependency = binding.Dependencies[i];
+                            var dependency = searchDependency.FilterBindingDelegate is null 
+                                ? GetTypeForConstraint(searchDependency.Type) 
+                                : GetTypeForConstraint(searchDependency.Type, searchDependency.FilterBindingDelegate);
+                            bindingDependencies[i] = dependency ?? throw new InvalidOperationException($"Unable to find matching dependency binding {binding.Dependencies[i]} in type {binding.GetType().FullName}");
+                        }
+                    }
+                    else
+                    {
+                        bindingDependencies = Array.Empty<TypeBinding>();
+                    }
+                    
+
+                    binding.BindingDependencies = bindingDependencies;
+                    iterationBinding = iterationBinding.NextTypeBinding;
+                }
+            }
+        }
+
+        private List<TypeBinding> CreateSortedBindings()
+        {
+            var remaining = bindingsByType.Values.SelectMany(x => x.GetChildBindings()).ToList();
+            var toRemove = new List<TypeBinding>(remaining.Count);
+            var ready = new HashSet<TypeBinding>(remaining.Count());
+            var sortedBindings = new List<TypeBinding>();
+
+            
+            while (remaining.Count > 0)
+            {
+                foreach (var binding in remaining)
+                {
+                    var dependencies = binding.BindingDependencies;
+                    var dependenciesReady = dependencies.All(x => ready.Contains(x));
+                    if (!dependenciesReady)
+                    {
+                        continue;
+                    }
+                    
+                    sortedBindings.Add(binding);
+                    ready.Add(binding);
+                    toRemove.Add(binding);
+                }
+                
+                foreach (var typeBinding in toRemove)
+                {
+                    remaining.Remove(typeBinding);
+                }
+
+                if (toRemove.Count == 0 && ready.Count > 0)
+                {
+                    throw new InvalidOperationException("Unable to create sorted bindings.");
+                }
+                toRemove.Clear();
+                
+            }
+            
+            return sortedBindings;
         }
 
         public object? ResolveContainer(Type type)
@@ -87,7 +197,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private TypeBinding? GetTypeForConstraint(Type type)
         {
-            if (!allTypeBindings.TryGetValue(type.TypeHandle.Value, out TypeBinding? typeBinding))
+            if (!bindingsByType.TryGetValue(type.TypeHandle.Value, out TypeBinding? typeBinding))
             {
                 return null;
             }
@@ -116,7 +226,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private TypeBinding? GetTypeForConstraint(Type type, FilterBindingDelegate filterBindingDelegate)
         {
-            if (!allTypeBindings.TryGetValue(type.TypeHandle.Value, out TypeBinding? typeBinding))
+            if (!bindingsByType.TryGetValue(type.TypeHandle.Value, out TypeBinding? typeBinding))
             {
                 return null;
             }
@@ -140,7 +250,7 @@ namespace ManualDi.Main
 
         public void ResolveAllContainer(Type type, FilterBindingDelegate? filterBindingDelegate, IList resolutions)
         {
-            if (allTypeBindings.TryGetValue(type.TypeHandle.Value, out TypeBinding? typeBinding))
+            if (bindingsByType.TryGetValue(type.TypeHandle.Value, out TypeBinding? typeBinding))
             {
                 bindingContext.InjectedIntoTypeBinding = injectedTypeBinding;
                 do

@@ -390,18 +390,22 @@ namespace ManualDi.Main.Generators
             """);
             
             CreateMethodResolution(constructor, "                ", context.StringBuilder);
+
+            context.StringBuilder.Append("),\n          ");
             
-            context.StringBuilder.AppendLine($$"""
-            ));
+            CreateMethodDependencies(constructor, context.StringBuilder);
+                
+            context.StringBuilder.Append($$"""
+            );
                     }
             
             """);
         }
 
-        private static void CreateMethodResolution(IMethodSymbol constructor, string tabs, StringBuilder stringBuilder)
+        private static void CreateMethodResolution(IMethodSymbol methodSymbol, string tabs, StringBuilder stringBuilder)
         {
             bool isFirst = true;
-            foreach (var parameter in constructor.Parameters)
+            foreach (var parameter in methodSymbol.Parameters)
             {
                 if (!isFirst)
                 {
@@ -419,6 +423,34 @@ namespace ManualDi.Main.Generators
                 CreteTypeResolution(parameter.Type, id, stringBuilder);
             }
         }
+        
+        private static void CreateMethodDependencies(IMethodSymbol methodSymbol, StringBuilder stringBuilder)
+        {
+            if (methodSymbol.Parameters.Length == 0)
+            {
+                stringBuilder.Append("Array.Empty<Type>()");
+                return;
+            }
+
+            stringBuilder.Append("new Type[] { ");
+            bool isFirst = true;
+            foreach (var parameter in methodSymbol.Parameters)
+            {
+                if (!isFirst)
+                {
+                    stringBuilder.AppendLine(",");    
+                }
+                else
+                {
+                    isFirst = false;
+                }
+                
+                stringBuilder.Append("typeof(");
+                stringBuilder.Append(FullyQualifyTypeWithoutNullable(parameter.Type));
+                stringBuilder.Append(")");
+            }
+            stringBuilder.Append(" }");
+        }
 
         private static void CreateIdResolution(string? id, StringBuilder stringBuilder)
         {
@@ -430,33 +462,9 @@ namespace ManualDi.Main.Generators
             }
         }
         
+        
         private static void CreteTypeResolution(ITypeSymbol typeSymbol, string? id, StringBuilder stringBuilder)
         {
-            var lazyGenericType = TryGenericLazyType(typeSymbol);
-            if (lazyGenericType is not null)
-            {
-                if (IsNullableTypeSymbol(typeSymbol))
-                {
-                    stringBuilder.Append("c.WouldResolve<");
-                    stringBuilder.Append(FullyQualifyTypeWithoutNullable(lazyGenericType));
-                    stringBuilder.Append(">(");
-                    CreateIdResolution(id, stringBuilder);
-                    stringBuilder.Append(") ? new System.Lazy<");
-                    stringBuilder.Append(FullyQualifyTypeWithNullable(lazyGenericType));
-                    stringBuilder.Append(">(() => ");
-                    CreteTypeResolution(lazyGenericType, id, stringBuilder);
-                    stringBuilder.Append(") : null");
-                    return;
-                }
-
-                stringBuilder.Append("new System.Lazy<");
-                stringBuilder.Append(FullyQualifyTypeWithNullable(lazyGenericType));
-                stringBuilder.Append(">(() => ");
-                CreteTypeResolution(lazyGenericType, id, stringBuilder);
-                stringBuilder.Append(")");
-                return;
-            }
-
             // Updated code below
             var listGenericType = TryGetEnumerableType(typeSymbol);
             if (listGenericType is not null)
@@ -498,32 +506,6 @@ namespace ManualDi.Main.Generators
             stringBuilder.Append(">(");
             CreateIdResolution(id, stringBuilder);
             stringBuilder.Append(")");
-        }
-        
-        private static ITypeSymbol? TryGenericLazyType(ITypeSymbol typeSymbol)
-        {
-            if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
-            {
-                if (SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, LazyTypeSymbol))
-                {
-                    return namedTypeSymbol.TypeArguments[0];
-                }
-            }
-
-            return null;
-        }
-        
-        private static ITypeSymbol? TryGenericTaskType(ITypeSymbol typeSymbol)
-        {
-            if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
-            {
-                if (SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, TaskTypeSymbol))
-                {
-                    return namedTypeSymbol.TypeArguments[0];
-                }
-            }
-
-            return null;
         }
 
         private static ITypeSymbol? TryGetEnumerableType(ITypeSymbol typeSymbol)
@@ -685,6 +667,18 @@ namespace ManualDi.Main.Generators
             }
             
             return typeSymbol.ToDisplayString();
+        }
+        
+        private static string FullyQualifyTypeDependecyType(ITypeSymbol typeSymbol)
+        {
+            // Updated code below
+            var listGenericType = TryGetEnumerableType(typeSymbol);
+            if (listGenericType is not null)
+            {
+                return FullyQualifyTypeWithoutNullable(listGenericType);
+            }
+
+            return FullyQualifyTypeWithoutNullable(typeSymbol);
         }
         
         private static bool IsNullableTypeSymbol(ITypeSymbol typeSymbol)

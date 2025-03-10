@@ -14,7 +14,7 @@ public class TestDiContainerTryResolve
             b.Bind<int>().FromInstance(1);
         }).Build(CancellationToken.None);
 
-        var success = container.TryResolve<int>(out int resolution);
+        var success = container.TryResolve<int>(out var resolution);
         Assert.That(success, Is.True);
         Assert.That(resolution, Is.EqualTo(1));
     }

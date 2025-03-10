@@ -11,7 +11,7 @@ await using var container = await new DiContainerBindings().Install(b =>
         {
             await Task.Delay(1000, ct);
             return 42;
-        })
+        }, [])
         .InjectAsync((o, c, ct) =>
         {
             Console.WriteLine("Injecting Async");
@@ -37,7 +37,7 @@ await using var container = await new DiContainerBindings().Install(b =>
         })
         .Dispose(o => Console.WriteLine("Disposing"));
     
-    b.BindAsync<EntryPointAsync>().FromMethod(c => new EntryPointAsync(c.Resolve<int>()));
+    b.BindAsync<EntryPointAsync>().FromMethod(c => new EntryPointAsync(c.Resolve<int>()), [typeof(int)]);
 }).Build(CancellationToken.None);
 
 var entryPointAsync = container.Resolve<EntryPointAsync>();

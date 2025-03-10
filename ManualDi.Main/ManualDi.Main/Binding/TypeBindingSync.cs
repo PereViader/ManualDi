@@ -4,8 +4,9 @@ namespace ManualDi.Main
 {
     internal interface ITypeBindingSyncSetup
     {
-        void CreateAndInject(DiContainer diContainer);
-        void InitializeInstance(DiContainer diContainer);
+        void Create(DiContainer diContainer);
+        void Inject(DiContainer diContainer);
+        void Initialize();
     }
     
     public sealed class TypeBindingSync<TApparent, TConcrete> : TypeBinding, ITypeBindingSyncSetup
@@ -17,42 +18,34 @@ namespace ManualDi.Main
         public InjectDelegate<TConcrete>? InjectionDelegate;
         public InitializeDelegate<TConcrete>? InitializationDelegate;
 
-        void ITypeBindingSyncSetup.CreateAndInject(DiContainer diContainer)
+        void ITypeBindingSyncSetup.Create(DiContainer diContainer)
         {
-            if (Instance is not null)
-            {
-                return;
-            }
-            
-            var previousInjectedTypeBinding = diContainer.injectedTypeBinding;
-            diContainer.injectedTypeBinding = this;
-
             var instance = CreateDelegate!.Invoke(diContainer) //Optimization: Assumes it will be initialized
                            ?? throw new InvalidOperationException($"Could not create object for TypeBinding with Apparent type {typeof(TApparent)} and Concrete type {typeof(TConcrete)}");
             Instance = instance;
             
-            InjectionDelegate?.Invoke((TConcrete)instance, diContainer);
-            if (InitializationDelegate is not null)
+            if (TryToDispose)
             {
-                diContainer.diContainerInitializer.QueueInitialize(this);
-            }
-            
-            if (TryToDispose && instance is IDisposable disposable)
-            {
-                diContainer.QueueDispose(disposable);
-            }
-
-            diContainer.injectedTypeBinding = previousInjectedTypeBinding;
-            if (diContainer.injectedTypeBinding is null)
-            {
-                diContainer.diContainerInitializer.InitializeCurrentLevelQueued(diContainer);
+                switch (instance)
+                {
+                    case IAsyncDisposable asyncDisposable:
+                        diContainer.QueueAsyncDispose(asyncDisposable);
+                        break;
+                    case IDisposable disposable:
+                        diContainer.QueueDispose(disposable);
+                        break;
+                }
             }
         }
-
-        void ITypeBindingSyncSetup.InitializeInstance(DiContainer diContainer)
+        
+        void ITypeBindingSyncSetup.Inject(DiContainer diContainer)
         {
-            //Must only be used when not null, optimized for faster runtime
-            InitializationDelegate!.Invoke((TConcrete)Instance);
+            InjectionDelegate?.Invoke((TConcrete)Instance!, diContainer);
+        }
+
+        void ITypeBindingSyncSetup.Initialize()
+        {
+            InitializationDelegate?.Invoke((TConcrete)Instance!);
         }
     }
 }

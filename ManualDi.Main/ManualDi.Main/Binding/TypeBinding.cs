@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -32,9 +34,21 @@ namespace ManualDi.Main
         public abstract Type ConcreteType { get; }
         
         internal object? Instance;
+        public (Type Type, FilterBindingDelegate? FilterBindingDelegate)[] Dependencies = default!;
+        public TypeBinding[] BindingDependencies = default!;
         public bool TryToDispose = true;
         public object? Id;
         public FilterBindingDelegate? FilterBindingDelegate;
         internal TypeBinding? NextTypeBinding;
+
+        internal IEnumerable<TypeBinding> GetChildBindings()
+        {
+            var binding = this;
+            while (binding is not null)
+            {
+                yield return binding;
+                binding = binding.NextTypeBinding;
+            }
+        }
     }
 }

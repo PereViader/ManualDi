@@ -27,7 +27,7 @@ namespace ManualDi.Main
         public static TypeBindingAsync<TConcrete, TConcrete> BindAsync<TConcrete>(this DiContainerBindings diContainerBindings)
         {
             TypeBindingAsync<TConcrete, TConcrete> typeBinding = new();
-            diContainerBindings.AddBinding(typeBinding, typeof(Task<TConcrete>));
+            diContainerBindings.AddBinding(typeBinding, typeof(TConcrete));
             return typeBinding;
         }
 
@@ -36,7 +36,7 @@ namespace ManualDi.Main
             where TConcrete : TApparent
         {
             TypeBindingAsync<TApparent, TConcrete> typeBinding = new();
-            diContainerBindings.AddBinding(typeBinding, typeof(Task<TApparent>));
+            diContainerBindings.AddBinding(typeBinding, typeof(TApparent));
             return typeBinding;
         }
         

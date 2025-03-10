@@ -92,6 +92,11 @@ namespace ManualDi.Main.Generators
                 {
                     return;
                 }
+
+                if (classSymbol.IsAbstract)
+                {
+                    continue;
+                }
                 
                 var accessibility = GetSymbolAccessibility(classSymbol);
                 if (accessibility is not (Accessibility.Public or Accessibility.Internal))

@@ -50,6 +50,11 @@ namespace SomeNamespace.Subnamespace
         }
     }
 
+    public abstract class Abstract
+    {
+        public Abstract() { }
+    }
+
     public class SomeDisposable : IDisposable
     {
         public void Dispose()

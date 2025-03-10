@@ -662,6 +662,40 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
 {
+    public static class ManualDiGeneratedMultipleOfEachExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static TypeBinding<T, MultipleOfEach> FromConstructor<T>(this TypeBinding<T, MultipleOfEach> typeBinding)
+        {
+            return typeBinding.FromMethod(static c => new MultipleOfEach(
+                c.Resolve<object>(),
+                c.Resolve<object>()));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static TypeBinding<T, MultipleOfEach> Default<T>(this TypeBinding<T, MultipleOfEach> typeBinding)
+        {
+            return typeBinding.Initialize(static (o, c) => o.Initialize(
+                    c.Resolve<object>(),
+                    c.Resolve<object>(),
+                    c.Resolve<object>(),
+                    c.Resolve<object>()))
+                .Inject(static (o, c) => 
+                {
+                    o.Inject(
+                        c.Resolve<object>());
+                })
+                .DontDispose();
+        }
+    }
+}
+
+  
+#nullable enable
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Main
+{
     public static class ManualDiGeneratedUnityEngineObjectExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

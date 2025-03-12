@@ -696,6 +696,29 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Main
 {
+    public static class ManualDiGeneratedInjectContainerExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static TypeBinding<T, InjectContainer> FromConstructor<T>(this TypeBinding<T, InjectContainer> typeBinding)
+        {
+            return typeBinding.FromMethod(static c => new InjectContainer(
+                c));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static TypeBinding<T, InjectContainer> Default<T>(this TypeBinding<T, InjectContainer> typeBinding)
+        {
+            return typeBinding.DontDispose();
+        }
+    }
+}
+
+  
+#nullable enable
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Main
+{
     public static class ManualDiGeneratedUnityEngineObjectExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

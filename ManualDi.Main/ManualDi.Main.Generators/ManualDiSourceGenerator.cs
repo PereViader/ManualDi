@@ -27,6 +27,7 @@ namespace ManualDi.Main.Generators
         private static INamedTypeSymbol InjectAttributeTypeSymbol = default!;
         private static INamedTypeSymbol ObsoleteAttributeTypeSymbol = default!;
         private static INamedTypeSymbol IDisposableTypeSymbol = default!;
+        private static INamedTypeSymbol IDiContainerTypeSymbol = default!;
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             context.RegisterSourceOutput(context.CompilationProvider, (context, compilation) =>
@@ -155,6 +156,14 @@ namespace ManualDi.Main.Generators
                 return false;
             }
             LazyTypeSymbol = lazyTypeSymbol;
+            
+            var diContainerTypeSymbol = compilation.GetTypeByMetadataName("ManualDi.Main.IDiContainer");
+            if (diContainerTypeSymbol is null)
+            {
+                ReportTypeNotFound("ManualDi.Main.IDiContainer", context);
+                return false;
+            }
+            IDiContainerTypeSymbol = diContainerTypeSymbol;
 
             var listTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.List`1");
             if (listTypeSymbol is null)
@@ -450,6 +459,12 @@ namespace ManualDi.Main.Generators
                 stringBuilder.Append(">(() => ");
                 CreteTypeResolution(lazyGenericType, id, stringBuilder);
                 stringBuilder.Append(")");
+                return;
+            }
+
+            if (SymbolEqualityComparer.Default.Equals(IDiContainerTypeSymbol, typeSymbol))
+            {
+                stringBuilder.Append("c");
                 return;
             }
 

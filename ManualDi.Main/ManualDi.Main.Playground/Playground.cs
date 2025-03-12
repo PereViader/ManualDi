@@ -332,6 +332,11 @@ class MultipleOfEach
     public void Initialize(object o, object o2, object o3, object o4) {} // <- it should use this one
 }
 
+class InjectContainer
+{
+    public InjectContainer(IDiContainer c) {} // The container should be provided as is
+}
+
 namespace UnityEngine
 {
     public class Object

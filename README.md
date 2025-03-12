@@ -149,6 +149,7 @@ For this reason, it is recommended to always add it even if the type does not cu
 Note: As stated on the installation section, the default method will only be generated for classes that live in assamblies that reference both ManualDi and the source generator.
 In other words, 3rd party libraries and System classes will not have any generated code on them.
 
+Note: The source generator does not run for partial classes defined across multiple declarations. It will only operate on partial classes with a single declaration in your codebase.
 
 ## Scope
 

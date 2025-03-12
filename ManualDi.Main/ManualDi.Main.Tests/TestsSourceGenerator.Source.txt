@@ -336,6 +336,17 @@ class InjectContainer
     public InjectContainer(IDiContainer c) {} // The container should be provided as is
 }
 
+partial class Partial
+{
+    public Partial(object o) {}
+    void Inject(object o) {}
+}
+
+partial class Partial
+{
+    public void Initialize() {}
+}
+
 namespace UnityEngine
 {
     public class Object

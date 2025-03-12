@@ -44,12 +44,13 @@ namespace ManualDi.Main.Generators
             
             var classDeclarations = context.SyntaxProvider
                 .CreateSyntaxProvider(IsSyntaxNodeValid, GetClassDeclaration)
+                .Where(x => x is not null)
                 .Collect();
 
             var providers = manualDiMainReferenceModule
                 .Combine(classDeclarations);
 
-            context.RegisterSourceOutput(providers, Generate);
+            context.RegisterSourceOutput(providers, Generate!);
         }
 
         private static bool IsSyntaxNodeValid(SyntaxNode node, CancellationToken ct)
@@ -72,9 +73,15 @@ namespace ManualDi.Main.Generators
             return true;
         }
         
-        private static INamedTypeSymbol GetClassDeclaration(GeneratorSyntaxContext context, CancellationToken ct)
+        private static INamedTypeSymbol? GetClassDeclaration(GeneratorSyntaxContext context, CancellationToken ct)
         {
-            return (INamedTypeSymbol)context.SemanticModel.GetDeclaredSymbol(context.Node)!;
+            var symbol = context.SemanticModel.GetDeclaredSymbol((ClassDeclarationSyntax)context.Node, ct);
+            if (symbol is null || symbol.Locations.Length > 1)
+            {
+                return null;
+            }
+
+            return symbol;
         }
         
         private void Generate(SourceProductionContext context, (ImmutableArray<ModuleInfo>, ImmutableArray<INamedTypeSymbol>) arg)

@@ -108,7 +108,7 @@ static class Installer
 ## Default
 
 This source generated method is a shorthand for calling Inject and Initialize that classes may have.
-Those Inject and Initialize methods may have 0 or N parameters and the parameters will be supplied by resolving them from the container.
+Those Inject method may have 0 or N parameters and the parameters will be supplied by resolving them from the container.
 Think of it as a "duck typed" source generated approach.
 It will only consider `public` or `ìnternal` methods that it can access regularly meaning  methods.
 
@@ -132,8 +132,8 @@ public class C {
 }
 public class D {
     public D(A a) { }
-    public void Inject(C c) { }
-    public void Initialize(B b) { }
+    public void Inject(C c, A a) { }
+    public void Initialize() { }
 }
 
 
@@ -344,12 +344,14 @@ public class A
 
 public class B
 {
-    public void Initialize(A a) { }
+    public B(A a) { }
+    
+    public void Initialize() { }
 }
 
 //This is the manual implementation without Default
 b.Bind<A>().FromConstructor().Initialize((o, c) => o.Initialize()));
-b.Bind<B>().FromConstructor().Initialize((o, c) => o.Initialize(c.Resolve<A>()));
+b.Bind<B>().FromConstructor().Initialize((o, c) => o.Initialize());
 
 //And this is the equivalent and simpler implementation with Default
 b.Bind<A>().Default().FromConstructor();
@@ -974,9 +976,7 @@ var initializer = container.Resolve<Initializer>();
 await initializer.StartApplication();
 ```
 
-# Unsafe Binding (Experimental)
-
-The following is experimental and might be removed.
+# Unsafe Binding (Experimental - DONT USE - WILL BE REMOVED)
 
 The bindings may also be done with a non type safe interface. This variant should only be used when implementing programmatic driven configuration. Use the type safe variant when all the types involved are known.
 

@@ -344,7 +344,7 @@ public class A
 
 public class B
 {
-    public void Inject(A a) { }
+    public void Initialize(A a) { }
 }
 
 //This is the manual implementation without Default
@@ -748,12 +748,12 @@ If the scene the resource is created on will then be deleted, there is no need t
 An entry point is a place where some context of your application is meant to start.
 In the case of ManualDi, it is where the object graph is configured and then the container is started.
 
-The last binding of an entry point will usually make use of WithStartable, to run any logic necessary after the container is created.
+The last binding of an entry point will usually make use of WithStartup, to run any logic necessary after the container is created.
 
 ### RootEntryPoint
 
 Root entry points will not depend on any other container.
-This means that all dependencies will be registered in the main container itself.
+Root entry points may be started either manually or on the Unity Start callback. This is configured through the inspector.
 
 Use the appropriate type depending on how you want to structure your application:
 - `MonoBehaviourRootEntryPoint`
@@ -947,6 +947,8 @@ class Installer : MonoBehaviourInstaller
     }
 }
 ```
+
+Note: There is a sample in the package that provides a Tickable system and a LinkTickable extension. This system allows for having Update like behaviour on any class.
 
 # Async dependencies
 

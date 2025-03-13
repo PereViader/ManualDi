@@ -170,7 +170,7 @@ namespace SomeNamespace.Subnamespace
         {
         }
 
-        public void Initialize(object? obj, int? value)
+        public void Initialize()
         {
         }
     }
@@ -270,7 +270,7 @@ namespace SomeNamespace.Subnamespace
         {
         }
 
-        public void Initialize(List<object> objects)
+        public void Initialize()
         {
         }
     }
@@ -311,10 +311,7 @@ namespace SomeNamespace.Subnamespace
         {
         }
 
-        public void Initialize(
-            [Inject("Potato")] object potatoValue,
-            [Inject("Banana")] float bananaValue,
-            object value)
+        public void Initialize()
         {
         }
     }
@@ -328,8 +325,7 @@ class MultipleOfEach
     internal void Inject() {}
     public void Inject(object o) {} // <- it should use this one
     
-    internal void Initialize(object o, object o2) {}
-    public void Initialize(object o, object o2, object o3, object o4) {} // <- it should use this one
+    internal void Initialize() {} // <- it should use this one
 }
 
 class InjectContainer

@@ -427,9 +427,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<T, SomeNamespace.Subnamespace.NullableDependency> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.NullableDependency> typeBinding)
         {
-            return typeBinding.Initialize(static (o, c) => o.Initialize(
-                    c.ResolveNullable<object>(),
-                    c.ResolveNullableValue<int>()))
+            return typeBinding.Initialize(static (o, c) => o.Initialize())
                 .Inject(static (o, c) => 
                 {
                     o.Object = c.ResolveNullable<object>();
@@ -506,8 +504,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, SomeNamespace.Subnamespace.ListInject> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.ListInject> typeBinding)
         {
-            return typeBinding.Initialize(static (o, c) => o.Initialize(
-                    c.ResolveAll<object>()))
+            return typeBinding.Initialize(static (o, c) => o.Initialize())
                 .Inject(static (o, c) => 
                 {
                     o.IEnumerableObject = c.ResolveAll<object>();
@@ -637,10 +634,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, SomeNamespace.Subnamespace.InjectIdAttribute> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.InjectIdAttribute> typeBinding)
         {
-            return typeBinding.Initialize(static (o, c) => o.Initialize(
-                    c.Resolve<object>(x => x.Id("Potato")),
-                    c.Resolve<float>(x => x.Id("Banana")),
-                    c.Resolve<object>()))
+            return typeBinding.Initialize(static (o, c) => o.Initialize())
                 .Inject(static (o, c) => 
                 {
                     o.HelloIdValue = c.Resolve<int>(x => x.Id("A"));
@@ -675,11 +669,7 @@ namespace ManualDi.Main
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static TypeBinding<T, MultipleOfEach> Default<T>(this TypeBinding<T, MultipleOfEach> typeBinding)
         {
-            return typeBinding.Initialize(static (o, c) => o.Initialize(
-                    c.Resolve<object>(),
-                    c.Resolve<object>(),
-                    c.Resolve<object>(),
-                    c.Resolve<object>()))
+            return typeBinding.Initialize(static (o, c) => o.Initialize())
                 .Inject(static (o, c) => 
                 {
                     o.Inject(

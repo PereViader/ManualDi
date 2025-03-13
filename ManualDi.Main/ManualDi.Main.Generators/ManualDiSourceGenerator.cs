@@ -354,31 +354,29 @@ namespace ManualDi.Main.Generators
 
         private static bool AddInitialize(GenerationClassContext context, bool isOnNewLine)
         {
-            var initializeMethods = context.ClassSymbol
+            var initializeMethod = context.ClassSymbol
                 .GetMembers()
                 .OfType<IMethodSymbol>()
-                .Where(x => x is { Name: "Initialize", DeclaredAccessibility: Accessibility.Public or Accessibility.Internal, IsStatic: false })
-                .OrderByDescending(x => x.DeclaredAccessibility)
-                .ToArray();
+                .FirstOrDefault(x => x is
+                {
+                    Name: "Initialize", 
+                    DeclaredAccessibility: Accessibility.Public or Accessibility.Internal,
+                    IsStatic: false, 
+                    Parameters.Length: 0
+                });
                 
-            if (initializeMethods.Length == 0)
+            if (initializeMethod is null)
             {
                 return isOnNewLine;
             }
             
-            var initializeMethod = initializeMethods[0];
-
             if (isOnNewLine)
             {
                 context.StringBuilder.AppendLine();
                 context.StringBuilder.Append("                    ");
             }
             
-            context.StringBuilder.Append(".Initialize(static (o, c) => o.Initialize(");
-            
-            CreateMethodResolution(initializeMethods[0], "                    ", context.TypeReferences, context.StringBuilder);
-            
-            context.StringBuilder.Append("))");
+            context.StringBuilder.Append(".Initialize(static (o, c) => o.Initialize())");
             return true;
         }
 

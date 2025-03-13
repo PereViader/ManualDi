@@ -11,46 +11,25 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace ManualDi.Main.Generators
 {
-    public record struct GenerationClassContext(StringBuilder StringBuilder, string ClassName, INamedTypeSymbol ClassSymbol, string ObsoleteText);
-    
+    public record struct GenerationClassContext(StringBuilder StringBuilder, string ClassName, INamedTypeSymbol ClassSymbol, string ObsoleteText, TypeReferences TypeReferences);
+
     [Generator]
     public class ManualDiSourceGenerator : IIncrementalGenerator
     {
-        private static INamedTypeSymbol? UnityEngineObjectTypeSymbol = default!;
-        private static INamedTypeSymbol LazyTypeSymbol = default!;
-        private static INamedTypeSymbol ListTypeSymbol = default!;
-        private static INamedTypeSymbol IListTypeSymbol = default!;
-        private static INamedTypeSymbol IReadOnlyListTypeSymbol = default!;
-        private static INamedTypeSymbol IEnumerableTypeSymbol = default!;
-        private static INamedTypeSymbol IReadOnlyCollectionTypeSymbol = default!;
-        private static INamedTypeSymbol ICollectionTypeSymbol = default!;
-        private static INamedTypeSymbol InjectAttributeTypeSymbol = default!;
-        private static INamedTypeSymbol ObsoleteAttributeTypeSymbol = default!;
-        private static INamedTypeSymbol IDisposableTypeSymbol = default!;
-        private static INamedTypeSymbol IDiContainerTypeSymbol = default!;
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            context.RegisterSourceOutput(context.CompilationProvider, (context, compilation) =>
-            {
-                TryInitializeStaticTypeSymbols(compilation, context);
-            });
+            var typeReferencesProvider = context.CompilationProvider
+                .Select(TypeReferences.Create);
             
             //https://www.thinktecture.com/en/net/roslyn-source-generators-code-according-to-dependencies/
             // Create a provider for metadata references
-            var manualDiMainReferenceModule = context.GetMetadataReferencesProvider()
-                .SelectMany((references, _) => references.GetModules())
-                .Where(x => x.Name is "ManualDi.Main.dll")
-                .Collect();
-            
-            var classDeclarations = context.SyntaxProvider
+            var classProvider = context.SyntaxProvider
                 .CreateSyntaxProvider(IsSyntaxNodeValid, GetClassDeclaration)
-                .Where(x => x is not null)
-                .Collect();
+                .Where(x => x is not null);
 
-            var providers = manualDiMainReferenceModule
-                .Combine(classDeclarations);
+            var combined = classProvider.Combine(typeReferencesProvider);
 
-            context.RegisterSourceOutput(providers, Generate!);
+            context.RegisterSourceOutput(combined, Generate!);
         }
 
         private static bool IsSyntaxNodeValid(SyntaxNode node, CancellationToken ct)
@@ -83,168 +62,58 @@ namespace ManualDi.Main.Generators
 
             return symbol;
         }
-        
-        private void Generate(SourceProductionContext context, (ImmutableArray<ModuleInfo>, ImmutableArray<INamedTypeSymbol>) arg)
-        {
-            var (moduleInfos, classSymbols) = arg;
 
-            //We don't generate if the ManualDi reference is not there
-            if (moduleInfos.Length == 0)
+        private void Generate(SourceProductionContext context, (INamedTypeSymbol, TypeReferences?) arg)
+        {
+            var (classSymbol, typeReferences) = arg;
+            if (typeReferences is null)
             {
                 return;
             }
             
-            foreach (var classSymbol in classSymbols)
+            if (classSymbol.IsAbstract)
             {
-                if (context.CancellationToken.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                if (classSymbol.IsAbstract)
-                {
-                    continue;
-                }
-                
-                var accessibility = GetSymbolAccessibility(classSymbol);
-                if (accessibility is not (Accessibility.Public or Accessibility.Internal))
-                {
-                    continue;
-                }
-
-                var className = FullyQualifyTypeWithoutNullable(classSymbol);
-                var obsoleteText = IsSymbolObsolete(classSymbol)
-                    ? "[System.Obsolete]\r\n" 
-                    : "";
-                
-                var stringBuilder = new StringBuilder();
-
-                stringBuilder.AppendLine($$"""
-                #nullable enable
-                using System.Runtime.CompilerServices;
-
-                namespace ManualDi.Main
-                {
-                    public static class ManualDiGenerated{{className.Replace(".","")}}Extensions
-                    {
-                """);
-
-                var generationContext = new GenerationClassContext(stringBuilder, className, classSymbol, obsoleteText);
-
-                if (!InheritsFromSymbol(classSymbol, UnityEngineObjectTypeSymbol))
-                {
-                    AddFromConstructor(generationContext);
-                }
-                
-                AddDefault(generationContext, accessibility);
-
-                stringBuilder.AppendLine("""
-                    }
-                }
-                """);
-                
-                context.AddSource($"ManualDiGeneratedExtensions.{className}.g.cs", SourceText.From(stringBuilder.ToString(), Encoding.UTF8));
+                return;
             }
-        }
-
-        private static bool TryInitializeStaticTypeSymbols(Compilation compilation, SourceProductionContext context)
-        {
-            if (IDisposableTypeSymbol is not null)
-            {
-                return true; // If the last one is already initialized, skip
-            }
-
-            UnityEngineObjectTypeSymbol = compilation.GetTypeByMetadataName("UnityEngine.Object");
             
-            var lazyTypeSymbol = compilation.GetTypeByMetadataName("System.Lazy`1");
-            if (lazyTypeSymbol is null)
+            var accessibility = GetSymbolAccessibility(classSymbol);
+            if (accessibility is not (Accessibility.Public or Accessibility.Internal))
             {
-                ReportTypeNotFound("System.Lazy<T>", context);
-                return false;
+                return;
             }
-            LazyTypeSymbol = lazyTypeSymbol;
+
+            var className = FullyQualifyTypeWithoutNullable(classSymbol);
+            var obsoleteText = typeReferences.IsSymbolObsolete(classSymbol)
+                ? "[System.Obsolete]\r\n" 
+                : "";
             
-            var diContainerTypeSymbol = compilation.GetTypeByMetadataName("ManualDi.Main.IDiContainer");
-            if (diContainerTypeSymbol is null)
-            {
-                ReportTypeNotFound("ManualDi.Main.IDiContainer", context);
-                return false;
-            }
-            IDiContainerTypeSymbol = diContainerTypeSymbol;
+            var stringBuilder = new StringBuilder();
 
-            var listTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.List`1");
-            if (listTypeSymbol is null)
-            {
-                ReportTypeNotFound("System.Collections.Generic.List<T>", context);
-                return false;
-            }
-            ListTypeSymbol = listTypeSymbol;
+            stringBuilder.AppendLine($$"""
+            #nullable enable
+            using System.Runtime.CompilerServices;
 
-            var iListTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.IList`1");
-            if (iListTypeSymbol is null)
+            namespace ManualDi.Main
             {
-                ReportTypeNotFound("System.Collections.Generic.IList<T>", context);
-                return false;
-            }
-            IListTypeSymbol = iListTypeSymbol;
+                public static class ManualDiGenerated{{className.Replace(".","")}}Extensions
+                {
+            """);
 
-            var iReadOnlyListTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyList`1");
-            if (iReadOnlyListTypeSymbol is null)
-            {
-                ReportTypeNotFound("System.Collections.Generic.IReadOnlyList<T>", context);
-                return false;
-            }
-            IReadOnlyListTypeSymbol = iReadOnlyListTypeSymbol;
+            var generationContext = new GenerationClassContext(stringBuilder, className, classSymbol, obsoleteText, typeReferences);
 
-            var iReadOnlyCollectionTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyCollection`1");
-            if (iReadOnlyCollectionTypeSymbol is null)
+            if (!InheritsFromSymbol(classSymbol, typeReferences.UnityEngineObjectTypeSymbol))
             {
-                ReportTypeNotFound("System.Collections.Generic.IReadOnlyCollection<T>", context);
-                return false;
+                AddFromConstructor(generationContext);
             }
-            IReadOnlyCollectionTypeSymbol = iReadOnlyCollectionTypeSymbol;
-
-            var iCollectionTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.ICollection`1");
-            if (iCollectionTypeSymbol is null)
-            {
-                ReportTypeNotFound("System.Collections.Generic.ICollection<T>", context);
-                return false;
-            }
-            ICollectionTypeSymbol = iCollectionTypeSymbol;
-
-            var iEnumerableTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1");
-            if (iEnumerableTypeSymbol is null)
-            {
-                ReportTypeNotFound("System.Collections.Generic.IEnumerable<T>", context);
-                return false;
-            }
-            IEnumerableTypeSymbol = iEnumerableTypeSymbol;
-
-            var injectAttributeTypeSymbol = compilation.GetTypeByMetadataName("ManualDi.Main.InjectAttribute");
-            if (injectAttributeTypeSymbol is null)
-            {
-                ReportTypeNotFound("ManualDi.Main.InjectAttribute", context);
-                return false;
-            }
-            InjectAttributeTypeSymbol = injectAttributeTypeSymbol;
-
-            var obsoleteAttributeTypeSymbol = compilation.GetTypeByMetadataName("System.ObsoleteAttribute");
-            if (obsoleteAttributeTypeSymbol is null)
-            {
-                ReportTypeNotFound("System.ObsoleteAttribute", context);
-                return false;
-            }
-            ObsoleteAttributeTypeSymbol = obsoleteAttributeTypeSymbol;
-
-            var iDisposableTypeSymbol = compilation.GetTypeByMetadataName("System.IDisposable");
-            if (iDisposableTypeSymbol is null)
-            {
-                ReportTypeNotFound("System.IDisposable", context);
-                return false;
-            }
-            IDisposableTypeSymbol = iDisposableTypeSymbol;
             
-            return true;
+            AddDefault(generationContext, accessibility);
+
+            stringBuilder.AppendLine("""
+                }
+            }
+            """);
+            
+            context.AddSource($"ManualDiGeneratedExtensions.{className}.g.cs", SourceText.From(stringBuilder.ToString(), Encoding.UTF8));
         }
 
         private static void ReportTypeNotFound(string typeName, SourceProductionContext context)
@@ -280,56 +149,6 @@ namespace ManualDi.Main.Generators
             return false;
         }
         
-        private static bool ImplementsInterface(INamedTypeSymbol namedTypeSymbol, INamedTypeSymbol interfaceSymbol)
-        {
-            foreach (var implementedInterface in namedTypeSymbol.AllInterfaces)
-            {
-                if (SymbolEqualityComparer.Default.Equals(implementedInterface, interfaceSymbol))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-        
-        private static bool IsSymbolObsolete(ISymbol typeSymbol)
-        {
-            return typeSymbol.GetAttributes()
-                .Any(x => SymbolEqualityComparer.Default.Equals(x.AttributeClass, ObsoleteAttributeTypeSymbol));
-        }
-
-        private static AttributeData? GetInjectAttribute(IPropertySymbol propertySymbol)
-        {
-            if (propertySymbol.IsStatic)
-            {
-                return null;
-            }
-            
-            bool isSetterAccessible = propertySymbol.SetMethod?.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal;
-            if (!isSetterAccessible)
-            {
-                return null;
-            }
-            
-            bool isPropertyAccessible = propertySymbol.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal;
-            if (!isPropertyAccessible)
-            {
-                return null;
-            }
-
-            return propertySymbol
-                .GetAttributes()
-                .FirstOrDefault(x => SymbolEqualityComparer.Default.Equals(x.AttributeClass, InjectAttributeTypeSymbol));
-        }
-        
-        private static AttributeData? GetInjectAttribute(ISymbol parameterSymbol)
-        {
-            return parameterSymbol
-                .GetAttributes()
-                .FirstOrDefault(x => SymbolEqualityComparer.Default.Equals(x.AttributeClass, InjectAttributeTypeSymbol));
-        }
-
         private static string? GetInjectId(AttributeData attributeData)
         {
             if (attributeData.ConstructorArguments.Length != 1)
@@ -401,7 +220,7 @@ namespace ManualDi.Main.Generators
                         return typeBinding.FromMethod(static c => new {{context.ClassName}}(
             """);
             
-            CreateMethodResolution(constructor, "                ", context.StringBuilder);
+            CreateMethodResolution(constructor, "                ", context.TypeReferences, context.StringBuilder);
             
             context.StringBuilder.AppendLine($$"""
             ));
@@ -410,7 +229,7 @@ namespace ManualDi.Main.Generators
             """);
         }
 
-        private static void CreateMethodResolution(IMethodSymbol constructor, string tabs, StringBuilder stringBuilder)
+        private static void CreateMethodResolution(IMethodSymbol constructor, string tabs, TypeReferences typeReferences, StringBuilder stringBuilder)
         {
             bool isFirst = true;
             foreach (var parameter in constructor.Parameters)
@@ -425,10 +244,10 @@ namespace ManualDi.Main.Generators
                     isFirst = false;
                 }
                 
-                var attribute = GetInjectAttribute(parameter);
+                var attribute = typeReferences.GetInjectAttribute(parameter);
                 var id = attribute is null ? null : GetInjectId(attribute);
                 stringBuilder.Append(tabs);
-                CreteTypeResolution(parameter.Type, id, stringBuilder);
+                CreteTypeResolution(parameter.Type, id, typeReferences, stringBuilder);
             }
         }
 
@@ -442,9 +261,9 @@ namespace ManualDi.Main.Generators
             }
         }
         
-        private static void CreteTypeResolution(ITypeSymbol typeSymbol, string? id, StringBuilder stringBuilder)
+        private static void CreteTypeResolution(ITypeSymbol typeSymbol, string? id, TypeReferences typeReferences,StringBuilder stringBuilder)
         {
-            var lazyGenericType = TryGenericLazyType(typeSymbol);
+            var lazyGenericType = typeReferences.TryGenericLazyType(typeSymbol);
             if (lazyGenericType is not null)
             {
                 if (IsNullableTypeSymbol(typeSymbol))
@@ -456,7 +275,7 @@ namespace ManualDi.Main.Generators
                     stringBuilder.Append(") ? new System.Lazy<");
                     stringBuilder.Append(FullyQualifyTypeWithNullable(lazyGenericType));
                     stringBuilder.Append(">(() => ");
-                    CreteTypeResolution(lazyGenericType, id, stringBuilder);
+                    CreteTypeResolution(lazyGenericType, id, typeReferences, stringBuilder);
                     stringBuilder.Append(") : null");
                     return;
                 }
@@ -464,19 +283,19 @@ namespace ManualDi.Main.Generators
                 stringBuilder.Append("new System.Lazy<");
                 stringBuilder.Append(FullyQualifyTypeWithNullable(lazyGenericType));
                 stringBuilder.Append(">(() => ");
-                CreteTypeResolution(lazyGenericType, id, stringBuilder);
+                CreteTypeResolution(lazyGenericType, id, typeReferences, stringBuilder);
                 stringBuilder.Append(")");
                 return;
             }
 
-            if (SymbolEqualityComparer.Default.Equals(IDiContainerTypeSymbol, typeSymbol))
+            if (typeReferences.IsSymbolDiContainer(typeSymbol))
             {
                 stringBuilder.Append("c");
                 return;
             }
 
             // Updated code below
-            var listGenericType = TryGetEnumerableType(typeSymbol);
+            var listGenericType = typeReferences.TryGetEnumerableType(typeSymbol);
             if (listGenericType is not null)
             {
                 var isListNullable = IsNullableTypeSymbol(typeSymbol);
@@ -516,37 +335,6 @@ namespace ManualDi.Main.Generators
             stringBuilder.Append(">(");
             CreateIdResolution(id, stringBuilder);
             stringBuilder.Append(")");
-        }
-        
-        private static ITypeSymbol? TryGenericLazyType(ITypeSymbol typeSymbol)
-        {
-            if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
-            {
-                if (SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, LazyTypeSymbol))
-                {
-                    return namedTypeSymbol.TypeArguments[0];
-                }
-            }
-
-            return null;
-        }
-
-        private static ITypeSymbol? TryGetEnumerableType(ITypeSymbol typeSymbol)
-        {
-            if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
-            {
-                if (SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, ListTypeSymbol) ||
-                    SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, IReadOnlyListTypeSymbol) ||
-                    SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, IListTypeSymbol) || 
-                    SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, ICollectionTypeSymbol) || 
-                    SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, IReadOnlyCollectionTypeSymbol) || 
-                    SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, IEnumerableTypeSymbol))
-                {
-                    return namedTypeSymbol.TypeArguments[0];
-                }
-            }
-
-            return null;
         }
 
         private static string CreateContainerResolutionMethod(ITypeSymbol typeSymbol)
@@ -588,7 +376,7 @@ namespace ManualDi.Main.Generators
             
             context.StringBuilder.Append(".Initialize(static (o, c) => o.Initialize(");
             
-            CreateMethodResolution(initializeMethods[0], "                    ", context.StringBuilder);
+            CreateMethodResolution(initializeMethods[0], "                    ", context.TypeReferences, context.StringBuilder);
             
             context.StringBuilder.Append("))");
             return true;
@@ -606,7 +394,7 @@ namespace ManualDi.Main.Generators
             var injectProperties = context.ClassSymbol
                 .GetMembers()
                 .OfType<IPropertySymbol>()
-                .Select(x => (propertySymbol: x, attribute: GetInjectAttribute(x)))
+                .Select(x => (propertySymbol: x, attribute: context.TypeReferences.GetInjectAttribute(x)))
                 .Where(x => x.attribute is not null)
                 .ToArray();
 
@@ -632,14 +420,14 @@ namespace ManualDi.Main.Generators
             {
                 var id = attribute is null ? null : GetInjectId(attribute);
                 context.StringBuilder.Append($"                    o.{injectProperty.Name} = ");
-                CreteTypeResolution(injectProperty.Type, id, context.StringBuilder);
+                CreteTypeResolution(injectProperty.Type, id, context.TypeReferences, context.StringBuilder);
                 context.StringBuilder.AppendLine(";");
             }
                         
             if (injectMethod is not null)
             {
                 context.StringBuilder.Append("                    o.Inject(");
-                CreateMethodResolution(injectMethod, "                        ", context.StringBuilder);
+                CreateMethodResolution(injectMethod, "                        ", context.TypeReferences, context.StringBuilder);
                 context.StringBuilder.AppendLine(");");
             }
 
@@ -671,7 +459,7 @@ namespace ManualDi.Main.Generators
 
         private static bool AddDontDispose(GenerationClassContext context, bool isOnNewLine)
         {
-            if (ImplementsInterface(context.ClassSymbol, IDisposableTypeSymbol))
+            if (context.TypeReferences.IsIDisposable(context.ClassSymbol))
             {
                 return isOnNewLine;
             }

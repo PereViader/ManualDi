@@ -101,7 +101,7 @@ namespace ManualDi.Main.Generators
 
             var generationContext = new GenerationClassContext(stringBuilder, className, classSymbol, obsoleteText, typeReferences);
 
-            if (!InheritsFromSymbol(classSymbol, typeReferences.UnityEngineObjectTypeSymbol))
+            if (!typeReferences.IsUnityEngineObject(classSymbol))
             {
                 AddFromConstructor(generationContext);
             }
@@ -128,25 +128,6 @@ namespace ManualDi.Main.Generators
 
             var diagnostic = Diagnostic.Create(descriptor, Location.None, typeName);
             context.ReportDiagnostic(diagnostic);
-        }
-
-        private static bool InheritsFromSymbol(INamedTypeSymbol namedTypeSymbol, INamedTypeSymbol? inheritedNameTypeSymbol)
-        {
-            if (inheritedNameTypeSymbol == null)
-            {
-                return false;
-            }
-
-            var baseType = namedTypeSymbol;
-            while (baseType != null)
-            {
-                if (SymbolEqualityComparer.Default.Equals(baseType, inheritedNameTypeSymbol))
-                {
-                    return true;
-                }
-                baseType = baseType.BaseType;
-            }
-            return false;
         }
         
         private static string? GetInjectId(AttributeData attributeData)

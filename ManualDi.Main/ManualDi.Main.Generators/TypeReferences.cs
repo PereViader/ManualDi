@@ -4,20 +4,20 @@ using System.Threading;
 
 namespace ManualDi.Main.Generators;
 
-public class TypeReferences
+public record TypeReferences
 {
-    public readonly INamedTypeSymbol? UnityEngineObjectTypeSymbol;
-    public readonly INamedTypeSymbol LazyTypeSymbol;
-    public readonly INamedTypeSymbol ListTypeSymbol;
-    public readonly INamedTypeSymbol IListTypeSymbol;
-    public readonly INamedTypeSymbol IReadOnlyListTypeSymbol;
-    public readonly INamedTypeSymbol IEnumerableTypeSymbol;
-    public readonly INamedTypeSymbol IReadOnlyCollectionTypeSymbol;
-    public readonly INamedTypeSymbol ICollectionTypeSymbol;
-    public readonly INamedTypeSymbol InjectAttributeTypeSymbol;
-    public readonly INamedTypeSymbol ObsoleteAttributeTypeSymbol;
-    public readonly INamedTypeSymbol IDisposableTypeSymbol;
-    public readonly INamedTypeSymbol IDiContainerTypeSymbol;
+    private readonly INamedTypeSymbol? UnityEngineObjectTypeSymbol;
+    private readonly INamedTypeSymbol LazyTypeSymbol;
+    private readonly INamedTypeSymbol ListTypeSymbol;
+    private readonly INamedTypeSymbol IListTypeSymbol;
+    private readonly INamedTypeSymbol IReadOnlyListTypeSymbol;
+    private readonly INamedTypeSymbol IEnumerableTypeSymbol;
+    private readonly INamedTypeSymbol IReadOnlyCollectionTypeSymbol;
+    private readonly INamedTypeSymbol ICollectionTypeSymbol;
+    private readonly INamedTypeSymbol InjectAttributeTypeSymbol;
+    private readonly INamedTypeSymbol ObsoleteAttributeTypeSymbol;
+    private readonly INamedTypeSymbol IDisposableTypeSymbol;
+    private readonly INamedTypeSymbol IDiContainerTypeSymbol;
 
     public TypeReferences(INamedTypeSymbol? unityEngineObjectTypeSymbol, INamedTypeSymbol lazyTypeSymbol, INamedTypeSymbol listTypeSymbol, INamedTypeSymbol iListTypeSymbol, INamedTypeSymbol iReadOnlyListTypeSymbol, INamedTypeSymbol iEnumerableTypeSymbol, INamedTypeSymbol iReadOnlyCollectionTypeSymbol, INamedTypeSymbol iCollectionTypeSymbol, INamedTypeSymbol injectAttributeTypeSymbol, INamedTypeSymbol obsoleteAttributeTypeSymbol, INamedTypeSymbol iDisposableTypeSymbol, INamedTypeSymbol iDiContainerTypeSymbol)
     {
@@ -190,6 +190,25 @@ public class TypeReferences
             }
         }
 
+        return false;
+    }
+    
+    public bool IsUnityEngineObject(INamedTypeSymbol namedTypeSymbol)
+    {
+        if (UnityEngineObjectTypeSymbol is null)
+        {
+            return false;
+        }
+        
+        var baseType = namedTypeSymbol;
+        while (baseType != null)
+        {
+            if (SymbolEqualityComparer.Default.Equals(baseType, UnityEngineObjectTypeSymbol))
+            {
+                return true;
+            }
+            baseType = baseType.BaseType;
+        }
         return false;
     }
 }

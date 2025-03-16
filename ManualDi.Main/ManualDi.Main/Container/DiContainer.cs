@@ -16,8 +16,7 @@ namespace ManualDi.Main
         private readonly BindingContext bindingContext = new();
         private TypeBinding? injectedTypeBinding;
         private readonly CancellationTokenSource cancellationTokenSource;
-        private readonly List<IDisposable> disposables;
-        private readonly List<IAsyncDisposable> asyncDisposables;
+        private readonly List<object> disposables;
         private bool disposedValue;
         
         public CancellationToken CancellationToken => cancellationTokenSource.Token;
@@ -31,7 +30,6 @@ namespace ManualDi.Main
         {
             bindings = new (count);
             disposables = disposablesCount.HasValue ? new(disposablesCount.Value) : new();
-            asyncDisposables = disposablesCount.HasValue ? new(disposablesCount.Value) : new();
             disposedValue = false;
             
             cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -299,17 +297,17 @@ namespace ManualDi.Main
         
         public void QueueDispose(Action disposableAction)
         {
-            disposables.Add(new ActionDisposableWrapper(disposableAction));
+            disposables.Add(disposableAction);
         }
         
         public void QueueAsyncDispose(Func<ValueTask> disposableFuncAsync)
         {
-            asyncDisposables.Add(new FuncAsyncDisposableWrapper(disposableFuncAsync));
+            disposables.Add(disposableFuncAsync);
         }
         
         public void QueueAsyncDispose(IAsyncDisposable asyncDisposable)
         {
-            asyncDisposables.Add(asyncDisposable);
+            disposables.Add(asyncDisposable);
         }
         
         public async ValueTask DisposeAsync()
@@ -324,18 +322,25 @@ namespace ManualDi.Main
             cancellationTokenSource.Cancel();
             cancellationTokenSource.Dispose();
             
-            await Task.WhenAll(asyncDisposables.Select(x => x.DisposeAsync().AsTask()));
-            
-            foreach (var disposable in asyncDisposables)
-            {
-                await disposable.DisposeAsync();
-            }
-            
-            asyncDisposables.Clear();
-            
             foreach (var disposable in disposables)
             {
-                disposable.Dispose();
+                switch (disposable)
+                {
+                    case IDisposable disposableDisposable:
+                        disposableDisposable.Dispose();
+                        break;
+                    case IAsyncDisposable asyncDisposableDisposable:
+                        await asyncDisposableDisposable.DisposeAsync();
+                        break;
+                    case Action disposableAction:
+                        disposableAction();
+                        break;
+                    case Func<ValueTask> disposableFuncAsync:
+                        await disposableFuncAsync.Invoke();
+                        break;
+                    default:
+                        throw new SwitchExpressionException(disposable);
+                }
             }
 
             disposables.Clear();

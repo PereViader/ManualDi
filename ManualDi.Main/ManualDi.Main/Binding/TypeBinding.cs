@@ -39,23 +39,13 @@ namespace ManualDi.Main
         public abstract Type ApparentType { get; }
         public abstract Type ConcreteType { get; }
         
-        internal object? Instance;
-        public Action<IDependencyResolver>? Dependencies = default!;
-        public TypeBinding[] BindingDependencies = default!;
         public bool TryToDispose = true;
-        public object? Id;
         public FilterBindingDelegate? FilterBindingDelegate;
-        internal TypeBinding? NextTypeBinding;
+        public Action<IDependencyResolver>? Dependencies;
+        public object? Id;
+        
         internal bool IsAlreadyWired;
-
-        internal IEnumerable<TypeBinding> GetChildBindings()
-        {
-            var binding = this;
-            while (binding is not null)
-            {
-                yield return binding;
-                binding = binding.NextTypeBinding;
-            }
-        }
+        internal TypeBinding? NextTypeBinding;
+        internal object? Instance;
     }
 }

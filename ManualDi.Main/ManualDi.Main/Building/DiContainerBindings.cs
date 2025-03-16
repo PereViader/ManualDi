@@ -92,13 +92,13 @@ namespace ManualDi.Main
                 cancellationToken,
                 containerDisposablesCount);
 
-            diContainer.QueueDispose(new ActionDisposableWrapper(() =>
+            diContainer.QueueDispose(() =>
             {
                 foreach (var action in disposeActions)
                 {
                     action.Invoke();
                 }
-            }));
+            });
 
             await diContainer.InitializeAsync();
             

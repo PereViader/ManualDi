@@ -109,19 +109,19 @@ namespace ManualDi.Main
 
         private void SetupBindings()
         {
-            foreach (var binding in bindingsByType.Values)
+            foreach (var rootBinding in bindingsByType)
             {
-                var iterationBinding = binding;
-                while (iterationBinding is not null)
+                var binding = rootBinding.Value;
+                while (binding is not null)
                 {
-                    if (!iterationBinding.IsAlreadyWired)
+                    if (!binding.IsAlreadyWired)
                     {
                         binding.IsAlreadyWired = true;
                         injectedTypeBinding = binding;
                         binding.Dependencies?.Invoke(this);
-                        bindings.Add(iterationBinding);
+                        bindings.Add(binding);
                     }
-                    iterationBinding = iterationBinding.NextTypeBinding;
+                    binding = binding.NextTypeBinding;
                 }
             }
         }

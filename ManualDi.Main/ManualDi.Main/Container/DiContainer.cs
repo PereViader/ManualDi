@@ -14,12 +14,13 @@ namespace ManualDi.Main
         private readonly List<TypeBinding> bindings = new();
         private readonly IDiContainer? parentDiContainer;
         private readonly BindingContext bindingContext = new();
-        private readonly CancellationTokenSource _cancellationTokenSource;
-        internal DiContainerDisposer diContainerDisposer; //Optimization: ref struct. Can't be readonly
+        private TypeBinding? injectedTypeBinding;
+        private readonly CancellationTokenSource cancellationTokenSource;
+        private readonly List<IDisposable> disposables;
+        private readonly List<IAsyncDisposable> asyncDisposables;
+        private bool disposedValue;
         
-        internal TypeBinding? injectedTypeBinding;
-        
-        public CancellationToken CancellationToken => _cancellationTokenSource.Token;
+        public CancellationToken CancellationToken => cancellationTokenSource.Token;
 
         internal DiContainer(
             Dictionary<IntPtr, TypeBinding> bindingsByType,
@@ -27,8 +28,11 @@ namespace ManualDi.Main
             CancellationToken cancellationToken,
             int? disposablesCount = null)
         {
-            diContainerDisposer = new(disposablesCount);
-            _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            disposables = disposablesCount.HasValue ? new(disposablesCount.Value) : new();
+            asyncDisposables = disposablesCount.HasValue ? new(disposablesCount.Value) : new();
+            disposedValue = false;
+            
+            cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             
             this.bindingsByType = bindingsByType;
             this.parentDiContainer = parentDiContainer;
@@ -288,51 +292,51 @@ namespace ManualDi.Main
         
         public void QueueDispose(IDisposable disposable)
         {
-            diContainerDisposer.QueueDispose(disposable);
+            disposables.Add(disposable);
         }
         
         public void QueueDispose(Action disposableAction)
         {
-            diContainerDisposer.QueueDispose(disposableAction);
+            disposables.Add(new ActionDisposableWrapper(disposableAction));
         }
         
         public void QueueAsyncDispose(Func<ValueTask> disposableFuncAsync)
         {
-            diContainerDisposer.QueueAsyncDispose(disposableFuncAsync);
+            asyncDisposables.Add(new FuncAsyncDisposableWrapper(disposableFuncAsync));
         }
         
         public void QueueAsyncDispose(IAsyncDisposable asyncDisposable)
         {
-            diContainerDisposer.QueueAsyncDispose(asyncDisposable);
+            asyncDisposables.Add(asyncDisposable);
         }
         
         public async ValueTask DisposeAsync()
         {
-            if (diContainerDisposer.DisposedValue)
+            if (disposedValue)
             {
                 return;
             }
             
-            diContainerDisposer.DisposedValue = true;
+            disposedValue = true;
 
-            _cancellationTokenSource.Cancel();
-            _cancellationTokenSource.Dispose();
+            cancellationTokenSource.Cancel();
+            cancellationTokenSource.Dispose();
             
-            await Task.WhenAll(diContainerDisposer.AsyncDisposables.Select(x => x.DisposeAsync().AsTask()));
+            await Task.WhenAll(asyncDisposables.Select(x => x.DisposeAsync().AsTask()));
             
-            foreach (var disposable in diContainerDisposer.AsyncDisposables)
+            foreach (var disposable in asyncDisposables)
             {
                 await disposable.DisposeAsync();
             }
             
-            diContainerDisposer.AsyncDisposables.Clear();
+            asyncDisposables.Clear();
             
-            foreach (var disposable in diContainerDisposer.Disposables)
+            foreach (var disposable in disposables)
             {
                 disposable.Dispose();
             }
 
-            diContainerDisposer.Disposables.Clear();
+            disposables.Clear();
         }
     }
 }

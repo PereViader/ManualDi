@@ -37,12 +37,13 @@ namespace ManualDi.Main
         internal async Task InitializeAsync()
         {
             SetupBindings();
-            
-            foreach (var binding in bindings)
+
+            var count = bindings.Count;
+            for (int i = 0; i < count; i++)
             {
-                injectedTypeBinding = binding;
+                injectedTypeBinding = bindings[i];
                 
-                switch (binding)
+                switch (bindings[i])
                 {
                     case ITypeBindingAsyncSetup asyncSetup:
                     {
@@ -58,11 +59,11 @@ namespace ManualDi.Main
                 }
             }
 
-            foreach (var binding in bindings)
+            for (int i = 0; i < count; i++)
             {
-                injectedTypeBinding = binding;
+                injectedTypeBinding = bindings[i];
 
-                switch (binding)
+                switch (bindings[i])
                 {
                     case ITypeBindingAsyncSetup asyncSetup:
                     {
@@ -81,9 +82,9 @@ namespace ManualDi.Main
             injectedTypeBinding = null;
             
             var ct = CancellationToken;
-            foreach (var binding in bindings)
+            for (int i = 0; i < count; i++)
             {
-                switch (binding)
+                switch (bindings[i])
                 {
                     case ITypeBindingAsyncSetup asyncSetup:
                     {

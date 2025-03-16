@@ -87,6 +87,7 @@ namespace ManualDi.Main
         {
             var diContainer = new DiContainer(
                 bindingsByType,
+                bindingCount,
                 parentDiContainer,
                 cancellationToken,
                 containerDisposablesCount);

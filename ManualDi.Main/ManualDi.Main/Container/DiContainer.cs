@@ -11,7 +11,7 @@ namespace ManualDi.Main
     public sealed class DiContainer : IDiContainer, IDependencyResolver
     {
         private readonly Dictionary<IntPtr, TypeBinding> bindingsByType;
-        private readonly List<TypeBinding> bindings = new();
+        private readonly List<TypeBinding> bindings;
         private readonly IDiContainer? parentDiContainer;
         private readonly BindingContext bindingContext = new();
         private TypeBinding? injectedTypeBinding;
@@ -24,10 +24,12 @@ namespace ManualDi.Main
 
         internal DiContainer(
             Dictionary<IntPtr, TypeBinding> bindingsByType,
+            int count,
             IDiContainer? parentDiContainer,
             CancellationToken cancellationToken,
             int? disposablesCount = null)
         {
+            bindings = new (count);
             disposables = disposablesCount.HasValue ? new(disposablesCount.Value) : new();
             asyncDisposables = disposablesCount.HasValue ? new(disposablesCount.Value) : new();
             disposedValue = false;

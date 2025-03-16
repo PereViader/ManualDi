@@ -49,6 +49,11 @@ namespace SomeNamespace.Subnamespace
         }
     }
 
+    public abstract class Abstract
+    {
+        public Abstract() { }
+    }
+
     public class SomeDisposable : IDisposable
     {
         public void Dispose()
@@ -164,7 +169,7 @@ namespace SomeNamespace.Subnamespace
         {
         }
 
-        public void Initialize(object? obj, int? value)
+        public void Initialize()
         {
         }
     }
@@ -264,7 +269,7 @@ namespace SomeNamespace.Subnamespace
         {
         }
 
-        public void Initialize(List<object> objects)
+        public void Initialize()
         {
         }
     }
@@ -305,13 +310,37 @@ namespace SomeNamespace.Subnamespace
         {
         }
 
-        public void Initialize(
-            [Inject("Potato")] object potatoValue,
-            [Inject("Banana")] float bananaValue,
-            object value)
+        public void Initialize()
         {
         }
     }
+}
+
+class MultipleOfEach
+{
+    internal MultipleOfEach(object o) {}
+    public MultipleOfEach(object o, object o2) {}  // <- it should use this one
+    
+    internal void Inject() {}
+    public void Inject(object o) {} // <- it should use this one
+    
+    internal void Initialize() {} // <- it should use this one
+}
+
+class InjectContainer
+{
+    public InjectContainer(IDiContainer c) {} // The container should be provided as is
+}
+
+partial class Partial
+{
+    public Partial(object o) {}
+    void Inject(object o) {}
+}
+
+partial class Partial
+{
+    public void Initialize() {}
 }
 
 namespace UnityEngine

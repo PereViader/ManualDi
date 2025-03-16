@@ -11,7 +11,7 @@ await using var container = await new DiContainerBindings().Install(b =>
         {
             await Task.Delay(1000, ct);
             return 42;
-        }, [])
+        })
         .InjectAsync((o, c, ct) =>
         {
             Console.WriteLine("Injecting Async");
@@ -37,7 +37,7 @@ await using var container = await new DiContainerBindings().Install(b =>
         })
         .Dispose(o => Console.WriteLine("Disposing"));
     
-    b.BindAsync<EntryPointAsync>().FromMethod(c => new EntryPointAsync(c.Resolve<int>()), [typeof(int)]);
+    b.BindAsync<EntryPointAsync>().FromMethod(c => new EntryPointAsync(c.Resolve<int>()), d => d.Dependency<int>());
 }).Build(CancellationToken.None);
 
 var entryPointAsync = container.Resolve<EntryPointAsync>();
@@ -94,6 +94,11 @@ namespace SomeNamespace.Subnamespace
         internal void Initialize()
         {
         }
+    }
+
+    public abstract class Abstract
+    {
+        public Abstract() { }
     }
 
     public class SomeDisposable : IDisposable
@@ -352,26 +357,9 @@ namespace SomeNamespace.Subnamespace
         {
         }
 
-        public void Initialize(
-            [Inject("Potato")] object potatoValue,
-            [Inject("Banana")] float bananaValue,
-            object value)
+        public void Initialize()
         {
         }
-    }
-}
-
-
-public class TaskInjection
-{
-    public TaskInjection(Task<int> arg1, Task<int?> arg2, Task<int?>? arg3, Task<object> arg4, Task<object?> arg5,
-        Task<object?>? arg6)
-    {
-    }
-
-    public void Inject(Lazy<Task<int>> arg1, Lazy<Task<int?>> arg2, Lazy<Task<int?>?> arg3, Lazy<Task<object>> arg4,
-        Lazy<Task<object?>> arg5, Lazy<Task<object?>?> arg6)
-    {
     }
 }
 
@@ -384,7 +372,22 @@ class MultipleOfEach
     public void Inject(object o) {} // <- it should use this one
     
     internal void Initialize() {} // <- it should use this one
-    public void Initialize(object arg1) {}
+}
+
+class InjectContainer
+{
+    public InjectContainer(IDiContainer c) {} // The container should be provided as is
+}
+
+partial class Partial
+{
+    public Partial(object o) {}
+    void Inject(object o) {}
+}
+
+partial class Partial
+{
+    public void Initialize() {}
 }
 
 namespace UnityEngine

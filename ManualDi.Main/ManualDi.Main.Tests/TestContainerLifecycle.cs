@@ -51,27 +51,31 @@ public class TestContainerLifecycle
         var container = await new DiContainerBindings().Install(b =>
         {
             b.Bind<IChild1>()
-                .FromMethod(_ => child1, [typeof(IChild1Child)])
+                .FromMethod(_ => child1, d => d.Dependency<IChild1Child>())
                 .Inject((o, c) => o.Inject())
                 .Initialize(o => o.Initialize());
 
             b.Bind<IChild2Child>()
-                .FromMethod(_ => child2Child, [])
+                .FromMethod(_ => child2Child)
                 .Inject((o, c) => o.Inject())
                 .Initialize(o => o.Initialize());
 
             b.BindAsync<IChild1Child>()
-                .FromMethod(_ => child1Child, [])
+                .FromMethod(_ => child1Child)
                 .Inject((o, c) => o.Inject())
                 .InitializeAsync((o, _) => o.InitializeAsync());
 
             b.BindAsync<IChild2>()
-                .FromMethod(_ => child2, [typeof(IChild2Child)])
+                .FromMethod(_ => child2, d => d.Dependency<IChild2Child>())
                 .Inject((o, c) => o.Inject())
                 .InitializeAsync((o, _) => o.InitializeAsync());
 
             b.BindAsync<IStartup>()
-                .FromMethod(_ => startup, [typeof(IChild1), typeof(IChild2)])
+                .FromMethod(_ => startup, d =>
+                {
+                    d.Dependency<IChild1>();
+                    d.Dependency<IChild2>();
+                })
                 .Inject((o, c) => o.Inject())
                 .Initialize(o => o.InitializeAsync());
 
@@ -83,16 +87,16 @@ public class TestContainerLifecycle
         
         Received.InOrder(() =>
         {
-            child2Child.Inject();
             child1Child.Inject();
-            child2.Inject();
             child1.Inject();
+            child2Child.Inject();
+            child2.Inject();
             startup.Inject();
             
-            child2Child.Initialize();
             child1Child.InitializeAsync();
-            child2.InitializeAsync();
             child1.Initialize();
+            child2Child.Initialize();
+            child2.InitializeAsync();
             startup.InitializeAsync();
 
             startup.Run();

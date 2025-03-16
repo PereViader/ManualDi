@@ -8,9 +8,10 @@ using System.Threading.Tasks;
 
 namespace ManualDi.Main
 {
-    public sealed class DiContainer : IDiContainer
+    public sealed class DiContainer : IDiContainer, IDependencyResolver
     {
         private readonly Dictionary<IntPtr, TypeBinding> bindingsByType;
+        private readonly List<TypeBinding> bindings = new();
         private readonly IDiContainer? parentDiContainer;
         private readonly BindingContext bindingContext = new();
         private readonly CancellationTokenSource _cancellationTokenSource;
@@ -35,8 +36,7 @@ namespace ManualDi.Main
 
         internal async Task InitializeAsync()
         {
-            WireBindingDependencies();
-            var bindings = CreateSortedBindings();
+            SetupBindings();
             
             foreach (var binding in bindings)
             {
@@ -100,76 +100,57 @@ namespace ManualDi.Main
             }
         }
 
-        private void WireBindingDependencies()
+        private void SetupBindings()
         {
             foreach (var binding in bindingsByType.Values)
             {
                 var iterationBinding = binding;
                 while (iterationBinding is not null)
                 {
-                    TypeBinding[] bindingDependencies;
-                    if (binding.Dependencies.Length > 0)
+                    if (!iterationBinding.IsAlreadyWired)
                     {
-                        bindingDependencies = new TypeBinding[binding.Dependencies.Length];
-                        for (var i = 0; i < binding.Dependencies.Length; i++)
-                        {
-                            var searchDependency = binding.Dependencies[i];
-                            var dependency = searchDependency.FilterBindingDelegate is null 
-                                ? GetTypeForConstraint(searchDependency.Type) 
-                                : GetTypeForConstraint(searchDependency.Type, searchDependency.FilterBindingDelegate);
-                            bindingDependencies[i] = dependency ?? throw new InvalidOperationException($"Unable to find matching dependency binding {binding.Dependencies[i]} in type {binding.GetType().FullName}");
-                        }
+                        binding.IsAlreadyWired = true;
+                        injectedTypeBinding = binding;
+                        binding.Dependencies?.Invoke(this);
+                        bindings.Add(iterationBinding);
                     }
-                    else
-                    {
-                        bindingDependencies = Array.Empty<TypeBinding>();
-                    }
-                    
-
-                    binding.BindingDependencies = bindingDependencies;
                     iterationBinding = iterationBinding.NextTypeBinding;
                 }
             }
         }
-
-        private List<TypeBinding> CreateSortedBindings()
+        
+        public void Dependency<T>()
         {
-            var remaining = bindingsByType.Values.SelectMany(x => x.GetChildBindings()).ToList();
-            var toRemove = new List<TypeBinding>(remaining.Count);
-            var ready = new HashSet<TypeBinding>(remaining.Count());
-            var sortedBindings = new List<TypeBinding>();
-
-            
-            while (remaining.Count > 0)
+            var binding = GetTypeForConstraint(typeof(T));
+            if (binding is null)
             {
-                foreach (var binding in remaining)
-                {
-                    var dependencies = binding.BindingDependencies;
-                    var dependenciesReady = dependencies.All(x => ready.Contains(x));
-                    if (!dependenciesReady)
-                    {
-                        continue;
-                    }
-                    
-                    sortedBindings.Add(binding);
-                    ready.Add(binding);
-                    toRemove.Add(binding);
-                }
-                
-                foreach (var typeBinding in toRemove)
-                {
-                    remaining.Remove(typeBinding);
-                }
-
-                if (toRemove.Count == 0 && ready.Count > 0)
-                {
-                    throw new InvalidOperationException("Unable to create sorted bindings.");
-                }
-                toRemove.Clear();
-                
+                throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedTypeBinding?.GetType().FullName ?? "null"} is not registered.");
             }
             
-            return sortedBindings;
+            if (!binding.IsAlreadyWired)
+            {
+                binding.IsAlreadyWired = true;
+                injectedTypeBinding = binding;
+                binding.Dependencies?.Invoke(this);
+                bindings.Add(binding);
+            }
+        }
+
+        public void Dependency<T>(FilterBindingDelegate filter)
+        {
+            var binding = GetTypeForConstraint(typeof(T), filter);
+            if (binding is null)
+            {
+                throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedTypeBinding?.GetType().FullName ?? "null"} with some filter is not registered.");
+            }
+            
+            if (!binding.IsAlreadyWired)
+            {
+                binding.IsAlreadyWired = true;
+                injectedTypeBinding = binding;
+                binding.Dependencies?.Invoke(this);
+                bindings.Add(binding);
+            }
         }
 
         public object? ResolveContainer(Type type)

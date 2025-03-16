@@ -53,7 +53,7 @@ public class TestDiContainerDispose
             {
                 _ = c.Resolve<IB>();
                 return disposable1;
-            }, [typeof(IB)]);
+            }, d => d.Dependency<IB>());
 
             b.Bind<IB>().FromInstance(disposable2);
         }).Build(CancellationToken.None);

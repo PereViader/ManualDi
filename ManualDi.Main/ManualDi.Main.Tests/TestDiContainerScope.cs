@@ -17,7 +17,7 @@ namespace ManualDi.Main.Tests
 
             var container = await new DiContainerBindings().Install(b =>
             {
-                b.Bind<object>().FromMethod(factoryMethodDelegate, []).Inject(injectionDelegate);
+                b.Bind<object>().FromMethod(factoryMethodDelegate).Inject(injectionDelegate);
             }).Build(CancellationToken.None);
 
             var resolution1 = container.Resolve<object>();

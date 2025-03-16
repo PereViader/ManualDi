@@ -27,6 +27,12 @@ namespace ManualDi.Main
         public TypeBinding TypeBinding = default!; // Optimization: we assume that it will be filled
         public TypeBinding? InjectedIntoTypeBinding;
     }
+
+    public interface IDependencyResolver
+    {
+        void Dependency<T>();
+        void Dependency<T>(FilterBindingDelegate filter);
+    }
     
     public abstract class TypeBinding
     {
@@ -34,12 +40,13 @@ namespace ManualDi.Main
         public abstract Type ConcreteType { get; }
         
         internal object? Instance;
-        public (Type Type, FilterBindingDelegate? FilterBindingDelegate)[] Dependencies = default!;
+        public Action<IDependencyResolver>? Dependencies = default!;
         public TypeBinding[] BindingDependencies = default!;
         public bool TryToDispose = true;
         public object? Id;
         public FilterBindingDelegate? FilterBindingDelegate;
         internal TypeBinding? NextTypeBinding;
+        internal bool IsAlreadyWired;
 
         internal IEnumerable<TypeBinding> GetChildBindings()
         {

@@ -108,7 +108,7 @@ static class Installer
 ## Default
 
 This source generated method is a shorthand for calling Inject and Initialize that classes may have.
-Those Inject and Initialize methods may have 0 or N parameters and the parameters will be supplied by resolving them from the container.
+Those Inject method may have 0 or N parameters and the parameters will be supplied by resolving them from the container.
 Think of it as a "duck typed" source generated approach.
 It will only consider `public` or `ìnternal` methods that it can access regularly meaning  methods.
 
@@ -132,8 +132,8 @@ public class C {
 }
 public class D {
     public D(A a) { }
-    public void Inject(C c) { }
-    public void Initialize(B b) { }
+    public void Inject(C c, A a) { }
+    public void Initialize() { }
 }
 
 
@@ -149,6 +149,7 @@ For this reason, it is recommended to always add it even if the type does not cu
 Note: As stated on the installation section, the default method will only be generated for classes that live in assamblies that reference both ManualDi and the source generator.
 In other words, 3rd party libraries and System classes will not have any generated code on them.
 
+Note: The source generator does not run for partial classes defined across multiple declarations. It will only operate on partial classes with a single declaration in your codebase.
 
 ## Scope
 
@@ -343,12 +344,14 @@ public class A
 
 public class B
 {
-    public void Inject(A a) { }
+    public B(A a) { }
+    
+    public void Initialize() { }
 }
 
 //This is the manual implementation without Default
 b.Bind<A>().FromConstructor().Initialize((o, c) => o.Initialize()));
-b.Bind<B>().FromConstructor().Initialize((o, c) => o.Initialize(c.Resolve<A>()));
+b.Bind<B>().FromConstructor().Initialize((o, c) => o.Initialize());
 
 //And this is the equivalent and simpler implementation with Default
 b.Bind<A>().Default().FromConstructor();
@@ -747,12 +750,12 @@ If the scene the resource is created on will then be deleted, there is no need t
 An entry point is a place where some context of your application is meant to start.
 In the case of ManualDi, it is where the object graph is configured and then the container is started.
 
-The last binding of an entry point will usually make use of WithStartable, to run any logic necessary after the container is created.
+The last binding of an entry point will usually make use of WithStartup, to run any logic necessary after the container is created.
 
 ### RootEntryPoint
 
 Root entry points will not depend on any other container.
-This means that all dependencies will be registered in the main container itself.
+Root entry points may be started either manually or on the Unity Start callback. This is configured through the inspector.
 
 Use the appropriate type depending on how you want to structure your application:
 - `MonoBehaviourRootEntryPoint`
@@ -946,6 +949,8 @@ class Installer : MonoBehaviourInstaller
     }
 }
 ```
+
+Note: There is a sample in the package that provides a Tickable system and a LinkTickable extension. This system allows for having Update like behaviour on any class.
 
 # Async dependencies
 

@@ -30,7 +30,7 @@ public class TestDiContainerFromMethods
         
         await using var container = await new DiContainerBindings().Install(b =>
         {
-            b.Bind<object>().FromMethod(fromDelegate, []);
+            b.Bind<object>().FromMethod(fromDelegate);
         }).Build(CancellationToken.None);
 
         var resolved = container.Resolve<object>();

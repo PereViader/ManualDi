@@ -38,7 +38,7 @@ namespace ManualDi.Main
             this.parentDiContainer = parentDiContainer;
         }
 
-        internal async Task InitializeAsync()
+        internal async ValueTask InitializeAsync()
         {
             SetupBindings();
 

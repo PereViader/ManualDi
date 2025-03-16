@@ -36,7 +36,6 @@ namespace ManualDi.Main
     
     public abstract class TypeBinding
     {
-        public abstract Type ApparentType { get; }
         public abstract Type ConcreteType { get; }
         
         public bool TryToDispose = true;

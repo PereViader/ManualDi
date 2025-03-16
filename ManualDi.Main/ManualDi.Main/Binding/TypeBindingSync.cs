@@ -11,7 +11,6 @@ namespace ManualDi.Main
     
     public sealed class TypeBindingSync<TApparent, TConcrete> : TypeBinding, ITypeBindingSyncSetup
     {
-        public override Type ApparentType => typeof(TApparent);
         public override Type ConcreteType => typeof(TConcrete);
 
         public FromDelegate<TConcrete>? CreateDelegate;

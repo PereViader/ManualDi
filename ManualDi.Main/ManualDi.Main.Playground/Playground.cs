@@ -390,6 +390,11 @@ partial class Partial
     public void Initialize() {}
 }
 
+class InitializeAsyncCheck
+{
+    public Task InitializeAsync(CancellationToken ct) { return Task.CompletedTask; }
+}
+
 namespace UnityEngine
 {
     public class Object

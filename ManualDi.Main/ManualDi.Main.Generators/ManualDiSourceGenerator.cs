@@ -364,6 +364,36 @@ namespace ManualDi.Main.Generators
             context.StringBuilder.Append(")o).Initialize())");
             return true;
         }
+        
+        private static bool AddInitializeAsync(GenerationClassContext context, bool isOnNewLine)
+        {
+            var initializeMethod = context.ClassSymbol
+                .GetMembers()
+                .OfType<IMethodSymbol>()
+                .FirstOrDefault(x => x is
+                {
+                    Name: "InitializeAsync", 
+                    DeclaredAccessibility: Accessibility.Public or Accessibility.Internal,
+                    IsStatic: false,
+                    Parameters.Length: 1
+                } && context.TypeReferences.IsCancellationToken(x.Parameters[0].Type) && context.TypeReferences.IsTask(x.ReturnType));
+                
+            if (initializeMethod is null)
+            {
+                return isOnNewLine;
+            }
+            
+            if (isOnNewLine)
+            {
+                context.StringBuilder.AppendLine();
+                context.StringBuilder.Append("                    ");
+            }
+
+            context.StringBuilder.Append(".InitializeAsync(static (o, ct) => ((");
+            context.StringBuilder.Append(context.ClassName);
+            context.StringBuilder.Append(")o).InitializeAsync(ct))");
+            return true;
+        }
 
         private static bool AddInject(GenerationClassContext context, bool isOnNewLine)
         {
@@ -434,6 +464,7 @@ namespace ManualDi.Main.Generators
             """);
 
             var isOnNewLine = AddInitialize(generationClassContext, false);
+            isOnNewLine = AddInitializeAsync(generationClassContext, isOnNewLine);
             isOnNewLine = AddInject(generationClassContext, isOnNewLine);
             _ = AddDontDispose(generationClassContext, isOnNewLine);
 

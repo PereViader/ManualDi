@@ -18,8 +18,16 @@ public record TypeReferences
     private readonly INamedTypeSymbol ObsoleteAttributeTypeSymbol;
     private readonly INamedTypeSymbol IDisposableTypeSymbol;
     private readonly INamedTypeSymbol IDiContainerTypeSymbol;
+    private readonly INamedTypeSymbol CancellationTokenTypeSymbol;
+    private readonly INamedTypeSymbol TaskTypeSymbol;
 
-    public TypeReferences(INamedTypeSymbol? unityEngineObjectTypeSymbol, INamedTypeSymbol lazyTypeSymbol, INamedTypeSymbol listTypeSymbol, INamedTypeSymbol iListTypeSymbol, INamedTypeSymbol iReadOnlyListTypeSymbol, INamedTypeSymbol iEnumerableTypeSymbol, INamedTypeSymbol iReadOnlyCollectionTypeSymbol, INamedTypeSymbol iCollectionTypeSymbol, INamedTypeSymbol injectAttributeTypeSymbol, INamedTypeSymbol obsoleteAttributeTypeSymbol, INamedTypeSymbol iDisposableTypeSymbol, INamedTypeSymbol iDiContainerTypeSymbol)
+    public TypeReferences(INamedTypeSymbol? unityEngineObjectTypeSymbol,
+        INamedTypeSymbol lazyTypeSymbol, INamedTypeSymbol listTypeSymbol, INamedTypeSymbol iListTypeSymbol,
+        INamedTypeSymbol iReadOnlyListTypeSymbol, INamedTypeSymbol iEnumerableTypeSymbol,
+        INamedTypeSymbol iReadOnlyCollectionTypeSymbol, INamedTypeSymbol iCollectionTypeSymbol,
+        INamedTypeSymbol injectAttributeTypeSymbol, INamedTypeSymbol obsoleteAttributeTypeSymbol,
+        INamedTypeSymbol iDisposableTypeSymbol, INamedTypeSymbol iDiContainerTypeSymbol, 
+        INamedTypeSymbol cancellationTokenTypeSymbol, INamedTypeSymbol taskTypeSymbol)
     {
         UnityEngineObjectTypeSymbol = unityEngineObjectTypeSymbol;
         LazyTypeSymbol = lazyTypeSymbol;
@@ -33,6 +41,8 @@ public record TypeReferences
         ObsoleteAttributeTypeSymbol = obsoleteAttributeTypeSymbol;
         IDisposableTypeSymbol = iDisposableTypeSymbol;
         IDiContainerTypeSymbol = iDiContainerTypeSymbol;
+        CancellationTokenTypeSymbol = cancellationTokenTypeSymbol;
+        TaskTypeSymbol = taskTypeSymbol;
     }
     
     public static TypeReferences? Create(Compilation compilation, CancellationToken ct)
@@ -104,7 +114,19 @@ public record TypeReferences
             return null;
         }
         
-        return new TypeReferences(unityEngineObjectTypeSymbol, lazyTypeSymbol, listTypeSymbol, iListTypeSymbol, iReadOnlyListTypeSymbol, iEnumerableTypeSymbol, iReadOnlyCollectionTypeSymbol, iCollectionTypeSymbol, injectAttributeTypeSymbol, obsoleteAttributeTypeSymbol, iDisposableTypeSymbol, diContainerTypeSymbol);
+        var cancellationTokenTypeSymbol = compilation.GetTypeByMetadataName("System.Threading.CancellationToken");
+        if (cancellationTokenTypeSymbol is null)
+        {
+            return null;
+        }
+        
+        var taskTypeSymbol = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task");
+        if (taskTypeSymbol is null)
+        {
+            return null;
+        }
+        
+        return new TypeReferences(unityEngineObjectTypeSymbol, lazyTypeSymbol, listTypeSymbol, iListTypeSymbol, iReadOnlyListTypeSymbol, iEnumerableTypeSymbol, iReadOnlyCollectionTypeSymbol, iCollectionTypeSymbol, injectAttributeTypeSymbol, obsoleteAttributeTypeSymbol, iDisposableTypeSymbol, diContainerTypeSymbol, cancellationTokenTypeSymbol, taskTypeSymbol);
     }
     
     public ITypeSymbol? TryGenericLazyType(ITypeSymbol typeSymbol)
@@ -210,5 +232,15 @@ public record TypeReferences
             baseType = baseType.BaseType;
         }
         return false;
+    }
+
+    public bool IsCancellationToken(ITypeSymbol namedTypeSymbol)
+    {
+        return SymbolEqualityComparer.Default.Equals(namedTypeSymbol, CancellationTokenTypeSymbol);
+    }
+
+    public bool IsTask(ITypeSymbol namedTypeSymbol)
+    {
+        return SymbolEqualityComparer.Default.Equals(namedTypeSymbol, TaskTypeSymbol);
     }
 }

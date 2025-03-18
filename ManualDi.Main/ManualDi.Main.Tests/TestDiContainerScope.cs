@@ -10,8 +10,8 @@ namespace ManualDi.Main.Tests
         [Test]
         public async Task TestMultipleResolutionsReturnsSame()
         {
-            var factoryMethodDelegate = Substitute.For<FromDelegate<object>>();
-            var injectionDelegate = Substitute.For<InjectDelegate<object>>();
+            var factoryMethodDelegate = Substitute.For<FromDelegate>();
+            var injectionDelegate = Substitute.For<InjectDelegate>();
 
             factoryMethodDelegate.Invoke(Arg.Any<IDiContainer>()).Returns(c => new object());
 

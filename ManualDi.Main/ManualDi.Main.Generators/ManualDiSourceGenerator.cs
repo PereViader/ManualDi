@@ -196,19 +196,20 @@ namespace ManualDi.Main.Generators
             
             context.StringBuilder.Append($$"""
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    {{context.ObsoleteText}}{{accessibilityString}} static TypeBindingSync<T, {{context.ClassName}}> FromConstructor<T>(this TypeBindingSync<T, {{context.ClassName}}> typeBinding)
+                    {{context.ObsoleteText}}{{accessibilityString}} static Binding<T, {{context.ClassName}}> FromConstructor<T>(this Binding<T, {{context.ClassName}}> binding)
                     {
-                        typeBinding.CreateDelegate = static c => new {{context.ClassName}}(
+                        return binding
+                            .FromMethod(static c => new {{context.ClassName}}(
             """);
             
-            CreateMethodResolution(constructor, "                ", context.TypeReferences, context.StringBuilder);
+            CreateMethodResolution(constructor, "                    ", context.TypeReferences, context.StringBuilder);
 
-            context.StringBuilder.Append(");");
+            context.StringBuilder.Append("))");
             
             CreateMethodDependencies(constructor, "            ", context.StringBuilder);
                 
             context.StringBuilder.Append("""
-                        return typeBinding;
+            ;
                     }
             
             
@@ -246,16 +247,16 @@ namespace ManualDi.Main.Generators
 
             stringBuilder.AppendLine();
             stringBuilder.Append(tabs);
-            stringBuilder.AppendLine("typeBinding.Dependencies = static d => {");
+            stringBuilder.AppendLine("    .DependsOn(static d => {");
             foreach (var parameter in methodSymbol.Parameters)
             {
                 stringBuilder.Append(tabs);
-                stringBuilder.Append("    d.Dependency<");
+                stringBuilder.Append("        d.Dependency<");
                 stringBuilder.Append(FullyQualifyTypeWithoutNullable(parameter.Type));
                 stringBuilder.AppendLine(">();"); //TODO missing ID filter here
             }
             stringBuilder.Append(tabs);
-            stringBuilder.AppendLine(" };");
+            stringBuilder.Append("    })");
         }
 
         private static void CreateIdResolution(string? id, StringBuilder stringBuilder)
@@ -357,8 +358,10 @@ namespace ManualDi.Main.Generators
                 context.StringBuilder.AppendLine();
                 context.StringBuilder.Append("                    ");
             }
-            
-            context.StringBuilder.Append(".Initialize(static o => o.Initialize())");
+
+            context.StringBuilder.Append(".Initialize(static o => ((");
+            context.StringBuilder.Append(context.ClassName);
+            context.StringBuilder.Append(")o).Initialize())");
             return true;
         }
 
@@ -391,22 +394,25 @@ namespace ManualDi.Main.Generators
                 context.StringBuilder.Append("                ");
             }
             
-            context.StringBuilder.AppendLine($$"""
+            context.StringBuilder.Append($$"""
             .Inject(static (o, c) => 
                             {
+                                var to = (
             """);
+            context.StringBuilder.Append(context.ClassName);
+            context.StringBuilder.AppendLine(")o;");
 
             foreach (var (injectProperty, attribute) in injectProperties)
             {
                 var id = attribute is null ? null : GetInjectId(attribute);
-                context.StringBuilder.Append($"                    o.{injectProperty.Name} = ");
+                context.StringBuilder.Append($"                    to.{injectProperty.Name} = ");
                 CreteTypeResolution(injectProperty.Type, id, context.TypeReferences, context.StringBuilder);
                 context.StringBuilder.AppendLine(";");
             }
                         
             if (injectMethod is not null)
             {
-                context.StringBuilder.Append("                    o.Inject(");
+                context.StringBuilder.Append("                    to.Inject(");
                 CreateMethodResolution(injectMethod, "                        ", context.TypeReferences, context.StringBuilder);
                 context.StringBuilder.AppendLine(");");
             }
@@ -422,9 +428,9 @@ namespace ManualDi.Main.Generators
             
             generationClassContext.StringBuilder.Append($$"""
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    {{generationClassContext.ObsoleteText}}{{accessibilityString}} static TypeBindingSync<T, {{generationClassContext.ClassName}}> Default<T>(this TypeBindingSync<T, {{generationClassContext.ClassName}}> typeBinding)
+                    {{generationClassContext.ObsoleteText}}{{accessibilityString}} static Binding<T, {{generationClassContext.ClassName}}> Default<T>(this Binding<T, {{generationClassContext.ClassName}}> binding)
                     {
-                        return typeBinding
+                        return binding
             """);
 
             var isOnNewLine = AddInitialize(generationClassContext, false);

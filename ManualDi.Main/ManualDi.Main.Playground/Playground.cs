@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 await using var container = await new DiContainerBindings().Install(b =>
 {
-    b.BindAsync<int>()
+    b.Bind<int>()
         .FromMethodAsync(async (c, ct) =>
         {
             await Task.Delay(1000, ct);
@@ -37,7 +37,7 @@ await using var container = await new DiContainerBindings().Install(b =>
         })
         .Dispose(o => Console.WriteLine("Disposing"));
     
-    b.BindAsync<EntryPointAsync>().FromMethod(c => new EntryPointAsync(c.Resolve<int>()), d => d.Dependency<int>());
+    b.Bind<EntryPointAsync>().FromMethod(c => new EntryPointAsync(c.Resolve<int>())).DependsOn(d => d.Dependency<int>());
 }).Build(CancellationToken.None);
 
 var entryPointAsync = container.Resolve<EntryPointAsync>();

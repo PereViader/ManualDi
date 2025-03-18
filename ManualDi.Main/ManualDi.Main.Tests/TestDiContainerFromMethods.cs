@@ -25,7 +25,7 @@ public class TestDiContainerFromMethods
     public async Task TestFromMethod()
     {
         var instance = new object();
-        var fromDelegate = Substitute.For<FromDelegate<object>>();
+        var fromDelegate = Substitute.For<FromDelegate>();
         fromDelegate.Invoke(Arg.Any<IDiContainer>()).Returns(instance);
         
         await using var container = await new DiContainerBindings().Install(b =>

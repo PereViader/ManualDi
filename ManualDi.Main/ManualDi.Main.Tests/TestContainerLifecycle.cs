@@ -51,33 +51,36 @@ public class TestContainerLifecycle
         var container = await new DiContainerBindings().Install(b =>
         {
             b.Bind<IChild1>()
-                .FromMethod(_ => child1, d => d.Dependency<IChild1Child>())
-                .Inject((o, c) => o.Inject())
-                .Initialize(o => o.Initialize());
+                .FromMethod(_ => child1)
+                .DependsOn(d => d.Dependency<IChild1Child>())
+                .Inject((o, c) => ((IChild1)o).Inject())
+                .Initialize(o => ((IChild1)o).Initialize());
 
             b.Bind<IChild2Child>()
-                .FromMethod(_ => child2Child)
-                .Inject((o, c) => o.Inject())
-                .Initialize(o => o.Initialize());
+                .FromInstance(child2Child)
+                .Inject((o, c) => ((IChild2Child)o).Inject())
+                .Initialize(o => ((IChild2Child)o).Initialize());
 
-            b.BindAsync<IChild1Child>()
-                .FromMethod(_ => child1Child)
-                .Inject((o, c) => o.Inject())
-                .InitializeAsync((o, _) => o.InitializeAsync());
+            b.Bind<IChild1Child>()
+                .FromInstance(child1Child)
+                .Inject((o, c) => ((IChild1Child)o).Inject())
+                .InitializeAsync((o, _) => ((IChild1Child)o).InitializeAsync());
 
-            b.BindAsync<IChild2>()
-                .FromMethod(_ => child2, d => d.Dependency<IChild2Child>())
-                .Inject((o, c) => o.Inject())
-                .InitializeAsync((o, _) => o.InitializeAsync());
+            b.Bind<IChild2>()
+                .FromInstance(child2)
+                .DependsOn(d => d.Dependency<IChild2Child>())
+                .Inject((o, c) => ((IChild2)o).Inject())
+                .InitializeAsync((o, _) => ((IChild2)o).InitializeAsync());
 
-            b.BindAsync<IStartup>()
-                .FromMethod(_ => startup, d =>
+            b.Bind<IStartup>()
+                .FromInstance(startup)
+                .DependsOn(d =>
                 {
                     d.Dependency<IChild1>();
                     d.Dependency<IChild2>();
                 })
-                .Inject((o, c) => o.Inject())
-                .Initialize(o => o.InitializeAsync());
+                .Inject((o, c) => ((IStartup)o).Inject())
+                .Initialize(o => ((IStartup)o).InitializeAsync());
 
             
             b.WithStartup<IStartup>(e => e.Run());

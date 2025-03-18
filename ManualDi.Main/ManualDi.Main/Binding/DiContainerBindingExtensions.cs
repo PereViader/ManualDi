@@ -1,43 +1,25 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 
 namespace ManualDi.Main
 {
     public static class DiContainerBindingExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBindingSync<TConcrete, TConcrete> Bind<TConcrete>(this DiContainerBindings diContainerBindings)
+        public static Binding<TConcrete, TConcrete> Bind<TConcrete>(this DiContainerBindings diContainerBindings)
         {
-            TypeBindingSync<TConcrete, TConcrete> typeBindingSync = new();
-            diContainerBindings.AddBinding(typeBindingSync, typeof(TConcrete));
-            return typeBindingSync;
+            Binding<TConcrete, TConcrete> binding = new();
+            diContainerBindings.AddBinding(binding, typeof(TConcrete));
+            return binding;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBindingSync<TApparent, TConcrete> Bind<TApparent, TConcrete>(this DiContainerBindings diContainerBindings)
+        public static Binding<TApparent, TConcrete> Bind<TApparent, TConcrete>(this DiContainerBindings diContainerBindings)
             where TConcrete : TApparent
         {
-            TypeBindingSync<TApparent, TConcrete> typeBindingSync = new();
-            diContainerBindings.AddBinding(typeBindingSync, typeof(TApparent));
-            return typeBindingSync;
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBindingAsync<TConcrete, TConcrete> BindAsync<TConcrete>(this DiContainerBindings diContainerBindings)
-        {
-            TypeBindingAsync<TConcrete, TConcrete> typeBinding = new();
-            diContainerBindings.AddBinding(typeBinding, typeof(TConcrete));
-            return typeBinding;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBindingAsync<TApparent, TConcrete> BindAsync<TApparent, TConcrete>(this DiContainerBindings diContainerBindings)
-            where TConcrete : TApparent
-        {
-            TypeBindingAsync<TApparent, TConcrete> typeBinding = new();
-            diContainerBindings.AddBinding(typeBinding, typeof(TApparent));
-            return typeBinding;
+            Binding<TApparent, TConcrete> binding = new();
+            diContainerBindings.AddBinding(binding, typeof(TApparent));
+            return binding;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

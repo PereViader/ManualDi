@@ -10,11 +10,11 @@ namespace ManualDi.Main
 {
     public sealed class DiContainer : IDiContainer, IDependencyResolver
     {
-        private readonly Dictionary<IntPtr, TypeBinding> bindingsByType;
-        private readonly List<TypeBinding> bindings;
+        private readonly Dictionary<IntPtr, Binding> bindingsByType;
+        private readonly List<Binding> bindings;
         private readonly IDiContainer? parentDiContainer;
         private readonly BindingContext bindingContext = new();
-        private TypeBinding? injectedTypeBinding;
+        private Binding? injectedBinding;
         private readonly CancellationTokenSource cancellationTokenSource;
         private readonly List<object> disposables;
         private bool disposedValue;
@@ -22,7 +22,7 @@ namespace ManualDi.Main
         public CancellationToken CancellationToken => cancellationTokenSource.Token;
 
         internal DiContainer(
-            Dictionary<IntPtr, TypeBinding> bindingsByType,
+            Dictionary<IntPtr, Binding> bindingsByType,
             int count,
             IDiContainer? parentDiContainer,
             CancellationToken cancellationToken,
@@ -42,67 +42,80 @@ namespace ManualDi.Main
         {
             SetupBindings();
 
+            var ct = CancellationToken;
+
             var count = bindings.Count;
             for (int i = 0; i < count; i++)
             {
-                injectedTypeBinding = bindings[i];
+                injectedBinding = bindings[i];
                 
-                switch (bindings[i])
+                injectedBinding.Instance = injectedBinding.FromDelegate switch
                 {
-                    case ITypeBindingAsyncSetup asyncSetup:
+                    FromAsyncDelegate fromAsyncDelegate => await fromAsyncDelegate.Invoke(this, ct) ??
+                                                           throw new InvalidOperationException(
+                                                               $"Could not create object for Binding with Apparent type {injectedBinding.ApparentType} and Concrete type {injectedBinding.ConcreteType}"),
+                    FromDelegate fromDelegate => fromDelegate.Invoke(this) ??
+                                                 throw new InvalidOperationException(
+                                                     $"Could not create object for Binding with Apparent type {injectedBinding.ApparentType} and Concrete type {injectedBinding.ConcreteType}"),
+                    null => throw new InvalidOperationException($"The from delegate for Binding with Apparent type {injectedBinding.ApparentType} and Concrete type {injectedBinding.ConcreteType} is null"),
+                    _ => throw new InvalidOperationException($"The from delegate for Binding with Apparent type {injectedBinding.ApparentType} and Concrete type {injectedBinding.ConcreteType} is of an unsupported type"),
+                };
+                
+                if (injectedBinding.TryToDispose)
+                {
+                    switch (injectedBinding.Instance)
                     {
-                        await asyncSetup.CreateAsync(this);
-                        break;
-                    }
-
-                    case ITypeBindingSyncSetup syncSetup:
-                    {
-                        syncSetup.Create(this);
-                        break;
+                        case IAsyncDisposable asyncDisposable:
+                            QueueAsyncDispose(asyncDisposable);
+                            break;
+                        case IDisposable disposable:
+                            QueueDispose(disposable);
+                            break;
                     }
                 }
             }
 
             for (int i = 0; i < count; i++)
             {
-                injectedTypeBinding = bindings[i];
+                injectedBinding = bindings[i];
 
-                switch (bindings[i])
+                switch (injectedBinding.InjectionDelegate)
                 {
-                    case ITypeBindingAsyncSetup asyncSetup:
+                    case InjectAsyncDelegate injectAsyncDelegate:
                     {
-                        await asyncSetup.InjectAsync(this);
+                        await injectAsyncDelegate.Invoke(injectedBinding.Instance!, this, ct);
                         break;
                     }
 
-                    case ITypeBindingSyncSetup syncSetup:
+                    case InjectDelegate injectDelegate:
                     {
-                        syncSetup.Inject(this);
+                        injectDelegate.Invoke(injectedBinding.Instance!, this);
                         break;
                     }
                 }
             }
             
-            injectedTypeBinding = null;
-            
-            var ct = CancellationToken;
             for (int i = 0; i < count; i++)
             {
-                switch (bindings[i])
+                injectedBinding = bindings[i];
+                
+                switch (injectedBinding.InitializationDelegate)
                 {
-                    case ITypeBindingAsyncSetup asyncSetup:
+                    case InitializeAsyncDelegate initializeAsyncDelegate:
                     {
-                        await asyncSetup.InitializeAsync(ct);
+                        await initializeAsyncDelegate.Invoke(injectedBinding.Instance!, ct);
                         break;
                     }
 
-                    case ITypeBindingSyncSetup syncSetup:
+                    case InitializeDelegate initializeDelegate:
                     {
-                        syncSetup.Initialize();
+                        initializeDelegate.Invoke(injectedBinding.Instance!);
                         break;
                     }
                 }
             }
+            
+            injectedBinding = null;
         }
 
         private void SetupBindings()
@@ -115,11 +128,11 @@ namespace ManualDi.Main
                     if (!binding.IsAlreadyWired)
                     {
                         binding.IsAlreadyWired = true;
-                        injectedTypeBinding = binding;
+                        injectedBinding = binding;
                         binding.Dependencies?.Invoke(this);
                         bindings.Add(binding);
                     }
-                    binding = binding.NextTypeBinding;
+                    binding = binding.NextBinding;
                 }
             }
         }
@@ -129,13 +142,13 @@ namespace ManualDi.Main
             var binding = GetTypeForConstraint(typeof(T));
             if (binding is null)
             {
-                throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedTypeBinding?.GetType().FullName ?? "null"} is not registered.");
+                throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedBinding?.GetType().FullName ?? "null"} is not registered.");
             }
             
             if (!binding.IsAlreadyWired)
             {
                 binding.IsAlreadyWired = true;
-                injectedTypeBinding = binding;
+                injectedBinding = binding;
                 binding.Dependencies?.Invoke(this);
                 bindings.Add(binding);
             }
@@ -146,13 +159,13 @@ namespace ManualDi.Main
             var binding = GetTypeForConstraint(typeof(T), filter);
             if (binding is null)
             {
-                throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedTypeBinding?.GetType().FullName ?? "null"} with some filter is not registered.");
+                throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedBinding?.GetType().FullName ?? "null"} with some filter is not registered.");
             }
             
             if (!binding.IsAlreadyWired)
             {
                 binding.IsAlreadyWired = true;
-                injectedTypeBinding = binding;
+                injectedBinding = binding;
                 binding.Dependencies?.Invoke(this);
                 bindings.Add(binding);
             }
@@ -160,10 +173,10 @@ namespace ManualDi.Main
 
         public object? ResolveContainer(Type type)
         {
-            var typeBinding = GetTypeForConstraint(type);
-            if (typeBinding is not null)
+            var binding = GetTypeForConstraint(type);
+            if (binding is not null)
             {
-                return typeBinding.Instance;
+                return binding.Instance;
             }
 
             return parentDiContainer?.ResolveContainer(type);
@@ -171,86 +184,86 @@ namespace ManualDi.Main
         
         public object? ResolveContainer(Type type, FilterBindingDelegate filterBindingDelegate)
         {
-            var typeBinding = GetTypeForConstraint(type, filterBindingDelegate);
-            if (typeBinding is not null)
+            var binding = GetTypeForConstraint(type, filterBindingDelegate);
+            if (binding is not null)
             {
-                return typeBinding.Instance;
+                return binding.Instance;
             }
 
             return parentDiContainer?.ResolveContainer(type, filterBindingDelegate);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private TypeBinding? GetTypeForConstraint(Type type)
+        private Binding? GetTypeForConstraint(Type type)
         {
-            if (!bindingsByType.TryGetValue(type.TypeHandle.Value, out TypeBinding? typeBinding))
+            if (!bindingsByType.TryGetValue(type.TypeHandle.Value, out Binding? binding))
             {
                 return null;
             }
 
-            if (typeBinding.FilterBindingDelegate is null)
+            if (binding.FilterBindingDelegate is null)
             {
-                return typeBinding;
+                return binding;
             }
 
-            bindingContext.InjectedIntoTypeBinding = injectedTypeBinding;
+            bindingContext.InjectedIntoBinding = injectedBinding;
             do
             {
-                bindingContext.TypeBinding = typeBinding;
+                bindingContext.Binding = binding;
 
-                if (typeBinding.FilterBindingDelegate?.Invoke(bindingContext) ?? true)
+                if (binding.FilterBindingDelegate?.Invoke(bindingContext) ?? true)
                 {
-                    return typeBinding;
+                    return binding;
                 }
 
-                typeBinding = typeBinding.NextTypeBinding;
-            } while (typeBinding is not null);
+                binding = binding.NextBinding;
+            } while (binding is not null);
             
             return null;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private TypeBinding? GetTypeForConstraint(Type type, FilterBindingDelegate filterBindingDelegate)
+        private Binding? GetTypeForConstraint(Type type, FilterBindingDelegate filterBindingDelegate)
         {
-            if (!bindingsByType.TryGetValue(type.TypeHandle.Value, out TypeBinding? typeBinding))
+            if (!bindingsByType.TryGetValue(type.TypeHandle.Value, out Binding? binding))
             {
                 return null;
             }
 
-            bindingContext.InjectedIntoTypeBinding = injectedTypeBinding;
+            bindingContext.InjectedIntoBinding = injectedBinding;
             do
             {
-                bindingContext.TypeBinding = typeBinding;
+                bindingContext.Binding = binding;
 
                 if (filterBindingDelegate.Invoke(bindingContext) &&
-                    (typeBinding.FilterBindingDelegate?.Invoke(bindingContext) ?? true))
+                    (binding.FilterBindingDelegate?.Invoke(bindingContext) ?? true))
                 {
-                    return typeBinding;
+                    return binding;
                 }
 
-                typeBinding = typeBinding.NextTypeBinding;
-            } while (typeBinding is not null);
+                binding = binding.NextBinding;
+            } while (binding is not null);
             
             return null;
         }
 
         public void ResolveAllContainer(Type type, FilterBindingDelegate? filterBindingDelegate, IList resolutions)
         {
-            if (bindingsByType.TryGetValue(type.TypeHandle.Value, out TypeBinding? typeBinding))
+            if (bindingsByType.TryGetValue(type.TypeHandle.Value, out Binding? binding))
             {
-                bindingContext.InjectedIntoTypeBinding = injectedTypeBinding;
+                bindingContext.InjectedIntoBinding = injectedBinding;
                 do
                 {
-                    bindingContext.TypeBinding = typeBinding;
+                    bindingContext.Binding = binding;
 
                     if ((filterBindingDelegate?.Invoke(bindingContext) ?? true) &&
-                        (typeBinding.FilterBindingDelegate?.Invoke(bindingContext) ?? true))
+                        (binding.FilterBindingDelegate?.Invoke(bindingContext) ?? true))
                     {
-                        resolutions.Add(typeBinding.Instance);
+                        resolutions.Add(binding.Instance);
                     }
 
-                    typeBinding = typeBinding.NextTypeBinding;
-                } while (typeBinding is not null);
+                    binding = binding.NextBinding;
+                } while (binding is not null);
             }
 
             parentDiContainer?.ResolveAllContainer(type, filterBindingDelegate, resolutions);
@@ -262,21 +275,21 @@ namespace ManualDi.Main
             Type? overrideInjectedIntoType, 
             FilterBindingDelegate? overrideFilterBindingDelegate)
         {
-            var previousInjectedTypeBinding = injectedTypeBinding;
+            var previousInjectedBinding = injectedBinding;
             if (overrideInjectedIntoType is not null)
             {
-                injectedTypeBinding = null;
-                injectedTypeBinding = overrideFilterBindingDelegate is null 
+                injectedBinding = null;
+                injectedBinding = overrideFilterBindingDelegate is null 
                     ? GetTypeForConstraint(overrideInjectedIntoType) 
                     : GetTypeForConstraint(overrideInjectedIntoType, overrideFilterBindingDelegate);
             }
             
-            var typeBinding = filterBindingDelegate is null 
+            var binding = filterBindingDelegate is null 
                 ? GetTypeForConstraint(type)
                 : GetTypeForConstraint(type, filterBindingDelegate);
             
-            injectedTypeBinding = previousInjectedTypeBinding;
-            if (typeBinding is not null)
+            injectedBinding = previousInjectedBinding;
+            if (binding is not null)
             {
                 return true;
             }

@@ -49,11 +49,13 @@ public class TestDiContainerDispose
             
         var container = await new DiContainerBindings().Install(b =>
         {
-            b.Bind<IA>().FromMethod(c =>
-            {
-                _ = c.Resolve<IB>();
-                return disposable1;
-            }, d => d.Dependency<IB>());
+            b.Bind<IA>()
+                .FromMethod(c =>
+                {
+                    _ = c.Resolve<IB>();
+                    return disposable1;
+                })
+                .DependsOn(d => d.Dependency<IB>());
 
             b.Bind<IB>().FromInstance(disposable2);
         }).Build(CancellationToken.None);
@@ -70,7 +72,7 @@ public class TestDiContainerDispose
     public async Task TestDisposeCustom()
     {
         var instance = new object();
-        var disposeAction = Substitute.For<DisposeObjectDelegate<object>>();
+        var disposeAction = Substitute.For<DisposeObjectDelegate>();
 
         IDiContainer container = await new DiContainerBindings().Install(b =>
         {

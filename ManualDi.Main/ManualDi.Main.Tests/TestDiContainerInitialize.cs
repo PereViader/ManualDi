@@ -11,7 +11,7 @@ public class TestDiContainerInitialize
     public async Task TestInitialize()
     {
         var instance = new object();
-        var initializationDelegate = Substitute.For<InitializeDelegate<object>>();
+        var initializationDelegate = Substitute.For<InitializeDelegate>();
 
         await using var container = await new DiContainerBindings().Install(b =>
         {

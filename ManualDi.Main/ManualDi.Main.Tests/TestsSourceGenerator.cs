@@ -17,7 +17,7 @@ namespace ManualDi.Main.Tests;
 [TestFixture]
 public class TestsSourceGenerator
 {
-    [Test, Ignore("Temporarily disabled while refactoring")]
+    [Test]
     public Task Generated()
     {
         var code = File.ReadAllText("TestsSourceGenerator.Source.txt");

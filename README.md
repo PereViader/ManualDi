@@ -62,7 +62,7 @@ container.Dispose();
 The configuration of the container is done through Binding extension methods available on `DiContainerBindings` and can only be set during the installation phase. 
 Any alteration by custom means after the container's creation may result in undefined behaviour.
 
-Calling the Bind method provides a fluent interface through `TypeBinding<TApparent, TConcrete>`.
+Calling the Bind method provides a fluent interface through `Binding<TApparent, TConcrete>`.
 - Apparent: It's the type that can be used when resolving the container.
 - Concrete: It's type of the actual instance behind the scenes.
 
@@ -72,7 +72,8 @@ By convention, method calls should be done in the following order.
 Bind<(TApparent,)? TConcrete>() // TApparent is optional and will be equal to TConcrete if undefined
     .Default   // Source generated
     .[Single*|Transient]
-    .From[Constructor|Instance|Method|ContainerResolve|SubContainerResolve|...]  //Constructor is source generated
+    .From[Constructor|Instance|Method|MethodAsync|ContainerResolve|SubContainerResolve|...]  //Constructor is source generated
+    .DependsOn
     .Inject
     .Initialize
     .Dispose

@@ -16,7 +16,7 @@ public class Benchmark
         return manualDiContainer.Resolve<Service100>();
     }
     
-    [Benchmark]
+    //[Benchmark]
     public Service100 MicrosoftDi()
     {
         var microsoftDiContainer = new ServiceCollection()

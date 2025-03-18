@@ -7,15 +7,16 @@ namespace ManualDi.Main
     public static class ManualDiGeneratedSomeNamespaceSubnamespacePublicExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<T, SomeNamespace.Subnamespace.Public> FromConstructor<T>(this TypeBinding<T, SomeNamespace.Subnamespace.Public> typeBinding)
+        public static Binding<T, SomeNamespace.Subnamespace.Public> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.Public> binding)
         {
-            return typeBinding.FromMethod(static c => new SomeNamespace.Subnamespace.Public());
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.Public());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<T, SomeNamespace.Subnamespace.Public> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.Public> typeBinding)
+        public static Binding<T, SomeNamespace.Subnamespace.Public> Default<T>(this Binding<T, SomeNamespace.Subnamespace.Public> binding)
         {
-            return typeBinding.DontDispose();
+            return binding.DontDispose();
         }
     }
 }
@@ -29,15 +30,16 @@ namespace ManualDi.Main
     public static class ManualDiGeneratedSomeNamespaceSubnamespaceInternalExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, SomeNamespace.Subnamespace.Internal> FromConstructor<T>(this TypeBinding<T, SomeNamespace.Subnamespace.Internal> typeBinding)
+        internal static Binding<T, SomeNamespace.Subnamespace.Internal> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.Internal> binding)
         {
-            return typeBinding.FromMethod(static c => new SomeNamespace.Subnamespace.Internal());
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.Internal());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, SomeNamespace.Subnamespace.Internal> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.Internal> typeBinding)
+        internal static Binding<T, SomeNamespace.Subnamespace.Internal> Default<T>(this Binding<T, SomeNamespace.Subnamespace.Internal> binding)
         {
-            return typeBinding.DontDispose();
+            return binding.DontDispose();
         }
     }
 }
@@ -51,9 +53,9 @@ namespace ManualDi.Main
     public static class ManualDiGeneratedSomeNamespaceSubnamespaceInternalPrivateConstructorExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, SomeNamespace.Subnamespace.InternalPrivateConstructor> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.InternalPrivateConstructor> typeBinding)
+        internal static Binding<T, SomeNamespace.Subnamespace.InternalPrivateConstructor> Default<T>(this Binding<T, SomeNamespace.Subnamespace.InternalPrivateConstructor> binding)
         {
-            return typeBinding.DontDispose();
+            return binding.DontDispose();
         }
     }
 }
@@ -67,16 +69,20 @@ namespace ManualDi.Main
     public static class ManualDiGeneratedSomeNamespaceSubnamespacePublicAndPrivateConstructorExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<T, SomeNamespace.Subnamespace.PublicAndPrivateConstructor> FromConstructor<T>(this TypeBinding<T, SomeNamespace.Subnamespace.PublicAndPrivateConstructor> typeBinding)
+        public static Binding<T, SomeNamespace.Subnamespace.PublicAndPrivateConstructor> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.PublicAndPrivateConstructor> binding)
         {
-            return typeBinding.FromMethod(static c => new SomeNamespace.Subnamespace.PublicAndPrivateConstructor(
-                c.Resolve<int>()));
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.PublicAndPrivateConstructor(
+                    c.Resolve<int>()))
+                .DependsOn(static d => {
+                    d.Dependency<int>();
+                });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<T, SomeNamespace.Subnamespace.PublicAndPrivateConstructor> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.PublicAndPrivateConstructor> typeBinding)
+        public static Binding<T, SomeNamespace.Subnamespace.PublicAndPrivateConstructor> Default<T>(this Binding<T, SomeNamespace.Subnamespace.PublicAndPrivateConstructor> binding)
         {
-            return typeBinding.DontDispose();
+            return binding.DontDispose();
         }
     }
 }
@@ -90,15 +96,16 @@ namespace ManualDi.Main
     public static class ManualDiGeneratedSomeNamespaceSubnamespaceInternal2Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, SomeNamespace.Subnamespace.Internal2> FromConstructor<T>(this TypeBinding<T, SomeNamespace.Subnamespace.Internal2> typeBinding)
+        internal static Binding<T, SomeNamespace.Subnamespace.Internal2> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.Internal2> binding)
         {
-            return typeBinding.FromMethod(static c => new SomeNamespace.Subnamespace.Internal2());
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.Internal2());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, SomeNamespace.Subnamespace.Internal2> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.Internal2> typeBinding)
+        internal static Binding<T, SomeNamespace.Subnamespace.Internal2> Default<T>(this Binding<T, SomeNamespace.Subnamespace.Internal2> binding)
         {
-            return typeBinding.DontDispose();
+            return binding.DontDispose();
         }
     }
 }
@@ -112,15 +119,16 @@ namespace ManualDi.Main
     public static class ManualDiGeneratedSomeNamespaceSubnamespaceInternalInitializeExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<T, SomeNamespace.Subnamespace.InternalInitialize> FromConstructor<T>(this TypeBinding<T, SomeNamespace.Subnamespace.InternalInitialize> typeBinding)
+        public static Binding<T, SomeNamespace.Subnamespace.InternalInitialize> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.InternalInitialize> binding)
         {
-            return typeBinding.FromMethod(static c => new SomeNamespace.Subnamespace.InternalInitialize());
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.InternalInitialize());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<T, SomeNamespace.Subnamespace.InternalInitialize> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.InternalInitialize> typeBinding)
+        public static Binding<T, SomeNamespace.Subnamespace.InternalInitialize> Default<T>(this Binding<T, SomeNamespace.Subnamespace.InternalInitialize> binding)
         {
-            return typeBinding.Initialize(static (o, c) => o.Initialize())
+            return binding.Initialize(static o => ((SomeNamespace.Subnamespace.InternalInitialize)o).Initialize())
                 .DontDispose();
         }
     }
@@ -135,15 +143,16 @@ namespace ManualDi.Main
     public static class ManualDiGeneratedSomeNamespaceSubnamespaceSomeDisposableExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<T, SomeNamespace.Subnamespace.SomeDisposable> FromConstructor<T>(this TypeBinding<T, SomeNamespace.Subnamespace.SomeDisposable> typeBinding)
+        public static Binding<T, SomeNamespace.Subnamespace.SomeDisposable> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.SomeDisposable> binding)
         {
-            return typeBinding.FromMethod(static c => new SomeNamespace.Subnamespace.SomeDisposable());
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.SomeDisposable());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<T, SomeNamespace.Subnamespace.SomeDisposable> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.SomeDisposable> typeBinding)
+        public static Binding<T, SomeNamespace.Subnamespace.SomeDisposable> Default<T>(this Binding<T, SomeNamespace.Subnamespace.SomeDisposable> binding)
         {
-            return typeBinding;
+            return binding;
         }
     }
 }
@@ -157,18 +166,20 @@ namespace ManualDi.Main
     public static class ManualDiGeneratedSomeNamespaceSubnamespacePublicInitializeExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<T, SomeNamespace.Subnamespace.PublicInitialize> FromConstructor<T>(this TypeBinding<T, SomeNamespace.Subnamespace.PublicInitialize> typeBinding)
+        public static Binding<T, SomeNamespace.Subnamespace.PublicInitialize> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.PublicInitialize> binding)
         {
-            return typeBinding.FromMethod(static c => new SomeNamespace.Subnamespace.PublicInitialize());
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.PublicInitialize());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<T, SomeNamespace.Subnamespace.PublicInitialize> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.PublicInitialize> typeBinding)
+        public static Binding<T, SomeNamespace.Subnamespace.PublicInitialize> Default<T>(this Binding<T, SomeNamespace.Subnamespace.PublicInitialize> binding)
         {
-            return typeBinding.Initialize(static (o, c) => o.Initialize())
+            return binding.Initialize(static o => ((SomeNamespace.Subnamespace.PublicInitialize)o).Initialize())
                 .Inject(static (o, c) => 
                 {
-                    o.Inject();
+                    var to = (SomeNamespace.Subnamespace.PublicInitialize)o;
+                    to.Inject();
                 })
                 .DontDispose();
         }
@@ -184,15 +195,16 @@ namespace ManualDi.Main
     public static class ManualDiGeneratedSomeNamespaceSubnamespaceStaticInitializeExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, SomeNamespace.Subnamespace.StaticInitialize> FromConstructor<T>(this TypeBinding<T, SomeNamespace.Subnamespace.StaticInitialize> typeBinding)
+        internal static Binding<T, SomeNamespace.Subnamespace.StaticInitialize> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.StaticInitialize> binding)
         {
-            return typeBinding.FromMethod(static c => new SomeNamespace.Subnamespace.StaticInitialize());
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.StaticInitialize());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, SomeNamespace.Subnamespace.StaticInitialize> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.StaticInitialize> typeBinding)
+        internal static Binding<T, SomeNamespace.Subnamespace.StaticInitialize> Default<T>(this Binding<T, SomeNamespace.Subnamespace.StaticInitialize> binding)
         {
-            return typeBinding.DontDispose();
+            return binding.DontDispose();
         }
     }
 }
@@ -206,17 +218,19 @@ namespace ManualDi.Main
     public static class ManualDiGeneratedSomeNamespaceSubnamespaceInternalInjectExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, SomeNamespace.Subnamespace.InternalInject> FromConstructor<T>(this TypeBinding<T, SomeNamespace.Subnamespace.InternalInject> typeBinding)
+        internal static Binding<T, SomeNamespace.Subnamespace.InternalInject> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.InternalInject> binding)
         {
-            return typeBinding.FromMethod(static c => new SomeNamespace.Subnamespace.InternalInject());
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.InternalInject());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, SomeNamespace.Subnamespace.InternalInject> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.InternalInject> typeBinding)
+        internal static Binding<T, SomeNamespace.Subnamespace.InternalInject> Default<T>(this Binding<T, SomeNamespace.Subnamespace.InternalInject> binding)
         {
-            return typeBinding.Inject(static (o, c) => 
+            return binding.Inject(static (o, c) => 
                 {
-                    o.Inject();
+                    var to = (SomeNamespace.Subnamespace.InternalInject)o;
+                    to.Inject();
                 })
                 .DontDispose();
         }
@@ -232,17 +246,19 @@ namespace ManualDi.Main
     public static class ManualDiGeneratedSomeNamespaceSubnamespacePublicInjectExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, SomeNamespace.Subnamespace.PublicInject> FromConstructor<T>(this TypeBinding<T, SomeNamespace.Subnamespace.PublicInject> typeBinding)
+        internal static Binding<T, SomeNamespace.Subnamespace.PublicInject> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.PublicInject> binding)
         {
-            return typeBinding.FromMethod(static c => new SomeNamespace.Subnamespace.PublicInject());
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.PublicInject());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, SomeNamespace.Subnamespace.PublicInject> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.PublicInject> typeBinding)
+        internal static Binding<T, SomeNamespace.Subnamespace.PublicInject> Default<T>(this Binding<T, SomeNamespace.Subnamespace.PublicInject> binding)
         {
-            return typeBinding.Inject(static (o, c) => 
+            return binding.Inject(static (o, c) => 
                 {
-                    o.Inject();
+                    var to = (SomeNamespace.Subnamespace.PublicInject)o;
+                    to.Inject();
                 })
                 .DontDispose();
         }
@@ -258,15 +274,16 @@ namespace ManualDi.Main
     public static class ManualDiGeneratedSomeNamespaceSubnamespaceStaticInjectExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, SomeNamespace.Subnamespace.StaticInject> FromConstructor<T>(this TypeBinding<T, SomeNamespace.Subnamespace.StaticInject> typeBinding)
+        internal static Binding<T, SomeNamespace.Subnamespace.StaticInject> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.StaticInject> binding)
         {
-            return typeBinding.FromMethod(static c => new SomeNamespace.Subnamespace.StaticInject());
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.StaticInject());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, SomeNamespace.Subnamespace.StaticInject> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.StaticInject> typeBinding)
+        internal static Binding<T, SomeNamespace.Subnamespace.StaticInject> Default<T>(this Binding<T, SomeNamespace.Subnamespace.StaticInject> binding)
         {
-            return typeBinding.DontDispose();
+            return binding.DontDispose();
         }
     }
 }
@@ -280,16 +297,20 @@ namespace ManualDi.Main
     public static class ManualDiGeneratedSomeNamespaceSubnamespaceConstructorWithGenericArgumentExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, SomeNamespace.Subnamespace.ConstructorWithGenericArgument> FromConstructor<T>(this TypeBinding<T, SomeNamespace.Subnamespace.ConstructorWithGenericArgument> typeBinding)
+        internal static Binding<T, SomeNamespace.Subnamespace.ConstructorWithGenericArgument> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.ConstructorWithGenericArgument> binding)
         {
-            return typeBinding.FromMethod(static c => new SomeNamespace.Subnamespace.ConstructorWithGenericArgument(
-                c.Resolve<System.Func<int>>()));
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.ConstructorWithGenericArgument(
+                    c.Resolve<System.Func<int>>()))
+                .DependsOn(static d => {
+                    d.Dependency<System.Func<int>>();
+                });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, SomeNamespace.Subnamespace.ConstructorWithGenericArgument> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.ConstructorWithGenericArgument> typeBinding)
+        internal static Binding<T, SomeNamespace.Subnamespace.ConstructorWithGenericArgument> Default<T>(this Binding<T, SomeNamespace.Subnamespace.ConstructorWithGenericArgument> binding)
         {
-            return typeBinding.DontDispose();
+            return binding.DontDispose();
         }
     }
 }
@@ -303,18 +324,20 @@ namespace ManualDi.Main
     public static class ManualDiGeneratedSomeNamespaceSubnamespaceInjectPropertyAndMethodExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, SomeNamespace.Subnamespace.InjectPropertyAndMethod> FromConstructor<T>(this TypeBinding<T, SomeNamespace.Subnamespace.InjectPropertyAndMethod> typeBinding)
+        internal static Binding<T, SomeNamespace.Subnamespace.InjectPropertyAndMethod> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.InjectPropertyAndMethod> binding)
         {
-            return typeBinding.FromMethod(static c => new SomeNamespace.Subnamespace.InjectPropertyAndMethod());
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.InjectPropertyAndMethod());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, SomeNamespace.Subnamespace.InjectPropertyAndMethod> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.InjectPropertyAndMethod> typeBinding)
+        internal static Binding<T, SomeNamespace.Subnamespace.InjectPropertyAndMethod> Default<T>(this Binding<T, SomeNamespace.Subnamespace.InjectPropertyAndMethod> binding)
         {
-            return typeBinding.Inject(static (o, c) => 
+            return binding.Inject(static (o, c) => 
                 {
-                    o.Object = c.Resolve<object>();
-                    o.Inject(
+                    var to = (SomeNamespace.Subnamespace.InjectPropertyAndMethod)o;
+                    to.Object = c.Resolve<object>();
+                    to.Inject(
                         c.Resolve<object>());
                 })
                 .DontDispose();
@@ -331,19 +354,21 @@ namespace ManualDi.Main
     public static class ManualDiGeneratedSomeNamespaceSubnamespaceInjectReferencePropertyClassExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<T, SomeNamespace.Subnamespace.InjectReferencePropertyClass> FromConstructor<T>(this TypeBinding<T, SomeNamespace.Subnamespace.InjectReferencePropertyClass> typeBinding)
+        public static Binding<T, SomeNamespace.Subnamespace.InjectReferencePropertyClass> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.InjectReferencePropertyClass> binding)
         {
-            return typeBinding.FromMethod(static c => new SomeNamespace.Subnamespace.InjectReferencePropertyClass());
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.InjectReferencePropertyClass());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<T, SomeNamespace.Subnamespace.InjectReferencePropertyClass> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.InjectReferencePropertyClass> typeBinding)
+        public static Binding<T, SomeNamespace.Subnamespace.InjectReferencePropertyClass> Default<T>(this Binding<T, SomeNamespace.Subnamespace.InjectReferencePropertyClass> binding)
         {
-            return typeBinding.Inject(static (o, c) => 
+            return binding.Inject(static (o, c) => 
                 {
-                    o.Object0 = c.Resolve<object>();
-                    o.Object2 = c.Resolve<object>();
-                    o.Object5 = c.Resolve<object>();
+                    var to = (SomeNamespace.Subnamespace.InjectReferencePropertyClass)o;
+                    to.Object0 = c.Resolve<object>();
+                    to.Object2 = c.Resolve<object>();
+                    to.Object5 = c.Resolve<object>();
                 })
                 .DontDispose();
         }
@@ -359,20 +384,22 @@ namespace ManualDi.Main
     public static class ManualDiGeneratedSomeNamespaceSubnamespaceInjectValueNullablePropertyClassExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<T, SomeNamespace.Subnamespace.InjectValueNullablePropertyClass> FromConstructor<T>(this TypeBinding<T, SomeNamespace.Subnamespace.InjectValueNullablePropertyClass> typeBinding)
+        public static Binding<T, SomeNamespace.Subnamespace.InjectValueNullablePropertyClass> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.InjectValueNullablePropertyClass> binding)
         {
-            return typeBinding.FromMethod(static c => new SomeNamespace.Subnamespace.InjectValueNullablePropertyClass());
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.InjectValueNullablePropertyClass());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<T, SomeNamespace.Subnamespace.InjectValueNullablePropertyClass> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.InjectValueNullablePropertyClass> typeBinding)
+        public static Binding<T, SomeNamespace.Subnamespace.InjectValueNullablePropertyClass> Default<T>(this Binding<T, SomeNamespace.Subnamespace.InjectValueNullablePropertyClass> binding)
         {
-            return typeBinding.Inject(static (o, c) => 
+            return binding.Inject(static (o, c) => 
                 {
-                    o.Int1 = c.Resolve<int>();
-                    o.Int2 = c.Resolve<int>();
-                    o.Int5 = c.ResolveNullableValue<int>();
-                    o.Int6 = c.ResolveNullableValue<int>();
+                    var to = (SomeNamespace.Subnamespace.InjectValueNullablePropertyClass)o;
+                    to.Int1 = c.Resolve<int>();
+                    to.Int2 = c.Resolve<int>();
+                    to.Int5 = c.ResolveNullableValue<int>();
+                    to.Int6 = c.ResolveNullableValue<int>();
                 })
                 .DontDispose();
         }
@@ -389,19 +416,21 @@ namespace ManualDi.Main
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [System.Obsolete]
-internal static TypeBinding<T, SomeNamespace.Subnamespace.Obsolete> FromConstructor<T>(this TypeBinding<T, SomeNamespace.Subnamespace.Obsolete> typeBinding)
+internal static Binding<T, SomeNamespace.Subnamespace.Obsolete> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.Obsolete> binding)
         {
-            return typeBinding.FromMethod(static c => new SomeNamespace.Subnamespace.Obsolete());
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.Obsolete());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [System.Obsolete]
-internal static TypeBinding<T, SomeNamespace.Subnamespace.Obsolete> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.Obsolete> typeBinding)
+internal static Binding<T, SomeNamespace.Subnamespace.Obsolete> Default<T>(this Binding<T, SomeNamespace.Subnamespace.Obsolete> binding)
         {
-            return typeBinding.Initialize(static (o, c) => o.Initialize())
+            return binding.Initialize(static o => ((SomeNamespace.Subnamespace.Obsolete)o).Initialize())
                 .Inject(static (o, c) => 
                 {
-                    o.Inject();
+                    var to = (SomeNamespace.Subnamespace.Obsolete)o;
+                    to.Inject();
                 })
                 .DontDispose();
         }
@@ -417,23 +446,29 @@ namespace ManualDi.Main
     public static class ManualDiGeneratedSomeNamespaceSubnamespaceNullableDependencyExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<T, SomeNamespace.Subnamespace.NullableDependency> FromConstructor<T>(this TypeBinding<T, SomeNamespace.Subnamespace.NullableDependency> typeBinding)
+        public static Binding<T, SomeNamespace.Subnamespace.NullableDependency> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.NullableDependency> binding)
         {
-            return typeBinding.FromMethod(static c => new SomeNamespace.Subnamespace.NullableDependency(
-                c.ResolveNullable<object>(),
-                c.ResolveNullableValue<int>()));
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.NullableDependency(
+                    c.ResolveNullable<object>(),
+                    c.ResolveNullableValue<int>()))
+                .DependsOn(static d => {
+                    d.Dependency<object>();
+                    d.Dependency<int>();
+                });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<T, SomeNamespace.Subnamespace.NullableDependency> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.NullableDependency> typeBinding)
+        public static Binding<T, SomeNamespace.Subnamespace.NullableDependency> Default<T>(this Binding<T, SomeNamespace.Subnamespace.NullableDependency> binding)
         {
-            return typeBinding.Initialize(static (o, c) => o.Initialize())
+            return binding.Initialize(static o => ((SomeNamespace.Subnamespace.NullableDependency)o).Initialize())
                 .Inject(static (o, c) => 
                 {
-                    o.Object = c.ResolveNullable<object>();
-                    o.Int = c.ResolveNullableValue<int>();
-                    o.Int3 = c.ResolveNullableValue<int>();
-                    o.Inject(
+                    var to = (SomeNamespace.Subnamespace.NullableDependency)o;
+                    to.Object = c.ResolveNullable<object>();
+                    to.Int = c.ResolveNullableValue<int>();
+                    to.Int3 = c.ResolveNullableValue<int>();
+                    to.Inject(
                         c.ResolveNullable<object>(),
                         c.ResolveNullableValue<int>());
                 })
@@ -451,15 +486,16 @@ namespace ManualDi.Main
     public static class ManualDiGeneratedSomeNamespaceSubnamespaceStaticPublicNestedExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, SomeNamespace.Subnamespace.Static.PublicNested> FromConstructor<T>(this TypeBinding<T, SomeNamespace.Subnamespace.Static.PublicNested> typeBinding)
+        internal static Binding<T, SomeNamespace.Subnamespace.Static.PublicNested> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.Static.PublicNested> binding)
         {
-            return typeBinding.FromMethod(static c => new SomeNamespace.Subnamespace.Static.PublicNested());
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.Static.PublicNested());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, SomeNamespace.Subnamespace.Static.PublicNested> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.Static.PublicNested> typeBinding)
+        internal static Binding<T, SomeNamespace.Subnamespace.Static.PublicNested> Default<T>(this Binding<T, SomeNamespace.Subnamespace.Static.PublicNested> binding)
         {
-            return typeBinding.DontDispose();
+            return binding.DontDispose();
         }
     }
 }
@@ -473,15 +509,16 @@ namespace ManualDi.Main
     public static class ManualDiGeneratedSomeNamespaceSubnamespaceStaticInternalNestedExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, SomeNamespace.Subnamespace.Static.InternalNested> FromConstructor<T>(this TypeBinding<T, SomeNamespace.Subnamespace.Static.InternalNested> typeBinding)
+        internal static Binding<T, SomeNamespace.Subnamespace.Static.InternalNested> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.Static.InternalNested> binding)
         {
-            return typeBinding.FromMethod(static c => new SomeNamespace.Subnamespace.Static.InternalNested());
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.Static.InternalNested());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, SomeNamespace.Subnamespace.Static.InternalNested> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.Static.InternalNested> typeBinding)
+        internal static Binding<T, SomeNamespace.Subnamespace.Static.InternalNested> Default<T>(this Binding<T, SomeNamespace.Subnamespace.Static.InternalNested> binding)
         {
-            return typeBinding.DontDispose();
+            return binding.DontDispose();
         }
     }
 }
@@ -495,79 +532,84 @@ namespace ManualDi.Main
     public static class ManualDiGeneratedSomeNamespaceSubnamespaceListInjectExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, SomeNamespace.Subnamespace.ListInject> FromConstructor<T>(this TypeBinding<T, SomeNamespace.Subnamespace.ListInject> typeBinding)
+        internal static Binding<T, SomeNamespace.Subnamespace.ListInject> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.ListInject> binding)
         {
-            return typeBinding.FromMethod(static c => new SomeNamespace.Subnamespace.ListInject(
-                c.ResolveAll<object>()));
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.ListInject(
+                    c.ResolveAll<object>()))
+                .DependsOn(static d => {
+                    d.Dependency<System.Collections.Generic.List<object>>();
+                });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, SomeNamespace.Subnamespace.ListInject> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.ListInject> typeBinding)
+        internal static Binding<T, SomeNamespace.Subnamespace.ListInject> Default<T>(this Binding<T, SomeNamespace.Subnamespace.ListInject> binding)
         {
-            return typeBinding.Initialize(static (o, c) => o.Initialize())
+            return binding.Initialize(static o => ((SomeNamespace.Subnamespace.ListInject)o).Initialize())
                 .Inject(static (o, c) => 
                 {
-                    o.IEnumerableObject = c.ResolveAll<object>();
-                    o.IEnumerableInt = c.ResolveAll<int>();
-                    o.IReadOnlyListObject = c.ResolveAll<object>();
-                    o.IReadOnlyListInt = c.ResolveAll<int>();
-                    o.IListObject = c.ResolveAll<object>();
-                    o.IListInt = c.ResolveAll<int>();
-                    o.ListObject = c.ResolveAll<object>();
-                    o.ListInt = c.ResolveAll<int>();
-                    o.IReadOnlyCollectionObject = c.ResolveAll<object>();
-                    o.IReadOnlyCollectionInt = c.ResolveAll<int>();
-                    o.ICollectionObject = c.ResolveAll<object>();
-                    o.ICollectionInt = c.ResolveAll<int>();
-                    o.IEnumerableObjectId = c.ResolveAll<object>(x => x.Id("A"));
-                    o.IEnumerableIntId = c.ResolveAll<int>(x => x.Id("A"));
-                    o.IReadOnlyListObjectId = c.ResolveAll<object>(x => x.Id("A"));
-                    o.IReadOnlyListIntId = c.ResolveAll<int>(x => x.Id("A"));
-                    o.IListObjectId = c.ResolveAll<object>(x => x.Id("A"));
-                    o.IListIntId = c.ResolveAll<int>(x => x.Id("A"));
-                    o.ListObjectId = c.ResolveAll<object>(x => x.Id("A"));
-                    o.ListIntId = c.ResolveAll<int>(x => x.Id("A"));
-                    o.IReadOnlyCollectionObjectId = c.ResolveAll<object>(x => x.Id("A"));
-                    o.IReadOnlyCollectionIntId = c.ResolveAll<int>(x => x.Id("A"));
-                    o.ICollectionObjectId = c.ResolveAll<object>(x => x.Id("A"));
-                    o.ICollectionIntId = c.ResolveAll<int>(x => x.Id("A"));
-                    o.IEnumerableObjectNullable = c.WouldResolve<object>() ? c.ResolveAll<object>() : null;
-                    o.IEnumerableIntNullable = c.WouldResolve<int>() ? c.ResolveAll<int>() : null;
-                    o.IReadOnlyListObjectNullable = c.WouldResolve<object>() ? c.ResolveAll<object>() : null;
-                    o.IReadOnlyListIntNullable = c.WouldResolve<int>() ? c.ResolveAll<int>() : null;
-                    o.IListObjectNullable = c.WouldResolve<object>() ? c.ResolveAll<object>() : null;
-                    o.IListIntNullable = c.WouldResolve<int>() ? c.ResolveAll<int>() : null;
-                    o.ListObjectNullable = c.WouldResolve<object>() ? c.ResolveAll<object>() : null;
-                    o.ListIntNullable = c.WouldResolve<int>() ? c.ResolveAll<int>() : null;
-                    o.IReadOnlyCollectionObjectNullable = c.WouldResolve<object>() ? c.ResolveAll<object>() : null;
-                    o.IReadOnlyCollectionIntNullable = c.WouldResolve<int>() ? c.ResolveAll<int>() : null;
-                    o.ICollectionObjectNullable = c.WouldResolve<object>() ? c.ResolveAll<object>() : null;
-                    o.ICollectionIntNullable = c.WouldResolve<int>() ? c.ResolveAll<int>() : null;
-                    o.IEnumerableObjectNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")) : null;
-                    o.IEnumerableIntNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")) : null;
-                    o.IReadOnlyListObjectNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")) : null;
-                    o.IReadOnlyListIntNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")) : null;
-                    o.IListObjectNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")) : null;
-                    o.IListIntNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")) : null;
-                    o.ListObjectNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")) : null;
-                    o.ListIntNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")) : null;
-                    o.IReadOnlyCollectionObjectNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")) : null;
-                    o.IReadOnlyCollectionIntNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")) : null;
-                    o.ICollectionObjectNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")) : null;
-                    o.ICollectionIntNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")) : null;
-                    o.IEnumerableObjectNullableNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")).ConvertAll<object?>(x => x) : null;
-                    o.IEnumerableIntNullableNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")).ConvertAll<int?>(x => x) : null;
-                    o.IReadOnlyListObjectNullableNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")).ConvertAll<object?>(x => x) : null;
-                    o.IReadOnlyListIntNullableNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")).ConvertAll<int?>(x => x) : null;
-                    o.IListObjectNullableNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")).ConvertAll<object?>(x => x) : null;
-                    o.IListIntNullableNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")).ConvertAll<int?>(x => x) : null;
-                    o.ListObjectNullableNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")).ConvertAll<object?>(x => x) : null;
-                    o.ListIntNullableNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")).ConvertAll<int?>(x => x) : null;
-                    o.IReadOnlyCollectionObjectNullableNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")).ConvertAll<object?>(x => x) : null;
-                    o.IReadOnlyCollectionIntNullableNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")).ConvertAll<int?>(x => x) : null;
-                    o.ICollectionObjectNullableNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")).ConvertAll<object?>(x => x) : null;
-                    o.ICollectionIntNullableNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")).ConvertAll<int?>(x => x) : null;
-                    o.Inject(
+                    var to = (SomeNamespace.Subnamespace.ListInject)o;
+                    to.IEnumerableObject = c.ResolveAll<object>();
+                    to.IEnumerableInt = c.ResolveAll<int>();
+                    to.IReadOnlyListObject = c.ResolveAll<object>();
+                    to.IReadOnlyListInt = c.ResolveAll<int>();
+                    to.IListObject = c.ResolveAll<object>();
+                    to.IListInt = c.ResolveAll<int>();
+                    to.ListObject = c.ResolveAll<object>();
+                    to.ListInt = c.ResolveAll<int>();
+                    to.IReadOnlyCollectionObject = c.ResolveAll<object>();
+                    to.IReadOnlyCollectionInt = c.ResolveAll<int>();
+                    to.ICollectionObject = c.ResolveAll<object>();
+                    to.ICollectionInt = c.ResolveAll<int>();
+                    to.IEnumerableObjectId = c.ResolveAll<object>(x => x.Id("A"));
+                    to.IEnumerableIntId = c.ResolveAll<int>(x => x.Id("A"));
+                    to.IReadOnlyListObjectId = c.ResolveAll<object>(x => x.Id("A"));
+                    to.IReadOnlyListIntId = c.ResolveAll<int>(x => x.Id("A"));
+                    to.IListObjectId = c.ResolveAll<object>(x => x.Id("A"));
+                    to.IListIntId = c.ResolveAll<int>(x => x.Id("A"));
+                    to.ListObjectId = c.ResolveAll<object>(x => x.Id("A"));
+                    to.ListIntId = c.ResolveAll<int>(x => x.Id("A"));
+                    to.IReadOnlyCollectionObjectId = c.ResolveAll<object>(x => x.Id("A"));
+                    to.IReadOnlyCollectionIntId = c.ResolveAll<int>(x => x.Id("A"));
+                    to.ICollectionObjectId = c.ResolveAll<object>(x => x.Id("A"));
+                    to.ICollectionIntId = c.ResolveAll<int>(x => x.Id("A"));
+                    to.IEnumerableObjectNullable = c.WouldResolve<object>() ? c.ResolveAll<object>() : null;
+                    to.IEnumerableIntNullable = c.WouldResolve<int>() ? c.ResolveAll<int>() : null;
+                    to.IReadOnlyListObjectNullable = c.WouldResolve<object>() ? c.ResolveAll<object>() : null;
+                    to.IReadOnlyListIntNullable = c.WouldResolve<int>() ? c.ResolveAll<int>() : null;
+                    to.IListObjectNullable = c.WouldResolve<object>() ? c.ResolveAll<object>() : null;
+                    to.IListIntNullable = c.WouldResolve<int>() ? c.ResolveAll<int>() : null;
+                    to.ListObjectNullable = c.WouldResolve<object>() ? c.ResolveAll<object>() : null;
+                    to.ListIntNullable = c.WouldResolve<int>() ? c.ResolveAll<int>() : null;
+                    to.IReadOnlyCollectionObjectNullable = c.WouldResolve<object>() ? c.ResolveAll<object>() : null;
+                    to.IReadOnlyCollectionIntNullable = c.WouldResolve<int>() ? c.ResolveAll<int>() : null;
+                    to.ICollectionObjectNullable = c.WouldResolve<object>() ? c.ResolveAll<object>() : null;
+                    to.ICollectionIntNullable = c.WouldResolve<int>() ? c.ResolveAll<int>() : null;
+                    to.IEnumerableObjectNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")) : null;
+                    to.IEnumerableIntNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")) : null;
+                    to.IReadOnlyListObjectNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")) : null;
+                    to.IReadOnlyListIntNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")) : null;
+                    to.IListObjectNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")) : null;
+                    to.IListIntNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")) : null;
+                    to.ListObjectNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")) : null;
+                    to.ListIntNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")) : null;
+                    to.IReadOnlyCollectionObjectNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")) : null;
+                    to.IReadOnlyCollectionIntNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")) : null;
+                    to.ICollectionObjectNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")) : null;
+                    to.ICollectionIntNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")) : null;
+                    to.IEnumerableObjectNullableNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")).ConvertAll<object?>(x => x) : null;
+                    to.IEnumerableIntNullableNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")).ConvertAll<int?>(x => x) : null;
+                    to.IReadOnlyListObjectNullableNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")).ConvertAll<object?>(x => x) : null;
+                    to.IReadOnlyListIntNullableNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")).ConvertAll<int?>(x => x) : null;
+                    to.IListObjectNullableNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")).ConvertAll<object?>(x => x) : null;
+                    to.IListIntNullableNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")).ConvertAll<int?>(x => x) : null;
+                    to.ListObjectNullableNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")).ConvertAll<object?>(x => x) : null;
+                    to.ListIntNullableNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")).ConvertAll<int?>(x => x) : null;
+                    to.IReadOnlyCollectionObjectNullableNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")).ConvertAll<object?>(x => x) : null;
+                    to.IReadOnlyCollectionIntNullableNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")).ConvertAll<int?>(x => x) : null;
+                    to.ICollectionObjectNullableNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")).ConvertAll<object?>(x => x) : null;
+                    to.ICollectionIntNullableNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")).ConvertAll<int?>(x => x) : null;
+                    to.Inject(
                         c.ResolveAll<object>());
                 })
                 .DontDispose();
@@ -584,33 +626,35 @@ namespace ManualDi.Main
     public static class ManualDiGeneratedSomeNamespaceSubnamespaceLazyDependenciesExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, SomeNamespace.Subnamespace.LazyDependencies> FromConstructor<T>(this TypeBinding<T, SomeNamespace.Subnamespace.LazyDependencies> typeBinding)
+        internal static Binding<T, SomeNamespace.Subnamespace.LazyDependencies> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.LazyDependencies> binding)
         {
-            return typeBinding.FromMethod(static c => new SomeNamespace.Subnamespace.LazyDependencies());
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.LazyDependencies());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, SomeNamespace.Subnamespace.LazyDependencies> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.LazyDependencies> typeBinding)
+        internal static Binding<T, SomeNamespace.Subnamespace.LazyDependencies> Default<T>(this Binding<T, SomeNamespace.Subnamespace.LazyDependencies> binding)
         {
-            return typeBinding.Inject(static (o, c) => 
+            return binding.Inject(static (o, c) => 
                 {
-                    o.Object = new System.Lazy<object>(() => c.Resolve<object>());
-                    o.NullableObject = new System.Lazy<object?>(() => c.ResolveNullable<object>());
-                    o.Value = new System.Lazy<int>(() => c.Resolve<int>());
-                    o.NullableValue = new System.Lazy<int?>(() => c.ResolveNullableValue<int>());
-                    o.RecursiveLazy = new System.Lazy<System.Lazy<System.Lazy<int>>>(() => new System.Lazy<System.Lazy<int>>(() => new System.Lazy<int>(() => c.Resolve<int>())));
-                    o.LazyList = new System.Lazy<System.Collections.Generic.List<int>>(() => c.ResolveAll<int>());
-                    o.ObjectNullable = c.WouldResolve<object>() ? new System.Lazy<object>(() => c.Resolve<object>()) : null;
-                    o.NullableObjectNullable = c.WouldResolve<object>() ? new System.Lazy<object?>(() => c.ResolveNullable<object>()) : null;
-                    o.ValueNullable = c.WouldResolve<int>() ? new System.Lazy<int>(() => c.Resolve<int>()) : null;
-                    o.NullableValueNullable = c.WouldResolve<int>() ? new System.Lazy<int?>(() => c.ResolveNullableValue<int>()) : null;
-                    o.RecursiveLazyNullable = c.WouldResolve<System.Lazy<System.Lazy<int>>>() ? new System.Lazy<System.Lazy<System.Lazy<int>>>(() => new System.Lazy<System.Lazy<int>>(() => new System.Lazy<int>(() => c.Resolve<int>()))) : null;
-                    o.LazyListNullable = c.WouldResolve<System.Collections.Generic.List<int>>() ? new System.Lazy<System.Collections.Generic.List<int>>(() => c.ResolveAll<int>()) : null;
-                    o.Inject(
-                        new System.Lazy<object>(() => c.Resolve<object>()),
-                        new System.Lazy<object?>(() => c.ResolveNullable<object>()),
-                        new System.Lazy<int>(() => c.Resolve<int>()),
-                        new System.Lazy<int?>(() => c.ResolveNullableValue<int>()));
+                    var to = (SomeNamespace.Subnamespace.LazyDependencies)o;
+                    to.Object = c.Resolve<System.Lazy<object>>();
+                    to.NullableObject = c.Resolve<System.Lazy<object?>>();
+                    to.Value = c.Resolve<System.Lazy<int>>();
+                    to.NullableValue = c.Resolve<System.Lazy<int?>>();
+                    to.RecursiveLazy = c.Resolve<System.Lazy<System.Lazy<System.Lazy<int>>>>();
+                    to.LazyList = c.Resolve<System.Lazy<System.Collections.Generic.List<int>>>();
+                    to.ObjectNullable = c.ResolveNullable<System.Lazy<object>>();
+                    to.NullableObjectNullable = c.ResolveNullable<System.Lazy<object?>>();
+                    to.ValueNullable = c.ResolveNullable<System.Lazy<int>>();
+                    to.NullableValueNullable = c.ResolveNullable<System.Lazy<int?>>();
+                    to.RecursiveLazyNullable = c.ResolveNullable<System.Lazy<System.Lazy<System.Lazy<int>>>>();
+                    to.LazyListNullable = c.ResolveNullable<System.Lazy<System.Collections.Generic.List<int>>>();
+                    to.Inject(
+                        c.Resolve<System.Lazy<object>>(),
+                        c.Resolve<System.Lazy<object?>>(),
+                        c.Resolve<System.Lazy<int>>(),
+                        c.Resolve<System.Lazy<int?>>());
                 })
                 .DontDispose();
         }
@@ -626,23 +670,25 @@ namespace ManualDi.Main
     public static class ManualDiGeneratedSomeNamespaceSubnamespaceInjectIdAttributeExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, SomeNamespace.Subnamespace.InjectIdAttribute> FromConstructor<T>(this TypeBinding<T, SomeNamespace.Subnamespace.InjectIdAttribute> typeBinding)
+        internal static Binding<T, SomeNamespace.Subnamespace.InjectIdAttribute> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.InjectIdAttribute> binding)
         {
-            return typeBinding.FromMethod(static c => new SomeNamespace.Subnamespace.InjectIdAttribute());
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.InjectIdAttribute());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, SomeNamespace.Subnamespace.InjectIdAttribute> Default<T>(this TypeBinding<T, SomeNamespace.Subnamespace.InjectIdAttribute> typeBinding)
+        internal static Binding<T, SomeNamespace.Subnamespace.InjectIdAttribute> Default<T>(this Binding<T, SomeNamespace.Subnamespace.InjectIdAttribute> binding)
         {
-            return typeBinding.Initialize(static (o, c) => o.Initialize())
+            return binding.Initialize(static o => ((SomeNamespace.Subnamespace.InjectIdAttribute)o).Initialize())
                 .Inject(static (o, c) => 
                 {
-                    o.HelloIdValue = c.Resolve<int>(x => x.Id("A"));
-                    o.LazyInt = new System.Lazy<int>(() => c.Resolve<int>(x => x.Id("A")));
-                    o.Inject(
+                    var to = (SomeNamespace.Subnamespace.InjectIdAttribute)o;
+                    to.HelloIdValue = c.Resolve<int>(x => x.Id("A"));
+                    to.LazyInt = c.Resolve<System.Lazy<int>>(x => x.Id("A"));
+                    to.Inject(
                         c.Resolve<object>(x => x.Id("Potato")),
                         c.Resolve<float>(x => x.Id("Banana")),
-                        new System.Lazy<int>(() => c.Resolve<int>(x => x.Id("P"))),
+                        c.Resolve<System.Lazy<int>>(x => x.Id("P")),
                         c.Resolve<object>());
                 })
                 .DontDispose();
@@ -659,20 +705,26 @@ namespace ManualDi.Main
     public static class ManualDiGeneratedMultipleOfEachExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, MultipleOfEach> FromConstructor<T>(this TypeBinding<T, MultipleOfEach> typeBinding)
+        internal static Binding<T, MultipleOfEach> FromConstructor<T>(this Binding<T, MultipleOfEach> binding)
         {
-            return typeBinding.FromMethod(static c => new MultipleOfEach(
-                c.Resolve<object>(),
-                c.Resolve<object>()));
+            return binding
+                .FromMethod(static c => new MultipleOfEach(
+                    c.Resolve<object>(),
+                    c.Resolve<object>()))
+                .DependsOn(static d => {
+                    d.Dependency<object>();
+                    d.Dependency<object>();
+                });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, MultipleOfEach> Default<T>(this TypeBinding<T, MultipleOfEach> typeBinding)
+        internal static Binding<T, MultipleOfEach> Default<T>(this Binding<T, MultipleOfEach> binding)
         {
-            return typeBinding.Initialize(static (o, c) => o.Initialize())
+            return binding.Initialize(static o => ((MultipleOfEach)o).Initialize())
                 .Inject(static (o, c) => 
                 {
-                    o.Inject(
+                    var to = (MultipleOfEach)o;
+                    to.Inject(
                         c.Resolve<object>());
                 })
                 .DontDispose();
@@ -689,16 +741,20 @@ namespace ManualDi.Main
     public static class ManualDiGeneratedInjectContainerExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, InjectContainer> FromConstructor<T>(this TypeBinding<T, InjectContainer> typeBinding)
+        internal static Binding<T, InjectContainer> FromConstructor<T>(this Binding<T, InjectContainer> binding)
         {
-            return typeBinding.FromMethod(static c => new InjectContainer(
-                c));
+            return binding
+                .FromMethod(static c => new InjectContainer(
+                    c))
+                .DependsOn(static d => {
+                    d.Dependency<ManualDi.Main.IDiContainer>();
+                });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static TypeBinding<T, InjectContainer> Default<T>(this TypeBinding<T, InjectContainer> typeBinding)
+        internal static Binding<T, InjectContainer> Default<T>(this Binding<T, InjectContainer> binding)
         {
-            return typeBinding.DontDispose();
+            return binding.DontDispose();
         }
     }
 }
@@ -712,9 +768,9 @@ namespace ManualDi.Main
     public static class ManualDiGeneratedUnityEngineObjectExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<T, UnityEngine.Object> Default<T>(this TypeBinding<T, UnityEngine.Object> typeBinding)
+        public static Binding<T, UnityEngine.Object> Default<T>(this Binding<T, UnityEngine.Object> binding)
         {
-            return typeBinding.DontDispose();
+            return binding.DontDispose();
         }
     }
 }
@@ -728,12 +784,13 @@ namespace ManualDi.Main
     public static class ManualDiGeneratedUnityEngineMonoBeheviourExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<T, UnityEngine.MonoBeheviour> Default<T>(this TypeBinding<T, UnityEngine.MonoBeheviour> typeBinding)
+        public static Binding<T, UnityEngine.MonoBeheviour> Default<T>(this Binding<T, UnityEngine.MonoBeheviour> binding)
         {
-            return typeBinding.Initialize(static (o, c) => o.Initialize())
+            return binding.Initialize(static o => ((UnityEngine.MonoBeheviour)o).Initialize())
                 .Inject(static (o, c) => 
                 {
-                    o.Something = c.Resolve<object>();
+                    var to = (UnityEngine.MonoBeheviour)o;
+                    to.Something = c.Resolve<object>();
                 })
                 .DontDispose();
         }

@@ -10,7 +10,7 @@ namespace ManualDi.Main
     
     public sealed class DiContainerBindings
     {
-        private readonly Dictionary<IntPtr, TypeBinding> bindingsByType;
+        private readonly Dictionary<IntPtr, Binding> bindingsByType;
         private readonly List<ContainerDelegate> injectDelegates;
         private readonly List<ContainerDelegate> initializationDelegates;
         private readonly List<ContainerDelegate> startupDelegates;
@@ -38,23 +38,23 @@ namespace ManualDi.Main
             this.containerDisposablesCount = containerDisposablesCount;
         }
         
-        internal void AddBinding(TypeBinding typeBinding, Type type)
+        internal void AddBinding(Binding binding, Type type)
         {
             bindingCount++;
             
             var apparentType = type.TypeHandle.Value;
-            if (!bindingsByType.TryGetValue(apparentType, out var innerTypeBinding)) //TODO: Maybe this is more efficient if we do a TryAdd instead (common case)
+            if (!bindingsByType.TryGetValue(apparentType, out var innerbinding)) //TODO: Maybe this is more efficient if we do a TryAdd instead (common case)
             {
-                bindingsByType.Add(apparentType, typeBinding);
+                bindingsByType.Add(apparentType, binding);
                 return;
             }
 
-            while (innerTypeBinding.NextTypeBinding is not null)
+            while (innerbinding.NextBinding is not null)
             {
-                innerTypeBinding = innerTypeBinding.NextTypeBinding;
+                innerbinding = innerbinding.NextBinding;
             }
             
-            innerTypeBinding.NextTypeBinding = typeBinding;
+            innerbinding.NextBinding = binding;
         }
         
         public void QueueInjection(ContainerDelegate containerDelegate)

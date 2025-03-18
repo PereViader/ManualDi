@@ -11,7 +11,7 @@ public class TestDiContainerInject
     public async Task TestInject()
     {
         var instance = new object();
-        var injectMethod = Substitute.For<InjectDelegate<object>>();
+        var injectMethod = Substitute.For<InjectDelegate>();
 
         await using var container = await new DiContainerBindings().Install(b =>
         {

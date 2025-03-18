@@ -9,7 +9,7 @@ namespace ManualDi.Main
         void Initialize();
     }
     
-    public sealed class TypeBindingSync<TApparent, TConcrete> : TypeBinding, ITypeBindingSyncSetup
+    public class TypeBindingSync<TApparent, TConcrete> : TypeBinding, ITypeBindingSyncSetup
     {
         public override Type ConcreteType => typeof(TConcrete);
 
@@ -20,7 +20,7 @@ namespace ManualDi.Main
         void ITypeBindingSyncSetup.Create(DiContainer diContainer)
         {
             var instance = CreateDelegate!.Invoke(diContainer) //Optimization: Assumes it will be initialized
-                           ?? throw new InvalidOperationException($"Could not create object for TypeBinding with Apparent type {typeof(TApparent)} and Concrete type {typeof(TConcrete)}");
+                         ?? throw new InvalidOperationException($"Could not create object for TypeBinding with Apparent type {typeof(TApparent)} and Concrete type {typeof(TConcrete)}");
             Instance = instance;
             
             if (TryToDispose)

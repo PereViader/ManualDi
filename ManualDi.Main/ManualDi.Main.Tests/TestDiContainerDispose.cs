@@ -47,7 +47,7 @@ public class TestDiContainerDispose
         var disposable1 = Substitute.For<IA>();
         var disposable2 = Substitute.For<IB>();
             
-        IDiContainer container = await new DiContainerBindings().Install(b =>
+        var container = await new DiContainerBindings().Install(b =>
         {
             b.Bind<IA>().FromMethod(c =>
             {

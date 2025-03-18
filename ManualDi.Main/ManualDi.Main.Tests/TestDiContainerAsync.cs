@@ -72,8 +72,8 @@ public class TestDiContainerAsync
                 .InjectAsync(injectAsyncDelegate)
                 .Initialize(initializeDelegate)
                 .InitializeAsync(initializeAsyncDelegate)
-                .Dispose(disposeDelegate)
-                .DisposeAsync(disposeAsyncDelegate);
+                .DisposeAsync(disposeAsyncDelegate)
+                .Dispose(disposeDelegate);
         }).Build(CancellationToken.None);
 
         await container.DisposeAsync();

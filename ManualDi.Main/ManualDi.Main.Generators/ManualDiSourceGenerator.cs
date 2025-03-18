@@ -198,18 +198,19 @@ namespace ManualDi.Main.Generators
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
                     {{context.ObsoleteText}}{{accessibilityString}} static TypeBindingSync<T, {{context.ClassName}}> FromConstructor<T>(this TypeBindingSync<T, {{context.ClassName}}> typeBinding)
                     {
-                        return typeBinding.FromMethod(static c => new {{context.ClassName}}(
+                        typeBinding.CreateDelegate = static c => new {{context.ClassName}}(
             """);
             
             CreateMethodResolution(constructor, "                ", context.TypeReferences, context.StringBuilder);
 
-            context.StringBuilder.Append(")");
+            context.StringBuilder.Append(");");
             
-            CreateMethodDependencies(constructor, "                ", context.StringBuilder);
+            CreateMethodDependencies(constructor, "            ", context.StringBuilder);
                 
-            context.StringBuilder.Append($$"""
-            );
+            context.StringBuilder.Append("""
+                        return typeBinding;
                     }
+            
             
             """);
         }
@@ -243,10 +244,9 @@ namespace ManualDi.Main.Generators
                 return;
             }
 
-            stringBuilder.AppendLine(",");
+            stringBuilder.AppendLine();
             stringBuilder.Append(tabs);
-            stringBuilder.AppendLine("d => {");
-            bool isFirst = true;
+            stringBuilder.AppendLine("typeBinding.Dependencies = static d => {");
             foreach (var parameter in methodSymbol.Parameters)
             {
                 stringBuilder.Append(tabs);
@@ -255,7 +255,7 @@ namespace ManualDi.Main.Generators
                 stringBuilder.AppendLine(">();"); //TODO missing ID filter here
             }
             stringBuilder.Append(tabs);
-            stringBuilder.AppendLine(" }");
+            stringBuilder.AppendLine(" };");
         }
 
         private static void CreateIdResolution(string? id, StringBuilder stringBuilder)

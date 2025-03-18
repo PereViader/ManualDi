@@ -83,7 +83,7 @@ namespace ManualDi.Main
             return this;
         }
         
-        public async ValueTask<IDiContainer> Build(CancellationToken cancellationToken)
+        public async ValueTask<DiContainer> Build(CancellationToken cancellationToken)
         {
             var diContainer = new DiContainer(
                 bindingsByType,

@@ -23,6 +23,18 @@ namespace ManualDi.Main
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TConcrete, TConcrete> BindBoth<TApparent, TConcrete>(this DiContainerBindings diContainerBindings)
+        {
+            Binding<TApparent, TConcrete> typeBinding = new();
+            typeBinding.FromContainerResolve();
+            diContainerBindings.AddBinding(typeBinding, typeof(TApparent));
+
+            Binding<TConcrete, TConcrete> concrete = new();
+            diContainerBindings.AddBinding(concrete, typeof(TConcrete));
+            return concrete;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DiContainerBindings WithStartup<T>(this DiContainerBindings diContainerBindings, Action<T> startup)
         {
             diContainerBindings.QueueStartup(c =>

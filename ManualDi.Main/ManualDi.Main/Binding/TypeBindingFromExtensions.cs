@@ -12,15 +12,6 @@ namespace ManualDi.Main
             typeBinding.CreateConcreteDelegate = static c => c.Resolve<TConcrete>();
             return typeBinding;
         }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static UnsafeTypeBinding FromContainerResolve(
-            this UnsafeTypeBinding typeBinding
-        )
-        {
-            typeBinding.CreateConcreteDelegate = c => c.Resolve(typeBinding.ConcreteType);
-            return typeBinding;
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<TApparent, TConcrete> FromContainerResolve<TApparent, TConcrete>(
@@ -29,16 +20,6 @@ namespace ManualDi.Main
             )
         {
             typeBinding.CreateConcreteDelegate = c => c.Resolve<TConcrete>(filterBindingDelegate);
-            return typeBinding;
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static UnsafeTypeBinding FromContainerResolve(
-            this UnsafeTypeBinding typeBinding,
-            FilterBindingDelegate constraints
-        )
-        {
-            typeBinding.CreateConcreteDelegate = c => c.Resolve(typeBinding.ConcreteType, constraints);
             return typeBinding;
         }
         
@@ -65,42 +46,10 @@ namespace ManualDi.Main
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static UnsafeTypeBinding FromSubContainerResolve(
-            this UnsafeTypeBinding typeBinding,
-            InstallDelegate installDelegate,
-            bool isContainerParent = true
-        )
-        {
-            IDiContainer? subContainer = null;
-            typeBinding.CreateConcreteDelegate = c =>
-            {
-                var bindings = new DiContainerBindings().Install(installDelegate);
-                if (isContainerParent)
-                {
-                    bindings.WithParentContainer(c);
-                }
-                subContainer = bindings.Build();
-                return subContainer.Resolve(typeBinding.ConcreteType);
-            };
-            typeBinding.Dispose((_, _) => subContainer?.Dispose());
-            return typeBinding;
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TypeBinding<TApparent, TConcrete> FromInstance<TApparent, TConcrete>(
             this TypeBinding<TApparent, TConcrete> typeBinding,
             TConcrete instance
             )
-        {
-            typeBinding.CreateConcreteDelegate = _ => instance;
-            return typeBinding;
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static UnsafeTypeBinding FromInstance(
-            this UnsafeTypeBinding typeBinding,
-            object instance
-        )
         {
             typeBinding.CreateConcreteDelegate = _ => instance;
             return typeBinding;
@@ -111,16 +60,6 @@ namespace ManualDi.Main
             this TypeBinding<TApparent, TConcrete> typeBinding,
             CreateDelegate<TConcrete> createDelegate
             )
-        {
-            typeBinding.CreateConcreteDelegate = createDelegate;
-            return typeBinding;
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static UnsafeTypeBinding FromMethod(
-            this UnsafeTypeBinding typeBinding,
-            CreateDelegate<object> createDelegate
-        )
         {
             typeBinding.CreateConcreteDelegate = createDelegate;
             return typeBinding;

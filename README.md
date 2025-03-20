@@ -975,25 +975,3 @@ var initializer = container.Resolve<Initializer>();
 
 await initializer.StartApplication();
 ```
-
-# Unsafe Binding (Experimental - DONT USE - WILL BE REMOVED)
-
-The bindings may also be done with a non type safe interface. This variant should only be used when implementing programmatic driven configuration. Use the type safe variant when all the types involved are known.
-
-```csharp
-List<Type> someTypes = GetSomeTypesWithReflection();
-foreach(var type in someTypes)
-{
-    b.Bind(type)....
-}
-```
-
-Using reflection to do such bindings will slow down your application due to the runtime Type metadata analysis necessary.
-
-If the reduced performance is not desired, [source generation](https://github.com/PereViader/ManualDi/tree/develop/ManualDi.Main/ManualDi.Main.Generators) of equivalent code that avoids reflection can be done to do the analysis at build time.
-
-Some platforms may not even be compatible with reflection. If you target any such platform, using source generators is the only approach.
-
-```csharp
-b.InstallSomeTypes(); // This could be source generated to do the same but faster
-```

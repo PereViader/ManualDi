@@ -12,14 +12,5 @@ namespace ManualDi.Main
             typeBinding.InjectionDelegate += injectionDelegate;
             return typeBinding;
         }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static UnsafeTypeBinding Inject(
-            this UnsafeTypeBinding typeBinding, 
-            InstanceContainerDelegate<object> injectionDelegate)
-        {
-            typeBinding.InjectionDelegate += injectionDelegate;
-            return typeBinding;
-        }
     }
 }

@@ -21,15 +21,5 @@ namespace ManualDi.Main
             typeBinding.Inject((o, c) => c.QueueDispose(() => disposeDelegate.Invoke(o, c)));
             return typeBinding;
         }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static UnsafeTypeBinding Dispose(
-            this UnsafeTypeBinding typeBinding,
-            InstanceContainerDelegate<object> disposeDelegate
-            )
-        {
-            typeBinding.Inject((o, c) => c.QueueDispose(() => disposeDelegate.Invoke(o, c)));
-            return typeBinding;
-        }
     }
 }

@@ -13,15 +13,5 @@ namespace ManualDi.Main
             typeBinding.InitializationDelegate += initializationDelegate;
             return typeBinding;
         }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static UnsafeTypeBinding Initialize(
-            this UnsafeTypeBinding typeBinding,
-            InstanceContainerDelegate<object> initializationDelegate
-            )
-        {
-            typeBinding.InitializationDelegate += initializationDelegate;
-            return typeBinding;
-        }
     }
 }

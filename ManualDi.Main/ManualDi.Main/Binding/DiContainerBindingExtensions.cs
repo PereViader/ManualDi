@@ -23,19 +23,15 @@ namespace ManualDi.Main
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static UnsafeTypeBinding Bind(this DiContainerBindings diContainerBindings, Type concreteType)
+        public static TypeBinding<TConcrete, TConcrete> BindBoth<TApparent, TConcrete>(this DiContainerBindings diContainerBindings)
         {
-            UnsafeTypeBinding typeBinding = new(concreteType, concreteType);
-            diContainerBindings.AddBinding(typeBinding, concreteType);
-            return typeBinding;
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static UnsafeTypeBinding Bind(this DiContainerBindings diContainerBindings, Type apparentType, Type concreteType)
-        {
-            UnsafeTypeBinding typeBinding = new(apparentType, concreteType);
-            diContainerBindings.AddBinding(typeBinding, apparentType);
-            return typeBinding;
+            TypeBinding<TApparent, TConcrete> typeBinding = new();
+            typeBinding.Transient().FromContainerResolve();
+            diContainerBindings.AddBinding(typeBinding, typeof(TApparent));
+
+            TypeBinding<TConcrete, TConcrete> concrete = new();
+            diContainerBindings.AddBinding(concrete, typeof(TConcrete));
+            return concrete;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

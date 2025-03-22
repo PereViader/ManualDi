@@ -2,7 +2,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -206,7 +205,7 @@ namespace ManualDi.Main.Generators
 
             context.StringBuilder.Append("))");
             
-            CreateMethodDependencies(constructor, "            ", context.StringBuilder);
+            CreateMethodDependencies(constructor, "            ", context.TypeReferences, context.StringBuilder);
                 
             context.StringBuilder.Append("""
             ;
@@ -238,7 +237,7 @@ namespace ManualDi.Main.Generators
             }
         }
         
-        private static void CreateMethodDependencies(IMethodSymbol methodSymbol, string tabs, StringBuilder stringBuilder)
+        private static void CreateMethodDependencies(IMethodSymbol methodSymbol, string tabs, TypeReferences typeReferences, StringBuilder stringBuilder)
         {
             if (methodSymbol.Parameters.Length == 0)
             {
@@ -253,10 +252,54 @@ namespace ManualDi.Main.Generators
                 stringBuilder.Append(tabs);
                 stringBuilder.Append("        d.ConstructorDependency<");
                 stringBuilder.Append(FullyQualifyTypeWithoutNullable(parameter.Type));
-                stringBuilder.AppendLine(">();"); //TODO missing ID filter here
+                stringBuilder.AppendLine(">(");
+                var attribute = typeReferences.GetInjectAttribute(parameter);
+                var id = attribute is null ? null : GetInjectId(attribute);
+                CreateIdResolution(id, stringBuilder);
+                stringBuilder.AppendLine(");");
             }
             stringBuilder.Append(tabs);
             stringBuilder.Append("    })");
+        }
+        
+        private static void CreateMethodPropertyDependencies(IMethodSymbol? methodSymbol, (IPropertySymbol propertySymbol, string? id)[] properties, string tabs, TypeReferences typeReferences, StringBuilder stringBuilder)
+        {
+            if (methodSymbol?.Parameters.Length == 0 && properties.Length == 0)
+            {
+                return;
+            }
+
+            stringBuilder.AppendLine();
+            stringBuilder.Append(tabs);
+            stringBuilder.AppendLine(".DependsOn(static d => {");
+
+            if (methodSymbol is not null)
+            {
+                foreach (var parameter in methodSymbol.Parameters)
+                {
+                    stringBuilder.Append(tabs);
+                    stringBuilder.Append("    d.InjectionDependency<");
+                    stringBuilder.Append(FullyQualifyTypeWithoutNullable(parameter.Type));
+                    stringBuilder.Append(">(");
+                    var attribute = typeReferences.GetInjectAttribute(parameter);
+                    var id = attribute is null ? null : GetInjectId(attribute);
+                    CreateIdResolution(id, stringBuilder);
+                    stringBuilder.AppendLine(");");
+                }
+            }
+            
+            foreach (var parameter in properties)
+            {
+                stringBuilder.Append(tabs);
+                stringBuilder.Append("    d.InjectionDependency<");
+                stringBuilder.Append(FullyQualifyTypeWithoutNullable(parameter.propertySymbol.Type));
+                stringBuilder.Append(">(");
+                CreateIdResolution(parameter.id, stringBuilder);
+                stringBuilder.AppendLine(");");
+            }
+            
+            stringBuilder.Append(tabs);
+            stringBuilder.Append("})");
         }
 
         private static void CreateIdResolution(string? id, StringBuilder stringBuilder)
@@ -397,27 +440,34 @@ namespace ManualDi.Main.Generators
 
         private static bool AddInject(GenerationClassContext context, bool isOnNewLine)
         {
-            var injectMethods = context.ClassSymbol
+            var injectMethod = context.ClassSymbol
                 .GetMembers()
                 .OfType<IMethodSymbol>()
                 .Where(x => x is { Name: "Inject", DeclaredAccessibility: Accessibility.Public or Accessibility.Internal, IsStatic: false })
                 .OrderByDescending(x => x.DeclaredAccessibility)
-                .ToArray();
+                .FirstOrDefault();
             
             var injectProperties = context.ClassSymbol
                 .GetMembers()
                 .OfType<IPropertySymbol>()
-                .Select(x => (propertySymbol: x, attribute: context.TypeReferences.GetInjectAttribute(x)))
-                .Where(x => x.attribute is not null)
+                .Select<IPropertySymbol, (IPropertySymbol propertySymbol, string? id)?>(x =>
+                {
+                    var attribute = context.TypeReferences.GetInjectAttribute(x);
+                    if (attribute is not null)
+                    {
+                        return (propertySymbol: x, id: GetInjectId(attribute));
+                    }
+                    return null;
+                })
+                .Where(x => x.HasValue)
+                .Select(x => x!.Value)
                 .ToArray();
 
-            if (injectMethods.Length == 0 && injectProperties.Length == 0)
+            if (injectMethod is null && injectProperties.Length == 0)
             {
                 return isOnNewLine;
             }
-
-            var injectMethod = injectMethods.FirstOrDefault();
-
+            
             if (isOnNewLine)
             {
                 context.StringBuilder.AppendLine();
@@ -432,9 +482,8 @@ namespace ManualDi.Main.Generators
             context.StringBuilder.Append(context.ClassName);
             context.StringBuilder.AppendLine(")o;");
 
-            foreach (var (injectProperty, attribute) in injectProperties)
+            foreach (var (injectProperty, id) in injectProperties)
             {
-                var id = attribute is null ? null : GetInjectId(attribute);
                 context.StringBuilder.Append($"                    to.{injectProperty.Name} = ");
                 CreteTypeResolution(injectProperty.Type, id, context.TypeReferences, context.StringBuilder);
                 context.StringBuilder.AppendLine(";");
@@ -448,6 +497,8 @@ namespace ManualDi.Main.Generators
             }
 
             context.StringBuilder.Append("                })");
+            
+            CreateMethodPropertyDependencies(injectMethod, injectProperties, "                ", context.TypeReferences, context.StringBuilder);
             return true;
         }
 

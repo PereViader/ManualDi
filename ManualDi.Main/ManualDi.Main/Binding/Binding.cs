@@ -30,8 +30,12 @@ namespace ManualDi.Main
     {
         void ConstructorDependency<T>();
         void ConstructorDependency<T>(FilterBindingDelegate filter);
+        void NullableConstructorDependency<T>();
+        void NullableConstructorDependency<T>(FilterBindingDelegate filter);
         void InjectionDependency<T>();
         void InjectionDependency<T>(FilterBindingDelegate filter);
+        void NullableInjectionDependency<T>();
+        void NullableInjectionDependency<T>(FilterBindingDelegate filter);
     }
 
     internal enum BindingWiredState

@@ -346,7 +346,7 @@ namespace SomeNamespace.Subnamespace
     {
         private const string Something = "A";
 
-        [Inject(Something)] public int HelloIdValue { get; set; }
+        [Inject(Something)] public int? HelloIdValue { get; set; }
         [Inject(Something)] public Lazy<int> LazyInt { get; set; } = default!;
 
         public void Inject(
@@ -376,7 +376,7 @@ class MultipleOfEach
 
 class InjectContainer
 {
-    public InjectContainer(IDiContainer c) {} // The container should be provided as is
+    public InjectContainer(IDiContainer c, CancellationToken ct) {} // The container should be provided as is
 }
 
 partial class Partial

@@ -185,6 +185,40 @@ namespace ManualDi.Main
                 bindings.Add(binding);
             }
         }
+        
+        public void NullableConstructorDependency<T>()
+        {
+            var binding = GetTypeForConstraint(typeof(T));
+            if (binding is null)
+            {
+                return;
+            }
+            
+            if (binding.BindingWiredState < BindingWiredState.Wired)
+            {
+                binding.BindingWiredState = BindingWiredState.Wired;
+                injectedBinding = binding;
+                binding.Dependencies?.Invoke(this);
+                bindings.Add(binding);
+            }
+        }
+
+        public void NullableConstructorDependency<T>(FilterBindingDelegate filter)
+        {
+            var binding = GetTypeForConstraint(typeof(T), filter);
+            if (binding is null)
+            {
+                return;
+            }
+            
+            if (binding.BindingWiredState < BindingWiredState.Wired)
+            {
+                binding.BindingWiredState = BindingWiredState.Wired;
+                injectedBinding = binding;
+                binding.Dependencies?.Invoke(this);
+                bindings.Add(binding);
+            }
+        }
 
         public void InjectionDependency<T>()
         {
@@ -208,6 +242,38 @@ namespace ManualDi.Main
             if (binding is null)
             {
                 throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedBinding?.GetType().FullName ?? "null"} is not registered.");
+            }
+            
+            if (binding.BindingWiredState is BindingWiredState.Wired)
+            {
+                return;
+            }
+            
+            injectBindings!.Add(binding);
+        }
+        
+        public void NullableInjectionDependency<T>()
+        {
+            var binding = GetTypeForConstraint(typeof(T));
+            if (binding is null)
+            {
+                return;
+            }
+            
+            if (binding.BindingWiredState is BindingWiredState.Wired)
+            {
+                return;
+            }
+            
+            injectBindings!.Add(binding);
+        }
+
+        public void NullableInjectionDependency<T>(FilterBindingDelegate filter)
+        {
+            var binding = GetTypeForConstraint(typeof(T), filter);
+            if (binding is null)
+            {
+                return;
             }
             
             if (binding.BindingWiredState is BindingWiredState.Wired)

@@ -250,13 +250,9 @@ namespace ManualDi.Main.Generators
             foreach (var parameter in methodSymbol.Parameters)
             {
                 stringBuilder.Append(tabs);
-                stringBuilder.Append("        d.ConstructorDependency<");
-                stringBuilder.Append(FullyQualifyTypeWithoutNullable(parameter.Type));
-                stringBuilder.AppendLine(">(");
                 var attribute = typeReferences.GetInjectAttribute(parameter);
                 var id = attribute is null ? null : GetInjectId(attribute);
-                CreateIdResolution(id, stringBuilder);
-                stringBuilder.AppendLine(");");
+                CreteTypeDependency(true, parameter.Type, id, typeReferences, stringBuilder);
             }
             stringBuilder.Append(tabs);
             stringBuilder.Append("    })");
@@ -278,24 +274,16 @@ namespace ManualDi.Main.Generators
                 foreach (var parameter in methodSymbol.Parameters)
                 {
                     stringBuilder.Append(tabs);
-                    stringBuilder.Append("    d.InjectionDependency<");
-                    stringBuilder.Append(FullyQualifyTypeWithoutNullable(parameter.Type));
-                    stringBuilder.Append(">(");
                     var attribute = typeReferences.GetInjectAttribute(parameter);
                     var id = attribute is null ? null : GetInjectId(attribute);
-                    CreateIdResolution(id, stringBuilder);
-                    stringBuilder.AppendLine(");");
+                    CreteTypeDependency(false, parameter.Type, id, typeReferences, stringBuilder);
                 }
             }
             
             foreach (var parameter in properties)
             {
                 stringBuilder.Append(tabs);
-                stringBuilder.Append("    d.InjectionDependency<");
-                stringBuilder.Append(FullyQualifyTypeWithoutNullable(parameter.propertySymbol.Type));
-                stringBuilder.Append(">(");
-                CreateIdResolution(parameter.id, stringBuilder);
-                stringBuilder.AppendLine(");");
+                CreteTypeDependency(false, parameter.propertySymbol.Type, parameter.id, typeReferences, stringBuilder);
             }
             
             stringBuilder.Append(tabs);
@@ -317,6 +305,12 @@ namespace ManualDi.Main.Generators
             if (typeReferences.IsSymbolDiContainer(typeSymbol))
             {
                 stringBuilder.Append("c");
+                return;
+            }
+
+            if (typeReferences.IsCancellationToken(typeSymbol))
+            {
+                stringBuilder.Append("c.CancellationToken");
                 return;
             }
 
@@ -361,6 +355,69 @@ namespace ManualDi.Main.Generators
             stringBuilder.Append(">(");
             CreateIdResolution(id, stringBuilder);
             stringBuilder.Append(")");
+        }
+        
+        private static void CreteTypeDependency(bool isConstructor, ITypeSymbol typeSymbol, string? id, TypeReferences typeReferences, StringBuilder stringBuilder)
+        {
+            if (typeReferences.IsSymbolDiContainer(typeSymbol))
+            {
+                return;
+            }
+
+            if (typeReferences.IsCancellationToken(typeSymbol))
+            {
+                return;
+            }
+
+            // Updated code below
+            var listGenericType = typeReferences.TryGetEnumerableType(typeSymbol);
+            if (listGenericType is not null)
+            {
+                if (isConstructor)
+                {
+                    stringBuilder.Append("    d.NullableConstructorDependency<");
+                }
+                else
+                {
+                    stringBuilder.Append("    d.NullableInjectionDependency<");
+                }
+                stringBuilder.Append(FullyQualifyTypeWithoutNullable(listGenericType));
+                stringBuilder.Append(">(");
+                CreateIdResolution(id, stringBuilder);
+                stringBuilder.AppendLine(");");
+
+                return;
+            }
+
+            if (IsNullableTypeSymbol(typeSymbol))
+            {
+                if (isConstructor)
+                {
+                    stringBuilder.Append("    d.NullableConstructorDependency<");
+                }
+                else
+                {
+                    stringBuilder.Append("    d.NullableInjectionDependency<");
+                }
+                stringBuilder.Append(FullyQualifyTypeWithoutNullable(typeSymbol));
+                stringBuilder.Append(">(");
+                CreateIdResolution(id, stringBuilder);
+                stringBuilder.AppendLine(");");
+                return;
+            }
+            
+            if (isConstructor)
+            {
+                stringBuilder.Append("    d.ConstructorDependency<");
+            }
+            else
+            {
+                stringBuilder.Append("    d.InjectionDependency<");
+            }
+            stringBuilder.Append(FullyQualifyTypeWithoutNullable(typeSymbol));
+            stringBuilder.Append(">(");
+            CreateIdResolution(id, stringBuilder);
+            stringBuilder.AppendLine(");");
         }
 
         private static string CreateContainerResolutionMethod(ITypeSymbol typeSymbol)

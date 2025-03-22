@@ -52,7 +52,7 @@ public class TestContainerLifecycle
         {
             b.Bind<IChild1>()
                 .FromMethod(_ => child1)
-                .DependsOn(d => d.Dependency<IChild1Child>())
+                .DependsOn(d => d.ConstructorDependency<IChild1Child>())
                 .Inject((o, c) => ((IChild1)o).Inject())
                 .Initialize(o => ((IChild1)o).Initialize());
 
@@ -68,7 +68,7 @@ public class TestContainerLifecycle
 
             b.Bind<IChild2>()
                 .FromInstance(child2)
-                .DependsOn(d => d.Dependency<IChild2Child>())
+                .DependsOn(d => d.ConstructorDependency<IChild2Child>())
                 .Inject((o, c) => ((IChild2)o).Inject())
                 .InitializeAsync((o, _) => ((IChild2)o).InitializeAsync());
 
@@ -76,8 +76,8 @@ public class TestContainerLifecycle
                 .FromInstance(startup)
                 .DependsOn(d =>
                 {
-                    d.Dependency<IChild1>();
-                    d.Dependency<IChild2>();
+                    d.ConstructorDependency<IChild1>();
+                    d.ConstructorDependency<IChild2>();
                 })
                 .Inject((o, c) => ((IStartup)o).Inject())
                 .Initialize(o => ((IStartup)o).InitializeAsync());

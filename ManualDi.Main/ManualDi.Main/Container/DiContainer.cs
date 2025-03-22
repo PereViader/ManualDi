@@ -17,6 +17,7 @@ namespace ManualDi.Main
         private Binding? injectedBinding;
         private readonly CancellationTokenSource cancellationTokenSource;
         private readonly List<object> disposables;
+        private HashSet<Binding>? injectBindings;
         private bool disposedValue;
         
         public CancellationToken CancellationToken => cancellationTokenSource.Token;
@@ -120,14 +121,16 @@ namespace ManualDi.Main
 
         private void SetupBindings()
         {
+            injectBindings = new();
+            
             foreach (var rootBinding in bindingsByType)
             {
                 var binding = rootBinding.Value;
                 while (binding is not null)
                 {
-                    if (!binding.IsAlreadyWired)
+                    if (binding.BindingWiredState < BindingWiredState.Wired)
                     {
-                        binding.IsAlreadyWired = true;
+                        binding.BindingWiredState = BindingWiredState.Wired;
                         injectedBinding = binding;
                         binding.Dependencies?.Invoke(this);
                         bindings.Add(binding);
@@ -135,9 +138,21 @@ namespace ManualDi.Main
                     binding = binding.NextBinding;
                 }
             }
+
+            foreach (var binding in injectBindings)
+            {
+                if (binding.BindingWiredState is BindingWiredState.Wired)
+                {
+                    continue;
+                }
+                
+                bindings.Add(binding);
+            }
+
+            injectBindings = null;
         }
         
-        public void Dependency<T>()
+        public void ConstructorDependency<T>()
         {
             var binding = GetTypeForConstraint(typeof(T));
             if (binding is null)
@@ -145,16 +160,16 @@ namespace ManualDi.Main
                 throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedBinding?.GetType().FullName ?? "null"} is not registered.");
             }
             
-            if (!binding.IsAlreadyWired)
+            if (binding.BindingWiredState < BindingWiredState.Wired)
             {
-                binding.IsAlreadyWired = true;
+                binding.BindingWiredState = BindingWiredState.Wired;
                 injectedBinding = binding;
                 binding.Dependencies?.Invoke(this);
                 bindings.Add(binding);
             }
         }
 
-        public void Dependency<T>(FilterBindingDelegate filter)
+        public void ConstructorDependency<T>(FilterBindingDelegate filter)
         {
             var binding = GetTypeForConstraint(typeof(T), filter);
             if (binding is null)
@@ -162,13 +177,45 @@ namespace ManualDi.Main
                 throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedBinding?.GetType().FullName ?? "null"} with some filter is not registered.");
             }
             
-            if (!binding.IsAlreadyWired)
+            if (binding.BindingWiredState < BindingWiredState.Wired)
             {
-                binding.IsAlreadyWired = true;
+                binding.BindingWiredState = BindingWiredState.Wired;
                 injectedBinding = binding;
                 binding.Dependencies?.Invoke(this);
                 bindings.Add(binding);
             }
+        }
+
+        public void InjectionDependency<T>()
+        {
+            var binding = GetTypeForConstraint(typeof(T));
+            if (binding is null)
+            {
+                throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedBinding?.GetType().FullName ?? "null"} is not registered.");
+            }
+            
+            if (binding.BindingWiredState is BindingWiredState.Wired)
+            {
+                return;
+            }
+            
+            injectBindings!.Add(binding);
+        }
+
+        public void InjectionDependency<T>(FilterBindingDelegate filter)
+        {
+            var binding = GetTypeForConstraint(typeof(T), filter);
+            if (binding is null)
+            {
+                throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedBinding?.GetType().FullName ?? "null"} is not registered.");
+            }
+            
+            if (binding.BindingWiredState is BindingWiredState.Wired)
+            {
+                return;
+            }
+            
+            injectBindings!.Add(binding);
         }
 
         public object? ResolveContainer(Type type)

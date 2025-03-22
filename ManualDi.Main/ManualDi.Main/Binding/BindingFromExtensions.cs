@@ -51,7 +51,7 @@ namespace ManualDi.Main
         {
             return binding
                 .FromMethod(static c => c.Resolve<TConcrete>())
-                .DependsOn(static d => d.Dependency<TConcrete>());
+                .DependsOn(static d => d.ConstructorDependency<TConcrete>());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -62,7 +62,7 @@ namespace ManualDi.Main
         {
             return binding
                 .FromMethod(c => c.Resolve<TConcrete>(filterBindingDelegate))
-                .DependsOn(d => d.Dependency<TConcrete>(filterBindingDelegate));
+                .DependsOn(d => d.ConstructorDependency<TConcrete>(filterBindingDelegate));
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

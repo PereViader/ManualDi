@@ -28,8 +28,17 @@ namespace ManualDi.Main
 
     public interface IDependencyResolver
     {
-        void Dependency<T>();
-        void Dependency<T>(FilterBindingDelegate filter);
+        void ConstructorDependency<T>();
+        void ConstructorDependency<T>(FilterBindingDelegate filter);
+        void InjectionDependency<T>();
+        void InjectionDependency<T>(FilterBindingDelegate filter);
+    }
+
+    internal enum BindingWiredState
+    {
+        None,
+        Injected,
+        Wired
     }
     
     public abstract class Binding
@@ -45,7 +54,7 @@ namespace ManualDi.Main
         internal object? InjectionDelegate;
         internal object? InitializationDelegate;
         
-        internal bool IsAlreadyWired;
+        internal BindingWiredState BindingWiredState;
         internal Binding? NextBinding;
         internal object? Instance;
     }

@@ -75,7 +75,7 @@ namespace ManualDi.Main
                 .FromMethod(static c => new SomeNamespace.Subnamespace.PublicAndPrivateConstructor(
                     c.Resolve<int>()))
                 .DependsOn(static d => {
-                    d.Dependency<int>();
+                    d.ConstructorDependency<int>();
                 });
         }
 
@@ -303,7 +303,7 @@ namespace ManualDi.Main
                 .FromMethod(static c => new SomeNamespace.Subnamespace.ConstructorWithGenericArgument(
                     c.Resolve<System.Func<int>>()))
                 .DependsOn(static d => {
-                    d.Dependency<System.Func<int>>();
+                    d.ConstructorDependency<System.Func<int>>();
                 });
         }
 
@@ -453,8 +453,8 @@ namespace ManualDi.Main
                     c.ResolveNullable<object>(),
                     c.ResolveNullableValue<int>()))
                 .DependsOn(static d => {
-                    d.Dependency<object>();
-                    d.Dependency<int>();
+                    d.ConstructorDependency<object>();
+                    d.ConstructorDependency<int>();
                 });
         }
 
@@ -538,7 +538,7 @@ namespace ManualDi.Main
                 .FromMethod(static c => new SomeNamespace.Subnamespace.ListInject(
                     c.ResolveAll<object>()))
                 .DependsOn(static d => {
-                    d.Dependency<System.Collections.Generic.List<object>>();
+                    d.ConstructorDependency<System.Collections.Generic.List<object>>();
                 });
         }
 
@@ -712,8 +712,8 @@ namespace ManualDi.Main
                     c.Resolve<object>(),
                     c.Resolve<object>()))
                 .DependsOn(static d => {
-                    d.Dependency<object>();
-                    d.Dependency<object>();
+                    d.ConstructorDependency<object>();
+                    d.ConstructorDependency<object>();
                 });
         }
 
@@ -747,7 +747,7 @@ namespace ManualDi.Main
                 .FromMethod(static c => new InjectContainer(
                     c))
                 .DependsOn(static d => {
-                    d.Dependency<ManualDi.Main.IDiContainer>();
+                    d.ConstructorDependency<ManualDi.Main.IDiContainer>();
                 });
         }
 

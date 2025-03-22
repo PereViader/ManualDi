@@ -251,7 +251,7 @@ namespace ManualDi.Main.Generators
             foreach (var parameter in methodSymbol.Parameters)
             {
                 stringBuilder.Append(tabs);
-                stringBuilder.Append("        d.Dependency<");
+                stringBuilder.Append("        d.ConstructorDependency<");
                 stringBuilder.Append(FullyQualifyTypeWithoutNullable(parameter.Type));
                 stringBuilder.AppendLine(">();"); //TODO missing ID filter here
             }

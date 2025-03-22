@@ -37,7 +37,7 @@ await using var container = await new DiContainerBindings().Install(b =>
         })
         .Dispose(o => Console.WriteLine("Disposing"));
     
-    b.Bind<EntryPointAsync>().FromMethod(c => new EntryPointAsync(c.Resolve<int>())).DependsOn(d => d.Dependency<int>());
+    b.Bind<EntryPointAsync>().FromMethod(c => new EntryPointAsync(c.Resolve<int>())).DependsOn(d => d.ConstructorDependency<int>());
 }).Build(CancellationToken.None);
 
 var entryPointAsync = container.Resolve<EntryPointAsync>();

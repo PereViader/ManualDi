@@ -20,11 +20,19 @@
   <ItemGroup>
     <ProjectReference Include="..\ManualDi.Main.Generators\ManualDi.Main.Generators.csproj"/>
     <ProjectReference Include="..\ManualDi.Main\ManualDi.Main.csproj" />
+    <ProjectReference Include="..\ManualDi.Main.Generators\ManualDi.Main.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="TestsSourceGenerator.Source.txt">
+    <Compile Update="TestSourceGenerator.Source.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <DependentUpon>TestSourceGenerator.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="TestsSourceGenerator.Generated.verified.txt">
+      <DependentUpon>TestSourceGenerator.cs</DependentUpon>
     </None>
   </ItemGroup>
   

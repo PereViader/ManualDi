@@ -20,7 +20,7 @@ public class TestsSourceGenerator
     [Test]
     public Task Generated()
     {
-        var code = File.ReadAllText("TestsSourceGenerator.Source.txt");
+        var code = File.ReadAllText("TestSourceGenerator.Source.cs");
         var generated = Generate(code);
         Assert.That(generated.diagnostics, Is.Empty);
         return Verifier.Verify(generated.code);
@@ -30,7 +30,7 @@ public class TestsSourceGenerator
     {
         var references = AppDomain.CurrentDomain
             .GetAssemblies()
-            .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location))
+            .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location) && !a.Location.Contains("ManualDi.Main.Tests.dll"))
             .Select(a => MetadataReference.CreateFromFile(a.Location))
             .ToList();
         

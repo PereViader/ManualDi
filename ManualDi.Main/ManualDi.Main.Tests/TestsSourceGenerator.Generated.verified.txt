@@ -340,6 +340,10 @@ namespace ManualDi.Main
                     to.Inject(
                         c.Resolve<object>());
                 })
+                .DependsOn(static d => {
+                    d.InjectionDependency<object>();
+                    d.InjectionDependency<object>();
+                })
                 .DontDispose();
         }
     }
@@ -369,6 +373,11 @@ namespace ManualDi.Main
                     to.Object0 = c.Resolve<object>();
                     to.Object2 = c.Resolve<object>();
                     to.Object5 = c.Resolve<object>();
+                })
+                .DependsOn(static d => {
+                    d.InjectionDependency<object>();
+                    d.InjectionDependency<object>();
+                    d.InjectionDependency<object>();
                 })
                 .DontDispose();
         }
@@ -400,6 +409,12 @@ namespace ManualDi.Main
                     to.Int2 = c.Resolve<int>();
                     to.Int5 = c.ResolveNullableValue<int>();
                     to.Int6 = c.ResolveNullableValue<int>();
+                })
+                .DependsOn(static d => {
+                    d.InjectionDependency<int>();
+                    d.InjectionDependency<int>();
+                    d.NullableInjectionDependency<int>();
+                    d.NullableInjectionDependency<int>();
                 })
                 .DontDispose();
         }
@@ -453,8 +468,8 @@ namespace ManualDi.Main
                     c.ResolveNullable<object>(),
                     c.ResolveNullableValue<int>()))
                 .DependsOn(static d => {
-                    d.ConstructorDependency<object>();
-                    d.ConstructorDependency<int>();
+                    d.NullableConstructorDependency<object>();
+                    d.NullableConstructorDependency<int>();
                 });
         }
 
@@ -471,6 +486,13 @@ namespace ManualDi.Main
                     to.Inject(
                         c.ResolveNullable<object>(),
                         c.ResolveNullableValue<int>());
+                })
+                .DependsOn(static d => {
+                    d.NullableInjectionDependency<object>();
+                    d.NullableInjectionDependency<int>();
+                    d.NullableInjectionDependency<int>();
+                    d.NullableInjectionDependency<object>();
+                    d.NullableInjectionDependency<int>();
                 })
                 .DontDispose();
         }
@@ -538,7 +560,7 @@ namespace ManualDi.Main
                 .FromMethod(static c => new SomeNamespace.Subnamespace.ListInject(
                     c.ResolveAll<object>()))
                 .DependsOn(static d => {
-                    d.ConstructorDependency<System.Collections.Generic.List<object>>();
+                    d.NullableConstructorDependency<object>();
                 });
         }
 
@@ -612,6 +634,69 @@ namespace ManualDi.Main
                     to.Inject(
                         c.ResolveAll<object>());
                 })
+                .DependsOn(static d => {
+                    d.NullableInjectionDependency<object>();
+                    d.NullableInjectionDependency<int>();
+                    d.NullableInjectionDependency<object>();
+                    d.NullableInjectionDependency<int>();
+                    d.NullableInjectionDependency<object>();
+                    d.NullableInjectionDependency<int>();
+                    d.NullableInjectionDependency<object>();
+                    d.NullableInjectionDependency<int>();
+                    d.NullableInjectionDependency<object>();
+                    d.NullableInjectionDependency<int>();
+                    d.NullableInjectionDependency<object>();
+                    d.NullableInjectionDependency<int>();
+                    d.NullableInjectionDependency<object>(x => x.Id("A"));
+                    d.NullableInjectionDependency<int>(x => x.Id("A"));
+                    d.NullableInjectionDependency<object>(x => x.Id("A"));
+                    d.NullableInjectionDependency<int>(x => x.Id("A"));
+                    d.NullableInjectionDependency<object>(x => x.Id("A"));
+                    d.NullableInjectionDependency<int>(x => x.Id("A"));
+                    d.NullableInjectionDependency<object>(x => x.Id("A"));
+                    d.NullableInjectionDependency<int>(x => x.Id("A"));
+                    d.NullableInjectionDependency<object>(x => x.Id("A"));
+                    d.NullableInjectionDependency<int>(x => x.Id("A"));
+                    d.NullableInjectionDependency<object>(x => x.Id("A"));
+                    d.NullableInjectionDependency<int>(x => x.Id("A"));
+                    d.NullableInjectionDependency<object>();
+                    d.NullableInjectionDependency<int>();
+                    d.NullableInjectionDependency<object>();
+                    d.NullableInjectionDependency<int>();
+                    d.NullableInjectionDependency<object>();
+                    d.NullableInjectionDependency<int>();
+                    d.NullableInjectionDependency<object>();
+                    d.NullableInjectionDependency<int>();
+                    d.NullableInjectionDependency<object>();
+                    d.NullableInjectionDependency<int>();
+                    d.NullableInjectionDependency<object>();
+                    d.NullableInjectionDependency<int>();
+                    d.NullableInjectionDependency<object>(x => x.Id("A"));
+                    d.NullableInjectionDependency<int>(x => x.Id("A"));
+                    d.NullableInjectionDependency<object>(x => x.Id("A"));
+                    d.NullableInjectionDependency<int>(x => x.Id("A"));
+                    d.NullableInjectionDependency<object>(x => x.Id("A"));
+                    d.NullableInjectionDependency<int>(x => x.Id("A"));
+                    d.NullableInjectionDependency<object>(x => x.Id("A"));
+                    d.NullableInjectionDependency<int>(x => x.Id("A"));
+                    d.NullableInjectionDependency<object>(x => x.Id("A"));
+                    d.NullableInjectionDependency<int>(x => x.Id("A"));
+                    d.NullableInjectionDependency<object>(x => x.Id("A"));
+                    d.NullableInjectionDependency<int>(x => x.Id("A"));
+                    d.NullableInjectionDependency<object>(x => x.Id("A"));
+                    d.NullableInjectionDependency<int>(x => x.Id("A"));
+                    d.NullableInjectionDependency<object>(x => x.Id("A"));
+                    d.NullableInjectionDependency<int>(x => x.Id("A"));
+                    d.NullableInjectionDependency<object>(x => x.Id("A"));
+                    d.NullableInjectionDependency<int>(x => x.Id("A"));
+                    d.NullableInjectionDependency<object>(x => x.Id("A"));
+                    d.NullableInjectionDependency<int>(x => x.Id("A"));
+                    d.NullableInjectionDependency<object>(x => x.Id("A"));
+                    d.NullableInjectionDependency<int>(x => x.Id("A"));
+                    d.NullableInjectionDependency<object>(x => x.Id("A"));
+                    d.NullableInjectionDependency<int>(x => x.Id("A"));
+                    d.NullableInjectionDependency<object>();
+                })
                 .DontDispose();
         }
     }
@@ -656,6 +741,24 @@ namespace ManualDi.Main
                         c.Resolve<System.Lazy<int>>(),
                         c.Resolve<System.Lazy<int?>>());
                 })
+                .DependsOn(static d => {
+                    d.InjectionDependency<System.Lazy<object>>();
+                    d.InjectionDependency<System.Lazy<object?>>();
+                    d.InjectionDependency<System.Lazy<int>>();
+                    d.InjectionDependency<System.Lazy<int?>>();
+                    d.InjectionDependency<System.Lazy<System.Lazy<System.Lazy<int>>>>();
+                    d.InjectionDependency<System.Lazy<System.Collections.Generic.List<int>>>();
+                    d.NullableInjectionDependency<System.Lazy<object>>();
+                    d.NullableInjectionDependency<System.Lazy<object?>>();
+                    d.NullableInjectionDependency<System.Lazy<int>>();
+                    d.NullableInjectionDependency<System.Lazy<int?>>();
+                    d.NullableInjectionDependency<System.Lazy<System.Lazy<System.Lazy<int>>>>();
+                    d.NullableInjectionDependency<System.Lazy<System.Collections.Generic.List<int>>>();
+                    d.InjectionDependency<System.Lazy<object>>();
+                    d.InjectionDependency<System.Lazy<object?>>();
+                    d.InjectionDependency<System.Lazy<int>>();
+                    d.InjectionDependency<System.Lazy<int?>>();
+                })
                 .DontDispose();
         }
     }
@@ -683,13 +786,21 @@ namespace ManualDi.Main
                 .Inject(static (o, c) => 
                 {
                     var to = (SomeNamespace.Subnamespace.InjectIdAttribute)o;
-                    to.HelloIdValue = c.Resolve<int>(x => x.Id("A"));
+                    to.HelloIdValue = c.ResolveNullableValue<int>(x => x.Id("A"));
                     to.LazyInt = c.Resolve<System.Lazy<int>>(x => x.Id("A"));
                     to.Inject(
                         c.Resolve<object>(x => x.Id("Potato")),
                         c.Resolve<float>(x => x.Id("Banana")),
                         c.Resolve<System.Lazy<int>>(x => x.Id("P")),
                         c.Resolve<object>());
+                })
+                .DependsOn(static d => {
+                    d.NullableInjectionDependency<int>(x => x.Id("A"));
+                    d.InjectionDependency<System.Lazy<int>>(x => x.Id("A"));
+                    d.InjectionDependency<object>(x => x.Id("Potato"));
+                    d.InjectionDependency<float>(x => x.Id("Banana"));
+                    d.InjectionDependency<System.Lazy<int>>(x => x.Id("P"));
+                    d.InjectionDependency<object>();
                 })
                 .DontDispose();
         }
@@ -727,6 +838,9 @@ namespace ManualDi.Main
                     to.Inject(
                         c.Resolve<object>());
                 })
+                .DependsOn(static d => {
+                    d.InjectionDependency<object>();
+                })
                 .DontDispose();
         }
     }
@@ -745,9 +859,11 @@ namespace ManualDi.Main
         {
             return binding
                 .FromMethod(static c => new InjectContainer(
-                    c))
+                    c,
+                    c.CancellationToken))
                 .DependsOn(static d => {
-                    d.ConstructorDependency<ManualDi.Main.IDiContainer>();
+                    // Injected DiContainer
+                    // Injected CancellationToken
                 });
         }
 
@@ -755,6 +871,30 @@ namespace ManualDi.Main
         internal static Binding<T, InjectContainer> Default<T>(this Binding<T, InjectContainer> binding)
         {
             return binding.DontDispose();
+        }
+    }
+}
+
+  
+#nullable enable
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Main
+{
+    public static class ManualDiGeneratedInitializeAsyncCheckExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<T, InitializeAsyncCheck> FromConstructor<T>(this Binding<T, InitializeAsyncCheck> binding)
+        {
+            return binding
+                .FromMethod(static c => new InitializeAsyncCheck());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<T, InitializeAsyncCheck> Default<T>(this Binding<T, InitializeAsyncCheck> binding)
+        {
+            return binding.InitializeAsync(static (o, ct) => ((InitializeAsyncCheck)o).InitializeAsync(ct))
+                .DontDispose();
         }
     }
 }
@@ -791,6 +931,9 @@ namespace ManualDi.Main
                 {
                     var to = (UnityEngine.MonoBeheviour)o;
                     to.Something = c.Resolve<object>();
+                })
+                .DependsOn(static d => {
+                    d.InjectionDependency<object>();
                 })
                 .DontDispose();
         }

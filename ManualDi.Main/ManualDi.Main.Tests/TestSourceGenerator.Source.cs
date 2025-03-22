@@ -1,56 +1,8 @@
-﻿using ManualDi.Main;
-using System;
+﻿using System;
 using System.Collections.Generic;
-
-
-
-await using var container = await new DiContainerBindings().Install(b =>
-{
-    b.Bind<int>()
-        .FromMethodAsync(async (c, ct) =>
-        {
-            await Task.Delay(1000, ct);
-            return 42;
-        })
-        .InjectAsync((o, c, ct) =>
-        {
-            Console.WriteLine("Injecting Async");
-            return Task.CompletedTask;
-        })
-        .Inject((o, c) =>
-        {
-            Console.WriteLine("Injecting");
-        })
-        .InitializeAsync((instance, token) =>
-        {
-            Console.WriteLine("Initializing Async");
-            return Task.CompletedTask;
-        })
-        .Initialize(instance =>
-        {
-            Console.WriteLine("Initializing");
-        })
-        .DisposeAsync(o =>
-        {
-            Console.WriteLine("Disposing Async");
-            return ValueTask.CompletedTask;
-        })
-        .Dispose(o => Console.WriteLine("Disposing"));
-    
-    b.Bind<EntryPointAsync>().FromMethod(c => new EntryPointAsync(c.Resolve<int>())).DependsOn(d => d.ConstructorDependency<int>());
-}).Build(CancellationToken.None);
-
-var entryPointAsync = container.Resolve<EntryPointAsync>();
-await entryPointAsync.Run();
-
-class EntryPointAsync(int hardValueToCompute)
-{
-    public Task Run()
-    {
-        Console.WriteLine(hardValueToCompute);
-        return Task.CompletedTask;
-    }
-}
+using System.Threading;
+using System.Threading.Tasks;
+using ManualDi.Main;
 
 namespace SomeNamespace.Subnamespace
 {

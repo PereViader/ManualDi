@@ -205,7 +205,7 @@ namespace ManualDi.Main.Generators
 
             context.StringBuilder.Append("))");
             
-            CreateMethodDependencies(constructor, "            ", context.TypeReferences, context.StringBuilder);
+            CreateMethodDependencies(constructor, "                ", context.TypeReferences, context.StringBuilder);
                 
             context.StringBuilder.Append("""
             ;
@@ -246,7 +246,7 @@ namespace ManualDi.Main.Generators
 
             stringBuilder.AppendLine();
             stringBuilder.Append(tabs);
-            stringBuilder.AppendLine("    .DependsOn(static d => {");
+            stringBuilder.AppendLine(".DependsOn(static d => {");
             foreach (var parameter in methodSymbol.Parameters)
             {
                 stringBuilder.Append(tabs);
@@ -255,7 +255,7 @@ namespace ManualDi.Main.Generators
                 CreteTypeDependency(true, parameter.Type, id, typeReferences, stringBuilder);
             }
             stringBuilder.Append(tabs);
-            stringBuilder.Append("    })");
+            stringBuilder.Append("})");
         }
         
         private static void CreateMethodPropertyDependencies(IMethodSymbol? methodSymbol, (IPropertySymbol propertySymbol, string? id)[] properties, string tabs, TypeReferences typeReferences, StringBuilder stringBuilder)
@@ -361,11 +361,13 @@ namespace ManualDi.Main.Generators
         {
             if (typeReferences.IsSymbolDiContainer(typeSymbol))
             {
+                stringBuilder.AppendLine("    // Injected DiContainer");
                 return;
             }
 
             if (typeReferences.IsCancellationToken(typeSymbol))
             {
+                stringBuilder.AppendLine("    // Injected CancellationToken");
                 return;
             }
 
@@ -385,7 +387,6 @@ namespace ManualDi.Main.Generators
                 stringBuilder.Append(">(");
                 CreateIdResolution(id, stringBuilder);
                 stringBuilder.AppendLine(");");
-
                 return;
             }
 

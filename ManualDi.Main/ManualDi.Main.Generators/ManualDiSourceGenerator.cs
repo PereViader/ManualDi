@@ -269,6 +269,12 @@ namespace ManualDi.Main.Generators
             stringBuilder.Append(tabs);
             stringBuilder.AppendLine(".DependsOn(static d => {");
 
+            foreach (var parameter in properties)
+            {
+                stringBuilder.Append(tabs);
+                CreteTypeDependency(false, parameter.propertySymbol.Type, parameter.id, typeReferences, stringBuilder);
+            }
+            
             if (methodSymbol is not null)
             {
                 foreach (var parameter in methodSymbol.Parameters)
@@ -278,12 +284,6 @@ namespace ManualDi.Main.Generators
                     var id = attribute is null ? null : GetInjectId(attribute);
                     CreteTypeDependency(false, parameter.Type, id, typeReferences, stringBuilder);
                 }
-            }
-            
-            foreach (var parameter in properties)
-            {
-                stringBuilder.Append(tabs);
-                CreteTypeDependency(false, parameter.propertySymbol.Type, parameter.id, typeReferences, stringBuilder);
             }
             
             stringBuilder.Append(tabs);

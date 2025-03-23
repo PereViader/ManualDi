@@ -1,52 +1,55 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using ManualDi.Main;
 using UnityEngine;
 
 namespace ManualDi.Unity3d
 {
-    public abstract class MonoBehaviourRootEntryPoint : MonoBehaviour, IInstaller, IDisposable
+    public abstract class MonoBehaviourRootEntryPoint : MonoBehaviour, IInstaller, IAsyncDisposable
     {
         public bool InitializeOnStart = true;
         
         public bool IsInitialized => Container is not null;
         public IDiContainer? Container { get; private set; }
         
-        public void Start()
+        public async void Start()
         {
             if (!InitializeOnStart)
             {
                 return;
             }
             
-            Initiate();
+            await Initiate(CancellationToken.None);
         }
 
-        public void Initiate()
+        public async ValueTask Initiate(CancellationToken ct)
         {
             if (IsInitialized)
             {
                 throw new InvalidOperationException("Context is already initialized");
             }
             
-            Container = new DiContainerBindings()
+            Container = await new DiContainerBindings()
                 .Install(this)
-                .Build();
+                .Build(ct);
         }
-
-        public virtual void OnDestroy()
+        
+        public virtual async void OnDestroy()
         {
-            Dispose();
+            await DisposeAsync();
         }
 
-        public void Dispose()
+        public ValueTask DisposeAsync()
         {
             if (Container is null)
             {
-                return;
+                return default;
             }
 
-            Container.Dispose();
+            var container = Container;
             Container = null;
+            return container.DisposeAsync();
         }
 
         public abstract void Install(DiContainerBindings b);

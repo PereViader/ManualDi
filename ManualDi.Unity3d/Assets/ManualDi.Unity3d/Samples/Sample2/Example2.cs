@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -8,21 +9,20 @@ namespace ManualDi.Unity3d.Examples.Example2
     {
         public PrimitiveType primitiveType;
 
-        private void Start()
-        {
-            StartCoroutine(Run());
-        }
-
-        private IEnumerator Run()
+        private async void Start()
         {
             // Load a scene that has a context
-            yield return SceneManager.LoadSceneAsync("Example2Context", LoadSceneMode.Additive);
+            var asyncOperation = SceneManager.LoadSceneAsync("Example2Context", LoadSceneMode.Additive);
+            while (!asyncOperation!.isDone)
+            {
+                await Task.Yield();
+            }
             
             // Get the entry point that was loaded from the scene, do this in any way you want
             var entryPoint = Object.FindObjectOfType<Example2EntryPoint>();
             
             //Create the container and get the context object out
-            var context = entryPoint.Initiate(primitiveType);
+            var context = await entryPoint.Initiate(primitiveType, CancellationToken.None);
 
             // Start using the scene context
             context.Run();

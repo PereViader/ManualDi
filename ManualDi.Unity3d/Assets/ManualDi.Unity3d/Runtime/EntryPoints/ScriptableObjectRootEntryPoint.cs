@@ -1,35 +1,38 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using ManualDi.Main;
 using UnityEngine;
 
 namespace ManualDi.Unity3d
 {
-    public abstract class ScriptableObjectRootEntryPoint : ScriptableObject, IInstaller, IDisposable
+    public abstract class ScriptableObjectRootEntryPoint : ScriptableObject, IInstaller, IAsyncDisposable
     {
         public bool IsInitialized => Container is not null;
         public IDiContainer? Container { get; private set; }
 
-        public void Initiate()
+        public async ValueTask Initiate(CancellationToken ct)
         {
             if (IsInitialized)
             {
                 throw new InvalidOperationException("Context is already initialized");
             }
             
-            Container = new DiContainerBindings()
+            Container = await new DiContainerBindings()
                 .Install(this)
-                .Build();
+                .Build(ct);
         }
 
-        public void Dispose()
+        public ValueTask DisposeAsync()
         {
             if (Container is null)
             {
-                return;
+                return default;
             }
 
-            Container.Dispose();
+            var container = Container;
             Container = null;
+            return container.DisposeAsync();
         }
 
         public abstract void Install(DiContainerBindings b);

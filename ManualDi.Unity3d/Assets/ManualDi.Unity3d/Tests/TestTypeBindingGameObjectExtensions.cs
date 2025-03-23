@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using System.Collections;
+using System.Threading;
 using ManualDi.Main;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -41,7 +42,7 @@ namespace ManualDi.Unity3d.Tests.PlayMode
             entryPoint.Initiate(new TestInstallerData(b =>
             {
                 b.QueueDispose(() => disposed = true);
-            }));
+            }), CancellationToken.None);
         
             GameObject.Destroy(entryPoint.gameObject);
         
@@ -57,12 +58,12 @@ namespace ManualDi.Unity3d.Tests.PlayMode
             
             var container = new DiContainerBindings().Install(b =>
             {
-                b.Bind<Image>().FromGameObjectAddComponent(gameObject).NonLazy();
-            }).Build();
+                b.Bind<Image>().FromGameObjectAddComponent(gameObject);
+            }).Build(CancellationToken.None).Result;
             
             Assert.That(gameObject.GetComponent<Image>(), Is.Not.Null);
             
-            container.Dispose();
+            container.DisposeAsync();
 
             yield return null;
             
@@ -75,12 +76,14 @@ namespace ManualDi.Unity3d.Tests.PlayMode
             var gameObject = new GameObject();
             var image = gameObject.AddComponent<Image>();
             
-            using var container = new DiContainerBindings().Install(b =>
+            var container = new DiContainerBindings().Install(b =>
             {
                 b.Bind<Image>().FromGameObjectGetComponent(gameObject);
-            }).Build();
+            }).Build(CancellationToken.None).Result;
             
             Assert.That(image, Is.EqualTo(container.Resolve<Image>()));
+
+            container.DisposeAsync();
         }
         
         [Test]
@@ -89,14 +92,16 @@ namespace ManualDi.Unity3d.Tests.PlayMode
             var gameObject = new GameObject();
             gameObject.AddComponent<Image>();
             
-            using var container = new DiContainerBindings().Install(b =>
+            var container = new DiContainerBindings().Install(b =>
             {
                 b.Bind<Image>().FromInstantiateGameObjectGetComponent(gameObject, parent: gameObject.transform);
-            }).Build();
+            }).Build(CancellationToken.None).Result;
 
             var containerInstance = container.Resolve<Image>();
             var instance = gameObject.transform.GetChild(0).GetComponent<Image>();
             Assert.That(instance, Is.EqualTo(containerInstance));
+            
+            container.DisposeAsync();
         }
     }
 }

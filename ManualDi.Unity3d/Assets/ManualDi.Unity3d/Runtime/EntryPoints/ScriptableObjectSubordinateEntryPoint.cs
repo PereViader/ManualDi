@@ -1,16 +1,18 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using ManualDi.Main;
 using UnityEngine;
 
 namespace ManualDi.Unity3d
 {
-    public abstract class ScriptableObjectSubordinateEntryPoint<TData> : ScriptableObject, IInstaller, IDisposable
+    public abstract class ScriptableObjectSubordinateEntryPoint<TData> : ScriptableObject, IInstaller, IAsyncDisposable
     {
         public bool IsInitialized => Container is not null;
         public IDiContainer? Container { get; private set; }
         public TData? Data { get; private set; }
         
-        public void Initiate(TData data)
+        public async ValueTask Initiate(TData data, CancellationToken ct)
         {
             if (IsInitialized)
             {
@@ -25,33 +27,34 @@ namespace ManualDi.Unity3d
                 bindings.Install(dataInstaller);
             }
             bindings.Install(this);
-            Container = bindings.Build();
+            Container = await bindings.Build(ct);
         }
 
-        public void Dispose()
+        public ValueTask DisposeAsync()
         {
             if (Container is null)
             {
-                return;
+                return default;
             }
 
-            Container.Dispose();
-            Container = null;
-
             Data = default;
+
+            var container = Container;
+            Container = null;
+            return container.DisposeAsync();
         }
 
         public abstract void Install(DiContainerBindings b);
     }
     
-    public abstract class ScriptableObjectSubordinateEntryPoint<TData, TContext> : ScriptableObject, IInstaller, IDisposable
+    public abstract class ScriptableObjectSubordinateEntryPoint<TData, TContext> : ScriptableObject, IInstaller, IAsyncDisposable
     {
         public bool IsInitialized => Container is not null;
         public IDiContainer? Container { get; private set; }
         public TContext? Context { get; private set; }
         public TData? Data { get; private set; }
         
-        public TContext Initiate(TData data)
+        public async ValueTask<TContext> Initiate(TData data,  CancellationToken ct)
         {
             if (IsInitialized)
             {
@@ -66,25 +69,26 @@ namespace ManualDi.Unity3d
                 bindings.Install(dataInstaller);
             }
             bindings.Install(this);
-            Container = bindings.Build();
+            Container = await bindings.Build(ct);
 
             Context = Container.Resolve<TContext>();
 
             return Context;
         }
 
-        public void Dispose()
+        public ValueTask DisposeAsync()
         {
             if (Container is null)
             {
-                return;
+                return default;
             }
-
-            Container.Dispose();
-            Container = null;
 
             Data = default;
             Context = default;
+
+            var container = Container;
+            Container = null;
+            return container.DisposeAsync();
         }
 
         public abstract void Install(DiContainerBindings b);

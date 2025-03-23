@@ -4,41 +4,42 @@ namespace ManualDi.Unity3d.Samples.Ticking
 {
     public static class DiContainerTickableExtensions
     {
-        public static TypeBinding<TInterface, TConcrete> LinkTickable<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding
+        public static Binding<TInterface, TConcrete> LinkTickable<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding
         )
             where TConcrete : ITickable
         {
-            return typeBinding.Inject((o, c) =>
+            return binding.Inject((o, c) =>
+            {
+                var to = (ITickable)o;
+                var tickableService = c.Resolve<ITickableService>();
+                tickableService.Add(to, TickType.Update);
+
+                c.QueueDispose(() =>
                 {
-                    var tickableService = c.Resolve<ITickableService>();
-                    tickableService.Add(o, TickType.Update);
-                })
-                .Dispose((o, c) =>
-                {
-                    var tickableService = c.Resolve<ITickableService>();
-                    tickableService.Remove(o, TickType.Update);
-                })
-                .NonLazy();
+                    tickableService.Remove(to, TickType.Update);
+                });
+            });
         }
         
-        public static TypeBinding<TInterface, TConcrete> LinkTickable<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding,
+        public static Binding<TInterface, TConcrete> LinkTickable<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding,
             TickType tickType
         )
             where TConcrete : ITickable
         {
-            return typeBinding.Inject((o, c) =>
+            return binding.Inject((o, c) =>
+            {
+                var to = (ITickable)o;
+
+                var tickableService = c.Resolve<ITickableService>();
+                tickableService.Add(to, tickType);
+
+                c.QueueDispose(() =>
                 {
-                    var tickableService = c.Resolve<ITickableService>();
-                    tickableService.Add(o, tickType);
-                })
-                .Dispose((o, c) =>
-                {
-                    var tickableService = c.Resolve<ITickableService>();
-                    tickableService.Remove(o, tickType);
-                })
-                .NonLazy();
+                    tickableService.Remove(to, TickType.Update);
+                });
+            });
         }
     }
 }

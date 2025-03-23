@@ -1,3 +1,4 @@
+using System;
 using ManualDi.Main;
 using UnityEngine;
 using UnityEngine.Events;
@@ -5,111 +6,104 @@ using UnityEngine.UI;
 
 namespace ManualDi.Unity3d
 {
-    public static class TypeBindingLinkExtensions
+    public static class BindingLinkExtensions
     {
-        public static TypeBinding<TInterface, TConcrete> LinkDontDestroyOnLoad<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding,
+        public static Binding<TInterface, TConcrete> LinkDontDestroyOnLoad<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding,
             bool setAsRootTransform = true,
             bool keepPreviousParent = true,
             bool destroyIfPreviousParentDestroyed = true
         )
             where TConcrete : UnityEngine.Component
         {
-            Transform? previousParent = null;
-            typeBinding.Inject((o, c) =>
+            binding.Inject((o, c) =>
             {
-                var transform = o.transform;
-                previousParent = transform.parent;
+                var to = (UnityEngine.Component)o;
+                var transform = to.transform;
+                var previousParent = transform.parent;
                 if (setAsRootTransform)
                 {
                     transform.parent = null;
                 }
-                UnityEngine.Object.DontDestroyOnLoad(o);
-            });
+                UnityEngine.Object.DontDestroyOnLoad(to);
 
-            if (keepPreviousParent)
-            {
-                typeBinding.Dispose((o, c) =>
+                if (keepPreviousParent)
                 {
-                    if (previousParent == null)
+                    c.QueueDispose(() =>
                     {
-                        if (destroyIfPreviousParentDestroyed)
+                        if (previousParent == null)
                         {
-                            UnityEngine.Object.Destroy(o.gameObject);
-                        }
-                        return;
-                    }
+                            if (destroyIfPreviousParentDestroyed)
+                            {
+                                UnityEngine.Object.Destroy(to.gameObject);
+                            }
 
-                    o.transform.parent = previousParent;
-                });
-            }
-            return typeBinding;
+                            return;
+                        }
+
+                        to.transform.parent = previousParent;
+                    });
+                }
+            });
+            return binding;
         }
         
-        public static TypeBinding<TInterface, TConcrete> LinkButtonOnClick<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding,
+        public static Binding<TInterface, TConcrete> LinkButtonOnClick<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding,
             Button button,
-            InstanceContainerDelegate<TConcrete> onClick
+            Action<TConcrete, IDiContainer> onClick
             )
         {
-            UnityAction? action = null;
-            typeBinding.Inject((o, c) =>
+            binding.Inject((o, c) =>
             {
-                action = () => onClick.Invoke(o, c);
+                var to = (TConcrete)o;
+                UnityAction action = () => onClick.Invoke(to, c);
                 (button.onClick ??= new Button.ButtonClickedEvent()).AddListener(action);
-            });
-            typeBinding.Dispose((o, c) =>
-            {
-                if (action is not null)
-                {
+                
+                c.QueueDispose(() => {
                     button.onClick.RemoveListener(action);
-                }
+                });
             });
-            return typeBinding;
+            return binding;
         }
         
-        public static TypeBinding<TInterface, TConcrete> LinkToggleOnValueChanged<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding,
+        public static Binding<TInterface, TConcrete> LinkToggleOnValueChanged<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding,
             Toggle toggle,
-            InstanceContainerDelegate<(bool value, TConcrete o)> onValueChanged
+            Action<TConcrete, IDiContainer, bool> onValueChanged
         )
         {
-            UnityAction<bool>? action = null;
-            typeBinding.Inject((o, c) =>
+            binding.Inject((o, c) =>
             {
-                action = v => onValueChanged.Invoke((v, o), c);
+                var to = (TConcrete)o;
+                UnityAction<bool> action = v => onValueChanged.Invoke(to, c, v);
                 (toggle.onValueChanged ??= new Toggle.ToggleEvent()).AddListener(action);
-            });
-            typeBinding.Dispose((o, c) =>
-            {
-                if (action is not null)
-                {
+                
+                c.QueueDispose(() => {
                     toggle.onValueChanged.RemoveListener(action);
-                }
+                });
             });
-            return typeBinding;
+            return binding;
         }
         
-        public static TypeBinding<TInterface, TConcrete> LinkSliderOnValueChanged<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding,
+        public static Binding<TInterface, TConcrete> LinkSliderOnValueChanged<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding,
             Slider slider,
-            InstanceContainerDelegate<(float value, TConcrete o)> onValueChanged
+            Action<TConcrete, IDiContainer, float> onValueChanged
         )
         {
             UnityAction<float>? action = null;
-            typeBinding.Inject((o, c) =>
+            binding.Inject((o, c) =>
             {
-                action = v => onValueChanged.Invoke((v,o), c);
+                var to = (TConcrete)o;
+                action = v => onValueChanged.Invoke(to, c, v);
                 (slider.onValueChanged ??= new Slider.SliderEvent()).AddListener(action);
-            });
-            typeBinding.Dispose((o, c) =>
-            {
-                if (action is not null)
-                {
+                
+                c.QueueDispose(() => {
                     slider.onValueChanged.RemoveListener(action);
-                }
+                });
             });
-            return typeBinding;
+            return binding;
         }
     }
 }

@@ -6,28 +6,28 @@ using UnityEngine;
 
 namespace ManualDi.Unity3d
 {
-    public static class TypeBindingUnity3dExtensions
+    public static class BindingUnity3dExtensions
     {
         #region From GameObject
         
-        public static TypeBinding<TInterface, TConcrete> FromGameObjectGetComponentInParent<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding,
+        public static Binding<TInterface, TConcrete> FromGameObjectGetComponentInParent<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding,
             GameObject gameObject
         )
             where TConcrete : Component
         {
-            typeBinding.FromMethod(_ => gameObject.GetComponentInParent<TConcrete>());
-            return typeBinding;
+            binding.FromMethod(_ => gameObject.GetComponentInParent<TConcrete>());
+            return binding;
         }
         
-        public static TypeBinding<List<TInterface>, List<TConcrete>> FromGameObjectGetComponentsInParent<TInterface, TConcrete>(
-            this TypeBinding<List<TInterface>, List<TConcrete>> typeBinding,
+        public static Binding<List<TInterface>, List<TConcrete>> FromGameObjectGetComponentsInParent<TInterface, TConcrete>(
+            this Binding<List<TInterface>, List<TConcrete>> binding,
             GameObject gameObject,
             bool allowEmpty = false
         )
             where TConcrete : Component
         {
-            return typeBinding.FromMethod(_ =>
+            return binding.FromMethod(_ =>
             {
                 var componentsInParent = gameObject.GetComponentsInParent<TConcrete>();
                 if (componentsInParent.Length == 0 && !allowEmpty)
@@ -38,24 +38,24 @@ namespace ManualDi.Unity3d
             });
         }
         
-        public static TypeBinding<TInterface, TConcrete> FromGameObjectGetComponentInChildren<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding,
+        public static Binding<TInterface, TConcrete> FromGameObjectGetComponentInChildren<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding,
             GameObject gameObject
             )
             where TConcrete : Component
         {
-            typeBinding.FromMethod(_ => gameObject.GetComponentInChildren<TConcrete>());
-            return typeBinding;
+            binding.FromMethod(_ => gameObject.GetComponentInChildren<TConcrete>());
+            return binding;
         }
 
-        public static TypeBinding<List<TInterface>, List<TConcrete>> FromGameObjectGetComponentsInChildren<TInterface, TConcrete>(
-            this TypeBinding<List<TInterface>, List<TConcrete>> typeBinding,
+        public static Binding<List<TInterface>, List<TConcrete>> FromGameObjectGetComponentsInChildren<TInterface, TConcrete>(
+            this Binding<List<TInterface>, List<TConcrete>> binding,
             GameObject gameObject,
             bool allowEmpty = false
             )
             where TConcrete : Component
         {
-            typeBinding.FromMethod(_ =>
+            binding.FromMethod(_ =>
             {
                 var componentsInParent = gameObject.GetComponentsInChildren<TConcrete>();
                 if (componentsInParent.Length == 0 && !allowEmpty)
@@ -64,42 +64,47 @@ namespace ManualDi.Unity3d
                 }
                 return componentsInParent.ToList();
             });
-            return typeBinding;
+            return binding;
         }
 
-        public static TypeBinding<TInterface, TConcrete> FromGameObjectGetComponent<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding,
+        public static Binding<TInterface, TConcrete> FromGameObjectGetComponent<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding,
             GameObject gameObject
             )
             where TConcrete : Component
         {
-            typeBinding.FromMethod(_ => gameObject.GetComponent<TConcrete>());
-            return typeBinding;
+            binding.FromMethod(_ => gameObject.GetComponent<TConcrete>());
+            return binding;
         }
 
-        public static TypeBinding<TInterface, TConcrete> FromGameObjectAddComponent<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding,
+        public static Binding<TInterface, TConcrete> FromGameObjectAddComponent<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding,
             GameObject gameObject,
             bool destroyOnDispose = true
             )
             where TConcrete : Component
         {
-            typeBinding.FromMethod(_ => gameObject.AddComponent<TConcrete>());
-            if (destroyOnDispose)
+            binding.FromMethod(c =>
             {
-                typeBinding.Dispose((o, c) => Object.Destroy(o));
-            }
-            return typeBinding;
+                var o = gameObject.AddComponent<TConcrete>();
+                if (destroyOnDispose)
+                {
+                    c.QueueDispose(() => Object.Destroy(o));
+                }
+                return o;
+            });
+            
+            return binding;
         }
 
-        public static TypeBinding<List<TInterface>, List<TConcrete>> FromGameObjectGetComponents<TInterface, TConcrete>(
-            this TypeBinding<List<TInterface>, List<TConcrete>> typeBinding, 
+        public static Binding<List<TInterface>, List<TConcrete>> FromGameObjectGetComponents<TInterface, TConcrete>(
+            this Binding<List<TInterface>, List<TConcrete>> binding, 
             GameObject gameObject,
             bool allowEmpty = false
             )
             where TConcrete : Component
         {
-            typeBinding.FromMethod(_ =>
+            binding.FromMethod(_ =>
             {
                 var components = gameObject.GetComponents<TConcrete>();
                 if (components.Length == 0 && !allowEmpty)
@@ -108,15 +113,15 @@ namespace ManualDi.Unity3d
                 }
                 return components.ToList();
             });
-            return typeBinding;
+            return binding;
         }
         
         #endregion
 
         #region From Instantiate Component
 
-        public static TypeBinding<TInterface, TConcrete> FromInstantiateComponent<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding,
+        public static Binding<TInterface, TConcrete> FromInstantiateComponent<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding,
             TConcrete component,
             Transform? parent = null,
             bool worldPositionStays = false,
@@ -124,20 +129,25 @@ namespace ManualDi.Unity3d
         )
             where TConcrete : Component
         {
-            typeBinding.FromMethod(_ => Object.Instantiate(component, parent, worldPositionStays));
-            if (destroyOnDispose)
+            binding.FromMethod(c =>
             {
-                typeBinding.Dispose((o, c) => Object.Destroy(o.gameObject));
-            }
-            return typeBinding;
+                var o = Object.Instantiate(component, parent, worldPositionStays);
+                if (destroyOnDispose)
+                {
+                    c.QueueDispose(() => Object.Destroy(o.gameObject));
+                }
+
+                return o;
+            });
+            return binding;
         }
 
         #endregion
         
         #region From Instantiate GameObject
         
-        public static TypeBinding<TInterface, TConcrete> FromInstantiateGameObjectGetComponent<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding,
+        public static Binding<TInterface, TConcrete> FromInstantiateGameObjectGetComponent<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding,
             GameObject gameObject,
             Transform? parent = null,
             bool worldPositionStays = false,
@@ -145,20 +155,21 @@ namespace ManualDi.Unity3d
         )
             where TConcrete : Component
         {
-            typeBinding.FromMethod(_ =>
+            binding.FromMethod(c =>
             {
                 var instance = Object.Instantiate(gameObject, parent, worldPositionStays);
-                return instance.GetComponent<TConcrete>();
+                var o = instance.GetComponent<TConcrete>();
+                if (destroyOnDispose)
+                {
+                    c.QueueDispose(() => Object.Destroy(instance));
+                }
+                return o;
             });
-            if (destroyOnDispose)
-            {
-                typeBinding.Dispose((o, c) => Object.Destroy(o.gameObject));
-            }
-            return typeBinding;
+            return binding;
         }
         
-        public static TypeBinding<TInterface, TConcrete> FromInstantiateGameObjectGetComponentInChildren<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding,
+        public static Binding<TInterface, TConcrete> FromInstantiateGameObjectGetComponentInChildren<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding,
             GameObject gameObject,
             Transform? parent = null,
             bool worldPositionStays = false,
@@ -166,27 +177,24 @@ namespace ManualDi.Unity3d
         )
             where TConcrete : Component
         {
-            GameObject? instance = null; 
-            typeBinding.FromMethod(_ =>
+            binding.FromMethod(c =>
             {
-                instance = Object.Instantiate(gameObject, parent, worldPositionStays);
-                return instance.GetComponentInChildren<TConcrete>();
-            });
-            if (destroyOnDispose)
-            {
-                typeBinding.Dispose((o, c) =>
+                var instance = Object.Instantiate(gameObject, parent, worldPositionStays);
+                var o = instance.GetComponentInChildren<TConcrete>();
+                if (destroyOnDispose)
                 {
-                    if (instance != null)
+                    c.QueueDispose(() =>
                     {
                         Object.Destroy(instance);
-                    }
-                });
-            }
-            return typeBinding;
+                    });
+                }
+                return o;
+            });
+            return binding;
         }
         
-        public static TypeBinding<List<TInterface>, List<TConcrete>> FromInstantiateGameObjectGetComponents<TInterface, TConcrete>(
-            this TypeBinding<List<TInterface>, List<TConcrete>> typeBinding,
+        public static Binding<List<TInterface>, List<TConcrete>> FromInstantiateGameObjectGetComponents<TInterface, TConcrete>(
+            this Binding<List<TInterface>, List<TConcrete>> binding,
             GameObject gameObject,
             Transform? parent = null,
             bool worldPositionStays = false,
@@ -195,34 +203,30 @@ namespace ManualDi.Unity3d
         )
             where TConcrete : Component
         {
-            GameObject? instance = null;
-            typeBinding.FromMethod(_ =>
+            binding.FromMethod(c =>
             {
-                instance = Object.Instantiate(gameObject, parent, worldPositionStays);
+                var instance = Object.Instantiate(gameObject, parent, worldPositionStays);
                 var components = instance.GetComponents<TConcrete>();
                 if (components.Length == 0 && !allowEmpty)
                 {
                     Object.Destroy(instance);
-                    instance = null;
                     return null;
                 }
-                return components.ToList();
-            });
-            if (destroyOnDispose)
-            {
-                typeBinding.Dispose((o, c) =>
+                var o = components.ToList();
+                if (destroyOnDispose)
                 {
-                    if (instance != null)
+                    c.QueueDispose(() =>
                     {
                         Object.Destroy(instance);
-                    }
-                });
-            }
-            return typeBinding;
+                    });
+                }
+                return o;
+            });
+            return binding;
         }
         
-        public static TypeBinding<List<TInterface>, List<TConcrete>> FromInstantiateGameObjectGetComponentsInChildren<TInterface, TConcrete>(
-            this TypeBinding<List<TInterface>, List<TConcrete>> typeBinding,
+        public static Binding<List<TInterface>, List<TConcrete>> FromInstantiateGameObjectGetComponentsInChildren<TInterface, TConcrete>(
+            this Binding<List<TInterface>, List<TConcrete>> binding,
             GameObject gameObject,
             Transform? parent = null,
             bool worldPositionStays = false,
@@ -231,34 +235,31 @@ namespace ManualDi.Unity3d
         )
             where TConcrete : Component
         {
-            GameObject? instance = null;
-            typeBinding.FromMethod(_ =>
+            binding.FromMethod(c =>
             {
-                instance = Object.Instantiate(gameObject, parent, worldPositionStays);
+                var instance = Object.Instantiate(gameObject, parent, worldPositionStays);
                 var components = instance.GetComponentsInChildren<TConcrete>();
                 if (components.Length == 0 && !allowEmpty)
                 {
                     Object.Destroy(instance);
-                    instance = null;
                     return null;
                 }
-                return components.ToList();
-            });
-            if (destroyOnDispose)
-            {
-                typeBinding.Dispose((o, c) =>
+                var o = components.ToList();
+                if (destroyOnDispose)
                 {
-                    if (instance != null)
+                    c.QueueDispose(() =>
                     {
                         Object.Destroy(instance);
-                    }
-                });
-            }
-            return typeBinding;
+                    });
+                }
+
+                return o;
+            });
+            return binding;
         }
         
-        public static TypeBinding<TInterface, TConcrete> FromInstantiateGameObjectAddComponent<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding,
+        public static Binding<TInterface, TConcrete> FromInstantiateGameObjectAddComponent<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding,
             GameObject gameObject,
             Transform? parent = null,
             bool worldPositionStays = false,
@@ -266,38 +267,42 @@ namespace ManualDi.Unity3d
         )
             where TConcrete : Component
         {
-            typeBinding.FromMethod(_ =>
+            binding.FromMethod(c =>
             {
                 var instance = Object.Instantiate(gameObject, parent, worldPositionStays);
-                return instance.AddComponent<TConcrete>();
+                var o = instance.AddComponent<TConcrete>();
+                if (destroyOnDispose)
+                {
+                    c.QueueDispose(() =>
+                    {
+                        Object.Destroy(instance);
+                    });
+                }
+                return o;
             });
-            if (destroyOnDispose)
-            {
-                typeBinding.Dispose((o, c) => Object.Destroy(o.gameObject));
-            }
-            return typeBinding;
+            return binding;
         }
         
         #endregion
         
         #region From Object Resource
 
-        public static TypeBinding<TInterface, TConcrete> FromObjectResource<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding,
+        public static Binding<TInterface, TConcrete> FromObjectResource<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding,
             string path
         )
             where TConcrete : UnityEngine.Object
         {
-            typeBinding.FromMethod(_ => Resources.Load<TConcrete>(path));
-            return typeBinding;
+            binding.FromMethod(_ => Resources.Load<TConcrete>(path));
+            return binding;
         }
 
         #endregion
         
         #region From Instantiate GameObject Resource
         
-        public static TypeBinding<TInterface, TConcrete> FromInstantiateGameObjectResourceGetComponent<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding,
+        public static Binding<TInterface, TConcrete> FromInstantiateGameObjectResourceGetComponent<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding,
             string path,
             Transform? parent = null,
             bool worldPositionStays = false,
@@ -305,21 +310,25 @@ namespace ManualDi.Unity3d
         )
             where TConcrete : Component
         {
-            typeBinding.FromMethod(_ =>
+            binding.FromMethod(c =>
             {
                 var gameObject = Resources.Load<GameObject>(path);
                 var instance = Object.Instantiate(gameObject, parent, worldPositionStays);
-                return instance.GetComponent<TConcrete>();
+                var o = instance.GetComponent<TConcrete>();
+                if (destroyOnDispose)
+                {
+                    c.QueueDispose(() =>
+                    {
+                        Object.Destroy(instance);
+                    });
+                }
+                return o;
             });
-            if (destroyOnDispose)
-            {
-                typeBinding.Dispose((o, c) => Object.Destroy(o.gameObject));
-            }
-            return typeBinding;
+            return binding;
         }
         
-        public static TypeBinding<TInterface, TConcrete> FromInstantiateGameObjectResourceGetComponentInChildren<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding,
+        public static Binding<TInterface, TConcrete> FromInstantiateGameObjectResourceGetComponentInChildren<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding,
             string path,
             Transform? parent = null,
             bool worldPositionStays = false,
@@ -327,28 +336,25 @@ namespace ManualDi.Unity3d
         )
             where TConcrete : Component
         {
-            GameObject? instance = null;
-            typeBinding.FromMethod(_ =>
+            binding.FromMethod(c =>
             {
                 var gameObject = Resources.Load<GameObject>(path);
-                instance = Object.Instantiate(gameObject, parent, worldPositionStays);
-                return instance.GetComponentInChildren<TConcrete>();
-            });
-            if (destroyOnDispose)
-            {
-                typeBinding.Dispose((o, c) =>
+                var instance = Object.Instantiate(gameObject, parent, worldPositionStays);
+                var o = instance.GetComponentInChildren<TConcrete>();
+                if (destroyOnDispose)
                 {
-                    if (instance != null)
+                    c.QueueDispose(() =>
                     {
                         Object.Destroy(instance);
-                    }
-                });
-            }
-            return typeBinding;
+                    });
+                }
+                return o;
+            });
+            return binding;
         }
         
-        public static TypeBinding<List<TInterface>, List<TConcrete>> FromInstantiateGameObjectResourceGetComponents<TInterface, TConcrete>(
-            this TypeBinding<List<TInterface>, List<TConcrete>> typeBinding,
+        public static Binding<List<TInterface>, List<TConcrete>> FromInstantiateGameObjectResourceGetComponents<TInterface, TConcrete>(
+            this Binding<List<TInterface>, List<TConcrete>> binding,
             string path,
             Transform? parent = null,
             bool worldPositionStays = false,
@@ -358,7 +364,7 @@ namespace ManualDi.Unity3d
             where TConcrete : Component
         {
             GameObject? instance = null;
-            typeBinding.FromMethod(_ =>
+            binding.FromMethod(c =>
             {
                 var gameObject = Resources.Load<GameObject>(path);
                 instance = Object.Instantiate(gameObject, parent, worldPositionStays);
@@ -369,24 +375,21 @@ namespace ManualDi.Unity3d
                     instance = null;
                     return null;
                 }
-                return components.ToList();
-            });
-            
-            if (destroyOnDispose)
-            {
-                typeBinding.Dispose((o, c) =>
+                var o = components.ToList();
+                if (destroyOnDispose)
                 {
-                    if (instance != null)
+                    c.QueueDispose(() =>
                     {
                         Object.Destroy(instance);
-                    }
-                });
-            }
-            return typeBinding;
+                    });
+                }
+                return o;
+            });
+            return binding;
         }
         
-        public static TypeBinding<List<TInterface>, List<TConcrete>> FromInstantiateGameObjectResourceGetComponentsInChildren<TInterface, TConcrete>(
-            this TypeBinding<List<TInterface>, List<TConcrete>> typeBinding,
+        public static Binding<List<TInterface>, List<TConcrete>> FromInstantiateGameObjectResourceGetComponentsInChildren<TInterface, TConcrete>(
+            this Binding<List<TInterface>, List<TConcrete>> binding,
             string path,
             Transform? parent = null,
             bool worldPositionStays = false,
@@ -395,36 +398,31 @@ namespace ManualDi.Unity3d
         )
             where TConcrete : Component
         {
-            GameObject? instance = null;
-            typeBinding.FromMethod(_ =>
+            binding.FromMethod(c =>
             {
                 var gameObject = Resources.Load<GameObject>(path);
-                instance = Object.Instantiate(gameObject, parent, worldPositionStays);
+                var instance = Object.Instantiate(gameObject, parent, worldPositionStays);
                 var components = instance.GetComponentsInChildren<TConcrete>();
                 if (components.Length == 0 && !allowEmpty)
                 {
                     Object.Destroy(instance);
-                    instance = null;
                     return null;
                 }
-                return components.ToList();
-            });
-            
-            if (destroyOnDispose)
-            {
-                typeBinding.Dispose((o, c) =>
+                var o = components.ToList();
+                if (destroyOnDispose)
                 {
-                    if (instance != null)
+                    c.QueueDispose(() =>
                     {
                         Object.Destroy(instance);
-                    }
-                });
-            }
-            return typeBinding;
+                    });
+                }
+                return o;
+            });
+            return binding;
         }
         
-        public static TypeBinding<TInterface, TConcrete> FromInstantiateGameObjectResourceAddComponent<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding,
+        public static Binding<TInterface, TConcrete> FromInstantiateGameObjectResourceAddComponent<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding,
             string path,
             Transform? parent = null,
             bool worldPositionStays = false,
@@ -432,17 +430,21 @@ namespace ManualDi.Unity3d
         )
             where TConcrete : Component
         {
-            typeBinding.FromMethod(_ =>
+            binding.FromMethod(c =>
             {
                 var gameObject = Resources.Load<GameObject>(path);
                 var instance = Object.Instantiate(gameObject, parent, worldPositionStays);
-                return instance.AddComponent<TConcrete>();
+                var o = instance.AddComponent<TConcrete>();
+                if (destroyOnDispose)
+                {
+                    c.QueueDispose(() =>
+                    {
+                        Object.Destroy(instance);
+                    });
+                }
+                return o;
             });
-            if (destroyOnDispose)
-            {
-                typeBinding.Dispose((o, c) => Object.Destroy(o.gameObject));
-            }
-            return typeBinding;
+            return binding;
         }
         
         #endregion

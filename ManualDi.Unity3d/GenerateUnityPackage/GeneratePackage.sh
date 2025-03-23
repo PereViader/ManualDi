@@ -48,6 +48,7 @@ echo Copy assambly definition
 cp "ManualDi.Unity3d/GenerateUnityPackage/ManualDi.asmdef" "UnityPackageRelease/ManualDi.asmdef"
 cp "ManualDi.Unity3d/GenerateUnityPackage/ManualDi.asmdef.meta" "UnityPackageRelease/ManualDi.asmdef.meta"
 cp "ManualDi.Unity3d/GenerateUnityPackage/csc.rsp" "UnityPackageRelease/csc.rsp"
+cp "ManualDi.Unity3d/GenerateUnityPackage/ManualDi.Main.Generators.dll.meta" "UnityPackageRelease/ManualDi.Main.Generators.dll.meta"
 
 sh ./ManualDi.Unity3d/GenerateUnityPackage/GenerateMainPackage.sh
 if $skip_unity3d; then

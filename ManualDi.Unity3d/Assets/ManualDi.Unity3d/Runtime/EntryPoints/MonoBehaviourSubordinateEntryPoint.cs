@@ -27,7 +27,12 @@ namespace ManualDi.Unity3d
                 bindings.Install(dataInstaller);
             }
             bindings.Install(this);
-            Container = await bindings.Build(ct);
+            Container = await InitiateWrapper(bindings.Build(ct));
+        }
+        
+        protected virtual ValueTask<DiContainer> InitiateWrapper(ValueTask<DiContainer> task)
+        {
+            return task;
         }
 
         public virtual async void OnDestroy()
@@ -75,11 +80,16 @@ namespace ManualDi.Unity3d
             }
             bindings.Install(this);
 
-            Container = await bindings.Build(ct);
+            Container = await InitiateWrapper(bindings.Build(ct));
 
             Context = Container.Resolve<TContext>();
 
             return Context;
+        }
+        
+        protected virtual ValueTask<DiContainer> InitiateWrapper(ValueTask<DiContainer> task)
+        {
+            return task;
         }
 
         public virtual async void OnDestroy()

@@ -18,9 +18,14 @@ namespace ManualDi.Unity3d
                 throw new InvalidOperationException("Context is already initialized");
             }
             
-            Container = await new DiContainerBindings()
+            Container = await InitiateWrapper(new DiContainerBindings()
                 .Install(this)
-                .Build(ct);
+                .Build(ct));
+        }
+        
+        protected virtual ValueTask<DiContainer> InitiateWrapper(ValueTask<DiContainer> task)
+        {
+            return task;
         }
 
         public ValueTask DisposeAsync()

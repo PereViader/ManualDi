@@ -530,7 +530,7 @@ b.Bind<A>().Default().FromConstructor();
 
 ### Collection
 
-The source generator will inject all bound instances of a type if the dependency declared is one of the following types `List<T>` `IList<T>` `IReadOnlyList<T>` `IEnumerable<T>`
+The source generator will inject all bound instances of a type if the dependency declared is one of the following types `List<T>` `IList<T>` `IReadOnlyList<T>` `IEnumerable<T>` `array[]`
 The resolved dependencies will be resolved using `ResolveAll<T>`
 If the whole collection is nullable, the provided collection will always have `Count > 0` otherwise null.
 If the underlying `T` is nullable, the resulting list will be converted from `T` to `T?`. This is not recommended, the nullable values will never be null.
@@ -546,8 +546,9 @@ public class A
     [Inject] IList<int> IListInt {get; set;}
     [Inject] IReadOnlyList<obj> IReadOnlyListObj {get; set;}
     [Inject] IEnumerable<int> IEnumerableInt {get; set;}
-    [Inject] List<object>? NullableList {get; set;} //Either null or Count > 0
+    [Inject] object[]? NullableList {get; set;} //Either null or Count > 0
     [Inject] List<object?> NullableGenericList {get; set;} //Valid but NOT recommended
+    [Inject] List<object?>? Nullable2GenericList {get; set;} //Valid but NOT recommended
 }
 
 b.Bind<A>().Default().FromConstructor();

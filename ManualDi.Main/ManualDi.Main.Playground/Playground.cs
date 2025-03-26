@@ -333,6 +333,11 @@ class InjectContainer
     public InjectContainer(IDiContainer c) {} // The container should be provided as is
 }
 
+class InjectArray
+{
+    public InjectArray(object[] o, object?[] o1, object[]? o2, object?[]? o3) {}
+}
+
 partial class Partial
 {
     public Partial(object o) {}

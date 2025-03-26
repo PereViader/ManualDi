@@ -276,7 +276,8 @@ namespace ManualDi.Main.Generators
             }
 
             // Updated code below
-            var listGenericType = typeReferences.TryGetEnumerableType(typeSymbol);
+            var arraySymbol = (typeSymbol as IArrayTypeSymbol)?.ElementType;
+            var listGenericType = arraySymbol ?? typeReferences.TryGetEnumerableType(typeSymbol);
             if (listGenericType is not null)
             {
                 var isListNullable = IsNullableTypeSymbol(typeSymbol);
@@ -303,9 +304,18 @@ namespace ManualDi.Main.Generators
                         stringBuilder.Append(FullyQualifyTypeWithNullable(listGenericType));
                         stringBuilder.Append(">(x => x)");
                     }
-                    stringBuilder.Append(" : null");
                 }
                 
+                if (arraySymbol is not null)
+                {
+                    stringBuilder.Append(".ToArray()");
+                }
+
+                if (isListNullable)
+                {
+                    stringBuilder.Append(" : null");
+                }
+
                 return;
             }
             

@@ -13,11 +13,11 @@
     <Description>Dependency injection library for C#</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/PereViader/ManualDi.Sync</PackageProjectUrl>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReadmeFile>README.Sync.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\..\README.md" Pack="true" PackagePath="" />
+    <None Include="..\..\README.Sync.md" Pack="true" PackagePath="" />
     <None Include="$(SolutionDir)ManualDi.Sync.Generators\bin\$(Configuration)\netstandard2.0\ManualDi.Sync.Generators.dll"
           Pack="true"
           PackagePath="analyzers/dotnet/cs"

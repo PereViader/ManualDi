@@ -20,7 +20,7 @@ jobs:
       - name: Publish Sync Nuget and Tag Commit
         run: |
           dotnet build ManualDi.Sync --configuration Release
-          dotnet pack ManualDi.Sync --configuration Release --output ManualDi.Sync.Nuget /p:PackageVersion=$versionç
+          dotnet pack ManualDi.Sync --configuration Release --output ManualDi.Sync.Nuget -p:PackageVersion=$versionç
           
           set +e  # Disable immediate exit on error
           dotnet nuget push "ManualDi.Sync.Nuget/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key "${{secrets.NUGET_API_KEY}}"
@@ -37,7 +37,7 @@ jobs:
       - name: Publish Async Nuget and Tag Commit
         run: |
           dotnet build ManualDi.Async --configuration Release
-          dotnet pack ManualDi.Async --configuration Release --output ManualDi.Async.Nuget /p:PackageVersion=$version
+          dotnet pack ManualDi.Async --configuration Release --output ManualDi.Async.Nuget -p:PackageVersion=$version
           
           set +e  # Disable immediate exit on error
           dotnet nuget push "ManualDi.Async.Nuget/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key "${{secrets.NUGET_API_KEY}}"

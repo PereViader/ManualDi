@@ -11,6 +11,11 @@
 *.sln.docstates
 ManualDi.Unity3d/UserSettings/*
 
+/ManualDi.Sync.Unity3d.Package/
+/ManualDi.Async.Unity3d.Package/
+/ManualDi.Sync.Nuget/
+/ManualDi.Async.Nuget/
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 UnityPackageRelease/

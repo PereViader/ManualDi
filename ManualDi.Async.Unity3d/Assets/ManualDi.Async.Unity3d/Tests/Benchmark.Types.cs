@@ -22,7 +22,7 @@ namespace ManualDi.Unity3d.Tests
     {
         [Zenject.Inject]
         [VContainer.Inject]
-        [ManualDi.Main.Inject]
+        [ManualDi.Async.Inject]
         public IServiceA ServiceA { get; set; }
     }
     
@@ -37,7 +37,7 @@ namespace ManualDi.Unity3d.Tests
     {
         [Zenject.Inject]
         [VContainer.Inject]
-        [ManualDi.Main.Inject]
+        [ManualDi.Async.Inject]
         public IServiceB ServiceB { get; set; }
     }
     
@@ -52,7 +52,7 @@ namespace ManualDi.Unity3d.Tests
     {
         [Zenject.Inject]
         [VContainer.Inject]
-        [ManualDi.Main.Inject]
+        [ManualDi.Async.Inject]
         public IServiceC ServiceC { get; set; }
     }
     

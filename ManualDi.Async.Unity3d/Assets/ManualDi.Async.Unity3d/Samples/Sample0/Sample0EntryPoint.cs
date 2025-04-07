@@ -1,4 +1,4 @@
-﻿using ManualDi.Main;
+﻿using ManualDi.Async;
 
 namespace ManualDi.Unity3d.Samples.Sample0
 {

@@ -1,4 +1,4 @@
-﻿using ManualDi.Main;
+﻿using ManualDi.Async;
 using UnityEngine;
 
 namespace ManualDi.Unity3d

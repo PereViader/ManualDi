@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using ManualDi.Main;
+using ManualDi.Async;
 using UnityEngine;
 
 namespace ManualDi.Unity3d

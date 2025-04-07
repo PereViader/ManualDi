@@ -1,5 +1,5 @@
 using System.Threading;
-using ManualDi.Main;
+using ManualDi.Async;
 using NUnit.Framework;
 using Unity.PerformanceTesting;
 using VContainer;
@@ -18,7 +18,7 @@ namespace ManualDi.Unity3d.Tests
             Measure
                 .Method(() =>
                 {
-                    var manualDiBuilder = new ManualDi.Main.DiContainerBindings();
+                    var manualDiBuilder = new ManualDi.Async.DiContainerBindings();
                     manualDiBuilder.Bind<IFirstService, FirstService>().Default().FromConstructor();
                     manualDiBuilder.Bind<ISecondService, SecondService>().Default().FromConstructor();
                     manualDiBuilder.Bind<IThirdService, ThirdService>().Default().FromConstructor();

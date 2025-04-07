@@ -4,12 +4,12 @@
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "ManualDi.Main",
         "Unity.PerformanceTesting",
         "VContainer",
         "Reflex",
         "Zenject",
-        "Zenject-TestFramework"
+        "Zenject-TestFramework",
+        "ManualDi.Main"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

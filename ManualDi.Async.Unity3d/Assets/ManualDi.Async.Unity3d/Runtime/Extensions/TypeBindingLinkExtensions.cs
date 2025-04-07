@@ -1,5 +1,5 @@
 using System;
-using ManualDi.Main;
+using ManualDi.Async;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;

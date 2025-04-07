@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
 using System.Collections;
 using System.Threading;
-using ManualDi.Main;
+using ManualDi.Async;
 using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEngine.UI;

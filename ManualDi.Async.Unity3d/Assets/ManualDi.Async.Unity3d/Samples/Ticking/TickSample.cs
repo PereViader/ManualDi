@@ -1,4 +1,4 @@
-﻿using ManualDi.Main;
+﻿using ManualDi.Async;
 using UnityEngine.UI;
 
 namespace ManualDi.Unity3d.Samples.Ticking

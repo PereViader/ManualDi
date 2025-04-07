@@ -80,10 +80,7 @@ namespace ManualDi.Sync
             var instance = binding.Create(this)
                 ?? throw new InvalidOperationException($"Could not create object for Binding with Apparent type {binding.ApparentType} and Concrete type {binding.ConcreteType}");
 
-            if (binding.TypeScope is TypeScope.Single)
-            {
-                binding.SingleInstance = instance;
-            }
+            binding.SingleInstance = instance;
             
             var initialize = binding.Inject(this, instance);
             if (initialize)

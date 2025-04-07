@@ -11,12 +11,6 @@ namespace ManualDi.Sync
         public Binding Binding = default!;
         public Binding? InjectedIntoBinding;
     }
-
-    public enum TypeScope
-    {
-        Single,
-        Transient
-    }
     
     internal interface IInitializeBinding
     {
@@ -28,7 +22,6 @@ namespace ManualDi.Sync
         public abstract Type ApparentType { get; }
         public abstract Type ConcreteType { get; }
         
-        public TypeScope TypeScope = TypeScope.Single;
         public bool IsLazy = true;
         public bool TryToDispose = true;
         public object? Id;

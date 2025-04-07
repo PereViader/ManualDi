@@ -26,7 +26,7 @@ namespace ManualDi.Sync
         public static Binding<TConcrete, TConcrete> BindBoth<TApparent, TConcrete>(this DiContainerBindings diContainerBindings)
         {
             Binding<TApparent, TConcrete> binding = new();
-            binding.Transient().FromContainerResolve();
+            binding.FromContainerResolve();
             diContainerBindings.AddBinding(binding, typeof(TApparent));
 
             Binding<TConcrete, TConcrete> concrete = new();

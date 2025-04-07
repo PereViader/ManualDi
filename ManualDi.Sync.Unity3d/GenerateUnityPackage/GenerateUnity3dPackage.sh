@@ -1,4 +1,6 @@
 #!/bin/bash
-cp -r "ManualDi.Unity3d/Assets/ManualDi.Unity3d/." "UnityPackageRelease/ManualDi.Unity3d/"
-mv "UnityPackageRelease/ManualDi.Unity3d/Samples" "UnityPackageRelease/ManualDi.Unity3d/Samples~"
-rm "UnityPackageRelease/ManualDi.Unity3d/Samples.meta"
+cp -r "ManualDi.Sync.Unity3d/Assets/ManualDi.Sync.Unity3d/." "ManualDi.Sync.Unity3d.Package/ManualDi.Sync.Unity3d/"
+mv "ManualDi.Sync.Unity3d.Package/ManualDi.Sync.Unity3d/Samples" "ManualDi.Sync.Unity3d.Package/ManualDi.Sync.Unity3d/Samples~"
+rm "ManualDi.Sync.Unity3d.Package/ManualDi.Sync.Unity3d/Samples.meta"
+rm -rf "ManualDi.Sync.Unity3d.Package/ManualDi.Sync.Unity3d/Tests"
+rm "ManualDi.Sync.Unity3d.Package/ManualDi.Sync.Unity3d/Tests.meta"

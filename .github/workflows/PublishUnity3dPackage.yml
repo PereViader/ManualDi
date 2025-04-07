@@ -1,9 +1,6 @@
-name: Publish Unity3d Package
+name: Publish Unity3d Sync Package
 on: 
   workflow_call:
-
-env:
-  version_file: ManualDi.Main/ManualDi.Main/ManualDi.Main.csproj
 
 jobs:
   PublishUnity3dPackage:
@@ -16,9 +13,7 @@ jobs:
       - uses: actions/checkout@v4.1.4
 
       - id: get-version
-        run: |
-          version=$(grep -oP '(?<=<Version>)[^<]+' "${{ env.version_file }}")
-          echo "version=$version" >> $GITHUB_OUTPUT
+        run: source .env && echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Check if release exists
         id: release-exists
@@ -29,10 +24,15 @@ jobs:
           echo "Release exists $release_exists"
           echo "exists=$release_exists" >> $GITHUB_OUTPUT
 
-      - name: Create Package
+      - name: Create Sync Package
         if: ${{ steps.release-exists.outputs.exists == 'false' }}
         run: |
-          sh ./ManualDi.Unity3d/GenerateUnityPackage/GeneratePackage.sh
+          sh ./ManualDi.Sync.Unity3d/GenerateUnityPackage/GeneratePackage.sh
+
+      - name: Create Async Package
+        if: ${{ steps.release-exists.outputs.exists == 'false' }}
+        run: |
+          sh ./ManualDi.Async.Unity3d/GenerateUnityPackage/GeneratePackage.sh
 
       - name: Create github release
         if: ${{ steps.release-exists.outputs.exists == 'false' }}
@@ -41,7 +41,8 @@ jobs:
           tag_name: v${{ steps.get-version.outputs.version }}
           name: ManualDi Unity3d v${{ steps.get-version.outputs.version }}
           files: |
-            UnityPackageRelease/com.pereviader.manualdi.unity3d-${{ steps.get-version.outputs.version }}.tgz
+            ManualDi.Sync.Unity3d.Package/com.pereviader.manualdi.sync.unity3d-${{ steps.get-version.outputs.version }}.tgz
+            ManualDi.Async.Unity3d.Package/com.pereviader.manualdi.async.unity3d-${{ steps.get-version.outputs.version }}.tgz
 
       - name: Trigger Unity3d Repo Workflow
         if: ${{ steps.release-exists.outputs.exists == 'false' }}
@@ -52,4 +53,5 @@ jobs:
             --repo PereViader/ManualDi.Unity3d \
             --ref main \
             -f release-tag=v${{ steps.get-version.outputs.version }} \
-            -f file-name=com.pereviader.manualdi.unity3d-${{ steps.get-version.outputs.version }}.tgz
+            -f sync-file-name=com.pereviader.manualdi.sync.unity3d-${{ steps.get-version.outputs.version }}.tgz
+            -f async-file-name=com.pereviader.manualdi.async.unity3d-${{ steps.get-version.outputs.version }}.tgz

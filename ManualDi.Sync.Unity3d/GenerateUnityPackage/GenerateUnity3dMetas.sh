@@ -97,5 +97,5 @@ traverse_and_generate() {
 }
 
 echo "Start generating metas"
-traverse_and_generate "UnityPackageRelease"
+traverse_and_generate "ManualDi.Sync.Unity3d.Package"
 echo "Meta files generation complete."

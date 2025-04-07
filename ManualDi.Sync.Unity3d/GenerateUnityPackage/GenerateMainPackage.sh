@@ -1,15 +1,15 @@
 #!/bin/bash
 echo Copy Main folder
-cp -r "ManualDi.Main/ManualDi.Main/." "UnityPackageRelease/ManualDi.Main/"
+cp -r "ManualDi.Sync/ManualDi.Sync/." "ManualDi.Sync.Unity3d.Package/ManualDi.Sync/"
 
 echo Delete unnecesary files from common
-rm "UnityPackageRelease/ManualDi.Main/ManualDi.Main.csproj"
-rm -rf "UnityPackageRelease/ManualDi.Main/bin"
-rm -rf "UnityPackageRelease/ManualDi.Main/obj"
-rm -rf "UnityPackageRelease/ManualDi.Main/Properties"
+rm "ManualDi.Sync.Unity3d.Package/ManualDi.Sync/ManualDi.Sync.csproj"
+rm -rf "ManualDi.Sync.Unity3d.Package/ManualDi.Sync/bin"
+rm -rf "ManualDi.Sync.Unity3d.Package/ManualDi.Sync/obj"
+rm -rf "ManualDi.Sync.Unity3d.Package/ManualDi.Sync/Properties"
 
 echo Build generator
-dotnet build ManualDi.Main --configuration Release
+dotnet build ManualDi.Sync --configuration Release
 
 echo Copy generator dll to package
-cp "ManualDi.Main/ManualDi.Main.Generators/bin/Release/netstandard2.0/ManualDi.Main.Generators.dll" "UnityPackageRelease/ManualDi.Main.Generators.dll"
+cp "ManualDi.Sync/ManualDi.Sync.Generators/bin/Release/netstandard2.0/ManualDi.Sync.Generators.dll" "ManualDi.Sync.Unity3d.Package/ManualDi.Sync.Generators.dll"

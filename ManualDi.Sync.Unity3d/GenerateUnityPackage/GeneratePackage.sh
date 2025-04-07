@@ -18,7 +18,7 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # Path to the .csproj file
-CSPROJ_FILE="ManualDi.Main/ManualDi.Main/ManualDi.Main.csproj"
+CSPROJ_FILE="ManualDi.Sync/ManualDi.Sync/ManualDi.Sync.csproj"
 
 # Extract version from the .csproj file
 version=$(sed -n 's|.*<Version>\(.*\)</Version>.*|\1|p' "$CSPROJ_FILE")
@@ -30,32 +30,32 @@ if [ -z "$version" ]; then
 fi
 
 echo "Remove previous package"
-rm -rf UnityPackageRelease
-mkdir -p "UnityPackageRelease/"
+rm -rf ManualDi.Sync.Unity3d.Package
+mkdir -p "ManualDi.Sync.Unity3d.Package/"
 
 echo Copy License
-cp "LICENSE.md" "UnityPackageRelease/LICENSE.md"
+cp "LICENSE.md" "ManualDi.Sync.Unity3d.Package/LICENSE.md"
 
-cp "ManualDi.Unity3d/GenerateUnityPackage/package.json" "UnityPackageRelease/package.json"
+cp "ManualDi.Sync.Unity3d/GenerateUnityPackage/package.json" "ManualDi.Sync.Unity3d.Package/package.json"
 echo "Copy package files to the package root"
-sed -i "s/\"version\": \"\$version\"/\"version\": \"$version\"/g" "UnityPackageRelease/package.json"
+sed -i "s/\"version\": \"\$version\"/\"version\": \"$version\"/g" "ManualDi.Sync.Unity3d.Package/package.json"
 echo "Version in package.json updated to $version"
 
 echo Copy readme
-cp "ManualDi.Unity3d/GenerateUnityPackage/README.md" "UnityPackageRelease/README.md"
+cp "ManualDi.Sync.Unity3d/GenerateUnityPackage/README.md" "ManualDi.Sync.Unity3d.Package/README.md"
 
 echo Copy assambly definition
-cp "ManualDi.Unity3d/GenerateUnityPackage/ManualDi.asmdef" "UnityPackageRelease/ManualDi.asmdef"
-cp "ManualDi.Unity3d/GenerateUnityPackage/ManualDi.asmdef.meta" "UnityPackageRelease/ManualDi.asmdef.meta"
-cp "ManualDi.Unity3d/GenerateUnityPackage/csc.rsp" "UnityPackageRelease/csc.rsp"
-cp "ManualDi.Unity3d/GenerateUnityPackage/ManualDi.Main.Generators.dll.meta" "UnityPackageRelease/ManualDi.Main.Generators.dll.meta"
+cp "ManualDi.Sync.Unity3d/GenerateUnityPackage/ManualDi.Sync.asmdef" "ManualDi.Sync.Unity3d.Package/ManualDi.asmdef"
+cp "ManualDi.Sync.Unity3d/GenerateUnityPackage/ManualDi.Sync.asmdef.meta" "ManualDi.Sync.Unity3d.Package/ManualDi.asmdef.meta"
+cp "ManualDi.Sync.Unity3d/GenerateUnityPackage/csc.rsp" "ManualDi.Sync.Unity3d.Package/csc.rsp"
+cp "ManualDi.Sync.Unity3d/GenerateUnityPackage/ManualDi.Sync.Generators.dll.meta" "ManualDi.Sync.Unity3d.Package/ManualDi.Sync.Generators.dll.meta"
 
-sh ./ManualDi.Unity3d/GenerateUnityPackage/GenerateMainPackage.sh
+sh ./ManualDi.Sync.Unity3d/GenerateUnityPackage/GenerateMainPackage.sh
 if $skip_unity3d; then
     echo "Skipping unity3d package"
 else
-    sh ./ManualDi.Unity3d/GenerateUnityPackage/GenerateUnity3dPackage.sh
+    sh ./ManualDi.Sync.Unity3d/GenerateUnityPackage/GenerateUnity3dPackage.sh
 fi
-sh ./ManualDi.Unity3d/GenerateUnityPackage/GenerateUnity3dMetas.sh
-cd UnityPackageRelease
+sh ./ManualDi.Sync.Unity3d/GenerateUnityPackage/GenerateUnity3dMetas.sh
+cd ManualDi.Sync.Unity3d.Package
 npm pack

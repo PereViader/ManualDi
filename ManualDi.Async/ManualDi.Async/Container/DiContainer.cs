@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace ManualDi.Async
 {
-    public sealed class DiContainer : IDiContainer, IDependencyResolver
+    public sealed class DiContainer : IDiContainer
     {
         private readonly Dictionary<IntPtr, Binding> bindingsByType;
         private readonly List<Binding> bindings;
@@ -154,10 +153,15 @@ namespace ManualDi.Async
         
         public void ConstructorDependency<T>()
         {
-            var binding = GetTypeForConstraint(typeof(T));
+            var binding = GetBinding(typeof(T));
             if (binding is null)
             {
-                throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedBinding?.GetType().FullName ?? "null"} is not registered.");
+                if (parentDiContainer is null)
+                {
+                    throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedBinding?.GetType().FullName ?? "null"} is not registered.");
+                }
+                parentDiContainer.ConstructorDependency<T>();
+                return;
             }
             
             if (binding.BindingWiredState < BindingWiredState.Wired)
@@ -171,10 +175,15 @@ namespace ManualDi.Async
 
         public void ConstructorDependency<T>(FilterBindingDelegate filter)
         {
-            var binding = GetTypeForConstraint(typeof(T), filter);
+            var binding = GetBinding(typeof(T), filter);
             if (binding is null)
             {
-                throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedBinding?.GetType().FullName ?? "null"} with some filter is not registered.");
+                if (parentDiContainer is null)
+                {
+                    throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedBinding?.GetType().FullName ?? "null"} with some filter is not registered.");
+                }
+                parentDiContainer.ConstructorDependency<T>(filter);
+                return;
             }
             
             if (binding.BindingWiredState < BindingWiredState.Wired)
@@ -188,9 +197,10 @@ namespace ManualDi.Async
         
         public void NullableConstructorDependency<T>()
         {
-            var binding = GetTypeForConstraint(typeof(T));
+            var binding = GetBinding(typeof(T));
             if (binding is null)
             {
+                parentDiContainer?.NullableConstructorDependency<T>();
                 return;
             }
             
@@ -205,9 +215,10 @@ namespace ManualDi.Async
 
         public void NullableConstructorDependency<T>(FilterBindingDelegate filter)
         {
-            var binding = GetTypeForConstraint(typeof(T), filter);
+            var binding = GetBinding(typeof(T), filter);
             if (binding is null)
             {
+                parentDiContainer?.NullableConstructorDependency<T>(filter);
                 return;
             }
             
@@ -222,10 +233,15 @@ namespace ManualDi.Async
 
         public void InjectionDependency<T>()
         {
-            var binding = GetTypeForConstraint(typeof(T));
+            var binding = GetBinding(typeof(T));
             if (binding is null)
             {
-                throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedBinding?.GetType().FullName ?? "null"} is not registered.");
+                if (parentDiContainer is null)
+                {
+                    throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedBinding?.GetType().FullName ?? "null"} is not registered.");
+                }
+                parentDiContainer.InjectionDependency<T>();
+                return;
             }
             
             if (binding.BindingWiredState is BindingWiredState.Wired)
@@ -238,10 +254,15 @@ namespace ManualDi.Async
 
         public void InjectionDependency<T>(FilterBindingDelegate filter)
         {
-            var binding = GetTypeForConstraint(typeof(T), filter);
+            var binding = GetBinding(typeof(T), filter);
             if (binding is null)
             {
-                throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedBinding?.GetType().FullName ?? "null"} is not registered.");
+                if (parentDiContainer is null)
+                {
+                    throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedBinding?.GetType().FullName ?? "null"} is not registered.");
+                }
+                parentDiContainer.InjectionDependency<T>(filter);
+                return;
             }
             
             if (binding.BindingWiredState is BindingWiredState.Wired)
@@ -254,9 +275,10 @@ namespace ManualDi.Async
         
         public void NullableInjectionDependency<T>()
         {
-            var binding = GetTypeForConstraint(typeof(T));
+            var binding = GetBinding(typeof(T));
             if (binding is null)
             {
+                parentDiContainer?.NullableInjectionDependency<T>();
                 return;
             }
             
@@ -270,9 +292,10 @@ namespace ManualDi.Async
 
         public void NullableInjectionDependency<T>(FilterBindingDelegate filter)
         {
-            var binding = GetTypeForConstraint(typeof(T), filter);
+            var binding = GetBinding(typeof(T), filter);
             if (binding is null)
             {
+                parentDiContainer?.NullableInjectionDependency<T>(filter);
                 return;
             }
             
@@ -286,7 +309,7 @@ namespace ManualDi.Async
 
         public object? ResolveContainer(Type type)
         {
-            var binding = GetTypeForConstraint(type);
+            var binding = GetBinding(type);
             if (binding is not null)
             {
                 return binding.Instance;
@@ -297,7 +320,7 @@ namespace ManualDi.Async
         
         public object? ResolveContainer(Type type, FilterBindingDelegate filterBindingDelegate)
         {
-            var binding = GetTypeForConstraint(type, filterBindingDelegate);
+            var binding = GetBinding(type, filterBindingDelegate);
             if (binding is not null)
             {
                 return binding.Instance;
@@ -307,7 +330,7 @@ namespace ManualDi.Async
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Binding? GetTypeForConstraint(Type type)
+        private Binding? GetBinding(Type type)
         {
             if (!bindingsByType.TryGetValue(type.TypeHandle.Value, out Binding? binding))
             {
@@ -336,7 +359,7 @@ namespace ManualDi.Async
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Binding? GetTypeForConstraint(Type type, FilterBindingDelegate filterBindingDelegate)
+        private Binding? GetBinding(Type type, FilterBindingDelegate filterBindingDelegate)
         {
             if (!bindingsByType.TryGetValue(type.TypeHandle.Value, out Binding? binding))
             {
@@ -393,13 +416,13 @@ namespace ManualDi.Async
             {
                 injectedBinding = null;
                 injectedBinding = overrideFilterBindingDelegate is null 
-                    ? GetTypeForConstraint(overrideInjectedIntoType) 
-                    : GetTypeForConstraint(overrideInjectedIntoType, overrideFilterBindingDelegate);
+                    ? GetBinding(overrideInjectedIntoType) 
+                    : GetBinding(overrideInjectedIntoType, overrideFilterBindingDelegate);
             }
             
             var binding = filterBindingDelegate is null 
-                ? GetTypeForConstraint(type)
-                : GetTypeForConstraint(type, filterBindingDelegate);
+                ? GetBinding(type)
+                : GetBinding(type, filterBindingDelegate);
             
             injectedBinding = previousInjectedBinding;
             if (binding is not null)

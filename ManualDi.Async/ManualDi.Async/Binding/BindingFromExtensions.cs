@@ -69,18 +69,15 @@ namespace ManualDi.Async
         public static Binding<TApparent, TConcrete> FromSubContainerResolve<TApparent, TConcrete>(
             this Binding<TApparent, TConcrete> binding,
             InstallDelegate installDelegate,
-            Action<IDependencyResolver> dependencyResolverAction,
-            bool isContainerParent = true
+            Action<IDependencyResolver> dependencyResolverAction //TODO: To extract implicitly at runtime instead of requiring to provide it
         )
         {
             return binding
                 .FromMethodAsync(async (c, ct) =>
                 {
-                    var bindings = new DiContainerBindings().Install(installDelegate);
-                    if (isContainerParent)
-                    {
-                        bindings.WithParentContainer(c);
-                    }
+                    var bindings = new DiContainerBindings()
+                        .Install(installDelegate)
+                        .WithParentContainer(c);
                     var subContainer = await bindings.Build(ct);
                     c.QueueAsyncDispose(subContainer);
                     return subContainer.Resolve<TConcrete>();

@@ -47,7 +47,7 @@ namespace ManualDi.Sync
 
         public object? ResolveContainer(Type type)
         {
-            var binding = GetTypeForConstraint(type);
+            var binding = GetBinding(type);
             if (binding is not null)
             {
                 return ResolveBinding(binding);
@@ -58,7 +58,7 @@ namespace ManualDi.Sync
         
         public object? ResolveContainer(Type type, FilterBindingDelegate filterBindingDelegate)
         {
-            var binding = GetTypeForConstraint(type, filterBindingDelegate);
+            var binding = GetBinding(type, filterBindingDelegate);
             if (binding is not null)
             {
                 return ResolveBinding(binding);
@@ -106,7 +106,7 @@ namespace ManualDi.Sync
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Binding? GetTypeForConstraint(Type type)
+        private Binding? GetBinding(Type type)
         {
             if (!allBindings.TryGetValue(type.TypeHandle.Value, out Binding? binding))
             {
@@ -135,7 +135,7 @@ namespace ManualDi.Sync
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Binding? GetTypeForConstraint(Type type, FilterBindingDelegate filterBindingDelegate)
+        private Binding? GetBinding(Type type, FilterBindingDelegate filterBindingDelegate)
         {
             if (!allBindings.TryGetValue(type.TypeHandle.Value, out Binding? binding))
             {
@@ -192,13 +192,13 @@ namespace ManualDi.Sync
             {
                 injectedBinding = null;
                 injectedBinding = overrideFilterBindingDelegate is null 
-                    ? GetTypeForConstraint(overrideInjectedIntoType) 
-                    : GetTypeForConstraint(overrideInjectedIntoType, overrideFilterBindingDelegate);
+                    ? GetBinding(overrideInjectedIntoType) 
+                    : GetBinding(overrideInjectedIntoType, overrideFilterBindingDelegate);
             }
             
             var binding = filterBindingDelegate is null 
-                ? GetTypeForConstraint(type)
-                : GetTypeForConstraint(type, filterBindingDelegate);
+                ? GetBinding(type)
+                : GetBinding(type, filterBindingDelegate);
             
             injectedBinding = previousInjectedBinding;
             if (binding is not null)

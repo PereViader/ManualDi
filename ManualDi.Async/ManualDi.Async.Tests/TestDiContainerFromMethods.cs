@@ -51,4 +51,26 @@ public class TestDiContainerFromMethods
         var resolved = container.Resolve<object>();
         Assert.That(resolved, Is.EqualTo(instance));
     }
+
+    public class A;
+
+    public class B(A a);
+    
+    [Test]
+    public async Task TestFromSubContainerResolve()
+    {
+        await using var container = await new DiContainerBindings().Install(b =>
+        {
+            b.Bind<B>().FromSubContainerResolve(b =>
+            {
+                b.Bind<B>().Default().FromConstructor();
+            },
+            d =>
+            {
+                d.ConstructorDependency<A>();
+            });
+            
+            b.Bind<A>().Default().FromConstructor();
+        }).Build(CancellationToken.None);
+    }
 }

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace ManualDi.Async
 {
-    public interface IDiContainer : IAsyncDisposable // Only use IDisposable if you are certain that there are no IAsyncDisposables registered
+    public interface IDiContainer : IDependencyResolver, IAsyncDisposable // Only use IDisposable if you are certain that there are no IAsyncDisposables registered
     {
         CancellationToken CancellationToken { get; }
         

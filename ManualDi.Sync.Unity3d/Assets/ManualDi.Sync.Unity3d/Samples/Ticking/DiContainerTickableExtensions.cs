@@ -1,6 +1,6 @@
-﻿using ManualDi.Main;
+﻿using ManualDi.Sync;
 
-namespace ManualDi.Unity3d.Samples.Ticking
+namespace ManualD.Sync.Unity3d.Samples.Ticking
 {
     public static class DiContainerTickableExtensions
     {

@@ -1,7 +1,7 @@
-using ManualDi.Main;
+using ManualDi.Sync;
 using UnityEngine;
 
-namespace ManualDi.Unity3d.Samples.Sample0
+namespace ManualD.Sync.Unity3d.Samples.Sample0
 {
     internal class LogMessageToConsole : MonoBehaviour
     {

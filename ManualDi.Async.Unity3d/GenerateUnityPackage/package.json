@@ -1,12 +1,12 @@
 {
-    "name": "com.pereviader.manualdi.unity3d",
+    "name": "com.pereviader.manualdi.async.unity3d",
     "version": "$version",
     "displayName": "ManualDi",
     "description": "Fast C# dependency injection library that uses no reflexion",
     "unity": "2022.3",
     "license": "MIT",
-    "documentationUrl": "https://github.com/PereViader/ManualDi.Main",
-    "changelogUrl": "https://github.com/PereViader/ManualDi.Main/commits/main/",
+    "documentationUrl": "https://github.com/PereViader/ManualDi",
+    "changelogUrl": "https://github.com/PereViader/ManualDi/commits/main/",
     "licensesUrl": "https://opensource.org/license/mit",
     "author": {
         "name": "Pere Viader",
@@ -19,4 +19,4 @@
             "path": "ManualDi.Unity3d/Samples~"
         }
     ]
-  }
+}

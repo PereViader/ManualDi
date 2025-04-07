@@ -1,15 +1,15 @@
 {
-    "name": "ManualDi.Unity3d.Tests",
+    "name": "ManualD.Sync.Unity3d.Tests",
     "rootNamespace": "ManualDi.Tests.PlayMode",
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "ManualDi.Main",
         "Unity.PerformanceTesting",
         "VContainer",
         "Reflex",
         "Zenject",
-        "Zenject-TestFramework"
+        "Zenject-TestFramework",
+        "ManualDi.Main"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

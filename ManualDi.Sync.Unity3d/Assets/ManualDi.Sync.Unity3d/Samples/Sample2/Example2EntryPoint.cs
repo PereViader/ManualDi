@@ -1,7 +1,7 @@
-﻿using ManualDi.Main;
+﻿using ManualDi.Sync;
 using UnityEngine;
 
-namespace ManualDi.Unity3d.Examples.Example2
+namespace ManualD.Sync.Unity3d.Examples.Example2
 {
     internal class Example2EntryPoint : MonoBehaviourSubordinateEntryPoint<PrimitiveType, Example2Context>
     {

@@ -17,15 +17,13 @@ while [[ "$#" -gt 0 ]]; do
   shift
 done
 
-# Path to the .csproj file
-CSPROJ_FILE="ManualDi.Sync/ManualDi.Sync/ManualDi.Sync.csproj"
 
-# Extract version from the .csproj file
-version=$(sed -n 's|.*<Version>\(.*\)</Version>.*|\1|p' "$CSPROJ_FILE")
+# Extract version from the .env file
+version=$(source .env && echo $VERSION)
 
 # Check if we extracted a version
 if [ -z "$version" ]; then
-    echo "Version not found in $CSPROJ_FILE"
+    echo "Version not found in .env"
     exit 1
 fi
 
@@ -45,8 +43,8 @@ echo Copy readme
 cp "ManualDi.Sync.Unity3d/GenerateUnityPackage/README.md" "ManualDi.Sync.Unity3d.Package/README.md"
 
 echo Copy assambly definition
-cp "ManualDi.Sync.Unity3d/GenerateUnityPackage/ManualDi.Sync.asmdef" "ManualDi.Sync.Unity3d.Package/ManualDi.asmdef"
-cp "ManualDi.Sync.Unity3d/GenerateUnityPackage/ManualDi.Sync.asmdef.meta" "ManualDi.Sync.Unity3d.Package/ManualDi.asmdef.meta"
+cp "ManualDi.Sync.Unity3d/GenerateUnityPackage/ManualDi.Sync.asmdef" "ManualDi.Sync.Unity3d.Package/ManualDi.Sync.asmdef"
+cp "ManualDi.Sync.Unity3d/GenerateUnityPackage/ManualDi.Sync.asmdef.meta" "ManualDi.Sync.Unity3d.Package/ManualDi.Sync.asmdef.meta"
 cp "ManualDi.Sync.Unity3d/GenerateUnityPackage/csc.rsp" "ManualDi.Sync.Unity3d.Package/csc.rsp"
 cp "ManualDi.Sync.Unity3d/GenerateUnityPackage/ManualDi.Sync.Generators.dll.meta" "ManualDi.Sync.Unity3d.Package/ManualDi.Sync.Generators.dll.meta"
 

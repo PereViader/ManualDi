@@ -1,9 +1,9 @@
-using ManualDi.Main;
+using ManualDi.Sync;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-namespace ManualDi.Unity3d
+namespace ManualD.Sync.Unity3d
 {
     public static class TypeBindingLinkExtensions
     {

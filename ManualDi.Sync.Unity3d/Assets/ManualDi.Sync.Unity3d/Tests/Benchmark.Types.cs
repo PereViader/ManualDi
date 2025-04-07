@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ManualDi.Unity3d.Tests
+namespace ManualD.Sync.Unity3d.Tests
 {
     public interface IFirstService { }
     public class FirstService : IFirstService { }
@@ -22,7 +22,7 @@ namespace ManualDi.Unity3d.Tests
     {
         [Zenject.Inject]
         [VContainer.Inject]
-        [ManualDi.Main.Inject]
+        [ManualDi.Sync.Inject]
         public IServiceA ServiceA { get; set; }
     }
     
@@ -37,7 +37,7 @@ namespace ManualDi.Unity3d.Tests
     {
         [Zenject.Inject]
         [VContainer.Inject]
-        [ManualDi.Main.Inject]
+        [ManualDi.Sync.Inject]
         public IServiceB ServiceB { get; set; }
     }
     
@@ -52,7 +52,7 @@ namespace ManualDi.Unity3d.Tests
     {
         [Zenject.Inject]
         [VContainer.Inject]
-        [ManualDi.Main.Inject]
+        [ManualDi.Sync.Inject]
         public IServiceC ServiceC { get; set; }
     }
     

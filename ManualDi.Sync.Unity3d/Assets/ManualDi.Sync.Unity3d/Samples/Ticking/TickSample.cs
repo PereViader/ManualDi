@@ -1,7 +1,7 @@
-﻿using ManualDi.Main;
+﻿using ManualDi.Sync;
 using UnityEngine.UI;
 
-namespace ManualDi.Unity3d.Samples.Ticking
+namespace ManualD.Sync.Unity3d.Samples.Ticking
 {
     public class TickSample : MonoBehaviourRootEntryPoint
     {

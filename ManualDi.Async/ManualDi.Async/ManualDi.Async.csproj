@@ -7,7 +7,6 @@
     <Nullable>enable</Nullable>
     <AssemblyName>ManualDi.Async</AssemblyName>
     <RootNamespace>ManualDi.Async</RootNamespace>
-    <Version>1.9.0</Version>
     <Authors>Pere Viader</Authors>
     <RepositoryUrl>https://github.com/PereViader/ManualDi.Async</RepositoryUrl>
     <Product>ManualDi.Async</Product>

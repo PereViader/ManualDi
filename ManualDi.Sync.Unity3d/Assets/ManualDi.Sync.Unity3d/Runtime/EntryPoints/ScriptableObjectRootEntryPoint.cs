@@ -1,8 +1,8 @@
 ﻿using System;
-using ManualDi.Main;
+using ManualDi.Sync;
 using UnityEngine;
 
-namespace ManualDi.Unity3d
+namespace ManualD.Sync.Unity3d
 {
     public abstract class ScriptableObjectRootEntryPoint : ScriptableObject, IInstaller, IDisposable
     {

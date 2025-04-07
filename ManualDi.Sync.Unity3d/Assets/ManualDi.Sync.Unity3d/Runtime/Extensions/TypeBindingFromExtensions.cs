@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using ManualDi.Main;
+using ManualDi.Sync;
 
 using UnityEngine;
 
-namespace ManualDi.Unity3d
+namespace ManualD.Sync.Unity3d
 {
     public static class TypeBindingUnity3dExtensions
     {

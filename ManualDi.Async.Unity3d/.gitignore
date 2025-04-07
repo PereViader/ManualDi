@@ -10,6 +10,11 @@
 /[Ll]ogs/
 /[Mm]emoryCaptures/
 
+/ManualDi.Async.Unity3d.Package/
+/ManualDi.Sync.Unity3d.Package/
+/ManualDi.Async.Nuget/
+/ManualDi.Sync.Nuget/
+
 # Asset meta data should only be ignored when the corresponding asset is also ignored
 !/[Aa]ssets/**/*.meta
 

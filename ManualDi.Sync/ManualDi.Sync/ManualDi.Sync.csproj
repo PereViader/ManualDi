@@ -7,7 +7,6 @@
     <Nullable>enable</Nullable>
     <AssemblyName>ManualDi.Sync</AssemblyName>
     <RootNamespace>ManualDi.Sync</RootNamespace>
-    <Version>1.9.1</Version>
     <Authors>Pere Viader</Authors>
     <RepositoryUrl>https://github.com/PereViader/ManualDi.Sync</RepositoryUrl>
     <Product>ManualDi.Sync</Product>

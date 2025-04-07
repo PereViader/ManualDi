@@ -1,4 +1,4 @@
-﻿namespace ManualDi.Unity3d.Samples.Ticking
+﻿namespace ManualD.Sync.Unity3d.Samples.Ticking
 {
     /// <summary>
     /// Represents when a tick is going to be performed.

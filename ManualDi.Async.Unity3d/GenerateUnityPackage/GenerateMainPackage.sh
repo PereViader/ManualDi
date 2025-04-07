@@ -1,15 +1,15 @@
 #!/bin/bash
 echo Copy Main folder
-cp -r "ManualDi.Main/ManualDi.Main/." "UnityPackageRelease/ManualDi.Main/"
+cp -r "ManualDi.Async/ManualDi.Async/." "ManualDi.Async.Unity3d.Package/ManualDi.Async/"
 
 echo Delete unnecesary files from common
-rm "UnityPackageRelease/ManualDi.Main/ManualDi.Main.csproj"
-rm -rf "UnityPackageRelease/ManualDi.Main/bin"
-rm -rf "UnityPackageRelease/ManualDi.Main/obj"
-rm -rf "UnityPackageRelease/ManualDi.Main/Properties"
+rm "ManualDi.Async.Unity3d.Package/ManualDi.Async/ManualDi.Async.csproj"
+rm -rf "ManualDi.Async.Unity3d.Package/ManualDi.Async/bin"
+rm -rf "ManualDi.Async.Unity3d.Package/ManualDi.Async/obj"
+rm -rf "ManualDi.Async.Unity3d.Package/ManualDi.Async/Properties"
 
 echo Build generator
-dotnet build ManualDi.Main --configuration Release
+dotnet build ManualDi.Async --configuration Release
 
 echo Copy generator dll to package
-cp "ManualDi.Main/ManualDi.Main.Generators/bin/Release/netstandard2.0/ManualDi.Main.Generators.dll" "UnityPackageRelease/ManualDi.Main.Generators.dll"
+cp "ManualDi.Async/ManualDi.Async.Generators/bin/Release/netstandard2.0/ManualDi.Async.Generators.dll" "ManualDi.Async.Unity3d.Package/ManualDi.Async.Generators.dll"

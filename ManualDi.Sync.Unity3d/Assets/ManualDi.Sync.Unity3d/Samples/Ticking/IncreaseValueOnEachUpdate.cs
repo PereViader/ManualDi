@@ -1,6 +1,6 @@
 ﻿using UnityEngine.UI;
 
-namespace ManualDi.Unity3d.Samples.Ticking
+namespace ManualD.Sync.Unity3d.Samples.Ticking
 {
     public class IncreaseValueOnEachUpdate : ITickable
     {

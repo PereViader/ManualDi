@@ -64,21 +64,5 @@ namespace ManualDi.Sync
             binding.CreateConcreteDelegate = createDelegate;
             return binding;
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TBinding Lazy<TBinding>(this TBinding binding)
-            where TBinding : Binding
-        {
-            binding.IsLazy = true;
-            return binding;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TBinding NonLazy<TBinding>(this TBinding binding)
-            where TBinding : Binding
-        {
-            binding.IsLazy = false;
-            return binding;
-        }
     }
 }

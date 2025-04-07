@@ -35,11 +35,7 @@ namespace ManualDi.Sync
                 Binding? binding = firstBinding.Value;
                 while (binding is not null)
                 {
-                    if (!binding.IsLazy)
-                    {
-                        ResolveBinding(binding);
-                    }
-
+                    ResolveBinding(binding);
                     binding = binding.NextBinding;
                 }
             }
@@ -69,9 +65,9 @@ namespace ManualDi.Sync
         
         internal object ResolveBinding(Binding binding)
         {
-            if (binding.SingleInstance is not null) //Optimization: We don't check if Scope is Single
+            if (binding.Instance is not null) //Optimization: We don't check if Scope is Single
             {
-                return binding.SingleInstance;
+                return binding.Instance;
             }
             
             var previousInjectedBinding = injectedBinding;
@@ -80,7 +76,7 @@ namespace ManualDi.Sync
             var instance = binding.Create(this)
                 ?? throw new InvalidOperationException($"Could not create object for Binding with Apparent type {binding.ApparentType} and Concrete type {binding.ConcreteType}");
 
-            binding.SingleInstance = instance;
+            binding.Instance = instance;
             
             var initialize = binding.Inject(this, instance);
             if (initialize)

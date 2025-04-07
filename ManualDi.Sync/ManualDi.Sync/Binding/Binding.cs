@@ -22,11 +22,10 @@ namespace ManualDi.Sync
         public abstract Type ApparentType { get; }
         public abstract Type ConcreteType { get; }
         
-        public bool IsLazy = true;
         public bool TryToDispose = true;
         public object? Id;
         public FilterBindingDelegate? FilterBindingDelegate;
-        internal object? SingleInstance;
+        internal object? Instance;
         internal Binding? NextBinding;
 
         internal abstract object? Create(DiContainer diContainer);

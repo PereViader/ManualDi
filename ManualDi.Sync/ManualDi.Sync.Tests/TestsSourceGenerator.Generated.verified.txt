@@ -581,48 +581,6 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Sync
 {
-    public static class ManualDiGeneratedSomeNamespaceSubnamespaceLazyDependenciesExtensions
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Binding<T, SomeNamespace.Subnamespace.LazyDependencies> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.LazyDependencies> binding)
-        {
-            return binding.FromMethod(static c => new SomeNamespace.Subnamespace.LazyDependencies());
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Binding<T, SomeNamespace.Subnamespace.LazyDependencies> Default<T>(this Binding<T, SomeNamespace.Subnamespace.LazyDependencies> binding)
-        {
-            return binding.Inject(static (o, c) => 
-                {
-                    o.Object = new System.Lazy<object>(() => c.Resolve<object>());
-                    o.NullableObject = new System.Lazy<object?>(() => c.ResolveNullable<object>());
-                    o.Value = new System.Lazy<int>(() => c.Resolve<int>());
-                    o.NullableValue = new System.Lazy<int?>(() => c.ResolveNullableValue<int>());
-                    o.RecursiveLazy = new System.Lazy<System.Lazy<System.Lazy<int>>>(() => new System.Lazy<System.Lazy<int>>(() => new System.Lazy<int>(() => c.Resolve<int>())));
-                    o.LazyList = new System.Lazy<System.Collections.Generic.List<int>>(() => c.ResolveAll<int>());
-                    o.ObjectNullable = c.WouldResolve<object>() ? new System.Lazy<object>(() => c.Resolve<object>()) : null;
-                    o.NullableObjectNullable = c.WouldResolve<object>() ? new System.Lazy<object?>(() => c.ResolveNullable<object>()) : null;
-                    o.ValueNullable = c.WouldResolve<int>() ? new System.Lazy<int>(() => c.Resolve<int>()) : null;
-                    o.NullableValueNullable = c.WouldResolve<int>() ? new System.Lazy<int?>(() => c.ResolveNullableValue<int>()) : null;
-                    o.RecursiveLazyNullable = c.WouldResolve<System.Lazy<System.Lazy<int>>>() ? new System.Lazy<System.Lazy<System.Lazy<int>>>(() => new System.Lazy<System.Lazy<int>>(() => new System.Lazy<int>(() => c.Resolve<int>()))) : null;
-                    o.LazyListNullable = c.WouldResolve<System.Collections.Generic.List<int>>() ? new System.Lazy<System.Collections.Generic.List<int>>(() => c.ResolveAll<int>()) : null;
-                    o.Inject(
-                        new System.Lazy<object>(() => c.Resolve<object>()),
-                        new System.Lazy<object?>(() => c.ResolveNullable<object>()),
-                        new System.Lazy<int>(() => c.Resolve<int>()),
-                        new System.Lazy<int?>(() => c.ResolveNullableValue<int>()));
-                })
-                .DontDispose();
-        }
-    }
-}
-
-  
-#nullable enable
-using System.Runtime.CompilerServices;
-
-namespace ManualDi.Sync
-{
     public static class ManualDiGeneratedSomeNamespaceSubnamespaceInjectIdAttributeExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -638,11 +596,9 @@ namespace ManualDi.Sync
                 .Inject(static (o, c) => 
                 {
                     o.HelloIdValue = c.Resolve<int>(x => x.Id("A"));
-                    o.LazyInt = new System.Lazy<int>(() => c.Resolve<int>(x => x.Id("A")));
                     o.Inject(
                         c.Resolve<object>(x => x.Id("Potato")),
                         c.Resolve<float>(x => x.Id("Banana")),
-                        new System.Lazy<int>(() => c.Resolve<int>(x => x.Id("P"))),
                         c.Resolve<object>());
                 })
                 .DontDispose();

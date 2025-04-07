@@ -243,31 +243,6 @@ namespace ManualDi.Sync.Generators
         
         private static void CreteTypeResolution(ITypeSymbol typeSymbol, string? id, TypeReferences typeReferences,StringBuilder stringBuilder)
         {
-            var lazyGenericType = typeReferences.TryGenericLazyType(typeSymbol);
-            if (lazyGenericType is not null)
-            {
-                if (IsNullableTypeSymbol(typeSymbol))
-                {
-                    stringBuilder.Append("c.WouldResolve<");
-                    stringBuilder.Append(FullyQualifyTypeWithoutNullable(lazyGenericType));
-                    stringBuilder.Append(">(");
-                    CreateIdResolution(id, stringBuilder);
-                    stringBuilder.Append(") ? new System.Lazy<");
-                    stringBuilder.Append(FullyQualifyTypeWithNullable(lazyGenericType));
-                    stringBuilder.Append(">(() => ");
-                    CreteTypeResolution(lazyGenericType, id, typeReferences, stringBuilder);
-                    stringBuilder.Append(") : null");
-                    return;
-                }
-
-                stringBuilder.Append("new System.Lazy<");
-                stringBuilder.Append(FullyQualifyTypeWithNullable(lazyGenericType));
-                stringBuilder.Append(">(() => ");
-                CreteTypeResolution(lazyGenericType, id, typeReferences, stringBuilder);
-                stringBuilder.Append(")");
-                return;
-            }
-
             if (typeReferences.IsSymbolDiContainer(typeSymbol))
             {
                 stringBuilder.Append("c");

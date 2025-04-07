@@ -271,38 +271,15 @@ namespace SomeNamespace.Subnamespace
         }
     }
 
-    class LazyDependencies
-    {
-        [Inject] public Lazy<object> Object { get; set; } = default!;
-        [Inject] public Lazy<object?> NullableObject { get; set; } = default!;
-        [Inject] public Lazy<int> Value { get; set; } = default!;
-        [Inject] public Lazy<int?> NullableValue { get; set; } = default!;
-        [Inject] public Lazy<Lazy<Lazy<int>>> RecursiveLazy { get; set; } = default!;
-        [Inject] public Lazy<List<int>> LazyList { get; set; } = default!;
-        
-        [Inject] public Lazy<object>? ObjectNullable { get; set; } = default!;
-        [Inject] public Lazy<object?>? NullableObjectNullable { get; set; } = default!;
-        [Inject] public Lazy<int>? ValueNullable { get; set; } = default!;
-        [Inject] public Lazy<int?>? NullableValueNullable { get; set; } = default!;
-        [Inject] public Lazy<Lazy<Lazy<int>>>? RecursiveLazyNullable { get; set; } = default!;
-        [Inject] public Lazy<List<int>>? LazyListNullable { get; set; } = default!;
-
-        public void Inject(Lazy<object> obj, Lazy<object?> nullObj, Lazy<int> val, Lazy<int?> nullVal)
-        {
-        }
-    }
-
     class InjectIdAttribute
     {
         private const string Something = "A";
 
         [Inject(Something)] public int HelloIdValue { get; set; }
-        [Inject(Something)] public Lazy<int> LazyInt { get; set; } = default!;
 
         public void Inject(
             [Inject("Potato")] object potatoValue,
             [Inject("Banana")] float bananaValue,
-            [Inject("P")] Lazy<int> lazyInt,
             object value)
         {
         }

@@ -42,7 +42,6 @@ public class TestContainerLifecycle
     [Test]
     public void TestLifecycle()
     {
-        var nonLazy = Substitute.For<INonLazy>();
         var injectChild = Substitute.For<IInjectChild>();
         var initChild = Substitute.For<IInitChild>();
         var startup = Substitute.For<IStartup>();
@@ -50,13 +49,6 @@ public class TestContainerLifecycle
 
         var container = new DiContainerBindings().Install(b =>
         {
-            b.Bind<INonLazy>()
-                .FromInstance(nonLazy)
-                .Inject((o, c) => o.Inject(c.Resolve<IInjectChild>()))
-                .Initialize((o, c) => o.Initialize(c.Resolve<IInitChild>()))
-                .Dispose((o, c) => o.Dispose())
-                .NonLazy();
-
             b.Bind<IInjectChild>()
                 .FromInstance(injectChild)
                 .Inject((o, c) => o.Inject())
@@ -87,18 +79,15 @@ public class TestContainerLifecycle
         Received.InOrder(() =>
         {
             injectChild.Inject();
-            nonLazy.Inject(Arg.Is(injectChild));
             injectChild.Initialize();
             initChild.Inject();
             initChild.Initialize();
-            nonLazy.Initialize(Arg.Is(initChild));
             
             startup.Run();
             
             resolveAfter.Run();
             
             injectChild.Dispose();
-            nonLazy.Dispose();
             initChild.Dispose();
             startup.Dispose();
             resolveAfter.Dispose();

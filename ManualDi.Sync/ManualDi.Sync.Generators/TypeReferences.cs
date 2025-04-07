@@ -7,7 +7,6 @@ namespace ManualDi.Sync.Generators;
 public record TypeReferences
 {
     private readonly INamedTypeSymbol? UnityEngineObjectTypeSymbol;
-    private readonly INamedTypeSymbol LazyTypeSymbol;
     private readonly INamedTypeSymbol ListTypeSymbol;
     private readonly INamedTypeSymbol IListTypeSymbol;
     private readonly INamedTypeSymbol IReadOnlyListTypeSymbol;
@@ -19,10 +18,9 @@ public record TypeReferences
     private readonly INamedTypeSymbol IDisposableTypeSymbol;
     private readonly INamedTypeSymbol IDiContainerTypeSymbol;
 
-    public TypeReferences(INamedTypeSymbol? unityEngineObjectTypeSymbol, INamedTypeSymbol lazyTypeSymbol, INamedTypeSymbol listTypeSymbol, INamedTypeSymbol iListTypeSymbol, INamedTypeSymbol iReadOnlyListTypeSymbol, INamedTypeSymbol iEnumerableTypeSymbol, INamedTypeSymbol iReadOnlyCollectionTypeSymbol, INamedTypeSymbol iCollectionTypeSymbol, INamedTypeSymbol injectAttributeTypeSymbol, INamedTypeSymbol obsoleteAttributeTypeSymbol, INamedTypeSymbol iDisposableTypeSymbol, INamedTypeSymbol iDiContainerTypeSymbol)
+    public TypeReferences(INamedTypeSymbol? unityEngineObjectTypeSymbol, INamedTypeSymbol listTypeSymbol, INamedTypeSymbol iListTypeSymbol, INamedTypeSymbol iReadOnlyListTypeSymbol, INamedTypeSymbol iEnumerableTypeSymbol, INamedTypeSymbol iReadOnlyCollectionTypeSymbol, INamedTypeSymbol iCollectionTypeSymbol, INamedTypeSymbol injectAttributeTypeSymbol, INamedTypeSymbol obsoleteAttributeTypeSymbol, INamedTypeSymbol iDisposableTypeSymbol, INamedTypeSymbol iDiContainerTypeSymbol)
     {
         UnityEngineObjectTypeSymbol = unityEngineObjectTypeSymbol;
-        LazyTypeSymbol = lazyTypeSymbol;
         ListTypeSymbol = listTypeSymbol;
         IListTypeSymbol = iListTypeSymbol;
         IReadOnlyListTypeSymbol = iReadOnlyListTypeSymbol;
@@ -44,12 +42,6 @@ public record TypeReferences
         }
         
         var unityEngineObjectTypeSymbol = compilation.GetTypeByMetadataName("UnityEngine.Object");
-        
-        var lazyTypeSymbol = compilation.GetTypeByMetadataName("System.Lazy`1");
-        if (lazyTypeSymbol is null)
-        {
-            return null;
-        }
 
         var listTypeSymbol = compilation.GetTypeByMetadataName("System.Collections.Generic.List`1");
         if (listTypeSymbol is null)
@@ -104,22 +96,9 @@ public record TypeReferences
             return null;
         }
         
-        return new TypeReferences(unityEngineObjectTypeSymbol, lazyTypeSymbol, listTypeSymbol, iListTypeSymbol, iReadOnlyListTypeSymbol, iEnumerableTypeSymbol, iReadOnlyCollectionTypeSymbol, iCollectionTypeSymbol, injectAttributeTypeSymbol, obsoleteAttributeTypeSymbol, iDisposableTypeSymbol, diContainerTypeSymbol);
+        return new TypeReferences(unityEngineObjectTypeSymbol, listTypeSymbol, iListTypeSymbol, iReadOnlyListTypeSymbol, iEnumerableTypeSymbol, iReadOnlyCollectionTypeSymbol, iCollectionTypeSymbol, injectAttributeTypeSymbol, obsoleteAttributeTypeSymbol, iDisposableTypeSymbol, diContainerTypeSymbol);
     }
     
-    public ITypeSymbol? TryGenericLazyType(ITypeSymbol typeSymbol)
-    {
-        if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
-        {
-            if (SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, LazyTypeSymbol))
-            {
-                return namedTypeSymbol.TypeArguments[0];
-            }
-        }
-
-        return null;
-    }
-
     public ITypeSymbol? TryGetEnumerableType(ITypeSymbol typeSymbol)
     {
         if (typeSymbol is INamedTypeSymbol namedTypeSymbol)

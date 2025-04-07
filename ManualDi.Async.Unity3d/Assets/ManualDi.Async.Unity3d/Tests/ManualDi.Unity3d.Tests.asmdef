@@ -1,5 +1,5 @@
 {
-    "name": "ManualDi.Unity3d.Tests",
+    "name": "ManualDi.Async.Unity3d.Tests",
     "rootNamespace": "ManualDi.Tests.PlayMode",
     "references": [
         "UnityEngine.TestRunner",

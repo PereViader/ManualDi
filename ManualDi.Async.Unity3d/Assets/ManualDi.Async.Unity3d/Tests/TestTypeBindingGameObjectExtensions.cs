@@ -1,12 +1,11 @@
 ﻿using NUnit.Framework;
 using System.Collections;
 using System.Threading;
-using ManualDi.Async;
 using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
 
-namespace ManualDi.Unity3d.Tests.PlayMode
+namespace ManualDi.Async.Unity3d.Tests.PlayMode
 {
     public class TestContainerStarterGameObjectPrefabExtensions
     {

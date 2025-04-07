@@ -1,10 +1,8 @@
 using System;
-using ManualDi.Async;
-using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-namespace ManualDi.Unity3d
+namespace ManualDi.Async.Unity3d
 {
     public static class BindingLinkExtensions
     {

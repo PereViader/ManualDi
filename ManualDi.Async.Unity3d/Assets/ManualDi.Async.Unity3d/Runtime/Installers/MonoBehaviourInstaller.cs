@@ -1,7 +1,6 @@
-﻿using ManualDi.Async;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace ManualDi.Unity3d
+namespace ManualDi.Async.Unity3d
 {
     public abstract class MonoBehaviourInstaller : MonoBehaviour, IInstaller
     {

@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace ManualDi.Unity3d.Examples.Example2
+namespace ManualDi.Async.Unity3d.Examples.Example2
 {
     internal class Example2Context : MonoBehaviour
     {

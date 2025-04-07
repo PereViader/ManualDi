@@ -1,6 +1,5 @@
-﻿using ManualDi.Async;
-
-namespace ManualDi.Unity3d.Samples.Sample0
+﻿
+namespace ManualDi.Async.Unity3d.Samples.Sample0
 {
     internal class Sample0EntryPoint : MonoBehaviourRootEntryPoint
     {

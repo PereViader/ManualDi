@@ -1,6 +1,5 @@
-﻿using ManualDi.Async;
-
-namespace ManualDi.Unity3d.Examples.Example1
+﻿
+namespace ManualDi.Async.Unity3d.Examples.Example1
 {
     internal class Example1EntryPoint : MonoBehaviourSubordinateEntryPoint<int, Example1Context>
     {

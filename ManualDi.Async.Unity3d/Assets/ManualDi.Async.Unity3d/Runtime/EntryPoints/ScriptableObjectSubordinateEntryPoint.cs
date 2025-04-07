@@ -1,10 +1,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using ManualDi.Async;
 using UnityEngine;
 
-namespace ManualDi.Unity3d
+namespace ManualDi.Async.Unity3d
 {
     public abstract class ScriptableObjectSubordinateEntryPoint<TData> : ScriptableObject, IInstaller, IAsyncDisposable
     {
@@ -30,6 +29,9 @@ namespace ManualDi.Unity3d
             Container = await InitiateWrapper(bindings.Build(ct));
         }
         
+        /// <summary>
+        /// Override this method to add behaviour that should happen before and after the container is setup
+        /// </summary>
         protected virtual ValueTask<DiContainer> InitiateWrapper(ValueTask<DiContainer> task)
         {
             return task;

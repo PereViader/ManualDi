@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using ManualDi.Async;
 
 using UnityEngine;
 
-namespace ManualDi.Unity3d
+namespace ManualDi.Async.Unity3d
 {
     public static class BindingUnity3dExtensions
     {

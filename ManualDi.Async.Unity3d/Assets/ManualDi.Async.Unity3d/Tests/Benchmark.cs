@@ -1,10 +1,9 @@
 using System.Threading;
-using ManualDi.Async;
 using NUnit.Framework;
 using Unity.PerformanceTesting;
 using VContainer;
 
-namespace ManualDi.Unity3d.Tests
+namespace ManualDi.Async.Unity3d.Tests
 {
     public class ContainerPerformanceTest
     {

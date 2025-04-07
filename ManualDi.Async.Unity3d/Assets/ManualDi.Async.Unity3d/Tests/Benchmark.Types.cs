@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ManualDi.Unity3d.Tests
+namespace ManualDi.Async.Unity3d.Tests
 {
     public interface IFirstService { }
     public class FirstService : IFirstService { }

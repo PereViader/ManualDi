@@ -1,15 +1,13 @@
-﻿using ManualDi.Sync;
-
-namespace ManualD.Sync.Unity3d.Samples.Ticking
+﻿namespace ManualDi.Sync.Unity3d.Samples.Ticking
 {
     public static class DiContainerTickableExtensions
     {
-        public static TypeBinding<TInterface, TConcrete> LinkTickable<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding
+        public static Binding<TInterface, TConcrete> LinkTickable<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding
         )
             where TConcrete : ITickable
         {
-            return typeBinding.Inject((o, c) =>
+            return binding.Inject((o, c) =>
                 {
                     var tickableService = c.Resolve<ITickableService>();
                     tickableService.Add(o, TickType.Update);
@@ -22,13 +20,13 @@ namespace ManualD.Sync.Unity3d.Samples.Ticking
                 .NonLazy();
         }
         
-        public static TypeBinding<TInterface, TConcrete> LinkTickable<TInterface, TConcrete>(
-            this TypeBinding<TInterface, TConcrete> typeBinding,
+        public static Binding<TInterface, TConcrete> LinkTickable<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding,
             TickType tickType
         )
             where TConcrete : ITickable
         {
-            return typeBinding.Inject((o, c) =>
+            return binding.Inject((o, c) =>
                 {
                     var tickableService = c.Resolve<ITickableService>();
                     tickableService.Add(o, tickType);

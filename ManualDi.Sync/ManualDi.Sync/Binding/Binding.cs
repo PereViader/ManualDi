@@ -8,8 +8,8 @@ namespace ManualDi.Sync
 
     public sealed class BindingContext
     {
-        public TypeBinding TypeBinding = default!;
-        public TypeBinding? InjectedIntoTypeBinding;
+        public Binding Binding = default!;
+        public Binding? InjectedIntoBinding;
     }
 
     public enum TypeScope
@@ -23,7 +23,7 @@ namespace ManualDi.Sync
         void InitializeObject(object instance, DiContainer diContainer);
     }
     
-    public abstract class TypeBinding
+    public abstract class Binding
     {
         public abstract Type ApparentType { get; }
         public abstract Type ConcreteType { get; }
@@ -34,13 +34,13 @@ namespace ManualDi.Sync
         public object? Id;
         public FilterBindingDelegate? FilterBindingDelegate;
         internal object? SingleInstance;
-        internal TypeBinding? NextTypeBinding;
+        internal Binding? NextBinding;
 
         internal abstract object? Create(DiContainer diContainer);
         internal abstract bool Inject(DiContainer diContainer, object instance);
     }
     
-    public sealed class TypeBinding<TApparent, TConcrete> : TypeBinding, IInitializeBinding
+    public sealed class Binding<TApparent, TConcrete> : Binding, IInitializeBinding
     {
         public override Type ApparentType => typeof(TApparent);
         public override Type ConcreteType => typeof(TConcrete);

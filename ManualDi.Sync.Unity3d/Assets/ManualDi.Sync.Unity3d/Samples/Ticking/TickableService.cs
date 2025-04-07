@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace ManualD.Sync.Unity3d.Samples.Ticking
+namespace ManualDi.Sync.Unity3d.Samples.Ticking
 {
     public sealed class TickableService : MonoBehaviour, ITickableService
     {

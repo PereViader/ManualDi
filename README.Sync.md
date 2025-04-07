@@ -62,7 +62,7 @@ container.Dispose();
 The configuration of the container is done through Binding extension methods available on `DiContainerBindings` and can only be set during the installation phase. 
 Any alteration by custom means after the container's creation may result in undefined behaviour.
 
-Calling the Bind method provides a fluent interface through `TypeBinding<TApparent, TConcrete>`.
+Calling the Bind method provides a fluent interface through `Binding<TApparent, TConcrete>`.
 - Apparent: It's the type that can be used when resolving the container.
 - Concrete: It's type of the actual instance behind the scenes.
 
@@ -373,7 +373,7 @@ b.Bind<SomeFeature>()
 
 Imagine you have some `IFeature` interface in your project and you want to some shared initialization code to the ones that have it. You can add this code in an "Link" extension method. Internally this extension method should just call the `Initialize` method and add whatever extra logic the feature requires.
 
-You may find further Link examples already present in the library [here](https://github.com/PereViader/ManualDi/blob/540cb3d3155d81dc8925d9ab5769d2a18e61e81b/ManualDi.Unity3d/Assets/ManualDi.Unity3d/Runtime/Extensions/TypeBindingLinkExtensions.cs#L8)
+You may find further Link examples already present in the library [here](https://github.com/PereViader/ManualDi/blob/540cb3d3155d81dc8925d9ab5769d2a18e61e81b/ManualDi.Unity3d/Assets/ManualDi.Unity3d/Runtime/Extensions/BindingLinkExtensions.cs#L8)
 
 ## Dispose
 

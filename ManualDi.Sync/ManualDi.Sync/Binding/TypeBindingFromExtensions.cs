@@ -2,36 +2,36 @@
 
 namespace ManualDi.Sync
 {
-    public static class TypeBindingFromExtensions
+    public static class BindingFromExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<TApparent, TConcrete> FromContainerResolve<TApparent, TConcrete>(
-            this TypeBinding<TApparent, TConcrete> typeBinding
+        public static Binding<TApparent, TConcrete> FromContainerResolve<TApparent, TConcrete>(
+            this Binding<TApparent, TConcrete> binding
             )
         {
-            typeBinding.CreateConcreteDelegate = static c => c.Resolve<TConcrete>();
-            return typeBinding;
+            binding.CreateConcreteDelegate = static c => c.Resolve<TConcrete>();
+            return binding;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<TApparent, TConcrete> FromContainerResolve<TApparent, TConcrete>(
-            this TypeBinding<TApparent, TConcrete> typeBinding,
+        public static Binding<TApparent, TConcrete> FromContainerResolve<TApparent, TConcrete>(
+            this Binding<TApparent, TConcrete> binding,
             FilterBindingDelegate filterBindingDelegate
             )
         {
-            typeBinding.CreateConcreteDelegate = c => c.Resolve<TConcrete>(filterBindingDelegate);
-            return typeBinding;
+            binding.CreateConcreteDelegate = c => c.Resolve<TConcrete>(filterBindingDelegate);
+            return binding;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<TApparent, TConcrete> FromSubContainerResolve<TApparent, TConcrete>(
-            this TypeBinding<TApparent, TConcrete> typeBinding,
+        public static Binding<TApparent, TConcrete> FromSubContainerResolve<TApparent, TConcrete>(
+            this Binding<TApparent, TConcrete> binding,
             InstallDelegate installDelegate,
             bool isContainerParent = true
         )
         {
             IDiContainer? subContainer = null;
-            typeBinding.CreateConcreteDelegate = c =>
+            binding.CreateConcreteDelegate = c =>
             {
                 var bindings = new DiContainerBindings().Install(installDelegate);
                 if (isContainerParent)
@@ -41,44 +41,44 @@ namespace ManualDi.Sync
                 subContainer = bindings.Build();
                 return subContainer.Resolve<TConcrete>();
             };
-            typeBinding.Dispose((_, _) => subContainer?.Dispose());
-            return typeBinding;
+            binding.Dispose((_, _) => subContainer?.Dispose());
+            return binding;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<TApparent, TConcrete> FromInstance<TApparent, TConcrete>(
-            this TypeBinding<TApparent, TConcrete> typeBinding,
+        public static Binding<TApparent, TConcrete> FromInstance<TApparent, TConcrete>(
+            this Binding<TApparent, TConcrete> binding,
             TConcrete instance
             )
         {
-            typeBinding.CreateConcreteDelegate = _ => instance;
-            return typeBinding;
+            binding.CreateConcreteDelegate = _ => instance;
+            return binding;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<TApparent, TConcrete> FromMethod<TApparent, TConcrete>(
-            this TypeBinding<TApparent, TConcrete> typeBinding,
+        public static Binding<TApparent, TConcrete> FromMethod<TApparent, TConcrete>(
+            this Binding<TApparent, TConcrete> binding,
             CreateDelegate<TConcrete> createDelegate
             )
         {
-            typeBinding.CreateConcreteDelegate = createDelegate;
-            return typeBinding;
+            binding.CreateConcreteDelegate = createDelegate;
+            return binding;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TBinding Lazy<TBinding>(this TBinding typeBinding)
-            where TBinding : TypeBinding
+        public static TBinding Lazy<TBinding>(this TBinding binding)
+            where TBinding : Binding
         {
-            typeBinding.IsLazy = true;
-            return typeBinding;
+            binding.IsLazy = true;
+            return binding;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TBinding NonLazy<TBinding>(this TBinding typeBinding)
-            where TBinding : TypeBinding
+        public static TBinding NonLazy<TBinding>(this TBinding binding)
+            where TBinding : Binding
         {
-            typeBinding.IsLazy = false;
-            return typeBinding;
+            binding.IsLazy = false;
+            return binding;
         }
     }
 }

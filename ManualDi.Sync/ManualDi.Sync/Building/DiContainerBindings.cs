@@ -7,7 +7,7 @@ namespace ManualDi.Sync
     
     public sealed class DiContainerBindings
     {
-        private readonly Dictionary<IntPtr, TypeBinding> typeBindings;
+        private readonly Dictionary<IntPtr, Binding> bindingsByType;
         private readonly List<ContainerDelegate> injectDelegates;
         private readonly List<ContainerDelegate> initializationDelegates;
         private readonly List<ContainerDelegate> startupDelegates;
@@ -27,7 +27,7 @@ namespace ManualDi.Sync
             int? containerDisposablesCount = null
             )
         {
-            typeBindings = bindingsCapacity.HasValue ? new(bindingsCapacity.Value) : new();
+            bindingsByType = bindingsCapacity.HasValue ? new(bindingsCapacity.Value) : new();
             injectDelegates = injectCapacity.HasValue ? new(injectCapacity.Value) : new();
             initializationDelegates = initializationCapacity.HasValue ? new(initializationCapacity.Value) : new();
             disposeActions = disposeCapacity.HasValue ? new(disposeCapacity.Value) : new();
@@ -36,21 +36,21 @@ namespace ManualDi.Sync
             this.containerDisposablesCount = containerDisposablesCount;
         }
         
-        internal void AddBinding(TypeBinding typeBinding, Type type)
+        internal void AddBinding(Binding binding, Type type)
         {
             var apparentType = type.TypeHandle.Value;
-            if (!typeBindings.TryGetValue(apparentType, out var innerTypeBinding))
+            if (!bindingsByType.TryGetValue(apparentType, out var innerBinding))
             {
-                typeBindings.Add(apparentType, typeBinding);
+                bindingsByType.Add(apparentType, binding);
                 return;
             }
 
-            while (innerTypeBinding.NextTypeBinding is not null)
+            while (innerBinding.NextBinding is not null)
             {
-                innerTypeBinding = innerTypeBinding.NextTypeBinding;
+                innerBinding = innerBinding.NextBinding;
             }
             
-            innerTypeBinding.NextTypeBinding = typeBinding;
+            innerBinding.NextBinding = binding;
         }
         
         public void QueueInjection(ContainerDelegate containerDelegate)
@@ -82,7 +82,7 @@ namespace ManualDi.Sync
         public IDiContainer Build()
         {
             var diContainer = new DiContainer(
-                typeBindings,
+                bindingsByType,
                 parentDiContainer,
                 containerInitializationsCount,
                 containerDisposablesCount);

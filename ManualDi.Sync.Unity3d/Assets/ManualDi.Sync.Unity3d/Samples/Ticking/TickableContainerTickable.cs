@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ManualD.Sync.Unity3d.Samples.Ticking
+namespace ManualDi.Sync.Unity3d.Samples.Ticking
 {
     public sealed class TickableContainerTickable : ITickable
     {

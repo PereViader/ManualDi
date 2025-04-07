@@ -2,18 +2,18 @@
 
 namespace ManualDi.Sync
 {
-    public static class TypeBindingFilterExtensions
+    public static class BindingFilterExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TBinding When<TBinding>(this TBinding typeBinding, FilterBindingDelegate filterBindingDelegate)
-            where TBinding : TypeBinding
+        public static TBinding When<TBinding>(this TBinding binding, FilterBindingDelegate filterBindingDelegate)
+            where TBinding : Binding
         {            
-            var previous = typeBinding.FilterBindingDelegate;
-            typeBinding.FilterBindingDelegate = previous is null
+            var previous = binding.FilterBindingDelegate;
+            binding.FilterBindingDelegate = previous is null
                 ? filterBindingDelegate
                 : x => previous.Invoke(x) && filterBindingDelegate.Invoke(x);
 
-            return typeBinding;
+            return binding;
         }
     }
 }

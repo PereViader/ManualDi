@@ -1,8 +1,7 @@
 using System;
-using ManualDi.Sync;
 using UnityEngine;
 
-namespace ManualD.Sync.Unity3d
+namespace ManualDi.Sync.Unity3d
 {
     public abstract class MonoBehaviourRootEntryPoint : MonoBehaviour, IInstaller, IDisposable
     {

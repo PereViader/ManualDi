@@ -2,22 +2,22 @@
 
 namespace ManualDi.Sync
 {
-    public static class TypeBindingScopeExtensions
+    public static class BindingScopeExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TBinding Transient<TBinding>(this TBinding typeBinding)
-            where TBinding : TypeBinding
+        public static TBinding Transient<TBinding>(this TBinding binding)
+            where TBinding : Binding
         {
-            typeBinding.TypeScope = TypeScope.Transient;
-            return typeBinding;
+            binding.TypeScope = TypeScope.Transient;
+            return binding;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TBinding Single<TBinding>(this TBinding typeBinding)
-            where TBinding : TypeBinding
+        public static TBinding Single<TBinding>(this TBinding binding)
+            where TBinding : Binding
         {
-            typeBinding.TypeScope = TypeScope.Single;
-            return typeBinding;
+            binding.TypeScope = TypeScope.Single;
+            return binding;
         }
     }
 }

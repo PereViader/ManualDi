@@ -2,15 +2,15 @@
 
 namespace ManualDi.Sync
 {
-    public static class TypeBindingInjectionExtensions
+    public static class BindingInjectionExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<TApparent, TConcrete> Inject<TApparent, TConcrete>(
-            this TypeBinding<TApparent, TConcrete> typeBinding, 
+        public static Binding<TApparent, TConcrete> Inject<TApparent, TConcrete>(
+            this Binding<TApparent, TConcrete> binding, 
             InstanceContainerDelegate<TConcrete> injectionDelegate)
         {
-            typeBinding.InjectionDelegate += injectionDelegate;
-            return typeBinding;
+            binding.InjectionDelegate += injectionDelegate;
+            return binding;
         }
     }
 }

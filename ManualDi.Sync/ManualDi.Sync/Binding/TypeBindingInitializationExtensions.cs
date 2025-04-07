@@ -2,16 +2,16 @@
 
 namespace ManualDi.Sync
 {
-    public static class TypeBindingInitializationExtensions
+    public static class BindingInitializationExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<TApparent, TConcrete> Initialize<TApparent, TConcrete>(
-            this TypeBinding<TApparent, TConcrete> typeBinding,
+        public static Binding<TApparent, TConcrete> Initialize<TApparent, TConcrete>(
+            this Binding<TApparent, TConcrete> binding,
             InstanceContainerDelegate<TConcrete> initializationDelegate
             )
         {
-            typeBinding.InitializationDelegate += initializationDelegate;
-            return typeBinding;
+            binding.InitializationDelegate += initializationDelegate;
+            return binding;
         }
     }
 }

@@ -8,25 +8,25 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Id(this BindingContext bindingContext, object id)
         {
-            return bindingContext.TypeBinding.Id == id;
+            return bindingContext.Binding.Id == id;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool InjectedIntoType<T>(this BindingContext bindingContext)
         {
-            return bindingContext.InjectedIntoTypeBinding?.ConcreteType == typeof(T);
+            return bindingContext.InjectedIntoBinding?.ConcreteType == typeof(T);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool InjectedIntoType(this BindingContext bindingContext, Type type)
         {
-            return bindingContext.InjectedIntoTypeBinding?.ConcreteType == type;
+            return bindingContext.InjectedIntoBinding?.ConcreteType == type;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool InjectedIntoId(this BindingContext bindingContext, object id)
         {
-            return bindingContext.InjectedIntoTypeBinding?.Id == id;
+            return bindingContext.InjectedIntoBinding?.Id == id;
         }
     }
 }

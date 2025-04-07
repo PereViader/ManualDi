@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace ManualD.Sync.Unity3d.Examples.Example1
+namespace ManualDi.Sync.Unity3d.Examples.Example1
 {
     internal class Example1 : MonoBehaviour
     {

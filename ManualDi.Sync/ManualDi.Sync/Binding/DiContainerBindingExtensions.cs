@@ -6,30 +6,30 @@ namespace ManualDi.Sync
     public static class DiContainerBindingExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<TConcrete, TConcrete> Bind<TConcrete>(this DiContainerBindings diContainerBindings)
+        public static Binding<TConcrete, TConcrete> Bind<TConcrete>(this DiContainerBindings diContainerBindings)
         {
-            TypeBinding<TConcrete, TConcrete> typeBinding = new();
-            diContainerBindings.AddBinding(typeBinding, typeof(TConcrete));
-            return typeBinding;
+            Binding<TConcrete, TConcrete> binding = new();
+            diContainerBindings.AddBinding(binding, typeof(TConcrete));
+            return binding;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<TApparent, TConcrete> Bind<TApparent, TConcrete>(this DiContainerBindings diContainerBindings)
+        public static Binding<TApparent, TConcrete> Bind<TApparent, TConcrete>(this DiContainerBindings diContainerBindings)
             where TConcrete : TApparent
         {
-            TypeBinding<TApparent, TConcrete> typeBinding = new();
-            diContainerBindings.AddBinding(typeBinding, typeof(TApparent));
-            return typeBinding;
+            Binding<TApparent, TConcrete> binding = new();
+            diContainerBindings.AddBinding(binding, typeof(TApparent));
+            return binding;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TypeBinding<TConcrete, TConcrete> BindBoth<TApparent, TConcrete>(this DiContainerBindings diContainerBindings)
+        public static Binding<TConcrete, TConcrete> BindBoth<TApparent, TConcrete>(this DiContainerBindings diContainerBindings)
         {
-            TypeBinding<TApparent, TConcrete> typeBinding = new();
-            typeBinding.Transient().FromContainerResolve();
-            diContainerBindings.AddBinding(typeBinding, typeof(TApparent));
+            Binding<TApparent, TConcrete> binding = new();
+            binding.Transient().FromContainerResolve();
+            diContainerBindings.AddBinding(binding, typeof(TApparent));
 
-            TypeBinding<TConcrete, TConcrete> concrete = new();
+            Binding<TConcrete, TConcrete> concrete = new();
             diContainerBindings.AddBinding(concrete, typeof(TConcrete));
             return concrete;
         }

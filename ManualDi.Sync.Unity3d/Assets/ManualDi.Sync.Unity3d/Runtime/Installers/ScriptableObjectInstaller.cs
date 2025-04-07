@@ -1,7 +1,6 @@
-﻿using ManualDi.Sync;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace ManualD.Sync.Unity3d
+namespace ManualDi.Sync.Unity3d
 {
     public abstract class ScriptableObjectInstaller : ScriptableObject, IInstaller
     {

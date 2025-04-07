@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace ManualD.Sync.Unity3d.Examples.Example2
+namespace ManualDi.Sync.Unity3d.Examples.Example2
 {
     internal class Example2 : MonoBehaviour
     {

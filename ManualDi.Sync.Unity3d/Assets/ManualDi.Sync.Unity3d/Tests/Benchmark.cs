@@ -1,9 +1,8 @@
-using ManualDi.Sync;
 using NUnit.Framework;
 using Unity.PerformanceTesting;
 using VContainer;
 
-namespace ManualD.Sync.Unity3d.Tests
+namespace ManualDi.Sync.Unity3d.Tests
 {
     public class ContainerPerformanceTest
     {

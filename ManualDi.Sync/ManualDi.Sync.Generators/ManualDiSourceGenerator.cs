@@ -2,7 +2,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -196,9 +195,9 @@ namespace ManualDi.Sync.Generators
             
             context.StringBuilder.Append($$"""
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    {{context.ObsoleteText}}{{accessibilityString}} static TypeBinding<T, {{context.ClassName}}> FromConstructor<T>(this TypeBinding<T, {{context.ClassName}}> typeBinding)
+                    {{context.ObsoleteText}}{{accessibilityString}} static Binding<T, {{context.ClassName}}> FromConstructor<T>(this Binding<T, {{context.ClassName}}> binding)
                     {
-                        return typeBinding.FromMethod(static c => new {{context.ClassName}}(
+                        return binding.FromMethod(static c => new {{context.ClassName}}(
             """);
             
             CreateMethodResolution(constructor, "                ", context.TypeReferences, context.StringBuilder);
@@ -431,9 +430,9 @@ namespace ManualDi.Sync.Generators
             
             generationClassContext.StringBuilder.Append($$"""
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    {{generationClassContext.ObsoleteText}}{{accessibilityString}} static TypeBinding<T, {{generationClassContext.ClassName}}> Default<T>(this TypeBinding<T, {{generationClassContext.ClassName}}> typeBinding)
+                    {{generationClassContext.ObsoleteText}}{{accessibilityString}} static Binding<T, {{generationClassContext.ClassName}}> Default<T>(this Binding<T, {{generationClassContext.ClassName}}> binding)
                     {
-                        return typeBinding
+                        return binding
             """);
 
             var isOnNewLine = AddInitialize(generationClassContext, false);

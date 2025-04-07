@@ -2,14 +2,14 @@
 
 namespace ManualDi.Sync
 {
-    public static class TypeBindingConstraintExtensions
+    public static class BindingConstraintExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TBinding WithId<TBinding>(this TBinding typeBinding, object id)
-            where TBinding : TypeBinding
+        public static TBinding WithId<TBinding>(this TBinding binding, object id)
+            where TBinding : Binding
         {
-            typeBinding.Id = id;
-            return typeBinding;
+            binding.Id = id;
+            return binding;
         }
     }
 }

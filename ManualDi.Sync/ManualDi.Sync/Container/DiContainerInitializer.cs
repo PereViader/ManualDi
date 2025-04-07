@@ -27,10 +27,10 @@ namespace ManualDi.Sync
     internal static class DiContainerInitializerExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void QueueInitialize(ref this DiContainerInitializer o, IInitializeBinding typeBinding, object instance)
+        public static void QueueInitialize(ref this DiContainerInitializer o, IInitializeBinding binding, object instance)
         {
             o.CurrentDepthInitializations += 1;
-            o.Initializations.Add((typeBinding, instance));
+            o.Initializations.Add((binding, instance));
         }
 
         public static void InitializeCurrentLevelQueued(ref this DiContainerInitializer o, DiContainer container)
@@ -41,8 +41,8 @@ namespace ManualDi.Sync
             
             for (int i = initializationStartIndex; i < o.Initializations.Count; i++)
             {
-                var (typeBinding, instance) = o.Initializations[i];
-                typeBinding.InitializeObject(instance, container);
+                var (binding, instance) = o.Initializations[i];
+                binding.InitializeObject(instance, container);
             }
             
             o.Initializations.RemoveRange(initializationStartIndex, initializationCount);

@@ -82,6 +82,54 @@ namespace ManualDi.Async
             parentDiContainer = diContainer;
             return this;
         }
+
+        public Action<IDependencyResolver> GatherDependencies()
+        {
+            var dependencyExtractor = new DependencyExtractor(bindingsByType);
+            return dependencyExtractor.ResolveDependencies;
+        }
+        
+        public async ValueTask<(DiContainer, Func<ValueTask<DiContainer>>)> BuildDelayed(CancellationToken cancellationToken)
+        {
+            var diContainer = new DiContainer(
+                bindingsByType,
+                bindingCount,
+                parentDiContainer,
+                cancellationToken,
+                containerDisposablesCount);
+
+            diContainer.QueueDispose(() =>
+            {
+                foreach (var action in disposeActions)
+                {
+                    action.Invoke();
+                }
+            });
+
+            await diContainer.Initialize1Async();
+
+            return (diContainer, async () =>
+            {
+                await diContainer.Initialize2Async();
+
+                foreach (var injectDelegate in injectDelegates)
+                {
+                    injectDelegate.Invoke(diContainer);
+                }
+
+                foreach (var initializationDelegate in initializationDelegates)
+                {
+                    initializationDelegate.Invoke(diContainer);
+                }
+
+                foreach (var startupDelegate in startupDelegates)
+                {
+                    startupDelegate.Invoke(diContainer);
+                }
+
+                return diContainer;
+            });
+        }
         
         public async ValueTask<DiContainer> Build(CancellationToken cancellationToken)
         {
@@ -100,7 +148,8 @@ namespace ManualDi.Async
                 }
             });
 
-            await diContainer.InitializeAsync();
+            await diContainer.Initialize1Async();
+            await diContainer.Initialize2Async();
             
             foreach (var injectDelegate in injectDelegates)
             {

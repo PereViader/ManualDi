@@ -38,7 +38,7 @@ namespace ManualDi.Async
             this.parentDiContainer = parentDiContainer;
         }
 
-        internal async ValueTask InitializeAsync()
+        internal async ValueTask Initialize1Async()
         {
             SetupBindings();
 
@@ -74,7 +74,12 @@ namespace ManualDi.Async
                     }
                 }
             }
+        }
 
+        internal async ValueTask Initialize2Async()
+        {
+            var ct = CancellationToken;
+            var count = bindings.Count;
             for (int i = 0; i < count; i++)
             {
                 injectedBinding = bindings[i];
@@ -158,7 +163,7 @@ namespace ManualDi.Async
             {
                 if (parentDiContainer is null)
                 {
-                    throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedBinding?.GetType().FullName ?? "null"} is not registered.");
+                    throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedBinding?.ConcreteType.FullName ?? "null"} is not registered.");
                 }
                 parentDiContainer.ConstructorDependency<T>();
                 return;
@@ -180,7 +185,7 @@ namespace ManualDi.Async
             {
                 if (parentDiContainer is null)
                 {
-                    throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedBinding?.GetType().FullName ?? "null"} with some filter is not registered.");
+                    throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedBinding?.ConcreteType.FullName ?? "null"} with some filter is not registered.");
                 }
                 parentDiContainer.ConstructorDependency<T>(filter);
                 return;
@@ -249,6 +254,7 @@ namespace ManualDi.Async
                 return;
             }
             
+            binding.BindingWiredState = BindingWiredState.Injected;
             injectBindings!.Add(binding);
         }
 
@@ -259,7 +265,7 @@ namespace ManualDi.Async
             {
                 if (parentDiContainer is null)
                 {
-                    throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedBinding?.GetType().FullName ?? "null"} is not registered.");
+                    throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedBinding?.ConcreteType.FullName ?? "null"} is not registered.");
                 }
                 parentDiContainer.InjectionDependency<T>(filter);
                 return;
@@ -270,6 +276,7 @@ namespace ManualDi.Async
                 return;
             }
             
+            binding.BindingWiredState = BindingWiredState.Injected;
             injectBindings!.Add(binding);
         }
         
@@ -287,6 +294,7 @@ namespace ManualDi.Async
                 return;
             }
             
+            binding.BindingWiredState = BindingWiredState.Injected;
             injectBindings!.Add(binding);
         }
 
@@ -304,6 +312,7 @@ namespace ManualDi.Async
                 return;
             }
             
+            binding.BindingWiredState = BindingWiredState.Injected;
             injectBindings!.Add(binding);
         }
 

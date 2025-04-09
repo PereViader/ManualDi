@@ -355,7 +355,14 @@ namespace UnityEngine
 
     public class MonoBeheviour : Object
     {
-        [Inject] public object Something { get; set; } = default!;
+    }
+
+    public class SomeMonoBehaviour : MonoBeheviour
+    {
+        [Inject] public float Something { get; set; }
+        
+        public void Construct(int x) { }
+        public void Inject(object o) { }
         
         public void Initialize() { }
     }

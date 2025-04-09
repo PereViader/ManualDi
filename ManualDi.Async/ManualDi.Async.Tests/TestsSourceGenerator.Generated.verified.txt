@@ -926,13 +926,35 @@ namespace ManualDi.Async
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<T, UnityEngine.MonoBeheviour> Default<T>(this Binding<T, UnityEngine.MonoBeheviour> binding)
         {
-            return binding.Initialize(static o => ((UnityEngine.MonoBeheviour)o).Initialize())
+            return binding.DontDispose();
+        }
+    }
+}
+
+  
+#nullable enable
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Async
+{
+    public static class ManualDiGeneratedUnityEngineSomeMonoBehaviourExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<T, UnityEngine.SomeMonoBehaviour> Default<T>(this Binding<T, UnityEngine.SomeMonoBehaviour> binding)
+        {
+            return binding.Initialize(static o => ((UnityEngine.SomeMonoBehaviour)o).Initialize())
                 .Inject(static (o, c) => 
                 {
-                    var to = (UnityEngine.MonoBeheviour)o;
-                    to.Something = c.Resolve<object>();
+                    var to = (UnityEngine.SomeMonoBehaviour)o;
+                    to.Construct(
+                        c.Resolve<int>());
+                    to.Something = c.Resolve<float>();
+                    to.Inject(
+                        c.Resolve<object>());
                 })
                 .DependsOn(static d => {
+                    d.InjectionDependency<float>();
+                    d.ConstructorDependency<int>();
                     d.InjectionDependency<object>();
                 })
                 .DontDispose();

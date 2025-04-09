@@ -89,46 +89,58 @@ namespace ManualDi.Async
             return dependencyExtractor.ResolveDependencies;
         }
         
-        public async ValueTask<(DiContainer, Func<ValueTask<DiContainer>>)> BuildDelayed(CancellationToken cancellationToken)
+        public Binding<TApparent, TConcrete> BindAsSubContainer<TApparent, TConcrete>(Binding<TApparent, TConcrete> binding, bool calculateDependencies)
         {
-            var diContainer = new DiContainer(
-                bindingsByType,
-                bindingCount,
-                parentDiContainer,
-                cancellationToken,
-                containerDisposablesCount);
-
-            diContainer.QueueDispose(() =>
+            if (calculateDependencies)
             {
-                foreach (var action in disposeActions)
+                binding.DependsOn(GatherDependencies());
+            }
+            
+            DiContainer? subContainer = null!;
+
+            return binding
+                .FromMethodAsync(async (c, ct) =>
                 {
-                    action.Invoke();
-                }
-            });
+                    subContainer = new DiContainer(
+                        bindingsByType,
+                        bindingCount,
+                        c,
+                        ct,
+                        containerDisposablesCount);
 
-            await diContainer.Initialize1Async();
+                    subContainer.QueueDispose(() =>
+                    {
+                        foreach (var action in disposeActions)
+                        {
+                            action.Invoke();
+                        }
+                    });
 
-            return (diContainer, async () =>
-            {
-                await diContainer.Initialize2Async();
+                    await subContainer.InitializeCreate();
 
-                foreach (var injectDelegate in injectDelegates)
+                    c.QueueAsyncDispose(subContainer);
+                    return subContainer.Resolve<TConcrete>();
+                })
+                .InjectAsync(async (_, _, _) => await subContainer.InitializeInject())
+                .InitializeAsync(async (_, _) =>
                 {
-                    injectDelegate.Invoke(diContainer);
-                }
+                    await subContainer.IntiailizeInitialize();
 
-                foreach (var initializationDelegate in initializationDelegates)
-                {
-                    initializationDelegate.Invoke(diContainer);
-                }
+                    foreach (var injectDelegate in injectDelegates)
+                    {
+                        injectDelegate.Invoke(subContainer);
+                    }
 
-                foreach (var startupDelegate in startupDelegates)
-                {
-                    startupDelegate.Invoke(diContainer);
-                }
+                    foreach (var initializationDelegate in initializationDelegates)
+                    {
+                        initializationDelegate.Invoke(subContainer);
+                    }
 
-                return diContainer;
-            });
+                    foreach (var startupDelegate in startupDelegates)
+                    {
+                        startupDelegate.Invoke(subContainer);
+                    }
+                });
         }
         
         public async ValueTask<DiContainer> Build(CancellationToken cancellationToken)
@@ -148,8 +160,9 @@ namespace ManualDi.Async
                 }
             });
 
-            await diContainer.Initialize1Async();
-            await diContainer.Initialize2Async();
+            await diContainer.InitializeCreate();
+            await diContainer.InitializeInject();
+            await diContainer.IntiailizeInitialize();
             
             foreach (var injectDelegate in injectDelegates)
             {

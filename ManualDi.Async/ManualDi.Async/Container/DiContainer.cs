@@ -37,8 +37,8 @@ namespace ManualDi.Async
             this.bindingsByType = bindingsByType;
             this.parentDiContainer = parentDiContainer;
         }
-
-        internal async ValueTask Initialize1Async()
+        
+        internal async ValueTask InitializeCreate()
         {
             SetupBindings();
 
@@ -76,7 +76,7 @@ namespace ManualDi.Async
             }
         }
 
-        internal async ValueTask Initialize2Async()
+        internal async ValueTask InitializeInject()
         {
             var ct = CancellationToken;
             var count = bindings.Count;
@@ -99,7 +99,12 @@ namespace ManualDi.Async
                     }
                 }
             }
-            
+        }
+
+        internal async ValueTask IntiailizeInitialize()
+        {
+            var ct = CancellationToken;
+            var count = bindings.Count;
             for (int i = 0; i < count; i++)
             {
                 injectedBinding = bindings[i];

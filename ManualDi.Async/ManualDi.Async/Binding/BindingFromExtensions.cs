@@ -72,31 +72,9 @@ namespace ManualDi.Async
             InstallDelegate installDelegate
         )
         {
-            var bindings = new DiContainerBindings()
-                .Install(installDelegate);
-
-            // This will calculate the dependencies in runtime.
-            // If this is too costly, use the overload that provides them manually
-            var dependencies = bindings.GatherDependencies();
-
-            // The construction of the subcontainer is broken down in two steps because otherwise
-            // subcontainers would create and inject instances but instances required for inject would not yet be ready 
-            Func<ValueTask<DiContainer>> injectFunc = null!;
-            
-            return binding
-                .FromMethodAsync(async (c, ct) =>
-                {
-                    var (subContainer, continueTask) = await bindings
-                        .WithParentContainer(c)
-                        .BuildDelayed(ct);
-
-                    injectFunc = continueTask;
-                    
-                    c.QueueAsyncDispose(subContainer);
-                    return subContainer.Resolve<TConcrete>();
-                })
-                .InjectAsync(async (_, _, _) => await injectFunc.Invoke())
-                .DependsOn(dependencies);
+            return new DiContainerBindings()
+                .Install(installDelegate)
+                .BindAsSubContainer(binding, true);
         }
         
         /// <summary>
@@ -110,24 +88,9 @@ namespace ManualDi.Async
             Action<IDependencyResolver> dependencies
         )
         {
-            // The construction of the subcontainer is broken down in two steps because otherwise
-            // subcontainers would create and inject instances but instances required for inject would not yet be ready 
-            Func<ValueTask<DiContainer>> injectFunc = null!;
-            
-            return binding
-                .FromMethodAsync(async (c, ct) =>
-                {
-                    var (subContainer, continueTask) = await new DiContainerBindings()
-                        .Install(installDelegate)
-                        .WithParentContainer(c)
-                        .BuildDelayed(ct);
-
-                    injectFunc = continueTask;
-                    
-                    c.QueueAsyncDispose(subContainer);
-                    return subContainer.Resolve<TConcrete>();
-                })
-                .InjectAsync(async (_, _, _) => await injectFunc.Invoke())
+            return new DiContainerBindings()
+                .Install(installDelegate)
+                .BindAsSubContainer(binding, false)
                 .DependsOn(dependencies);
         }
         
@@ -141,15 +104,9 @@ namespace ManualDi.Async
             InstallDelegate installDelegate
         )
         {
-            return binding
-                .FromMethodAsync(async (c, ct) =>
-                {
-                    var subContainer = await new DiContainerBindings()
-                        .Install(installDelegate)
-                        .Build(ct);
-                    c.QueueAsyncDispose(subContainer);
-                    return subContainer.Resolve<TConcrete>();
-                });
+            return new DiContainerBindings()
+                .Install(installDelegate)
+                .BindAsSubContainer(binding, false);
         }
     }
 }

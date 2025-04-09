@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using NSubstitute;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace ManualDi.Async.Tests;
 
@@ -52,21 +53,29 @@ public class TestDiContainerFromMethods
         Assert.That(resolved, Is.EqualTo(instance));
     }
 
+#pragma warning disable CS9113 // Parameter is unread.
     public class ChildTestInject;
-
-    public class ParentTestInject
+    public class ParentPureTestInject(ChildTestInject childTestInjecta);
+    public class ParentMonoBehaviourTestInject : MonoBeheviour
     {
-        public void Inject(ChildTestInject child) { }
+        public void Construct(ChildTestInject childTestInject, ParentPureTestInject parentPureTestInject) { }
     }
+#pragma warning restore CS9113 // Parameter is unread.
     
     [Test]
-    public async Task TestParentChildInjectSubContainerResolve()
+    public async Task TestSubContainerCreatesInReverseOrder()
     {
         await using var container = await new DiContainerBindings().Install(b =>
         {
-            b.Bind<ParentTestInject>().FromSubContainerResolve(b =>
+            //Added in the reverse order they will need to be created in
+            b.Bind<ParentMonoBehaviourTestInject>().FromSubContainerResolve(b =>
             {
-                b.Bind<ParentTestInject>().Default().FromConstructor();
+                b.Bind<ParentMonoBehaviourTestInject>().Default().FromInstance(new ());
+            });
+            
+            b.Bind<ParentPureTestInject>().FromSubContainerResolve(b =>
+            {
+                b.Bind<ParentPureTestInject>().Default().FromConstructor();
             });
             
             b.Bind<ChildTestInject>().Default().FromConstructor();
@@ -123,7 +132,7 @@ public class TestDiContainerFromMethods
     }
 
     [Test]
-    public async Task TestFromSubContainerResolveDependencies()
+    public void TestFromSubContainerResolveDependencies()
     {
         var dependencies = new DiContainerBindings()
             .Install(InstallSubContainerDependencies)

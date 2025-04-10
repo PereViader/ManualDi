@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManualDi.Sync", "ManualDi.Sync\ManualDi.Sync.csproj", "{0559C043-8EBA-4FF3-801E-1E0E8C92F903}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManualDi.Tests", "ManualDi.Sync.Tests\ManualDi.Sync.Tests.csproj", "{F0DF032C-1D63-4EBA-8261-B8958E7FCCDD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManualDi.Sync.Tests", "ManualDi.Sync.Tests\ManualDi.Sync.Tests.csproj", "{F0DF032C-1D63-4EBA-8261-B8958E7FCCDD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManualDi.Sync.Generators", "ManualDi.Sync.Generators\ManualDi.Sync.Generators.csproj", "{72C48DFF-9C2B-4DD4-BCC2-4B0191FD642B}"
 EndProject

@@ -131,11 +131,6 @@ namespace ManualDi.Sync.Generators
         
         private static string? GetInjectId(AttributeData attributeData)
         {
-            if (attributeData.ConstructorArguments.Length != 1)
-            {
-                return null;
-            }
-
             var idArgument = attributeData.ConstructorArguments[0];
             if (idArgument.Value is null)
             {
@@ -224,7 +219,7 @@ namespace ManualDi.Sync.Generators
                     isFirst = false;
                 }
                 
-                var attribute = typeReferences.GetInjectAttribute(parameter);
+                var attribute = typeReferences.GetIdAttribute(parameter);
                 var id = attribute is null ? null : GetInjectId(attribute);
                 stringBuilder.Append(tabs);
                 CreteTypeResolution(parameter.Type, id, typeReferences, stringBuilder);
@@ -235,7 +230,7 @@ namespace ManualDi.Sync.Generators
         {
             if (id is not null)
             {
-                stringBuilder.Append("x => x.Id(");
+                stringBuilder.Append("static x => x.Id(");
                 stringBuilder.Append(id);
                 stringBuilder.Append(")");
             }
@@ -347,27 +342,25 @@ namespace ManualDi.Sync.Generators
 
         private static bool AddInject(GenerationClassContext context, bool isOnNewLine)
         {
-            var injectMethods = context.ClassSymbol
+            var injectMethod = context.ClassSymbol
                 .GetMembers()
                 .OfType<IMethodSymbol>()
                 .Where(x => x is { Name: "Inject", DeclaredAccessibility: Accessibility.Public or Accessibility.Internal, IsStatic: false })
                 .OrderByDescending(x => x.DeclaredAccessibility)
-                .ToArray();
+                .FirstOrDefault();
             
-            var injectProperties = context.ClassSymbol
+            var constructMethod = context.ClassSymbol
                 .GetMembers()
-                .OfType<IPropertySymbol>()
-                .Select(x => (propertySymbol: x, attribute: context.TypeReferences.GetInjectAttribute(x)))
-                .Where(x => x.attribute is not null)
-                .ToArray();
+                .OfType<IMethodSymbol>()
+                .Where(x => x is { Name: "Construct", DeclaredAccessibility: Accessibility.Public or Accessibility.Internal, IsStatic: false })
+                .OrderByDescending(x => x.DeclaredAccessibility)
+                .FirstOrDefault();
 
-            if (injectMethods.Length == 0 && injectProperties.Length == 0)
+            if (injectMethod is null && constructMethod is null)
             {
                 return isOnNewLine;
             }
-
-            var injectMethod = injectMethods.FirstOrDefault();
-
+            
             if (isOnNewLine)
             {
                 context.StringBuilder.AppendLine();
@@ -378,15 +371,14 @@ namespace ManualDi.Sync.Generators
             .Inject(static (o, c) => 
                             {
             """);
-
-            foreach (var (injectProperty, attribute) in injectProperties)
+            
+            if (constructMethod is not null)
             {
-                var id = attribute is null ? null : GetInjectId(attribute);
-                context.StringBuilder.Append($"                    o.{injectProperty.Name} = ");
-                CreteTypeResolution(injectProperty.Type, id, context.TypeReferences, context.StringBuilder);
-                context.StringBuilder.AppendLine(";");
+                context.StringBuilder.Append("                    o.Construct(");
+                CreateMethodResolution(constructMethod, "                        ", context.TypeReferences, context.StringBuilder);
+                context.StringBuilder.AppendLine(");");
             }
-                        
+            
             if (injectMethod is not null)
             {
                 context.StringBuilder.Append("                    o.Inject(");

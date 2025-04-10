@@ -20,6 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ManualDi.Sync.Generators\ManualDi.Sync.Generators.csproj"/>
     <ProjectReference Include="..\ManualDi.Sync\ManualDi.Sync.csproj" />
+    <ProjectReference Include="..\ManualDi.Sync.Generators\ManualDi.Sync.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>

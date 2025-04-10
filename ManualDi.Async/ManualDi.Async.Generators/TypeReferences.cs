@@ -14,7 +14,7 @@ public record TypeReferences
     private readonly INamedTypeSymbol IEnumerableTypeSymbol;
     private readonly INamedTypeSymbol IReadOnlyCollectionTypeSymbol;
     private readonly INamedTypeSymbol ICollectionTypeSymbol;
-    private readonly INamedTypeSymbol InjectAttributeTypeSymbol;
+    private readonly INamedTypeSymbol IdAttributeTypeSymbol;
     private readonly INamedTypeSymbol ObsoleteAttributeTypeSymbol;
     private readonly INamedTypeSymbol IDisposableTypeSymbol;
     private readonly INamedTypeSymbol IDiContainerTypeSymbol;
@@ -25,7 +25,7 @@ public record TypeReferences
         INamedTypeSymbol lazyTypeSymbol, INamedTypeSymbol listTypeSymbol, INamedTypeSymbol iListTypeSymbol,
         INamedTypeSymbol iReadOnlyListTypeSymbol, INamedTypeSymbol iEnumerableTypeSymbol,
         INamedTypeSymbol iReadOnlyCollectionTypeSymbol, INamedTypeSymbol iCollectionTypeSymbol,
-        INamedTypeSymbol injectAttributeTypeSymbol, INamedTypeSymbol obsoleteAttributeTypeSymbol,
+        INamedTypeSymbol idAttributeTypeSymbol, INamedTypeSymbol obsoleteAttributeTypeSymbol,
         INamedTypeSymbol iDisposableTypeSymbol, INamedTypeSymbol iDiContainerTypeSymbol, 
         INamedTypeSymbol cancellationTokenTypeSymbol, INamedTypeSymbol taskTypeSymbol)
     {
@@ -37,7 +37,7 @@ public record TypeReferences
         IEnumerableTypeSymbol = iEnumerableTypeSymbol;
         IReadOnlyCollectionTypeSymbol = iReadOnlyCollectionTypeSymbol;
         ICollectionTypeSymbol = iCollectionTypeSymbol;
-        InjectAttributeTypeSymbol = injectAttributeTypeSymbol;
+        IdAttributeTypeSymbol = idAttributeTypeSymbol;
         ObsoleteAttributeTypeSymbol = obsoleteAttributeTypeSymbol;
         IDisposableTypeSymbol = iDisposableTypeSymbol;
         IDiContainerTypeSymbol = iDiContainerTypeSymbol;
@@ -96,8 +96,8 @@ public record TypeReferences
             return null;
         }
 
-        var injectAttributeTypeSymbol = compilation.GetTypeByMetadataName("ManualDi.Async.InjectAttribute");
-        if (injectAttributeTypeSymbol is null)
+        var idAttributeTypeSymbol = compilation.GetTypeByMetadataName("ManualDi.Async.IdAttribute");
+        if (idAttributeTypeSymbol is null)
         {
             return null;
         }
@@ -126,7 +126,7 @@ public record TypeReferences
             return null;
         }
         
-        return new TypeReferences(unityEngineObjectTypeSymbol, lazyTypeSymbol, listTypeSymbol, iListTypeSymbol, iReadOnlyListTypeSymbol, iEnumerableTypeSymbol, iReadOnlyCollectionTypeSymbol, iCollectionTypeSymbol, injectAttributeTypeSymbol, obsoleteAttributeTypeSymbol, iDisposableTypeSymbol, diContainerTypeSymbol, cancellationTokenTypeSymbol, taskTypeSymbol);
+        return new TypeReferences(unityEngineObjectTypeSymbol, lazyTypeSymbol, listTypeSymbol, iListTypeSymbol, iReadOnlyListTypeSymbol, iEnumerableTypeSymbol, iReadOnlyCollectionTypeSymbol, iCollectionTypeSymbol, idAttributeTypeSymbol, obsoleteAttributeTypeSymbol, iDisposableTypeSymbol, diContainerTypeSymbol, cancellationTokenTypeSymbol, taskTypeSymbol);
     }
     
     public ITypeSymbol? TryGenericLazyType(ITypeSymbol typeSymbol)
@@ -166,7 +166,7 @@ public record TypeReferences
             .Any(x => SymbolEqualityComparer.Default.Equals(x.AttributeClass, ObsoleteAttributeTypeSymbol));
     }
     
-    public AttributeData? GetInjectAttribute(IPropertySymbol propertySymbol)
+    public AttributeData? GetIdAttribute(IPropertySymbol propertySymbol)
     {
         if (propertySymbol.IsStatic)
         {
@@ -187,14 +187,14 @@ public record TypeReferences
 
         return propertySymbol
             .GetAttributes()
-            .FirstOrDefault(x => SymbolEqualityComparer.Default.Equals(x.AttributeClass, InjectAttributeTypeSymbol));
+            .FirstOrDefault(x => SymbolEqualityComparer.Default.Equals(x.AttributeClass, IdAttributeTypeSymbol));
     }
         
-    public AttributeData? GetInjectAttribute(ISymbol parameterSymbol)
+    public AttributeData? GetIdAttribute(ISymbol parameterSymbol)
     {
         return parameterSymbol
             .GetAttributes()
-            .FirstOrDefault(x => SymbolEqualityComparer.Default.Equals(x.AttributeClass, InjectAttributeTypeSymbol));
+            .FirstOrDefault(x => SymbolEqualityComparer.Default.Equals(x.AttributeClass, IdAttributeTypeSymbol));
     }
     
     public bool IsSymbolDiContainer(ITypeSymbol typeSymbol)

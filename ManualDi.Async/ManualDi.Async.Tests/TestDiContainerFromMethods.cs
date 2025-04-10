@@ -56,7 +56,7 @@ public class TestDiContainerFromMethods
 #pragma warning disable CS9113 // Parameter is unread.
     public class ChildTestInject;
     public class ParentPureTestInject(ChildTestInject childTestInjecta);
-    public class ParentMonoBehaviourTestInject : MonoBeheviour
+    public class ParentMonoBehaviourTestInject
     {
         public void Construct(ChildTestInject childTestInject, ParentPureTestInject parentPureTestInject) { }
     }
@@ -107,24 +107,24 @@ public class TestDiContainerFromMethods
     {
         public ChildResolveAll(
             ParentConstructorDependency parentConstructorDependency,
-            [Inject("id")] ParentConstructorFilterDependency parentConstructorFilterDependency,
-            [Inject("id")] ParentNullableConstructorFilterDependency? parentNullableConstructorFilterDependency,
+            [Id("id")] ParentConstructorFilterDependency parentConstructorFilterDependency,
+            [Id("id")] ParentNullableConstructorFilterDependency? parentNullableConstructorFilterDependency,
             ParentNullableConstructorDependency? parentNullableConstructorDependency,
             ChildConstructorDependency childConstructorDependency,
-            [Inject("id")]ChildConstructorFilterDependency childConstructorFilterDependency,
-            [Inject("id")]ChildNullableConstructorFilterDependency? childNullableConstructorFilterDependency,
+            [Id("id")]ChildConstructorFilterDependency childConstructorFilterDependency,
+            [Id("id")]ChildNullableConstructorFilterDependency? childNullableConstructorFilterDependency,
             ChildNullableConstructorDependency? childNullableConstructorDependency)
         {
         }
 
         public void Inject(
             ParentInjectionDependency parentInjectionDependency,
-            [Inject("id")] ParentInjectionFilterDependency parentInjectionFilterDependency,
-            [Inject("id")] ParentNullableInjectionFilterDependency? parentNullableInjectionFilterDependency,
+            [Id("id")] ParentInjectionFilterDependency parentInjectionFilterDependency,
+            [Id("id")] ParentNullableInjectionFilterDependency? parentNullableInjectionFilterDependency,
             ParentNullableInjectionDependency? parentNullableInjectionDependency,
             ChildInjectionDependency childInjectionDependency,
-            [Inject("id")] ChildInjectionFilterDependency childInjectionFilterDependency,
-            [Inject("id")] ChildNullableInjectionFilterDependency? childNullableInjectionFilterDependency,
+            [Id("id")] ChildInjectionFilterDependency childInjectionFilterDependency,
+            [Id("id")] ChildNullableInjectionFilterDependency? childNullableInjectionFilterDependency,
             ChildNullableInjectionDependency? childNullableInjectionDependency
         )
         {

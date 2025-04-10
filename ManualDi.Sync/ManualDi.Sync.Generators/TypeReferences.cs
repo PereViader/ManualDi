@@ -78,7 +78,7 @@ public record TypeReferences
             return null;
         }
 
-        var injectAttributeTypeSymbol = compilation.GetTypeByMetadataName("ManualDi.Sync.InjectAttribute");
+        var injectAttributeTypeSymbol = compilation.GetTypeByMetadataName("ManualDi.Sync.IdAttribute");
         if (injectAttributeTypeSymbol is null)
         {
             return null;
@@ -122,32 +122,8 @@ public record TypeReferences
         return typeSymbol.GetAttributes()
             .Any(x => SymbolEqualityComparer.Default.Equals(x.AttributeClass, ObsoleteAttributeTypeSymbol));
     }
-    
-    public AttributeData? GetInjectAttribute(IPropertySymbol propertySymbol)
-    {
-        if (propertySymbol.IsStatic)
-        {
-            return null;
-        }
-            
-        bool isSetterAccessible = propertySymbol.SetMethod?.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal;
-        if (!isSetterAccessible)
-        {
-            return null;
-        }
-            
-        bool isPropertyAccessible = propertySymbol.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal;
-        if (!isPropertyAccessible)
-        {
-            return null;
-        }
-
-        return propertySymbol
-            .GetAttributes()
-            .FirstOrDefault(x => SymbolEqualityComparer.Default.Equals(x.AttributeClass, InjectAttributeTypeSymbol));
-    }
         
-    public AttributeData? GetInjectAttribute(ISymbol parameterSymbol)
+    public AttributeData? GetIdAttribute(ISymbol parameterSymbol)
     {
         return parameterSymbol
             .GetAttributes()

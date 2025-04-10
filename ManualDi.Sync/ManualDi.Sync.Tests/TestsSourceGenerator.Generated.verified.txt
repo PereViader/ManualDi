@@ -165,8 +165,7 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<T, SomeNamespace.Subnamespace.PublicInitialize> Default<T>(this Binding<T, SomeNamespace.Subnamespace.PublicInitialize> binding)
         {
-            return binding.Initialize(static (o, c) => o.Initialize())
-                .Inject(static (o, c) => 
+            return binding.Inject(static (o, c) => 
                 {
                     o.Inject();
                 })
@@ -300,52 +299,19 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Sync
 {
-    public static class ManualDiGeneratedSomeNamespaceSubnamespaceInjectPropertyAndMethodExtensions
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Binding<T, SomeNamespace.Subnamespace.InjectPropertyAndMethod> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.InjectPropertyAndMethod> binding)
-        {
-            return binding.FromMethod(static c => new SomeNamespace.Subnamespace.InjectPropertyAndMethod());
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Binding<T, SomeNamespace.Subnamespace.InjectPropertyAndMethod> Default<T>(this Binding<T, SomeNamespace.Subnamespace.InjectPropertyAndMethod> binding)
-        {
-            return binding.Inject(static (o, c) => 
-                {
-                    o.Object = c.Resolve<object>();
-                    o.Inject(
-                        c.Resolve<object>());
-                })
-                .DontDispose();
-        }
-    }
-}
-
-  
-#nullable enable
-using System.Runtime.CompilerServices;
-
-namespace ManualDi.Sync
-{
     public static class ManualDiGeneratedSomeNamespaceSubnamespaceInjectReferencePropertyClassExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<T, SomeNamespace.Subnamespace.InjectReferencePropertyClass> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.InjectReferencePropertyClass> binding)
         {
-            return binding.FromMethod(static c => new SomeNamespace.Subnamespace.InjectReferencePropertyClass());
+            return binding.FromMethod(static c => new SomeNamespace.Subnamespace.InjectReferencePropertyClass(
+                c.Resolve<object>()));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<T, SomeNamespace.Subnamespace.InjectReferencePropertyClass> Default<T>(this Binding<T, SomeNamespace.Subnamespace.InjectReferencePropertyClass> binding)
         {
-            return binding.Inject(static (o, c) => 
-                {
-                    o.Object0 = c.Resolve<object>();
-                    o.Object2 = c.Resolve<object>();
-                    o.Object5 = c.Resolve<object>();
-                })
-                .DontDispose();
+            return binding.DontDispose();
         }
     }
 }
@@ -361,20 +327,15 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<T, SomeNamespace.Subnamespace.InjectValueNullablePropertyClass> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.InjectValueNullablePropertyClass> binding)
         {
-            return binding.FromMethod(static c => new SomeNamespace.Subnamespace.InjectValueNullablePropertyClass());
+            return binding.FromMethod(static c => new SomeNamespace.Subnamespace.InjectValueNullablePropertyClass(
+                c.Resolve<int>(),
+                c.ResolveNullableValue<int>()));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<T, SomeNamespace.Subnamespace.InjectValueNullablePropertyClass> Default<T>(this Binding<T, SomeNamespace.Subnamespace.InjectValueNullablePropertyClass> binding)
         {
-            return binding.Inject(static (o, c) => 
-                {
-                    o.Int1 = c.Resolve<int>();
-                    o.Int2 = c.Resolve<int>();
-                    o.Int5 = c.ResolveNullableValue<int>();
-                    o.Int6 = c.ResolveNullableValue<int>();
-                })
-                .DontDispose();
+            return binding.DontDispose();
         }
     }
 }
@@ -430,9 +391,6 @@ namespace ManualDi.Sync
             return binding.Initialize(static (o, c) => o.Initialize())
                 .Inject(static (o, c) => 
                 {
-                    o.Object = c.ResolveNullable<object>();
-                    o.Int = c.ResolveNullableValue<int>();
-                    o.Int3 = c.ResolveNullableValue<int>();
                     o.Inject(
                         c.ResolveNullable<object>(),
                         c.ResolveNullableValue<int>());
@@ -498,7 +456,66 @@ namespace ManualDi.Sync
         internal static Binding<T, SomeNamespace.Subnamespace.ListInject> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.ListInject> binding)
         {
             return binding.FromMethod(static c => new SomeNamespace.Subnamespace.ListInject(
-                c.ResolveAll<object>()));
+                c.ResolveAll<object>(),
+                c.ResolveAll<int>(),
+                c.ResolveAll<object>(),
+                c.ResolveAll<int>(),
+                c.ResolveAll<object>(),
+                c.ResolveAll<int>(),
+                c.ResolveAll<object>(),
+                c.ResolveAll<int>(),
+                c.ResolveAll<object>(),
+                c.ResolveAll<int>(),
+                c.ResolveAll<object>(),
+                c.ResolveAll<int>(),
+                c.ResolveAll<object>(static x => x.Id("A")),
+                c.ResolveAll<int>(static x => x.Id("A")),
+                c.ResolveAll<object>(static x => x.Id("A")),
+                c.ResolveAll<int>(static x => x.Id("A")),
+                c.ResolveAll<object>(static x => x.Id("A")),
+                c.ResolveAll<int>(static x => x.Id("A")),
+                c.ResolveAll<object>(static x => x.Id("A")),
+                c.ResolveAll<int>(static x => x.Id("A")),
+                c.ResolveAll<object>(static x => x.Id("A")),
+                c.ResolveAll<int>(static x => x.Id("A")),
+                c.ResolveAll<object>(static x => x.Id("A")),
+                c.ResolveAll<int>(static x => x.Id("A")),
+                c.WouldResolve<object>() ? c.ResolveAll<object>() : null,
+                c.WouldResolve<int>() ? c.ResolveAll<int>() : null,
+                c.WouldResolve<object>() ? c.ResolveAll<object>() : null,
+                c.WouldResolve<int>() ? c.ResolveAll<int>() : null,
+                c.WouldResolve<object>() ? c.ResolveAll<object>() : null,
+                c.WouldResolve<int>() ? c.ResolveAll<int>() : null,
+                c.WouldResolve<object>() ? c.ResolveAll<object>() : null,
+                c.WouldResolve<int>() ? c.ResolveAll<int>() : null,
+                c.WouldResolve<object>() ? c.ResolveAll<object>() : null,
+                c.WouldResolve<int>() ? c.ResolveAll<int>() : null,
+                c.WouldResolve<object>() ? c.ResolveAll<object>() : null,
+                c.WouldResolve<int>() ? c.ResolveAll<int>() : null,
+                c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")) : null,
+                c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")) : null,
+                c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")) : null,
+                c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")) : null,
+                c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")) : null,
+                c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")) : null,
+                c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")) : null,
+                c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")) : null,
+                c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")) : null,
+                c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")) : null,
+                c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")) : null,
+                c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")) : null,
+                c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")).ConvertAll<object?>(x => x) : null,
+                c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")).ConvertAll<int?>(x => x) : null,
+                c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")).ConvertAll<object?>(x => x) : null,
+                c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")).ConvertAll<int?>(x => x) : null,
+                c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")).ConvertAll<object?>(x => x) : null,
+                c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")).ConvertAll<int?>(x => x) : null,
+                c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")).ConvertAll<object?>(x => x) : null,
+                c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")).ConvertAll<int?>(x => x) : null,
+                c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")).ConvertAll<object?>(x => x) : null,
+                c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")).ConvertAll<int?>(x => x) : null,
+                c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")).ConvertAll<object?>(x => x) : null,
+                c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")).ConvertAll<int?>(x => x) : null));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -507,66 +524,6 @@ namespace ManualDi.Sync
             return binding.Initialize(static (o, c) => o.Initialize())
                 .Inject(static (o, c) => 
                 {
-                    o.IEnumerableObject = c.ResolveAll<object>();
-                    o.IEnumerableInt = c.ResolveAll<int>();
-                    o.IReadOnlyListObject = c.ResolveAll<object>();
-                    o.IReadOnlyListInt = c.ResolveAll<int>();
-                    o.IListObject = c.ResolveAll<object>();
-                    o.IListInt = c.ResolveAll<int>();
-                    o.ListObject = c.ResolveAll<object>();
-                    o.ListInt = c.ResolveAll<int>();
-                    o.IReadOnlyCollectionObject = c.ResolveAll<object>();
-                    o.IReadOnlyCollectionInt = c.ResolveAll<int>();
-                    o.ICollectionObject = c.ResolveAll<object>();
-                    o.ICollectionInt = c.ResolveAll<int>();
-                    o.IEnumerableObjectId = c.ResolveAll<object>(x => x.Id("A"));
-                    o.IEnumerableIntId = c.ResolveAll<int>(x => x.Id("A"));
-                    o.IReadOnlyListObjectId = c.ResolveAll<object>(x => x.Id("A"));
-                    o.IReadOnlyListIntId = c.ResolveAll<int>(x => x.Id("A"));
-                    o.IListObjectId = c.ResolveAll<object>(x => x.Id("A"));
-                    o.IListIntId = c.ResolveAll<int>(x => x.Id("A"));
-                    o.ListObjectId = c.ResolveAll<object>(x => x.Id("A"));
-                    o.ListIntId = c.ResolveAll<int>(x => x.Id("A"));
-                    o.IReadOnlyCollectionObjectId = c.ResolveAll<object>(x => x.Id("A"));
-                    o.IReadOnlyCollectionIntId = c.ResolveAll<int>(x => x.Id("A"));
-                    o.ICollectionObjectId = c.ResolveAll<object>(x => x.Id("A"));
-                    o.ICollectionIntId = c.ResolveAll<int>(x => x.Id("A"));
-                    o.IEnumerableObjectNullable = c.WouldResolve<object>() ? c.ResolveAll<object>() : null;
-                    o.IEnumerableIntNullable = c.WouldResolve<int>() ? c.ResolveAll<int>() : null;
-                    o.IReadOnlyListObjectNullable = c.WouldResolve<object>() ? c.ResolveAll<object>() : null;
-                    o.IReadOnlyListIntNullable = c.WouldResolve<int>() ? c.ResolveAll<int>() : null;
-                    o.IListObjectNullable = c.WouldResolve<object>() ? c.ResolveAll<object>() : null;
-                    o.IListIntNullable = c.WouldResolve<int>() ? c.ResolveAll<int>() : null;
-                    o.ListObjectNullable = c.WouldResolve<object>() ? c.ResolveAll<object>() : null;
-                    o.ListIntNullable = c.WouldResolve<int>() ? c.ResolveAll<int>() : null;
-                    o.IReadOnlyCollectionObjectNullable = c.WouldResolve<object>() ? c.ResolveAll<object>() : null;
-                    o.IReadOnlyCollectionIntNullable = c.WouldResolve<int>() ? c.ResolveAll<int>() : null;
-                    o.ICollectionObjectNullable = c.WouldResolve<object>() ? c.ResolveAll<object>() : null;
-                    o.ICollectionIntNullable = c.WouldResolve<int>() ? c.ResolveAll<int>() : null;
-                    o.IEnumerableObjectNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")) : null;
-                    o.IEnumerableIntNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")) : null;
-                    o.IReadOnlyListObjectNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")) : null;
-                    o.IReadOnlyListIntNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")) : null;
-                    o.IListObjectNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")) : null;
-                    o.IListIntNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")) : null;
-                    o.ListObjectNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")) : null;
-                    o.ListIntNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")) : null;
-                    o.IReadOnlyCollectionObjectNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")) : null;
-                    o.IReadOnlyCollectionIntNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")) : null;
-                    o.ICollectionObjectNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")) : null;
-                    o.ICollectionIntNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")) : null;
-                    o.IEnumerableObjectNullableNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")).ConvertAll<object?>(x => x) : null;
-                    o.IEnumerableIntNullableNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")).ConvertAll<int?>(x => x) : null;
-                    o.IReadOnlyListObjectNullableNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")).ConvertAll<object?>(x => x) : null;
-                    o.IReadOnlyListIntNullableNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")).ConvertAll<int?>(x => x) : null;
-                    o.IListObjectNullableNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")).ConvertAll<object?>(x => x) : null;
-                    o.IListIntNullableNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")).ConvertAll<int?>(x => x) : null;
-                    o.ListObjectNullableNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")).ConvertAll<object?>(x => x) : null;
-                    o.ListIntNullableNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")).ConvertAll<int?>(x => x) : null;
-                    o.IReadOnlyCollectionObjectNullableNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")).ConvertAll<object?>(x => x) : null;
-                    o.IReadOnlyCollectionIntNullableNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")).ConvertAll<int?>(x => x) : null;
-                    o.ICollectionObjectNullableNullableId = c.WouldResolve<object>(x => x.Id("A")) ? c.ResolveAll<object>(x => x.Id("A")).ConvertAll<object?>(x => x) : null;
-                    o.ICollectionIntNullableNullableId = c.WouldResolve<int>(x => x.Id("A")) ? c.ResolveAll<int>(x => x.Id("A")).ConvertAll<int?>(x => x) : null;
                     o.Inject(
                         c.ResolveAll<object>());
                 })
@@ -595,10 +552,9 @@ namespace ManualDi.Sync
             return binding.Initialize(static (o, c) => o.Initialize())
                 .Inject(static (o, c) => 
                 {
-                    o.HelloIdValue = c.Resolve<int>(x => x.Id("A"));
                     o.Inject(
-                        c.Resolve<object>(x => x.Id("Potato")),
-                        c.Resolve<float>(x => x.Id("Banana")),
+                        c.Resolve<object>(static x => x.Id("Potato")),
+                        c.Resolve<float>(static x => x.Id("Banana")),
                         c.Resolve<object>());
                 })
                 .DontDispose();
@@ -648,7 +604,8 @@ namespace ManualDi.Sync
         internal static Binding<T, InjectContainer> FromConstructor<T>(this Binding<T, InjectContainer> binding)
         {
             return binding.FromMethod(static c => new InjectContainer(
-                c));
+                c,
+                c.Resolve<System.Threading.CancellationToken>()));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -665,20 +622,16 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Sync
 {
-    public static class ManualDiGeneratedInjectArrayExtensions
+    public static class ManualDiGeneratedInitializeAsyncCheckExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Binding<T, InjectArray> FromConstructor<T>(this Binding<T, InjectArray> binding)
+        internal static Binding<T, InitializeAsyncCheck> FromConstructor<T>(this Binding<T, InitializeAsyncCheck> binding)
         {
-            return binding.FromMethod(static c => new InjectArray(
-                c.ResolveAll<object>().ToArray(),
-                c.ResolveAll<object>().ToArray(),
-                c.WouldResolve<object>() ? c.ResolveAll<object>().ToArray() : null,
-                c.WouldResolve<object>() ? c.ResolveAll<object>().ConvertAll<object?>(x => x).ToArray() : null));
+            return binding.FromMethod(static c => new InitializeAsyncCheck());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Binding<T, InjectArray> Default<T>(this Binding<T, InjectArray> binding)
+        internal static Binding<T, InitializeAsyncCheck> Default<T>(this Binding<T, InitializeAsyncCheck> binding)
         {
             return binding.DontDispose();
         }
@@ -712,10 +665,29 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<T, UnityEngine.MonoBeheviour> Default<T>(this Binding<T, UnityEngine.MonoBeheviour> binding)
         {
+            return binding.DontDispose();
+        }
+    }
+}
+
+  
+#nullable enable
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Sync
+{
+    public static class ManualDiGeneratedUnityEngineSomeMonoBehaviourExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<T, UnityEngine.SomeMonoBehaviour> Default<T>(this Binding<T, UnityEngine.SomeMonoBehaviour> binding)
+        {
             return binding.Initialize(static (o, c) => o.Initialize())
                 .Inject(static (o, c) => 
                 {
-                    o.Something = c.Resolve<object>();
+                    o.Construct(
+                        c.Resolve<int>());
+                    o.Inject(
+                        c.Resolve<object>());
                 })
                 .DontDispose();
         }

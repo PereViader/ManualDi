@@ -19,5 +19,5 @@
         <ProjectReference Include="..\ManualDi.Async\ManualDi.Async.csproj" />
         <ProjectReference Include="..\ManualDi.Async.Generators\ManualDi.Async.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
-
+    
 </Project>

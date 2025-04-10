@@ -62,8 +62,9 @@ namespace SomeNamespace.Subnamespace
 
     public class PublicInitialize
     {
-        public void Initialize()
+        public Task InitailizeAsync(CancellationToken cancellationToken)
         {
+            return Task.CompletedTask;
         }
 
         internal void Inject()
@@ -106,40 +107,24 @@ namespace SomeNamespace.Subnamespace
         }
     }
 
-    class InjectPropertyAndMethod
-    {
-        [Inject] public object Object { get; set; } = default!;
-
-        public void Inject(object obj)
-        {
-        }
-    }
-
     public class InjectReferencePropertyClass
     {
-        [Inject] public object Object0 { get; set; } = default!;
-        [Inject] internal object Object2 { get; set; } = default!;
-        [Inject] private object Object3 { get; set; } = default!;
-        [Inject] protected object Object4 { get; set; } = default!;
-
-        [Inject] public object Object5 { get; internal set; } = default!;
-        [Inject] public object Object6 { get; private set; } = default!;
-        [Inject] public object Object7 { get; protected set; } = default!;
-        [Inject] public static object Object8 { get; set; } = default!;
-
+        public InjectReferencePropertyClass(
+            object referece
+        )
+        {
+        }
     }
 
 
     public class InjectValueNullablePropertyClass
     {
-        [Inject] public int Int1 { get; set; } = default!;
-        [Inject] internal int Int2 { get; set; } = default!;
-        [Inject] private int Int3 { get; set; } = default!;
-        [Inject] protected int Int4 { get; set; } = default!;
-        [Inject] public int? Int5 { get; set; } = default!;
-        [Inject] internal int? Int6 { get; set; } = default!;
-        [Inject] private int? Int7 { get; set; } = default!;
-        [Inject] protected int? Int8 { get; set; } = default!;
+        public InjectValueNullablePropertyClass(
+            int value,
+            int? nullableValue
+        )
+        {
+        }
     }
 
     [Obsolete]
@@ -156,10 +141,6 @@ namespace SomeNamespace.Subnamespace
 
     public class NullableDependency
     {
-        [Inject] public object? Object { get; set; }
-        [Inject] public int? Int { get; set; }
-        [Inject] public Nullable<int> Int3 { get; set; }
-
         public NullableDependency(object? obj, Nullable<int> value)
         {
         }
@@ -194,75 +175,77 @@ namespace SomeNamespace.Subnamespace
 
     class ListInject
     {
-        public ListInject(List<object> objects)
+        public ListInject(
+            IEnumerable<object> IEnumerableObject,
+            IEnumerable<int> IEnumerableInt,
+            IReadOnlyList<object> IReadOnlyListObject,
+            IReadOnlyList<int> IReadOnlyListInt,
+            IList<object> IListObject,
+            IList<int> IListInt,
+            List<object> ListObject,
+            List<int> ListInt,
+            IReadOnlyCollection<object> IReadOnlyCollectionObject,
+            IReadOnlyCollection<int> IReadOnlyCollectionInt,
+            ICollection<object> ICollectionObject,
+            ICollection<int> ICollectionInt,
+
+            [Id("A")] IEnumerable<object> IEnumerableObjectId,
+            [Id("A")] IEnumerable<int> IEnumerableIntId,
+            [Id("A")] IReadOnlyList<object> IReadOnlyListObjectId, 
+            [Id("A")] IReadOnlyList<int> IReadOnlyListIntId,
+            [Id("A")] IList<object> IListObjectId,
+            [Id("A")] IList<int> IListIntId,
+            [Id("A")] List<object> ListObjectId, 
+            [Id("A")] List<int> ListIntId,
+            [Id("A")] IReadOnlyCollection<object> IReadOnlyCollectionObjectId,
+            [Id("A")] IReadOnlyCollection<int> IReadOnlyCollectionIntId,
+            [Id("A")] ICollection<object> ICollectionObjectId,
+            [Id("A")] ICollection<int> ICollectionIntId,
+            
+            IEnumerable<object>? IEnumerableObjectNullable,
+            IEnumerable<int>? IEnumerableIntNullable,
+            IReadOnlyList<object>? IReadOnlyListObjectNullable, 
+            IReadOnlyList<int>? IReadOnlyListIntNullable,
+            IList<object>? IListObjectNullable,
+            IList<int>? IListIntNullable,
+            List<object>? ListObjectNullable, 
+            List<int>? ListIntNullable,
+            IReadOnlyCollection<object>? IReadOnlyCollectionObjectNullable, 
+            IReadOnlyCollection<int>? IReadOnlyCollectionIntNullable,
+            ICollection<object>? ICollectionObjectNullable,
+            ICollection<int>? ICollectionIntNullable,
+            
+
+            [Id("A")] IEnumerable<object>? IEnumerableObjectNullableId,
+            [Id("A")] IEnumerable<int>? IEnumerableIntNullableId,
+            [Id("A")] IReadOnlyList<object>? IReadOnlyListObjectNullableId, 
+            [Id("A")] IReadOnlyList<int>? IReadOnlyListIntNullableId,
+            [Id("A")] IList<object>? IListObjectNullableId,
+            [Id("A")] IList<int>? IListIntNullableId,
+            [Id("A")] List<object>? ListObjectNullableId, 
+            [Id("A")] List<int>? ListIntNullableId,
+            [Id("A")] IReadOnlyCollection<object>? IReadOnlyCollectionObjectNullableId, 
+            [Id("A")] IReadOnlyCollection<int>? IReadOnlyCollectionIntNullableId,
+            [Id("A")] ICollection<object>? ICollectionObjectNullableId,
+            [Id("A")] ICollection<int>? ICollectionIntNullableId,
+            
+            [Id("A")] IEnumerable<object?>? IEnumerableObjectNullableNullableId,
+            [Id("A")] IEnumerable<int?>? IEnumerableIntNullableNullableId,
+            [Id("A")] IReadOnlyList<object?>? IReadOnlyListObjectNullableNullableId, 
+            [Id("A")] IReadOnlyList<int?>? IReadOnlyListIntNullableNullableId,
+            [Id("A")] IList<object?>? IListObjectNullableNullableId,
+            [Id("A")] IList<int?>? IListIntNullableNullableId,
+            [Id("A")] List<object?>? ListObjectNullableNullableId, 
+            [Id("A")] List<int?>? ListIntNullableNullableId,
+            [Id("A")] IReadOnlyCollection<object?>? IReadOnlyCollectionObjectNullableNullableId, 
+            [Id("A")] IReadOnlyCollection<int?>? IReadOnlyCollectionIntNullableNullableId,
+            [Id("A")] ICollection<object?>? ICollectionObjectNullableNullableId,
+            [Id("A")] ICollection<int?>? ICollectionIntNullableNullableId
+            )
         {
         }
 
-        [Inject] public IEnumerable<object> IEnumerableObject { get; set; } = default!;
-        [Inject] public IEnumerable<int> IEnumerableInt { get; set; } = default!;
-        [Inject] public IReadOnlyList<object> IReadOnlyListObject { get; set; } = default!;
-        [Inject] public IReadOnlyList<int> IReadOnlyListInt { get; set; } = default!;
-        [Inject] public IList<object> IListObject { get; set; } = default!;
-        [Inject] public IList<int> IListInt { get; set; } = default!;
-        [Inject] public List<object> ListObject { get; set; } = default!;
-        [Inject] public List<int> ListInt { get; set; } = default!;
-        [Inject] public IReadOnlyCollection<object> IReadOnlyCollectionObject { get; set; } = default!;
-        [Inject] public IReadOnlyCollection<int> IReadOnlyCollectionInt { get; set; } = default!;
-        [Inject] public ICollection<object> ICollectionObject { get; set; } = default!;
-        [Inject] public ICollection<int> ICollectionInt { get; set; } = default!;
-
-        [Inject("A")] public IEnumerable<object> IEnumerableObjectId { get; set; } = default!;
-        [Inject("A")] public IEnumerable<int> IEnumerableIntId { get; set; } = default!;
-        [Inject("A")] public IReadOnlyList<object> IReadOnlyListObjectId { get; set; } = default!;
-        [Inject("A")] public IReadOnlyList<int> IReadOnlyListIntId { get; set; } = default!;
-        [Inject("A")] public IList<object> IListObjectId { get; set; } = default!;
-        [Inject("A")] public IList<int> IListIntId { get; set; } = default!;
-        [Inject("A")] public List<object> ListObjectId { get; set; } = default!;
-        [Inject("A")] public List<int> ListIntId { get; set; } = default!;
-        [Inject("A")] public IReadOnlyCollection<object> IReadOnlyCollectionObjectId { get; set; } = default!;
-        [Inject("A")] public IReadOnlyCollection<int> IReadOnlyCollectionIntId { get; set; } = default!;
-        [Inject("A")] public ICollection<object> ICollectionObjectId { get; set; } = default!;
-        [Inject("A")] public ICollection<int> ICollectionIntId { get; set; } = default!;
         
-        [Inject] public IEnumerable<object>? IEnumerableObjectNullable { get; set; } = default!;
-        [Inject] public IEnumerable<int>? IEnumerableIntNullable { get; set; } = default!;
-        [Inject] public IReadOnlyList<object>? IReadOnlyListObjectNullable { get; set; } = default!;
-        [Inject] public IReadOnlyList<int>? IReadOnlyListIntNullable { get; set; } = default!;
-        [Inject] public IList<object>? IListObjectNullable { get; set; } = default!;
-        [Inject] public IList<int>? IListIntNullable { get; set; } = default!;
-        [Inject] public List<object>? ListObjectNullable { get; set; } = default!;
-        [Inject] public List<int>? ListIntNullable { get; set; } = default!;
-        [Inject] public IReadOnlyCollection<object>? IReadOnlyCollectionObjectNullable { get; set; } = default!;
-        [Inject] public IReadOnlyCollection<int>? IReadOnlyCollectionIntNullable { get; set; } = default!;
-        [Inject] public ICollection<object>? ICollectionObjectNullable { get; set; } = default!;
-        [Inject] public ICollection<int>? ICollectionIntNullable { get; set; } = default!;
-        
-
-        [Inject("A")] public IEnumerable<object>? IEnumerableObjectNullableId { get; set; } = default!;
-        [Inject("A")] public IEnumerable<int>? IEnumerableIntNullableId { get; set; } = default!;
-        [Inject("A")] public IReadOnlyList<object>? IReadOnlyListObjectNullableId { get; set; } = default!;
-        [Inject("A")] public IReadOnlyList<int>? IReadOnlyListIntNullableId { get; set; } = default!;
-        [Inject("A")] public IList<object>? IListObjectNullableId { get; set; } = default!;
-        [Inject("A")] public IList<int>? IListIntNullableId { get; set; } = default!;
-        [Inject("A")] public List<object>? ListObjectNullableId { get; set; } = default!;
-        [Inject("A")] public List<int>? ListIntNullableId { get; set; } = default!;
-        [Inject("A")] public IReadOnlyCollection<object>? IReadOnlyCollectionObjectNullableId { get; set; } = default!;
-        [Inject("A")] public IReadOnlyCollection<int>? IReadOnlyCollectionIntNullableId { get; set; } = default!;
-        [Inject("A")] public ICollection<object>? ICollectionObjectNullableId { get; set; } = default!;
-        [Inject("A")] public ICollection<int>? ICollectionIntNullableId { get; set; } = default!;
-        
-        [Inject("A")] public IEnumerable<object?>? IEnumerableObjectNullableNullableId { get; set; } = default!;
-        [Inject("A")] public IEnumerable<int?>? IEnumerableIntNullableNullableId { get; set; } = default!;
-        [Inject("A")] public IReadOnlyList<object?>? IReadOnlyListObjectNullableNullableId { get; set; } = default!;
-        [Inject("A")] public IReadOnlyList<int?>? IReadOnlyListIntNullableNullableId { get; set; } = default!;
-        [Inject("A")] public IList<object?>? IListObjectNullableNullableId { get; set; } = default!;
-        [Inject("A")] public IList<int?>? IListIntNullableNullableId { get; set; } = default!;
-        [Inject("A")] public List<object?>? ListObjectNullableNullableId { get; set; } = default!;
-        [Inject("A")] public List<int?>? ListIntNullableNullableId { get; set; } = default!;
-        [Inject("A")] public IReadOnlyCollection<object?>? IReadOnlyCollectionObjectNullableNullableId { get; set; } = default!;
-        [Inject("A")] public IReadOnlyCollection<int?>? IReadOnlyCollectionIntNullableNullableId { get; set; } = default!;
-        [Inject("A")] public ICollection<object?>? ICollectionObjectNullableNullableId { get; set; } = default!;
-        [Inject("A")] public ICollection<int?>? ICollectionIntNullableNullableId { get; set; } = default!;
         
         public void Inject(List<object> objects)
         {
@@ -273,38 +256,13 @@ namespace SomeNamespace.Subnamespace
         }
     }
 
-    class LazyDependencies
-    {
-        [Inject] public Lazy<object> Object { get; set; } = default!;
-        [Inject] public Lazy<object?> NullableObject { get; set; } = default!;
-        [Inject] public Lazy<int> Value { get; set; } = default!;
-        [Inject] public Lazy<int?> NullableValue { get; set; } = default!;
-        [Inject] public Lazy<Lazy<Lazy<int>>> RecursiveLazy { get; set; } = default!;
-        [Inject] public Lazy<List<int>> LazyList { get; set; } = default!;
-        
-        [Inject] public Lazy<object>? ObjectNullable { get; set; } = default!;
-        [Inject] public Lazy<object?>? NullableObjectNullable { get; set; } = default!;
-        [Inject] public Lazy<int>? ValueNullable { get; set; } = default!;
-        [Inject] public Lazy<int?>? NullableValueNullable { get; set; } = default!;
-        [Inject] public Lazy<Lazy<Lazy<int>>>? RecursiveLazyNullable { get; set; } = default!;
-        [Inject] public Lazy<List<int>>? LazyListNullable { get; set; } = default!;
-
-        public void Inject(Lazy<object> obj, Lazy<object?> nullObj, Lazy<int> val, Lazy<int?> nullVal)
-        {
-        }
-    }
-
     class InjectIdAttribute
     {
         private const string Something = "A";
 
-        [Inject(Something)] public int? HelloIdValue { get; set; }
-        [Inject(Something)] public Lazy<int> LazyInt { get; set; } = default!;
-
         public void Inject(
-            [Inject("Potato")] object potatoValue,
-            [Inject("Banana")] float bananaValue,
-            [Inject("P")] Lazy<int> lazyInt,
+            [Id("Potato")] object potatoValue,
+            [Id("Banana")] float bananaValue,
             object value)
         {
         }
@@ -359,11 +317,10 @@ namespace UnityEngine
 
     public class SomeMonoBehaviour : MonoBeheviour
     {
-        [Inject] public float Something { get; set; }
-        
         public void Construct(int x) { }
         public void Inject(object o) { }
-        
+        public Task InitializeAsync(CancellationToken ct) { return Task.CompletedTask; }
+
         public void Initialize() { }
     }
 }

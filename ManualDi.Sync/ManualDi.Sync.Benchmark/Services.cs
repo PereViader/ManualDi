@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-
-namespace ManualDi.Sync.Benchmark;
+﻿namespace ManualDi.Sync.Benchmark;
 
 #pragma warning disable 9113
 public class Service1();

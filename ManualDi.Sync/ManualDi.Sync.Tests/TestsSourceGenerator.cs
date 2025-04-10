@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
-using ManualDi.Sync.Generators;
 using System.Linq;
 using NUnit.Framework;
 using Microsoft.CodeAnalysis;
@@ -10,6 +9,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using System.Text;
 using System.Threading.Tasks;
+using ManualDi.Sync.Generators;
 using VerifyNUnit;
 
 namespace ManualDi.Sync.Tests;

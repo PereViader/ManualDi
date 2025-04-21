@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFrameworks>netstandard2.1;netstandard2.0</TargetFrameworks>
+    <LangVersion>9</LangVersion> <!--Lang version must be 9 because unity3d does not support anything higher-->
+    <Nullable>enable</Nullable>
+    <AssemblyName>ManualDi.Sync</AssemblyName>
+    <RootNamespace>ManualDi.Sync</RootNamespace>
+    <Authors>Pere Viader</Authors>
+    <RepositoryUrl>https://github.com/PereViader/ManualDi.Sync</RepositoryUrl>
+    <Product>ManualDi.Sync</Product>
+    <Description>Dependency injection library for C#</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/PereViader/ManualDi.Sync</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="" />
+    <None Include="$(SolutionDir)ManualDi.Sync.Generators\bin\$(Configuration)\netstandard2.0\ManualDi.Sync.Generators.dll"
+          Pack="true"
+          PackagePath="analyzers/dotnet/cs"
+          Visible="false" />
+  </ItemGroup>
+
+</Project>

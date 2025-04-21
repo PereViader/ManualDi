@@ -2,9 +2,6 @@ name: Publish Nuget Package
 
 on: 
   workflow_call:
-
-env:
-  version_file: ManualDi.Main/ManualDi.Main/ManualDi.Main.csproj
     
 jobs:
   PublishNugetPackage:
@@ -19,21 +16,42 @@ jobs:
 
       - id: get-version
         run: |
-          version=$(grep -oP '(?<=<Version>)[^<]+' "${{ env.version_file }}")
-          echo "version=$version" >> $GITHUB_OUTPUT
+          source .env
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Publish Nuget and Tag Commit
+      - name: Publish Sync Nuget and Tag Commit
         run: |
-          dotnet build ManualDi.Main --configuration Release
-          dotnet pack ManualDi.Main --configuration Release --output NugetPackageRelease
+          dotnet build ManualDi.Sync --configuration Release
+          dotnet pack ManualDi.Sync --configuration Release --output ManualDi.Sync.Nuget -p:PackageVersion=${{ steps.get-version.outputs.version }}
+          
           set +e  # Disable immediate exit on error
-          dotnet nuget push "NugetPackageRelease/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key "${{secrets.NUGET_API_KEY}}"
+          dotnet nuget push "ManualDi.Sync.Nuget/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key "${{secrets.NUGET_API_KEY}}"
           push_result=$?
           set -e  # Enable immediate exit on error
 
           if [ $push_result -ne 0 ]; then
-            echo "Package could not be pushed, assuming a package with that version is already present"
+            echo "ManualDi.Sync package could not be pushed, assuming a package with that version is already present"
             exit 0
           fi
 
-          echo "NuGet package pushed successfully"
+          echo "ManualDi.Sync NuGet package pushed successfully"
+
+      - name: Publish Async Nuget and Tag Commit
+        run: |
+          dotnet build ManualDi.Async --configuration Release
+          dotnet pack ManualDi.Async --configuration Release --output ManualDi.Async.Nuget -p:PackageVersion=${{ steps.get-version.outputs.version }}
+          
+          set +e  # Disable immediate exit on error
+          dotnet nuget push "ManualDi.Async.Nuget/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key "${{secrets.NUGET_API_KEY}}"
+          push_result=$?
+          set -e  # Enable immediate exit on error
+
+          if [ $push_result -ne 0 ]; then
+            echo "ManualDi.Async package could not be pushed, assuming a package with that version is already present"
+            exit 0
+          fi
+
+          echo "ManualDi.Async NuGet package pushed successfully"
+
+
+          

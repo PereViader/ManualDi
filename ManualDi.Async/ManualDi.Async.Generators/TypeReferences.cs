@@ -20,6 +20,7 @@ public record TypeReferences
     private readonly INamedTypeSymbol IDiContainerTypeSymbol;
     private readonly INamedTypeSymbol CancellationTokenTypeSymbol;
     private readonly INamedTypeSymbol TaskTypeSymbol;
+    private readonly INamedTypeSymbol CyclicDependencyAttributeTypeSymbol;
 
     public TypeReferences(INamedTypeSymbol? unityEngineObjectTypeSymbol,
         INamedTypeSymbol lazyTypeSymbol, INamedTypeSymbol listTypeSymbol, INamedTypeSymbol iListTypeSymbol,
@@ -27,7 +28,8 @@ public record TypeReferences
         INamedTypeSymbol iReadOnlyCollectionTypeSymbol, INamedTypeSymbol iCollectionTypeSymbol,
         INamedTypeSymbol idAttributeTypeSymbol, INamedTypeSymbol obsoleteAttributeTypeSymbol,
         INamedTypeSymbol iDisposableTypeSymbol, INamedTypeSymbol iDiContainerTypeSymbol, 
-        INamedTypeSymbol cancellationTokenTypeSymbol, INamedTypeSymbol taskTypeSymbol)
+        INamedTypeSymbol cancellationTokenTypeSymbol, INamedTypeSymbol taskTypeSymbol,
+        INamedTypeSymbol cyclicDependencyAttributeTypeSymbol)
     {
         UnityEngineObjectTypeSymbol = unityEngineObjectTypeSymbol;
         LazyTypeSymbol = lazyTypeSymbol;
@@ -43,6 +45,7 @@ public record TypeReferences
         IDiContainerTypeSymbol = iDiContainerTypeSymbol;
         CancellationTokenTypeSymbol = cancellationTokenTypeSymbol;
         TaskTypeSymbol = taskTypeSymbol;
+        CyclicDependencyAttributeTypeSymbol = cyclicDependencyAttributeTypeSymbol;
     }
     
     public static TypeReferences? Create(Compilation compilation, CancellationToken ct)
@@ -126,7 +129,13 @@ public record TypeReferences
             return null;
         }
         
-        return new TypeReferences(unityEngineObjectTypeSymbol, lazyTypeSymbol, listTypeSymbol, iListTypeSymbol, iReadOnlyListTypeSymbol, iEnumerableTypeSymbol, iReadOnlyCollectionTypeSymbol, iCollectionTypeSymbol, idAttributeTypeSymbol, obsoleteAttributeTypeSymbol, iDisposableTypeSymbol, diContainerTypeSymbol, cancellationTokenTypeSymbol, taskTypeSymbol);
+        var cyclicDependencyAttributeTypeSymbol = compilation.GetTypeByMetadataName("ManualDi.Async.CyclicDependencyAttribute");
+        if (cyclicDependencyAttributeTypeSymbol is null)
+        {
+            return null;
+        }
+        
+        return new TypeReferences(unityEngineObjectTypeSymbol, lazyTypeSymbol, listTypeSymbol, iListTypeSymbol, iReadOnlyListTypeSymbol, iEnumerableTypeSymbol, iReadOnlyCollectionTypeSymbol, iCollectionTypeSymbol, idAttributeTypeSymbol, obsoleteAttributeTypeSymbol, iDisposableTypeSymbol, diContainerTypeSymbol, cancellationTokenTypeSymbol, taskTypeSymbol, cyclicDependencyAttributeTypeSymbol);
     }
     
     public ITypeSymbol? TryGenericLazyType(ITypeSymbol typeSymbol)
@@ -242,5 +251,12 @@ public record TypeReferences
     public bool IsTask(ITypeSymbol namedTypeSymbol)
     {
         return SymbolEqualityComparer.Default.Equals(namedTypeSymbol, TaskTypeSymbol);
+    }
+
+    public bool HasCyclicDependencyAttribute(ISymbol parameter)
+    {
+        return parameter
+            .GetAttributes()
+            .Any(x => SymbolEqualityComparer.Default.Equals(x.AttributeClass, CyclicDependencyAttributeTypeSymbol));
     }
 }

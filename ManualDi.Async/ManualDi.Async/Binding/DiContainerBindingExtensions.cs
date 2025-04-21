@@ -24,6 +24,42 @@ namespace ManualDi.Async
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TApparent1, TConcrete> Bind<TApparent1, TApparent2, TConcrete>(this DiContainerBindings diContainerBindings)
+            where TConcrete : TApparent1, TApparent2
+        {
+            diContainerBindings.BindingRedirection<TApparent2, TApparent1>();
+            
+            Binding<TApparent1, TConcrete> concrete = new();
+            diContainerBindings.AddBinding(concrete, typeof(TConcrete));
+            return concrete;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TApparent1, TConcrete> Bind<TApparent1, TApparent2, TApparent3, TConcrete>(this DiContainerBindings diContainerBindings)
+            where TConcrete : TApparent1, TApparent2, TApparent3
+        {
+            diContainerBindings.BindingRedirection<TApparent2, TApparent1>();
+            diContainerBindings.BindingRedirection<TApparent3, TApparent1>();
+            
+            Binding<TApparent1, TConcrete> concrete = new();
+            diContainerBindings.AddBinding(concrete, typeof(TConcrete));
+            return concrete;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TApparent1, TConcrete> Bind<TApparent1, TApparent2, TApparent3, TApparent4, TConcrete>(this DiContainerBindings diContainerBindings)
+            where TConcrete : TApparent1, TApparent2, TApparent3, TApparent4
+        {
+            diContainerBindings.BindingRedirection<TApparent2, TApparent1>();
+            diContainerBindings.BindingRedirection<TApparent3, TApparent1>();
+            diContainerBindings.BindingRedirection<TApparent4, TApparent1>();
+            
+            Binding<TApparent1, TConcrete> concrete = new();
+            diContainerBindings.AddBinding(concrete, typeof(TConcrete));
+            return concrete;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<TConcrete, TConcrete> BindAll<TApparent, TConcrete>(this DiContainerBindings diContainerBindings)
             where TConcrete : TApparent
         {
@@ -74,7 +110,7 @@ namespace ManualDi.Async
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void BindingRedirection<TApparent, TConcrete>(this DiContainerBindings diContainerBindings) where TConcrete : TApparent
+        private static void BindingRedirection<TApparent, TConcrete>(this DiContainerBindings diContainerBindings)
         {
             var binding = new Binding<TApparent, TConcrete>()
                 .FromContainerResolve()

@@ -434,8 +434,8 @@ namespace ManualDi.Async
                         c.ResolveNullableValue<int>());
                 })
                 .DependsOn(static d => {
-                    d.NullableInjectionDependency<object>();
-                    d.NullableInjectionDependency<int>();
+                    d.NullableConstructorDependency<object>();
+                    d.NullableConstructorDependency<int>();
                 })
                 .DontDispose();
         }
@@ -636,7 +636,7 @@ namespace ManualDi.Async
                         c.ResolveAll<object>());
                 })
                 .DependsOn(static d => {
-                    d.NullableInjectionDependency<object>();
+                    d.NullableConstructorDependency<object>();
                 })
                 .DontDispose();
         }
@@ -671,9 +671,9 @@ namespace ManualDi.Async
                         c.Resolve<object>());
                 })
                 .DependsOn(static d => {
-                    d.InjectionDependency<object>(static x => x.Id("Potato"));
-                    d.InjectionDependency<float>(static x => x.Id("Banana"));
-                    d.InjectionDependency<object>();
+                    d.ConstructorDependency<object>(static x => x.Id("Potato"));
+                    d.ConstructorDependency<float>(static x => x.Id("Banana"));
+                    d.ConstructorDependency<object>();
                 })
                 .DontDispose();
         }
@@ -712,7 +712,7 @@ namespace ManualDi.Async
                         c.Resolve<object>());
                 })
                 .DependsOn(static d => {
-                    d.InjectionDependency<object>();
+                    d.ConstructorDependency<object>();
                 })
                 .DontDispose();
         }
@@ -820,14 +820,13 @@ namespace ManualDi.Async
                 .Inject(static (o, c) => 
                 {
                     var to = (UnityEngine.SomeMonoBehaviour)o;
-                    to.Construct(
-                        c.Resolve<int>());
                     to.Inject(
-                        c.Resolve<object>());
+                        c.Resolve<object>(),
+                        c.Resolve<int>());
                 })
                 .DependsOn(static d => {
-                    d.ConstructorDependency<int>();
-                    d.InjectionDependency<object>();
+                    d.ConstructorDependency<object>();
+                    d.InjectionDependency<int>();
                 })
                 .DontDispose();
         }

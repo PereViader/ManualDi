@@ -317,8 +317,7 @@ namespace UnityEngine
 
     public class SomeMonoBehaviour : MonoBeheviour
     {
-        public void Construct(int x) { }
-        public void Inject(object o) { }
+        public void Inject(object o, [CyclicDependency] int i) { }
         public Task InitializeAsync(CancellationToken ct) { return Task.CompletedTask; }
 
         public void Initialize() { }

@@ -263,7 +263,7 @@ namespace ManualDi.Async.Generators
             stringBuilder.Append("})");
         }
         
-        private static void CreateMethodPropertyDependencies(IMethodSymbol? constructMethodSymbol, IMethodSymbol? injectMethodSymbol, string tabs, TypeReferences typeReferences, StringBuilder stringBuilder)
+        private static void CreateMethodPropertyDependencies(IMethodSymbol? injectMethodSymbol, string tabs, TypeReferences typeReferences, StringBuilder stringBuilder)
         {
             if (injectMethodSymbol?.Parameters.Length == 0)
             {
@@ -274,17 +274,6 @@ namespace ManualDi.Async.Generators
             stringBuilder.Append(tabs);
             stringBuilder.AppendLine(".DependsOn(static d => {");
             
-            if (constructMethodSymbol is not null)
-            {
-                foreach (var parameter in constructMethodSymbol.Parameters)
-                {
-                    stringBuilder.Append(tabs);
-                    var attribute = typeReferences.GetIdAttribute(parameter);
-                    var id = attribute is null ? null : GetInjectId(attribute);
-                    CreteTypeDependency(true, parameter.Type, id, typeReferences, stringBuilder);
-                }
-            }
-            
             if (injectMethodSymbol is not null)
             {
                 foreach (var parameter in injectMethodSymbol.Parameters)
@@ -292,7 +281,8 @@ namespace ManualDi.Async.Generators
                     stringBuilder.Append(tabs);
                     var attribute = typeReferences.GetIdAttribute(parameter);
                     var id = attribute is null ? null : GetInjectId(attribute);
-                    CreteTypeDependency(false, parameter.Type, id, typeReferences, stringBuilder);
+                    var isConstructor = !typeReferences.HasCyclicDependencyAttribute(parameter);
+                    CreteTypeDependency(isConstructor, parameter.Type, id, typeReferences, stringBuilder);
                 }
             }
             
@@ -515,14 +505,7 @@ namespace ManualDi.Async.Generators
                 .OrderByDescending(x => x.DeclaredAccessibility)
                 .FirstOrDefault();
             
-            var constructMethod = context.ClassSymbol
-                    .GetMembers()
-                    .OfType<IMethodSymbol>()
-                    .Where(x => x is { Name: "Construct", DeclaredAccessibility: Accessibility.Public or Accessibility.Internal, IsStatic: false })
-                    .OrderByDescending(x => x.DeclaredAccessibility)
-                    .FirstOrDefault();
-            
-            if (injectMethod is null && constructMethod is null)
+            if (injectMethod is null)
             {
                 return isOnNewLine;
             }
@@ -541,13 +524,6 @@ namespace ManualDi.Async.Generators
             context.StringBuilder.Append(context.ClassName);
             context.StringBuilder.AppendLine(")o;");
             
-            if (constructMethod is not null)
-            {
-                context.StringBuilder.Append("                    to.Construct(");
-                CreateMethodResolution(constructMethod, "                        ", context.TypeReferences, context.StringBuilder);
-                context.StringBuilder.AppendLine(");");
-            }
-            
             if (injectMethod is not null)
             {
                 context.StringBuilder.Append("                    to.Inject(");
@@ -557,7 +533,7 @@ namespace ManualDi.Async.Generators
 
             context.StringBuilder.Append("                })");
             
-            CreateMethodPropertyDependencies(constructMethod, injectMethod, "                ", context.TypeReferences, context.StringBuilder);
+            CreateMethodPropertyDependencies(injectMethod, "                ", context.TypeReferences, context.StringBuilder);
             return true;
         }
 

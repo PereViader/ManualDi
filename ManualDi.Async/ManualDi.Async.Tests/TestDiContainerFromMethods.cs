@@ -58,7 +58,7 @@ public class TestDiContainerFromMethods
     public class ParentPureTestInject(ChildTestInject childTestInjecta);
     public class ParentMonoBehaviourTestInject
     {
-        public void Construct(ChildTestInject childTestInject, ParentPureTestInject parentPureTestInject) { }
+        public void Inject(ChildTestInject childTestInject, [CyclicDependency] ParentPureTestInject parentPureTestInject) { }
     }
 #pragma warning restore CS9113 // Parameter is unread.
     
@@ -118,14 +118,14 @@ public class TestDiContainerFromMethods
         }
 
         public void Inject(
-            ParentInjectionDependency parentInjectionDependency,
-            [Id("id")] ParentInjectionFilterDependency parentInjectionFilterDependency,
-            [Id("id")] ParentNullableInjectionFilterDependency? parentNullableInjectionFilterDependency,
-            ParentNullableInjectionDependency? parentNullableInjectionDependency,
-            ChildInjectionDependency childInjectionDependency,
-            [Id("id")] ChildInjectionFilterDependency childInjectionFilterDependency,
-            [Id("id")] ChildNullableInjectionFilterDependency? childNullableInjectionFilterDependency,
-            ChildNullableInjectionDependency? childNullableInjectionDependency
+            [CyclicDependency] ParentInjectionDependency parentInjectionDependency,
+            [CyclicDependency, Id("id")] ParentInjectionFilterDependency parentInjectionFilterDependency,
+            [CyclicDependency, Id("id")] ParentNullableInjectionFilterDependency? parentNullableInjectionFilterDependency,
+            [CyclicDependency] ParentNullableInjectionDependency? parentNullableInjectionDependency,
+            [CyclicDependency] ChildInjectionDependency childInjectionDependency,
+            [CyclicDependency, Id("id")] ChildInjectionFilterDependency childInjectionFilterDependency,
+            [CyclicDependency, Id("id")] ChildNullableInjectionFilterDependency? childNullableInjectionFilterDependency,
+            [CyclicDependency] ChildNullableInjectionDependency? childNullableInjectionDependency
         )
         {
         }

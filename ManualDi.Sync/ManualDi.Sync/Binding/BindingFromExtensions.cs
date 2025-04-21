@@ -26,18 +26,35 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<TApparent, TConcrete> FromSubContainerResolve<TApparent, TConcrete>(
             this Binding<TApparent, TConcrete> binding,
-            InstallDelegate installDelegate,
-            bool isContainerParent = true
+            InstallDelegate installDelegate
         )
         {
             IDiContainer? subContainer = null;
             binding.CreateConcreteDelegate = c =>
             {
-                var bindings = new DiContainerBindings().Install(installDelegate);
-                if (isContainerParent)
-                {
-                    bindings.WithParentContainer(c);
-                }
+                var bindings = new DiContainerBindings()
+                    .WithParentContainer(c)
+                    .Install(installDelegate);
+                
+                subContainer = bindings.Build();
+                return subContainer.Resolve<TConcrete>();
+            };
+            binding.Dispose((_, _) => subContainer?.Dispose());
+            return binding;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TApparent, TConcrete> FromIsolatedSubContainerResolve<TApparent, TConcrete>(
+            this Binding<TApparent, TConcrete> binding,
+            InstallDelegate installDelegate
+        )
+        {
+            IDiContainer? subContainer = null;
+            binding.CreateConcreteDelegate = c =>
+            {
+                var bindings = new DiContainerBindings()
+                    .Install(installDelegate);
+                
                 subContainer = bindings.Build();
                 return subContainer.Resolve<TConcrete>();
             };

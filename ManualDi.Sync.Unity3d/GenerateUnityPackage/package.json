@@ -1,7 +1,7 @@
 {
     "name": "com.pereviader.manualdi.sync.unity3d",
     "version": "$version",
-    "displayName": "ManualDi",
+    "displayName": "ManualDi.Sync",
     "description": "Fast C# dependency injection library that uses no reflexion",
     "unity": "2022.3",
     "license": "MIT",
@@ -16,7 +16,7 @@
         {
             "displayName": "Samples",
             "description": "Samples for ManualDi",
-            "path": "ManualDi.Unity3d/Samples~"
+            "path": "ManualDi.Sync.Unity3d/Samples~"
         }
     ]
 }

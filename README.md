@@ -233,8 +233,8 @@ static class Installer
 
 ## Default
 
-This source generated method is a shorthand for calling `Construct`, `Inject`, `Initialize` and `InitializeAsync` (ManualDi.Async only) that classes may have.
-`Construct`, `Inject` methods may have 0 or N parameters and the parameters will be supplied by resolving them from the container. 
+This source generated method is a shorthand for calling `Inject`, `Initialize` and `InitializeAsync` (ManualDi.Async only) that classes may have.
+`Inject` methods may have 0 or N parameters and the parameters will be supplied by resolving them from the container. 
 `Initialize` methods must have 0 parameters.
 `InitializeAsync` methods must have 1 paramter being `System.Threading.CancellationToken` and must return `System.Threading.Task`
 Think of it as a "duck typed" source generated approach.
@@ -386,25 +386,10 @@ b.Bind<SomeService>().FromIsolatedSubContainerResolve(sub => {
 })
 ```
 
-## Construct
-
-The Construct method allows for post-constructor injection of types.
-This method should be used when constructor injection of types is not available. This can happen for example on Unity3d where `UnityEngine.Object` derived types can't use constructors.
-The construct injection will happen immediately after the object creation.
-The injection will be done in reverse resolution order. In other words, injected objects will already be injected themselves.
-The injection will not happen more than once for any instance.
-The injection can also be used to run other custom user code during the object creation lifecycle.
-Any amount of injection callbacks can be registered
-
-As stated on the `Default` section, calling the source generated method will handle the Construct method automatically.
-
-
 
 ## Inject
 
 The Inject method allows for post-construct injection of types.
-The Inject method should ONLY be used to Inject types and those types create circular dependencies. In that case, one of the types in the circular chain should be injected with Inject.
-
 
 The injection will happen after the object construction.
 The injection will be done in reverse resolution order. In other words, injected objects will already be injected themselves.
@@ -414,24 +399,40 @@ Any amount of injection callbacks can be registered
 
 As stated on the `Default` section, calling the source generated method will handle the Inject method automatically.
 
+The inject method has two usecases
+1. Inject dependencies when the constructor can't be used (this happens for instance in unity3d)
+2. Workaround Cyclic dependencies that prevent the object graph from being wired
 Warning: Cyclic dependencies usually highlight a problem in the design of the code. If you find such a problem in your codebase, consider redesigning the code before applying the following proposal.
 
-This will fail because it will run out of stack
+This next example will fail
 
 ```csharp
-b.Bind<A>().FromMethod(c => new A(c.Resolve<B>()));
-b.Bind<B>().FromMethod(c => new B(c.Resolve<A>()));
+public class A(B b);
+public class B(A a);
 ```
 
-This will work because A has broken the cyclic dependency chain.
+In order to fix this, the chain must be broken with `Inject` but also with a `CyclicDependency` attribute for `ManualDi.Async`
+
 ```csharp
-b.Bind<A>().FromMethod(c => new A())).Inject((o,c) => o.B = c.Resolve<B>());
-b.Bind<B>().FromMethod(c => new B(c.Resolve<A>()));
+public class A(B b);
+public class B
+{
+    public void Inject(A a) { } //ManualDi.Sync
+    public void Inject([CyclicDependency] A a) { } //ManualDi.Async
+}
 ```
+
+The `CyclicDepdency` attribute will instruct the source generator to wire the dependencies in a different way
+
+When resolving cyclic dependencies, the usual method execution order may not apply.
+Typically, Initialize is called on a type’s dependencies before it is called on the type itself. 
+However, in the case of cyclic dependencies, this order is not guaranteed.
+Thus you may need to implement furhter syncrhonization logic to account for this.
+As stated before however, cyclic dependencies usually highlight a problem in the design of the code. If you find such a problem in your codebase, consider redesigning the code in the first place instead of trying to workaround it.
 
 ## Initialize
 
-The Initialize method allows for post-injection initialization and injection of types.
+The Initialize method allows for post-injection initialization of types.
 The initialization will NOT happen immediately after the object injection. It will be queued and run later.
 The initialization will be done in reverse resolution order. In other words, injected objects will already be initialized themselves.
 The initialization will not happen more than once for any instance.
@@ -559,15 +560,10 @@ The id functionality can be used on method and property dependencies by using th
 ```csharp
 class A
 {
-    [Inject("Potato")] public B B { get; set; }
-
-    public void Inject(int a, [Inject("Other")] object b) { ... }
+    public void Inject(int a, [Id("Other")] object b) { ... }
 }
 
-//Will resolve the property doing
-c.Resolve<B>(x => x.Id("Potato"));
-
-//and call the inject method doing
+//Will resolve the object with the requested Id
 o.Inject(
     c.Resolve<int>(),
     c.Resolve<object>(x => x.Id("Other"))
@@ -732,7 +728,7 @@ In the snippet above, the following will happen when the container is built:
 
 # Unity3d
 
-When using the container in unity, do not rely on Awake / Start. Instead, rely on Construct / Inject / Initialize / InitializeAsync.
+When using the container in unity, do not rely on Awake / Start. Instead, rely on Inject / Initialize / InitializeAsync.
 You may still use Awake / Start if the classes involved are not injected through the container.
 
 By relying on the container and not on native Unity3d callbacks you can be certain that the dependencies of your classes are Injected and Initialized in the proper order.

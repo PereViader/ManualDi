@@ -101,7 +101,7 @@ public class Startup(SomeClass someClass, ISomeService someService) // Construct
 }
 ```
 
-# ManualDi.Async
+## ManualDi.Async
 
 ```csharp
 await using DiContainer diContainer = await new DiContainerBindings()

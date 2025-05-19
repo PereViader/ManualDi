@@ -16,8 +16,7 @@
                 {
                     var tickableService = c.Resolve<ITickableService>();
                     tickableService.Remove(o, TickType.Update);
-                })
-                .NonLazy();
+                });
         }
         
         public static Binding<TInterface, TConcrete> LinkTickable<TInterface, TConcrete>(
@@ -35,8 +34,7 @@
                 {
                     var tickableService = c.Resolve<ITickableService>();
                     tickableService.Remove(o, tickType);
-                })
-                .NonLazy();
+                });
         }
     }
 }

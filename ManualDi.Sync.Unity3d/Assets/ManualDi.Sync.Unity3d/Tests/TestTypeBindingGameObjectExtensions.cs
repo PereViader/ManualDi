@@ -56,7 +56,7 @@ namespace ManualDi.Sync.Unity3d.Tests.PlayMode
             
             var container = new DiContainerBindings().Install(b =>
             {
-                b.Bind<Image>().FromGameObjectAddComponent(gameObject).NonLazy();
+                b.Bind<Image>().FromGameObjectAddComponent(gameObject);
             }).Build();
             
             Assert.That(gameObject.GetComponent<Image>(), Is.Not.Null);

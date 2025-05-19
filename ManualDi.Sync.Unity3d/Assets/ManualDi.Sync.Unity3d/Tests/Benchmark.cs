@@ -20,15 +20,20 @@ namespace ManualDi.Sync.Unity3d.Tests
                     manualDiBuilder.Bind<IFirstService, FirstService>().Default().FromConstructor();
                     manualDiBuilder.Bind<ISecondService, SecondService>().Default().FromConstructor();
                     manualDiBuilder.Bind<IThirdService, ThirdService>().Default().FromConstructor();
-                    manualDiBuilder.Bind<ISubObjectA, SubObjectA>().Default().Transient().FromConstructor();
-                    manualDiBuilder.Bind<ISubObjectB, SubObjectB>().Default().Transient().FromConstructor();
-                    manualDiBuilder.Bind<ISubObjectC, SubObjectC>().Default().Transient().FromConstructor();
-                    manualDiBuilder.Bind<IComplex1, Complex1>().Default().Transient().FromConstructor();
-                    manualDiBuilder.Bind<IComplex2, Complex2>().Default().Transient().FromConstructor();
-                    manualDiBuilder.Bind<IComplex3, Complex3>().Default().Transient().FromConstructor();
+                    manualDiBuilder.Bind<ISubObjectA, SubObjectA>().Default().FromConstructor();
+                    manualDiBuilder.Bind<ISubObjectB, SubObjectB>().Default().FromConstructor();
+                    manualDiBuilder.Bind<ISubObjectC, SubObjectC>().Default().FromConstructor();
+                    manualDiBuilder.Bind<IComplex1, Complex1>().Default().FromConstructor();
+                    manualDiBuilder.Bind<IComplex2, Complex2>().Default().FromConstructor();
+                    manualDiBuilder.Bind<IComplex3, Complex3>().Default().FromConstructor();
                     manualDiBuilder.Bind<ISubObjectOne, SubObjectOne>().Default().FromConstructor();
-                    manualDiBuilder.Bind<ISubObjectTwo, SubObjectTwo>().Default().Transient().FromConstructor();
-                    manualDiBuilder.Bind<ISubObjectThree, SubObjectThree>().Default().Transient().FromConstructor();
+                    manualDiBuilder.Bind<ISubObjectTwo, SubObjectTwo>().Default().FromConstructor();
+                    manualDiBuilder.Bind<ISubObjectThree, SubObjectThree>().Default().FromConstructor();
+                    
+                    manualDiBuilder.Bind<IServiceA, ServiceA>().Default().FromConstructor();
+                    manualDiBuilder.Bind<IServiceB, ServiceB>().Default().FromConstructor();
+                    manualDiBuilder.Bind<IServiceC, ServiceC>().Default().FromConstructor();
+                    
                     var manualDiContainer = manualDiBuilder.Build();
                     
                     manualDiContainer.Resolve<IComplex1>();
@@ -48,15 +53,19 @@ namespace ManualDi.Sync.Unity3d.Tests
                     reflexContainer.Bind<IFirstService>().To<FirstService>().AsSingletonLazy();
                     reflexContainer.Bind<ISecondService>().To<SecondService>().AsSingletonLazy();
                     reflexContainer.Bind<IThirdService>().To<ThirdService>().AsSingletonLazy();
-                    reflexContainer.Bind<ISubObjectA>().To<SubObjectA>().AsTransient();
-                    reflexContainer.Bind<ISubObjectB>().To<SubObjectB>().AsTransient();
-                    reflexContainer.Bind<ISubObjectC>().To<SubObjectC>().AsTransient();
-                    reflexContainer.Bind<IComplex1>().To<Complex1>().AsTransient();
-                    reflexContainer.Bind<IComplex2>().To<Complex2>().AsTransient();
-                    reflexContainer.Bind<IComplex3>().To<Complex3>().AsTransient();
-                    reflexContainer.Bind<ISubObjectOne>().To<SubObjectOne>().AsTransient();
-                    reflexContainer.Bind<ISubObjectTwo>().To<SubObjectTwo>().AsTransient();
-                    reflexContainer.Bind<ISubObjectThree>().To<SubObjectThree>().AsTransient();
+                    reflexContainer.Bind<ISubObjectA>().To<SubObjectA>().AsSingletonLazy();
+                    reflexContainer.Bind<ISubObjectB>().To<SubObjectB>().AsSingletonLazy();
+                    reflexContainer.Bind<ISubObjectC>().To<SubObjectC>().AsSingletonLazy();
+                    reflexContainer.Bind<IComplex1>().To<Complex1>().AsSingletonLazy();
+                    reflexContainer.Bind<IComplex2>().To<Complex2>().AsSingletonLazy();
+                    reflexContainer.Bind<IComplex3>().To<Complex3>().AsSingletonLazy();
+                    reflexContainer.Bind<ISubObjectOne>().To<SubObjectOne>().AsSingletonLazy();
+                    reflexContainer.Bind<ISubObjectTwo>().To<SubObjectTwo>().AsSingletonLazy();
+                    reflexContainer.Bind<ISubObjectThree>().To<SubObjectThree>().AsSingletonLazy();
+                    
+                    reflexContainer.Bind<IServiceA>().To<ServiceA>().AsSingletonLazy();
+                    reflexContainer.Bind<IServiceB>().To<ServiceB>().AsSingletonLazy();
+                    reflexContainer.Bind<IServiceC>().To<ServiceC>().AsSingletonLazy();
                     
                     reflexContainer.Resolve<IComplex1>();
                     reflexContainer.Resolve<IComplex2>();
@@ -75,15 +84,20 @@ namespace ManualDi.Sync.Unity3d.Tests
                     vContainerBuilder.Register<IFirstService, FirstService>(Lifetime.Singleton);
                     vContainerBuilder.Register<ISecondService, SecondService>(Lifetime.Singleton);
                     vContainerBuilder.Register<IThirdService, ThirdService>(Lifetime.Singleton);
-                    vContainerBuilder.Register<ISubObjectA, SubObjectA>(Lifetime.Transient);
-                    vContainerBuilder.Register<ISubObjectB, SubObjectB>(Lifetime.Transient);
-                    vContainerBuilder.Register<ISubObjectC, SubObjectC>(Lifetime.Transient);
-                    vContainerBuilder.Register<IComplex1, Complex1>(Lifetime.Transient);
-                    vContainerBuilder.Register<IComplex2, Complex2>(Lifetime.Transient);
-                    vContainerBuilder.Register<IComplex3, Complex3>(Lifetime.Transient);
-                    vContainerBuilder.Register<ISubObjectOne, SubObjectOne>(Lifetime.Transient);
-                    vContainerBuilder.Register<ISubObjectTwo, SubObjectTwo>(Lifetime.Transient);
-                    vContainerBuilder.Register<ISubObjectThree, SubObjectThree>(Lifetime.Transient);
+                    vContainerBuilder.Register<ISubObjectA, SubObjectA>(Lifetime.Singleton);
+                    vContainerBuilder.Register<ISubObjectB, SubObjectB>(Lifetime.Singleton);
+                    vContainerBuilder.Register<ISubObjectC, SubObjectC>(Lifetime.Singleton);
+                    vContainerBuilder.Register<IComplex1, Complex1>(Lifetime.Singleton);
+                    vContainerBuilder.Register<IComplex2, Complex2>(Lifetime.Singleton);
+                    vContainerBuilder.Register<IComplex3, Complex3>(Lifetime.Singleton);
+                    vContainerBuilder.Register<ISubObjectOne, SubObjectOne>(Lifetime.Singleton);
+                    vContainerBuilder.Register<ISubObjectTwo, SubObjectTwo>(Lifetime.Singleton);
+                    vContainerBuilder.Register<ISubObjectThree, SubObjectThree>(Lifetime.Singleton);
+                    
+                    vContainerBuilder.Register<IServiceA, ServiceA>(Lifetime.Singleton);
+                    vContainerBuilder.Register<IServiceB, ServiceB>(Lifetime.Singleton);
+                    vContainerBuilder.Register<IServiceC, ServiceC>(Lifetime.Singleton);
+                    
                     var vContainer = vContainerBuilder.Build();
                     
                     vContainer.Resolve<IComplex1>();
@@ -103,15 +117,19 @@ namespace ManualDi.Sync.Unity3d.Tests
                     zenjectContainer.Bind<IFirstService>().To<FirstService>().AsSingle();
                     zenjectContainer.Bind<ISecondService>().To<SecondService>().AsSingle();
                     zenjectContainer.Bind<IThirdService>().To<ThirdService>().AsSingle();
-                    zenjectContainer.Bind<ISubObjectA>().To<SubObjectA>().AsTransient();
-                    zenjectContainer.Bind<ISubObjectB>().To<SubObjectB>().AsTransient();
-                    zenjectContainer.Bind<ISubObjectC>().To<SubObjectC>().AsTransient();
-                    zenjectContainer.Bind<IComplex1>().To<Complex1>().AsTransient();
-                    zenjectContainer.Bind<IComplex2>().To<Complex2>().AsTransient();
-                    zenjectContainer.Bind<IComplex3>().To<Complex3>().AsTransient();
-                    zenjectContainer.Bind<ISubObjectOne>().To<SubObjectOne>().AsTransient();
-                    zenjectContainer.Bind<ISubObjectTwo>().To<SubObjectTwo>().AsTransient();
-                    zenjectContainer.Bind<ISubObjectThree>().To<SubObjectThree>().AsTransient();
+                    zenjectContainer.Bind<ISubObjectA>().To<SubObjectA>().AsSingle();
+                    zenjectContainer.Bind<ISubObjectB>().To<SubObjectB>().AsSingle();
+                    zenjectContainer.Bind<ISubObjectC>().To<SubObjectC>().AsSingle();
+                    zenjectContainer.Bind<IComplex1>().To<Complex1>().AsSingle();
+                    zenjectContainer.Bind<IComplex2>().To<Complex2>().AsSingle();
+                    zenjectContainer.Bind<IComplex3>().To<Complex3>().AsSingle();
+                    zenjectContainer.Bind<ISubObjectOne>().To<SubObjectOne>().AsSingle();
+                    zenjectContainer.Bind<ISubObjectTwo>().To<SubObjectTwo>().AsSingle();
+                    zenjectContainer.Bind<ISubObjectThree>().To<SubObjectThree>().AsSingle();
+                    
+                    zenjectContainer.Bind<IServiceA>().To<ServiceA>().AsSingle();
+                    zenjectContainer.Bind<IServiceB>().To<ServiceB>().AsSingle();
+                    zenjectContainer.Bind<IServiceC>().To<ServiceC>().AsSingle();
                     
                     zenjectContainer.Resolve<IComplex1>();
                     zenjectContainer.Resolve<IComplex2>();

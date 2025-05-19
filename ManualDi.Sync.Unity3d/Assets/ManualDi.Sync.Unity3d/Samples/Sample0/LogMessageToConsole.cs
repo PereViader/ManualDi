@@ -4,7 +4,12 @@ namespace ManualDi.Sync.Unity3d.Samples.Sample0
 {
     internal class LogMessageToConsole : MonoBehaviour
     {
-        [Inject] public string Message { get; set; }
+        public string Message { get; set; }
+
+        public void Inject(string message)
+        {
+            Message = message;
+        }
 
         public void Initialize()
         {

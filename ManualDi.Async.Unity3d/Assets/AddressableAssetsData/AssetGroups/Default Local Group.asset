@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Default Local Group
+  m_EditorClassIdentifier: 
+  m_GroupName: Default Local Group
+  m_Data:
+    m_SerializedData: []
+  m_GUID: 9fc736e29c5d8bb4596f142419e1e258
+  m_SerializeEntries:
+  - m_GUID: 6154248f06a88774c9abd3c4bd1f22ab
+    m_Address: Assets/ManualDi.Async.Unity3d/Tests/TestAssets/TestAddressableLoadScene.unity
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 38b092172ed9f0144bd11c5daa0bc70e
+    m_Address: Assets/ManualDi.Async.Unity3d/Tests/TestAssets/TestLoadGetGomponent.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 11332fd542fe4c74f81a9df8cb6be3ed
+    m_Address: Assets/ManualDi.Async.Unity3d/Tests/TestAssets/TestLoadGetGomponentInChildren.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: b9d9f1645a6bb0f40bafc8bb1b04fcb3, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 6a7743a9be44c5c438afe32e9e47749b, type: 2}
+    - {fileID: 11400000, guid: 85edb5510772f054dafc4f9d977c12ca, type: 2}

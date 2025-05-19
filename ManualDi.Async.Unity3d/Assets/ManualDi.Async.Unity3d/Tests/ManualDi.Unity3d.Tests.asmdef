@@ -9,7 +9,9 @@
         "Reflex",
         "Zenject",
         "Zenject-TestFramework",
-        "ManualDi.Main"
+        "ManualDi.Async",
+        "Unity.ResourceManager",
+        "Unity.Addressables"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace ManualDi.Async.Unity3d
 {
@@ -284,9 +287,9 @@ namespace ManualDi.Async.Unity3d
         
         #endregion
         
-        #region From Object Resource
+        #region From Resource
 
-        public static Binding<TInterface, TConcrete> FromObjectResource<TInterface, TConcrete>(
+        public static Binding<TInterface, TConcrete> FromResourceLoad<TInterface, TConcrete>(
             this Binding<TInterface, TConcrete> binding,
             string path
         )
@@ -295,7 +298,72 @@ namespace ManualDi.Async.Unity3d
             binding.FromMethod(_ => Resources.Load<TConcrete>(path));
             return binding;
         }
+        
+        public static Binding<TInterface, TConcrete> FromResourceLoadAsync<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding,
+            string path
+        )
+            where TConcrete : UnityEngine.Object
+        {
+            binding.FromMethodAsync(async (_, ct) => await InternalResourcesLoadAsync<TConcrete>(path, ct));
+            return binding;
+        }
 
+        public static Binding<TInterface, TConcrete> FromResourceLoadAsyncGetComponent<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding,
+            string path
+        )
+            where TConcrete : UnityEngine.Component
+        {
+            binding.FromMethodAsync(async (_, ct) =>
+            {
+                var gameObject = await InternalResourcesLoadAsync<GameObject>(path, ct);
+                return gameObject.GetComponent<TConcrete>();
+            });
+            return binding;
+        }
+        
+        public static Binding<TInterface, TConcrete> FromResourceLoadAsyncGetComponentInChildren<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding,
+            string path
+        )
+            where TConcrete : UnityEngine.Component
+        {
+            binding.FromMethodAsync(async (_, ct) =>
+            {
+                var gameObject = await InternalResourcesLoadAsync<GameObject>(path, ct);
+                return gameObject.GetComponentInChildren<TConcrete>();
+            });
+            return binding;
+        }
+        
+        private static async Task<TConcrete> InternalResourcesLoadAsync<TConcrete>(string path, CancellationToken ct) where TConcrete : UnityEngine.Object
+        {
+            var tcs = new TaskCompletionSource<TConcrete>();
+            await using var ctr = ct.Register(() => tcs.TrySetCanceled());
+            
+            var loadAsync = Resources.LoadAsync<TConcrete>(path);
+            loadAsync.completed += asyncOperation =>
+            {
+                var asset = ((ResourceRequest)asyncOperation).asset;
+                if (asset == null)
+                {
+                    tcs.TrySetException(new InvalidOperationException($"Couldn't load resource at path {path}"));
+                    return;
+                }
+
+                if (asset is not TConcrete concrete)
+                {
+                    tcs.TrySetException(new InvalidOperationException($"Loaded resource at path {path} but was expecting {typeof(TConcrete).FullName} and it was {asset.GetType().FullName}"));
+                    return;
+                }
+
+                tcs.TrySetResult(concrete);
+            };
+            
+            return await tcs.Task;
+        }
+        
         #endregion
         
         #region From Instantiate GameObject Resource
@@ -447,6 +515,5 @@ namespace ManualDi.Async.Unity3d
         }
         
         #endregion
-        
     }
 }

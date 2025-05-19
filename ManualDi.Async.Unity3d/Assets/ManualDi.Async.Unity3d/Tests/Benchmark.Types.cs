@@ -22,8 +22,12 @@ namespace ManualDi.Async.Unity3d.Tests
     {
         [Zenject.Inject]
         [VContainer.Inject]
-        [ManualDi.Async.Inject]
         public IServiceA ServiceA { get; set; }
+
+        public void Inject(IServiceA serviceA)
+        {
+            ServiceA = serviceA;
+        }
     }
     
     public interface IServiceB { }
@@ -37,8 +41,12 @@ namespace ManualDi.Async.Unity3d.Tests
     {
         [Zenject.Inject]
         [VContainer.Inject]
-        [ManualDi.Async.Inject]
         public IServiceB ServiceB { get; set; }
+        
+        public void Inject(IServiceB serviceB)
+        {
+            ServiceB = serviceB;
+        }
     }
     
     public interface IServiceC { }
@@ -52,8 +60,12 @@ namespace ManualDi.Async.Unity3d.Tests
     {
         [Zenject.Inject]
         [VContainer.Inject]
-        [ManualDi.Async.Inject]
         public IServiceC ServiceC { get; set; }
+
+        public void Inject(IServiceC serviceC)
+        {
+            ServiceC = serviceC;
+        }
     }
     
     public interface IComplex1 { }

@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0bbf71e1403497d981463b7b8e61a54, type: 3}
+  m_Name: TestAddressablesAssets
+  m_EditorClassIdentifier: 
+  GetComponentAsset:
+    m_AssetGUID: 11332fd542fe4c74f81a9df8cb6be3ed
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_EditorAssetChanged: 0
+  GetComponentInChildrenAsset:
+    m_AssetGUID: 38b092172ed9f0144bd11c5daa0bc70e
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_EditorAssetChanged: 0
+  LoadSceneAsset:
+    m_AssetGUID: 6154248f06a88774c9abd3c4bd1f22ab
+    m_SubObjectName: 
+    m_SubObjectType: 
+    m_EditorAssetChanged: 0

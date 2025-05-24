@@ -1,14 +1,11 @@
 [![Test and publish](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml/badge.svg)](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml) [![Unity version 2022.3.29](https://img.shields.io/badge/Unity-2022.3.29-57b9d3.svg?style=flat&logo=unity)](https://github.com/PereViader/ManualDi.Unity3d) [![OpenUPM ManualDi.Sync](https://img.shields.io/npm/v/com.pereviader.manualdi.sync.unity3d?label=openupm%20sync&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.pereviader.manualdi.sync.unity3d/) [![OpenUPM ManualDi.Async](https://img.shields.io/npm/v/com.pereviader.manualdi.async.unity3d?label=openupm%20async&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.pereviader.manualdi.async.unity3d/) [![NuGet ManualDi.Sync](https://img.shields.io/nuget/v/ManualDi.Sync?label=nuget%20sync)](https://www.nuget.org/packages/ManualDi.Sync) [![NuGet ManualDi.Async](https://img.shields.io/nuget/v/ManualDi.Async?label=nuget%20async)](https://www.nuget.org/packages/ManualDi.Async) [![Release](https://img.shields.io/github/release/PereViader/ManualDi.svg?label=github%20release)](https://github.com/PereViader/ManualDi/releases/latest)
 
 Welcome to ManualDi – a fast and extensible C# dependency injection library.
-- Source generation, no reflection - Faster and more memory efficient than most other dependency injection containers.
 - Unified API to create, inject, initialize and startup the application
-- Compatible with almost all client and server platforms, including IL2CPP and WASM*
-- Supercharge the container with your own custom extensions
-- Seamless Unity3D game engine integration
 - Synchronous and asynchronous library variants with similar APIs.
-
-\* [.Net Compact Framework](https://es.wikipedia.org/wiki/.NET_Compact_Framework) is [not compatible](https://learn.microsoft.com/en-us/dotnet/api/system.type.typehandle?view=net-8.0#system-type-typehandle) because of an [optimization](https://github.com/PereViader/ManualDi/commit/d7965d1b77b905084bb1fdf8fdad7c4f53f63fb5)
+- Supercharge the container with your own custom extensions
+- Source generation, no reflection - Faster and more memory efficient than most other dependency injection containers.
+- Seamless Unity3D game engine integration
 
 
 # Benchmark
@@ -29,14 +26,26 @@ Welcome to ManualDi – a fast and extensible C# dependency injection library.
 
 # Installation
 
-- Plain C#: Install it using [Nuget](https://www.nuget.org/packages/ManualDi.Async/)
-- Unity3d [2022.3.29](https://github.com/PereViader/ManualDi/issues/25) or later [Unity Package Manager](https://docs.unity3d.com/Manual/upm-ui-giturl.html) 
-  - OpenUPM: https://openupm.com/packages/com.pereviader.manualdi.async.unity3d/
-  - Git URL: https://github.com/PereViader/ManualDi.Unity3d.git
+- Plain C#: Install it using nuget (netstandard2.1) 
+  - Sync: https://www.nuget.org/packages/ManualDi.Sync/
+  - Async: https://www.nuget.org/packages/ManualDi.Async/
 
-Note: Source generation will only happen in csproj that depend both on the source generator and is linked with the ManualDi library.
+- Unity3d [2022.3.29](https://github.com/PereViader/ManualDi/issues/25) or later 
+    - (Recommended) OpenUPM [(instructions)](https://openupm.com/docs/getting-started.html#google_vignette)
+        - Sync: https://openupm.com/packages/com.pereviader.manualdi.sync.unity3d/
+        - Async: https://openupm.com/packages/com.pereviader.manualdi.async.unity3d/
+    - Directly from git [(instructions)](https://docs.unity3d.com/6000.1/Documentation/Manual/upm-ui-giturl.html)
+        - Git URL: https://github.com/PereViader/ManualDi.Unity3d.git
+
+Note: \* [.Net Compact Framework](https://es.wikipedia.org/wiki/.NET_Compact_Framework) is [not compatible](https://learn.microsoft.com/en-us/dotnet/api/system.type.typehandle?view=net-8.0#system-type-typehandle) because of an [optimization](https://github.com/PereViader/ManualDi/commit/d7965d1b77b905084bb1fdf8fdad7c4f53f63fb5)
+
+Note: Source generation will only happen in csproj that are linked both with the source generator and the library.
 - In a regular C# project, this requires referencing the library on the csproj as a nuget package
 - In a Unity3d project, this requires adding the library to the project through the Package Manager and then referencing ManualDi on each assembly definition where you want to use it
+
+Note: Source generator will never run on 3rd party libraries and System classes because they won't reference the generator.
+
+Note: A limitation of the source generator is that it does not run for partial classes defined across multiple declarations. It will only operate on partial classes that are declared once.
 
 # Examples
 
@@ -48,7 +57,7 @@ Let's compare a small usecase for both the Sync and Async variants
 using DiContainer diContainer = new DiContainerBindings()
     .Install(b => {
         b.Bind<SomeClass>().Default().FromConstructor();
-        b.Bind<ISomeService, SomeService>().Default().FromConstructor();
+        b.Bind<IOtherClass, OtherClass>().Default().FromConstructor();
         b.Bind<Startup>().Default().FromConstructor();
         b.WithStartup<Startup>(static startup => startup.Execute());
     })
@@ -58,14 +67,14 @@ using DiContainer diContainer = new DiContainerBindings()
 
 public class SomeClass
 {
-    public SomeClass(ISomeService someService)
+    public SomeClass(IOtherClass otherClass)
     {
         // All required classes are instantiated in an initial pass.
         // The order of instantiation and subsequent method execution is determined dynamically at runtime
         // based on dependency analysis, ensuring automatic adaptation to changes.
     }
 
-    public void Inject(ISomeService someService)
+    public void Inject(IOtherClass otherClass)
     {
         //Called after Construct
         //Should only be used when to break cyclic dependencies between dependencies
@@ -79,24 +88,24 @@ public class SomeClass
         // Other methods should have NO logic, only store references and wire the object graph
         // By having logic ONLY on Intialize methods, the library guarantees that there won't be issues in initialization
         // All methods other than the constructor are called in order of dependencies
-        // In this example SomeClass.Initialize runs after SomeService.Initialize (because SomeClass depends on ISomeService)
+        // In this example SomeClass.Initialize runs after OtherClass.Initialize (because SomeClass depends on IOtherClass)
     }
 }
 
-public interface ISomeService { }
+public interface IOtherClass { }
 
-public class SomeService : ISomeService
+public class OtherClass : IOtherClass
 {
     public void Initialize() { 
         // Some initialization here
     }
 }
 
-public class Startup(SomeClass someClass, ISomeService someService) // Constructor injected
+public class Startup(SomeClass someClass, IOtherClass otherClass) // Constructor injected
 {
     public void Execute()
     {
-        //This runs after SomeClass.Initialize and SomeService.Initialize
+        //This runs after SomeClass.Initialize and OtherClass.Initialize
     }
 }
 ```
@@ -107,7 +116,7 @@ public class Startup(SomeClass someClass, ISomeService someService) // Construct
 await using DiContainer diContainer = await new DiContainerBindings()
     .Install(b => {
         b.Bind<SomeClass>().Default().FromConstructor();
-        b.Bind<ISomeService, SomeService>().Default().FromConstructor();
+        b.Bind<IOtherClass, OtherClass>().Default().FromConstructor();
         b.Bind<Startup>().Default().FromConstructor();
         b.WithStartup<Startup>(static async (startup, ct) => startup.Execute(ct));
     })
@@ -117,14 +126,14 @@ await using DiContainer diContainer = await new DiContainerBindings()
 
 public class SomeClass
 {
-    public SomeClass(ISomeService someService)
+    public SomeClass(IOtherClass otherClass)
     {
         // All required classes are instantiated in an initial pass.
         // The order of instantiation and subsequent method execution is determined dynamically at runtime
         // based on dependency analysis, ensuring automatic adaptation to changes.
     }
 
-    public void Inject(ISomeService someService)
+    public void Inject(IOtherClass otherClass)
     {
         //Called after Construct
         //Should only be used when to break cyclic dependencies between dependencies
@@ -138,24 +147,24 @@ public class SomeClass
         // Other methods should have NO logic, only store references and wire the object graph
         // By having logic ONLY on Intialize methods, the library guarantees that there won't be issues in initialization
         // All methods other than the constructor are called in order of dependencies
-        // In this example SomeClass.Initialize runs after SomeService.InitializeAsync (because SomeClass depends on ISomeService)
+        // In this example SomeClass.Initialize runs after OtherClass.InitializeAsync (because SomeClass depends on IOtherClass)
     }
 }
 
-public interface ISomeService { }
+public interface IOtherClass { }
 
-public class SomeService : ISomeService
+public class OtherClass : IOtherClass
 {
     public void InitializeAsync() { 
         // Some initialization here
     }
 }
 
-public class Startup(SomeClass someClass, ISomeService someService) // Constructor injected
+public class Startup(SomeClass someClass, IOtherClass otherClass) // Constructor injected
 {
     public async Task Execute(CancellationToken ct)
     {
-        //This runs after SomeClass.Initialize and SomeService.InitializeAsync
+        //This runs after SomeClass.Initialize and OtherClass.InitializeAsync
     }
 }
 ```
@@ -175,7 +184,7 @@ Let's brief some concepts from the library
 - There are other construction methods other than `FromConstructor` available.
 - The object graph is created taking into account the dependency order defined implicitly in the parameters requested
 - The object graph is initialized in the same order it is created in
-- Once the object graph is created and initialized, Startup registrations are called
+- Once the object graph is created and initialized, Startup registrations are 
 
 
 # Container Lifecycle
@@ -188,20 +197,36 @@ Let's brief some concepts from the library
 
 # Binding
 
-The configuration of the container is done through Binding extension methods available on `DiContainerBindings` and can only be set during the installation phase. 
-Any alteration by custom means after the container's creation may result in undefined behaviour.
+The container configuration is done through a fluent API available on `DiContainerBindings`.
+This process can only be done during the initial phase and should not be altered afterwards. 
 
-Calling the Bind method provides a fluent interface through `Binding<TApparent, TConcrete>`.
-- Apparent: It's the type that can be used when resolving the container.
-- Concrete: It's type of the actual instance behind the scenes.
+The fluent binding API begins by calling `Binding<TApparent, TConcrete>`.
+- TApparent: It's the type that can be used when resolving the container.
+- TConcrete: It's type of the actual instance behind the scenes.
 
-By convention, method calls should be done in the following order.
+Let's see an example
+```csharp
+interface IInterface { }
+class Implementation : IInterface {}
+
+b.Bind<IInterface, Implementation>()...
+...
+c.Resolve<IInterface>() // Succeeds
+c.Resolve<Implementation>() // Runtime error
+```
+
+Use the returned value of the bind method, to configure the binding and tell the container how it should create, inject, initialize and dispose the instance.
+The specific binding configuration is done through 9 categories of methods that, by convention, should should be done in the order specified below.
 
 ```csharp
-Bind<(TApparent,)? TConcrete>() // TApparent is optional and will be equal to TConcrete if undefined
-    .Default   // Source generated
-    .From[Constructor|Instance|Method|MethodAsync|ContainerResolve|SubContainerResolve|...]  //Constructor is source generated
-    .DependsOn // **ManualDi.Async only
+// * means source generated
+// ** means ManualDi.Async only
+
+// TApparent is optional and will be equal to TConcrete when undefined
+Bind<(TApparent,)? TConcrete>() 
+    .Default*
+    .From[Constructor*|Instance|Method|MethodAsync**|ContainerResolve|SubContainerResolve|...]  //There are many more
+    .DependsOn**
     .Inject
     .Initialize
     .Dispose
@@ -210,97 +235,72 @@ Bind<(TApparent,)? TConcrete>() // TApparent is optional and will be equal to TC
     .[Any other custom extension method your project implements]
 ```
 
-Sample extension method installer:
-```csharp
-class A { }
-class B { }
-interface IC { }
-class C : IC { }
+Keep in mind that you can bind multiple implementations to the same `TApparent` type.
+When resolving, if multiple bindings match, the first one that satisfies the resolution rules will be returned.
 
-static class Installer
-{
-    public static DiContainerBindings InstallSomeFunctionality(this DiContainerBindings b)
-    {
-        b.Bind<A>().Default().FromInstance(new A());
-        b.Bind<B>().Default().FromConstructor();
-        b.Bind<IC, C>().Default().FromConstructor();
-        return b;
-    }
-}
+```csharp
+b.Bind<SomeClass>().Default().FromConstructor(); // When calling c.Resolve<SomeClass>() this one is returned
+b.Bind<SomeClass>().Default().FromConstructor();
 ```
 
-## Binding
 
 ## Default
 
-This source generated method is a shorthand for calling `Inject`, `Initialize` and `InitializeAsync` (ManualDi.Async only) that classes may have.
-`Inject` methods may have 0 or N parameters and the parameters will be supplied by resolving them from the container. 
-`Initialize` methods must have 0 parameters.
-`InitializeAsync` methods must have 1 paramter being `System.Threading.CancellationToken` and must return `System.Threading.Task`
-Think of it as a "duck typed" source generated approach.
-It will only consider `public` or `ìnternal` methods.
+This source generated method is where most of the "magic" of the library happens.
+The source generator will inspect the `TConcrete` type and generate code to register the `Inject`, `Initialize` and `InitializeAsync`** methods when available.
+It will also inspect the type for `IDisposable` or `IAsyncDisposable`** and disable the automatic disposal behaviour when it does not implement it.
 
-In case there is more than one of a single meathod in a type: 
-- It will prefer `public` methods over `internal` ones
-- It will take the first one vertically in case there is more than one
+Think of this system as "duck typing" via source generation: if a method matches the expected name and signature, it will be invoked, regardless of interface inheritance.
 
-When injecting dependencies to the class, it is preferred that it is done on the Constructor of the type. In case the constructor is not possible, then the `Construct` method is provided (in Unity3d, `MonoBehaviour` derived types are unable to use the consturctor and thus injection is fine to happen separetly).
-Only in the case that there is some circular dependency the `Inject` method should be used
+For detailed behavior of each of the registered methods, refer to the sections below.
 
-For more concrete details on the Construct, Inject and Initialize functionality read the sections on the topics below.
+When there are multiple candidates for a given method:
+- public methods are preferred over internal ones.
+- in case multiple methods with the same visibility exist, the first one found top-to-bottom is selected.
 
 ```csharp
 public class A { }
-public class B { 
-    public void Inject(A a) { } //Sample only, prefer constructor
+public class B {
+    public void Inject(A a) { } //Sample only, prefer using the constructor
 }
-public class C { 
+public class C {
     public void Initialize() { }
 }
 public class D {
     public D(A a) { }
-    public void Inject(C c, A a) { } //Sample only, prefer constructor
+    public void Inject(C c, A a) { } //Sample only, prefer using the constructor
     public Task InitializeAsync(CancellationToken ct) { ... }
 }
 
-
 b.Bind<A>().Default().FromConstructor(); // Default does not call anything
-b.Bind<B>().Default().FromConstructor(); // Default calls Construct
+b.Bind<B>().Default().FromConstructor(); // Default calls Inject
 b.Bind<C>().Default().FromConstructor(); // Default calls Initialize
 b.Bind<D>().Default().FromConstructor(); // Default calls Inject and InitializeAsync
 ```
 
-Using default is not required, but it helps speed up development because the developer are only required to implement standardized DI boilerplate once and then then the actual DI resolution code will be updated automatically. 
-For this reason, it is recommended to always add it even if the type does not currently have any of the methods.
-
-Note: As stated on the installation section, the default method will only be generated for classes that live in assamblies that reference both ManualDi and the source generator.
-In other words, 3rd party libraries and System classes will not have any generated code on them.
-
-Note: A limitation of the source generator is that it does not run for partial classes defined across multiple declarations. It will only operate on partial classes that are declared once.
+Using `Default` is optional, but it is the recommended pattern in this library as it accelerates development.
+By using it, developers only need to implement standardized DI boilerplate once.
+Any subsequent changes to the types are automatically handled by the source generator.
+For this reason, it’s best to always include it—even if the type doesn’t initially define any of the methods.
 
 ## From
 
-These methods define the instance creation strategy
+The `From` methods define the instantiation strategy the container should use for each binding.
 
 ### Constructor
 
-This method is source generated ONLY if there is a single public/internal accessible constructor.
+This method is source generated ONLY when there is a single `public`/`internal` accessible constructor.
 
-The instance is created using the constructor of the concrete type. 
-The necessary dependencies of the constructor are resolved using the container.
-
-Like the on the Default method the following rules for constructor selection will apply:
-- It will prefer `public` methods over `internal` ones
-- It will take the first one vertically in case there is more than one
+The container creates the instance using the constructor of the `TConcrete` type. 
+Dependencies necessary on the constructor will get resolved from the container.
 
 ```csharp
-b.Bind<T>().Default().FromConstructor() 
+b.Bind<T>().Default().FromConstructor();
 ```
 
 ### Instance
 
-No new instances will be created, the instance provided during the binding stage is used directly.
-Note: If used with `Transient` scope, the container will still return the same instance.
+The container does not create the instance—it is provided externally and used as-is.
 
 ```csharp
 b.Bind<T>().Default().FromInstance(new T())
@@ -308,7 +308,8 @@ b.Bind<T>().Default().FromInstance(new T())
 
 ### Method
 
-The instance is created using the delegate provided. The container is provided as a parameter thus allowing it to Resolve required dependencies.
+The instance is created using the provided delegate. The container is passed in as a parameter, allowing it to resolve any required dependencies.
+Note: All synchronous `From` configuration methods end up calling this one
 
 ```csharp
 b.Bind<T>().Default().FromMethod(c => new T(c.Resolve<SomeService>()))
@@ -317,7 +318,8 @@ b.Bind<T>().Default().FromMethod(c => new T(c.Resolve<SomeService>()))
 ### MethodAsync 
 (**ManualDi.Async only)
 
-The instance is created using async delegate provided. The container and a cancellation token are provided as parameters thus allowing it to Resolve required dependencies asynchronously
+The instance is created using the provided async delegate. The container and a cancellation token is passed in as a parameter, allowing it to resolve any required dependencies and handle cancellation.
+Note: All asynchronous `From` configuration methods end up calling this one
 
 ```csharp
 b.Bind<T>().Default().FromMethodAsync(async (c, ct) => {
@@ -330,10 +332,11 @@ b.Bind<T>().Default().FromMethodAsync(async (c, ct) => {
 
 ### ContainerResolve
 
-Used for apparent type remapping.
-Commonly used to bind multiple relevant interfaces of some type to the container.
-Notice that when redirecting a binding, the Default method should not be called. Otherwise the internal methods of the class would be called more than once.
+You will rarely need to call this one.
+Used for apparent type remapping. Or in other words, used to reexpose some binding as another binding.
+Don't call `Default` when using this, otherwise you get multiple calls on `Inject`, `Initialize` and `InitializeAsync`** more than once
 
+In the example below, there is `SomeClass` that is bound individually and then two more bindings expose the `SomeClass`
 ```csharp
 interface IFirst { }
 interface ISecond { }
@@ -343,61 +346,72 @@ b.Bind<IFirst, SomeClass>().FromContainerResolve();
 b.Bind<ISecond, SomeClass>().FromContainerResolve();
 ```
 
-However to make it clear that you are redirecting some binding and also in order to avoid the issue mentioned above the extension below should be used instead
+However the recommended pattern when implementing this is to use the `Bind` overload with multiple `TApparent`
 
 ```csharp
-interface IFirst { }
-interface ISecond { }
-public class SomeClass : IFirst, ISecond { }
 b.Bind<IFirst, ISecond, SomeClass>().Default().FromConstructor();
 ```
 
 ### SubContainerResolve
 
-The instance is created using a sub container built using the installer parameter.
-Useful for encapsulating parts of object graph definition into sub-containers.
-The subcontainer will have the main container as the parent. This means that types on the subcontainer can depend on things on the main container
-Don't call Default when using this, the Default should be called within the subcontainer installation
+The instance is created using a sub-container built via the provided installer.
+This is useful for encapsulating parts of the object graph into isolated sub-containers.
+The sub-container inherits from the main container, allowing its bindings to depend on types registered in the parent.
+When using this approach, do not call Default on the main binding—Default should be invoked within the sub-container’s installation instead.
+
+Question: When would I do this?
+Answer: For instance, think of a Unity3d game that has many enemies on a scene and you want to bind all enemies to the container so that their dependencies are setup and it is properly initialized.
 
 ```csharp
-class SomeService(Dependency dependency) { }
-class Dependency { }
+class Enemy : MonoBehaviour
+{ 
+    public void Inject(ParentDependency parentDependency, SubDependency subDependency) { }
+    public void Initialize() { }
+}
+class ParentDependency { }
+class SubDependency {}
 
-b.Bind<SomeService>().FromSubContainerResolve(sub => {
-    sub.Bind<SomeService>().Default().FromConstructor();
-    sub.Bind<Dependency>().Default().FromConstructor();
-})
+b.Bind<ParentDepdendency>().Default().FromConstructor();
+foreach(var enemy in enemiesInScene) //enemiesInScene 
+{
+    b.Bind<Enemy>().FromSubContainerResolve(sub => {
+        sub.Bind<Enemy>().Default().FromInstance(enemy);
+        sub.Bind<SubDependency>().Default().FromConstructor();
+    });
+}
 ```
 
 ### IsolatedSubContainerResolve
 
-The instance is created using a sub container built using the installer parameter.
-Useful for encapsulating parts of object graph definition into sub-containers.
-The subcontainer will NOT have the main container as the parent. This means that types on the subcontainer can NOT depend on things on the main container
-Don't call Default when using this, the Default should be called within the subcontainer installation
+Works just like `SubContainerResolve` but the subcontainer will not inherit from the main container.
+Thus nothing from the main container will be resolvable. 
 
 ```csharp
-class SomeService(Dependency dependency) { }
-class Dependency { }
+class Enemy : MonoBehaviour
+{ 
+    public void Inject(SubDependency subDependency) { }
+}
+class SubDependency {}
 
-b.Bind<SomeService>().FromIsolatedSubContainerResolve(sub => {
-    sub.Bind<SomeService>().Default().FromConstructor();
-    sub.Bind<Dependency>().Default().FromConstructor();
-})
+foreach(var enemy in enemiesInScene)
+{
+    b.Bind<Enemy>().FromSubContainerResolve(sub => {
+        sub.Bind<Enemy>().Default().FromInstance(enemy);
+        sub.Bind<SubDependency>().Default().FromConstructor();
+    });
+}
 ```
 
 
 ## Inject
 
-The Inject method allows for post-construct injection of types.
-
-The injection will happen after the object construction.
-The injection will be done in reverse resolution order. In other words, injected objects will already be injected themselves.
-The injection will not happen more than once for any instance.
-The injection can also be used to run other custom user code during the object creation lifecycle.
+The Inject method allows for post-construction injection of types.
+The injection will be run only once.
+The injection will be done in reverse dependency order. Injected objects will already be injected themselves.
+The injection can be used to hook into the object creation lifecycle and run custom code.
 Any amount of injection callbacks can be registered
 
-As stated on the `Default` section, calling the source generated method will handle the Inject method automatically.
+As stated on the `Default` section, calling the source generated method will handle the register the `Inject` method on `TConcrete` automatically.
 
 The inject method has two usecases
 1. Inject dependencies when the constructor can't be used (this happens for instance in unity3d)
@@ -411,24 +425,22 @@ public class A(B b);
 public class B(A a);
 ```
 
-In order to fix this, the chain must be broken with `Inject` but also with a `CyclicDependency` attribute for `ManualDi.Async`
+In order to fix this, the chain must be broken with `Inject`.
+When using `ManualDi.Async` adding the `CyclicDependency`** attribute is also necessary in order to break down cyclic dependencies. Without the attribute it might work, but just due to chance. Using it, will update the creation order of dependencies to avoid issues.
 
 ```csharp
 public class A(B b);
 public class B
 {
-    public void Inject(A a) { } //ManualDi.Sync
+    public void Inject(A a) { } //ManualDi.Sync this will work
     public void Inject([CyclicDependency] A a) { } //ManualDi.Async
 }
 ```
 
-The `CyclicDepdency` attribute will instruct the source generator to wire the dependencies in a different way
-
-When resolving cyclic dependencies, the usual method execution order may not apply.
-Typically, Initialize is called on a type’s dependencies before it is called on the type itself. 
-However, in the case of cyclic dependencies, this order is not guaranteed.
-Thus you may need to implement furhter syncrhonization logic to account for this.
-As stated before however, cyclic dependencies usually highlight a problem in the design of the code. If you find such a problem in your codebase, consider redesigning the code in the first place instead of trying to workaround it.
+Note: When dealing with cyclic dependencies, the usual method execution order may not hold.
+Normally, Initialize is called on a type’s dependencies before being called on the type itself.
+However, with cyclic dependencies, this order is not guaranteed, and additional synchronization logic may be required to ensure correct behavior.
+That said, cyclic dependencies are often a sign of flawed design. If you encounter them, it’s usually better to refactor the architecture rather than patch around the issue.
 
 ## Initialize
 
@@ -606,9 +618,47 @@ b.Bind<SomeValue>().Default().FromConstructor().WithId("2"); // will be provided
 b.Bind<FailValue>().Default().FromConstructor(); // will fail at runtime when resolved
 ```
 
-## Extra Source Generator features
+# Installers
 
-### Nullable
+In order to group features in a sensible way, bindings will usually be grouped on Installer classes.
+These classes may be implemented either as object instances that implement `IInstaller` or as extension methods.
+Unless you explicitly need to use actual instances, this library recommends to prefer extension methods.
+
+```csharp
+class A { }
+class B { }
+interface IC { }
+class C : IC { }
+
+//Extension method (recommended)
+static class SomeFeatureInstaller
+{
+    public static DiContainerBindings InstallSomeFunctionality(this DiContainerBindings b)
+    {
+        b.Bind<A>().Default().FromInstance(new A());
+        b.Bind<B>().Default().FromConstructor();
+        b.Bind<IC, C>().Default().FromConstructor();
+        return b;
+    }
+}
+
+//Or
+
+class SomeFeatureInstaller : IInstaller
+{
+    public static DiContainerBindings Install(DiContainerBindings b)
+    {
+        b.Bind<A>().Default().FromInstance(new A());
+        b.Bind<B>().Default().FromConstructor();
+        b.Bind<IC, C>().Default().FromConstructor();
+        return b;
+    }
+}
+```
+
+# Extra Source Generator features
+
+## Nullable
 
 The source generator will take into account the nullability of the dependencies.
 If a dependency is nullable, the resolution will not fail if it is missing.
@@ -625,7 +675,7 @@ public class A
 b.Bind<A>().Default().FromConstructor();
 ```
 
-### Collection
+## Collection
 
 The source generator will inject all bound instances of a type if the dependency declared is one of the following types `List<T>` `IList<T>` `IReadOnlyList<T>` `IEnumerable<T>`
 The resolved dependencies will be resolved using `ResolveAll<T>`
@@ -639,6 +689,7 @@ The differences between `TCollection<T?>` and `TCollection<T>?`:
 ```csharp
 public class A
 {
+    public 
     [Inject] List<object> ListObj {get; set;}
     [Inject] IList<int> IListInt {get; set;}
     [Inject] IReadOnlyList<obj> IReadOnlyListObj {get; set;}

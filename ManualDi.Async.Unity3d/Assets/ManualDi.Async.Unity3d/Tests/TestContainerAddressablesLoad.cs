@@ -1,10 +1,7 @@
 using System.Collections;
-using System.Threading;
-using System.Threading.Tasks;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
 

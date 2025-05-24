@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
 using System.Threading.Tasks;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
 namespace ManualDi.Async.Unity3d
@@ -22,24 +25,6 @@ namespace ManualDi.Async.Unity3d
             return binding;
         }
         
-        public static Binding<List<TInterface>, List<TConcrete>> FromGameObjectGetComponentsInParent<TInterface, TConcrete>(
-            this Binding<List<TInterface>, List<TConcrete>> binding,
-            GameObject gameObject,
-            bool allowEmpty = false
-        )
-            where TConcrete : Component
-        {
-            return binding.FromMethod(_ =>
-            {
-                var componentsInParent = gameObject.GetComponentsInParent<TConcrete>();
-                if (componentsInParent.Length == 0 && !allowEmpty)
-                {
-                    return null;
-                }
-                return componentsInParent.ToList();
-            });
-        }
-        
         public static Binding<TInterface, TConcrete> FromGameObjectGetComponentInChildren<TInterface, TConcrete>(
             this Binding<TInterface, TConcrete> binding,
             GameObject gameObject
@@ -47,25 +32,6 @@ namespace ManualDi.Async.Unity3d
             where TConcrete : Component
         {
             binding.FromMethod(_ => gameObject.GetComponentInChildren<TConcrete>());
-            return binding;
-        }
-
-        public static Binding<List<TInterface>, List<TConcrete>> FromGameObjectGetComponentsInChildren<TInterface, TConcrete>(
-            this Binding<List<TInterface>, List<TConcrete>> binding,
-            GameObject gameObject,
-            bool allowEmpty = false
-            )
-            where TConcrete : Component
-        {
-            binding.FromMethod(_ =>
-            {
-                var componentsInParent = gameObject.GetComponentsInChildren<TConcrete>();
-                if (componentsInParent.Length == 0 && !allowEmpty)
-                {
-                    return null;
-                }
-                return componentsInParent.ToList();
-            });
             return binding;
         }
 
@@ -96,25 +62,6 @@ namespace ManualDi.Async.Unity3d
                 return o;
             });
             
-            return binding;
-        }
-
-        public static Binding<List<TInterface>, List<TConcrete>> FromGameObjectGetComponents<TInterface, TConcrete>(
-            this Binding<List<TInterface>, List<TConcrete>> binding, 
-            GameObject gameObject,
-            bool allowEmpty = false
-            )
-            where TConcrete : Component
-        {
-            binding.FromMethod(_ =>
-            {
-                var components = gameObject.GetComponents<TConcrete>();
-                if (components.Length == 0 && !allowEmpty)
-                {
-                    return null;
-                }
-                return components.ToList();
-            });
             return binding;
         }
         
@@ -195,71 +142,6 @@ namespace ManualDi.Async.Unity3d
             return binding;
         }
         
-        public static Binding<List<TInterface>, List<TConcrete>> FromInstantiateGameObjectGetComponents<TInterface, TConcrete>(
-            this Binding<List<TInterface>, List<TConcrete>> binding,
-            GameObject gameObject,
-            Transform? parent = null,
-            bool worldPositionStays = false,
-            bool allowEmpty = false,
-            bool destroyOnDispose = true
-        )
-            where TConcrete : Component
-        {
-            binding.FromMethod(c =>
-            {
-                var instance = Object.Instantiate(gameObject, parent, worldPositionStays);
-                var components = instance.GetComponents<TConcrete>();
-                if (components.Length == 0 && !allowEmpty)
-                {
-                    Object.Destroy(instance);
-                    return null;
-                }
-                var o = components.ToList();
-                if (destroyOnDispose)
-                {
-                    c.QueueDispose(() =>
-                    {
-                        Object.Destroy(instance);
-                    });
-                }
-                return o;
-            });
-            return binding;
-        }
-        
-        public static Binding<List<TInterface>, List<TConcrete>> FromInstantiateGameObjectGetComponentsInChildren<TInterface, TConcrete>(
-            this Binding<List<TInterface>, List<TConcrete>> binding,
-            GameObject gameObject,
-            Transform? parent = null,
-            bool worldPositionStays = false,
-            bool allowEmpty = false,
-            bool destroyOnDispose = true
-        )
-            where TConcrete : Component
-        {
-            binding.FromMethod(c =>
-            {
-                var instance = Object.Instantiate(gameObject, parent, worldPositionStays);
-                var components = instance.GetComponentsInChildren<TConcrete>();
-                if (components.Length == 0 && !allowEmpty)
-                {
-                    Object.Destroy(instance);
-                    return null;
-                }
-                var o = components.ToList();
-                if (destroyOnDispose)
-                {
-                    c.QueueDispose(() =>
-                    {
-                        Object.Destroy(instance);
-                    });
-                }
-
-                return o;
-            });
-            return binding;
-        }
-        
         public static Binding<TInterface, TConcrete> FromInstantiateGameObjectAddComponent<TInterface, TConcrete>(
             this Binding<TInterface, TConcrete> binding,
             GameObject gameObject,
@@ -287,233 +169,204 @@ namespace ManualDi.Async.Unity3d
         
         #endregion
         
-        #region From Resource
-
-        public static Binding<TInterface, TConcrete> FromResourceLoad<TInterface, TConcrete>(
+        /// <summary>
+        /// Use this method to Call Object.InstantiateAsync
+        /// </summary>
+        public static Binding<TInterface, TConcrete> FromAsyncInstantiateOperation<TInterface, TConcrete>(
             this Binding<TInterface, TConcrete> binding,
-            string path
+            Func<AsyncInstantiateOperation<TConcrete>> asyncInstantiateOperationFunc,
+            bool destroyOnDispose = true
         )
-            where TConcrete : UnityEngine.Object
+            where TConcrete : Component
         {
-            binding.FromMethod(_ => Resources.Load<TConcrete>(path));
-            return binding;
-        }
-        
-        public static Binding<TInterface, TConcrete> FromResourceLoadAsync<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
-            string path
-        )
-            where TConcrete : UnityEngine.Object
-        {
-            binding.FromMethodAsync(async (_, ct) => await InternalResourcesLoadAsync<TConcrete>(path, ct));
-            return binding;
-        }
-
-        public static Binding<TInterface, TConcrete> FromResourceLoadAsyncGetComponent<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
-            string path
-        )
-            where TConcrete : UnityEngine.Component
-        {
-            binding.FromMethodAsync(async (_, ct) =>
+            binding.FromMethodAsync(async (c, ct) =>
             {
-                var gameObject = await InternalResourcesLoadAsync<GameObject>(path, ct);
-                return gameObject.GetComponent<TConcrete>();
+                var operation = asyncInstantiateOperationFunc.Invoke();
+                var result = await WaitAsyncInstantiateOperation<TConcrete>(operation, c, destroyOnDispose, ct);
+                if (result.Length == 0)
+                {
+                    return null;
+                }
+
+                if (result.Length > 1)
+                {
+                    throw new InvalidOperationException($"Async Instantiate operation for {typeof(TConcrete).FullName} succeeded but loaded more than 1 element");
+                }
+
+                return result[0];
             });
             return binding;
         }
         
-        public static Binding<TInterface, TConcrete> FromResourceLoadAsyncGetComponentInChildren<TInterface, TConcrete>(
+        public static Binding<TInterface, TConcrete> FromAsyncInstantiateOperationGetComponent<TInterface, TConcrete>(
             this Binding<TInterface, TConcrete> binding,
-            string path
+            Func<AsyncInstantiateOperation<GameObject>> asyncInstantiateOperationFunc,
+            bool destroyOnDispose = true
         )
-            where TConcrete : UnityEngine.Component
+            where TConcrete : Component
         {
-            binding.FromMethodAsync(async (_, ct) =>
+            binding.FromMethodAsync(async (c, ct) =>
             {
-                var gameObject = await InternalResourcesLoadAsync<GameObject>(path, ct);
-                return gameObject.GetComponentInChildren<TConcrete>();
+                var operation = asyncInstantiateOperationFunc.Invoke();
+                var result = await WaitAsyncInstantiateOperation<GameObject>(operation, c, destroyOnDispose, ct);
+                if (result.Length == 0)
+                {
+                    return null;
+                }
+
+                if (result.Length > 1)
+                {
+                    throw new InvalidOperationException($"Async Instantiate operation for {typeof(TConcrete).FullName} succeeded but loaded more than 1 element");
+                }
+
+                return result[0].GetComponent<TConcrete>();
             });
             return binding;
         }
         
-        private static async Task<TConcrete> InternalResourcesLoadAsync<TConcrete>(string path, CancellationToken ct) where TConcrete : UnityEngine.Object
+        private static async Task<T[]> WaitAsyncInstantiateOperation<T>(
+            AsyncInstantiateOperation asyncInstantiateOperation,
+            IDiContainer container,
+            bool destroyResultOnDispose,
+            CancellationToken ct)
+            where T : Object
         {
-            var tcs = new TaskCompletionSource<TConcrete>();
-            await using var ctr = ct.Register(() => tcs.TrySetCanceled());
+            var tcs = new TaskCompletionSource<T[]>();
+            using var ctr = ct.Register(() =>
+            {
+                asyncInstantiateOperation.Cancel();
+                tcs.TrySetCanceled();
+            });
             
-            var loadAsync = Resources.LoadAsync<TConcrete>(path);
-            loadAsync.completed += asyncOperation =>
+            if (destroyResultOnDispose)
             {
-                var asset = ((ResourceRequest)asyncOperation).asset;
-                if (asset == null)
+                container.QueueDispose(() =>
                 {
-                    tcs.TrySetException(new InvalidOperationException($"Couldn't load resource at path {path}"));
-                    return;
-                }
+                    if (!asyncInstantiateOperation.isDone)
+                    {
+                        return;
+                    }
 
-                if (asset is not TConcrete concrete)
-                {
-                    tcs.TrySetException(new InvalidOperationException($"Loaded resource at path {path} but was expecting {typeof(TConcrete).FullName} and it was {asset.GetType().FullName}"));
-                    return;
-                }
+                    foreach (var o in asyncInstantiateOperation.Result)
+                    {
+                        Object.Destroy(o);
+                    }
+                });
+            }
 
-                tcs.TrySetResult(concrete);
+            asyncInstantiateOperation.completed += operation =>
+            {
+                //Snippet below taken from AsyncInstantiateOperation<T>.Result
+                Object[] result = ((AsyncInstantiateOperation)operation).Result;
+                tcs.TrySetResult(UnsafeUtility.As<Object[], T[]>(ref result));
             };
-            
+
             return await tcs.Task;
         }
         
-        #endregion
-        
-        #region From Instantiate GameObject Resource
-        
-        public static Binding<TInterface, TConcrete> FromInstantiateGameObjectResourceGetComponent<TInterface, TConcrete>(
+        public static Binding<TInterface, TConcrete> FromLoadSceneAsyncGetComponent<TInterface, TConcrete>(
             this Binding<TInterface, TConcrete> binding,
-            string path,
-            Transform? parent = null,
-            bool worldPositionStays = false,
-            bool destroyOnDispose = true
+            string sceneName
         )
             where TConcrete : Component
         {
-            binding.FromMethod(c =>
+            binding.FromMethodAsync(async (c, ct) =>
             {
-                var gameObject = Resources.Load<GameObject>(path);
-                var instance = Object.Instantiate(gameObject, parent, worldPositionStays);
-                var o = instance.GetComponent<TConcrete>();
-                if (destroyOnDispose)
+                var asyncOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+                if (asyncOperation is null)
                 {
-                    c.QueueDispose(() =>
-                    {
-                        Object.Destroy(instance);
-                    });
+                    throw new InvalidOperationException($"Could not load scene '{sceneName}' because there was no scene to load with that name");
                 }
-                return o;
+                
+                // scene not loaded, but already created
+                var scene = SceneManager.GetSceneAt(SceneManager.sceneCount - 1);
+                
+                c.QueueAsyncDispose(async () =>
+                {
+                    //TODO: Validate if we can unload this in the case of a cancellation where the scene is unloading before it has finished loading
+                    var operation = SceneManager.UnloadSceneAsync(scene);
+                    if (operation is null)
+                    {
+                        return;
+                    }
+                    await WaitAsyncOperation(operation, CancellationToken.None);
+                });
+
+                await WaitAsyncOperation(asyncOperation, ct);
+
+                foreach (var gameObject in scene.GetRootGameObjects())
+                {
+                    var component = gameObject.GetComponent<TConcrete>();
+                    if (component is not null)
+                    {
+                        return component;
+                    }
+                }
+
+                return null;
             });
             return binding;
         }
         
-        public static Binding<TInterface, TConcrete> FromInstantiateGameObjectResourceGetComponentInChildren<TInterface, TConcrete>(
+        public static Binding<TInterface, TConcrete> FromLoadSceneAsyncGetComponentInChildren<TInterface, TConcrete>(
             this Binding<TInterface, TConcrete> binding,
-            string path,
-            Transform? parent = null,
-            bool worldPositionStays = false,
-            bool destroyOnDispose = true
+            string sceneName
         )
             where TConcrete : Component
         {
-            binding.FromMethod(c =>
+            binding.FromMethodAsync(async (c, ct) =>
             {
-                var gameObject = Resources.Load<GameObject>(path);
-                var instance = Object.Instantiate(gameObject, parent, worldPositionStays);
-                var o = instance.GetComponentInChildren<TConcrete>();
-                if (destroyOnDispose)
+                var asyncOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+                if (asyncOperation is null)
                 {
-                    c.QueueDispose(() =>
-                    {
-                        Object.Destroy(instance);
-                    });
+                    throw new InvalidOperationException($"Could not load scene '{sceneName}' because there was no scene to load with that name");
                 }
-                return o;
+                
+                // scene not loaded, but already created
+                var scene = SceneManager.GetSceneAt(SceneManager.sceneCount - 1);
+                
+                c.QueueAsyncDispose(async () =>
+                {
+                    //TODO: Validate if we can unload this in the case of a cancellation where the scene is unloading before it has finished loading
+                    var operation = SceneManager.UnloadSceneAsync(scene)!;
+                    await WaitAsyncOperation(operation, CancellationToken.None);
+                });
+
+                await WaitAsyncOperation(asyncOperation, ct);
+
+                foreach (var gameObject in scene.GetRootGameObjects())
+                {
+                    var component = gameObject.GetComponentInChildren<TConcrete>();
+                    if (component is not null)
+                    {
+                        return component;
+                    }
+                }
+
+                return null;
             });
             return binding;
         }
         
-        public static Binding<List<TInterface>, List<TConcrete>> FromInstantiateGameObjectResourceGetComponents<TInterface, TConcrete>(
-            this Binding<List<TInterface>, List<TConcrete>> binding,
-            string path,
-            Transform? parent = null,
-            bool worldPositionStays = false,
-            bool allowEmpty = false,
-            bool destroyOnDispose = true
-        )
-            where TConcrete : Component
+        private static async Task WaitAsyncOperation(AsyncOperation asyncOperation, CancellationToken ct)
         {
-            GameObject? instance = null;
-            binding.FromMethod(c =>
+            var tcs = new TaskCompletionSource<bool>();
+            using var ctr = ct.Register(() =>
             {
-                var gameObject = Resources.Load<GameObject>(path);
-                instance = Object.Instantiate(gameObject, parent, worldPositionStays);
-                var components = instance.GetComponents<TConcrete>();
-                if (components.Length == 0 && !allowEmpty)
-                {
-                    Object.Destroy(instance);
-                    instance = null;
-                    return null;
-                }
-                var o = components.ToList();
-                if (destroyOnDispose)
-                {
-                    c.QueueDispose(() =>
-                    {
-                        Object.Destroy(instance);
-                    });
-                }
-                return o;
+                tcs.TrySetCanceled();
             });
-            return binding;
-        }
-        
-        public static Binding<List<TInterface>, List<TConcrete>> FromInstantiateGameObjectResourceGetComponentsInChildren<TInterface, TConcrete>(
-            this Binding<List<TInterface>, List<TConcrete>> binding,
-            string path,
-            Transform? parent = null,
-            bool worldPositionStays = false,
-            bool allowEmpty = false,
-            bool destroyOnDispose = true
-        )
-            where TConcrete : Component
-        {
-            binding.FromMethod(c =>
+
+            asyncOperation.completed += _ =>
             {
-                var gameObject = Resources.Load<GameObject>(path);
-                var instance = Object.Instantiate(gameObject, parent, worldPositionStays);
-                var components = instance.GetComponentsInChildren<TConcrete>();
-                if (components.Length == 0 && !allowEmpty)
+                if (ct.IsCancellationRequested)
                 {
-                    Object.Destroy(instance);
-                    return null;
+                    return;
                 }
-                var o = components.ToList();
-                if (destroyOnDispose)
-                {
-                    c.QueueDispose(() =>
-                    {
-                        Object.Destroy(instance);
-                    });
-                }
-                return o;
-            });
-            return binding;
-        }
+                
+                tcs.TrySetResult(true);
+            };
         
-        public static Binding<TInterface, TConcrete> FromInstantiateGameObjectResourceAddComponent<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
-            string path,
-            Transform? parent = null,
-            bool worldPositionStays = false,
-            bool destroyOnDispose = true
-        )
-            where TConcrete : Component
-        {
-            binding.FromMethod(c =>
-            {
-                var gameObject = Resources.Load<GameObject>(path);
-                var instance = Object.Instantiate(gameObject, parent, worldPositionStays);
-                var o = instance.AddComponent<TConcrete>();
-                if (destroyOnDispose)
-                {
-                    c.QueueDispose(() =>
-                    {
-                        Object.Destroy(instance);
-                    });
-                }
-                return o;
-            });
-            return binding;
+            await tcs.Task;
         }
-        
-        #endregion
     }
 }

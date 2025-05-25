@@ -9,7 +9,7 @@ Welcome to ManualDi – a fast and extensible C# dependency injection library.
 
 
 # Benchmark
-[Benchmark](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Main/ManualDi.Main.Benchmark/Benchmark.cs) against Microsoft's container
+Benchmarks against Microsoft's container: [Async Benchmark](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Async/ManualDi.Async.Benchmark/Benchmark.cs) | [Sync Benchmark](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Sync/ManualDi.Sync.Benchmark/Benchmark.cs)
 ```
 | Method           | Mean      | Error     | StdDev    | Gen0   | Gen1   | Allocated |
 |----------------- |----------:|----------:|----------:|-------:|-------:|----------:|
@@ -18,9 +18,10 @@ Welcome to ManualDi – a fast and extensible C# dependency injection library.
 | MicrosoftDi      | 39.258 us | 0.2415 us | 0.2259 us | 2.5024 | 0.6714 | 122.87 KB |
 ```
 
-[Benchmark](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Unity3d/Assets/ManualDi.Unity3d/Tests/Benchmark.cs) against Unity3d compatible containers.
+Benchmarks against Unity3d compatible containers: [Async Unity3D Benchmark](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Async.Unity3d/Assets/ManualDi.Async.Unity3d/Tests/Benchmark.cs) | [Sync Unity3D Benchmark](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Sync.Unity3d/Assets/ManualDi.Sync.Unity3d/Tests/Benchmark.cs)
 
-> TODO update this graphic blow
+> TODO update this graphic below
+<!-- The benchmark graphic below is outdated. Project maintainers need to update it. For the latest performance data, please refer to the benchmark code linked above. -->
 
 ![Unity3d-Container-Benchmark](https://github.com/user-attachments/assets/67065b14-dea1-494a-b53e-469ebaf50101)
 
@@ -172,7 +173,7 @@ public class Startup(SomeClass someClass, IOtherClass otherClass) // Constructor
 
 # Quick concepts
 
-Let's brief some concepts from the library
+Let's briefly discuss some concepts from the library
 
 - The container is created using a builder `DiContainerBindings`
 - When building the container, `Bind` extensions are provided to bind types into the container
@@ -184,7 +185,7 @@ Let's brief some concepts from the library
 - There are other construction methods other than `FromConstructor` available.
 - The object graph is created taking into account the dependency order defined implicitly in the parameters requested
 - The object graph is initialized in the same order it is created in
-- Once the object graph is created and initialized, Startup registrations are 
+- Once the object graph is created and initialized, startup registrations are processed.
 
 
 # Container Lifecycle
@@ -216,7 +217,7 @@ c.Resolve<Implementation>() // Runtime error
 ```
 
 Use the returned value of the bind method, to configure the binding and tell the container how it should create, inject, initialize and dispose the instance.
-The specific binding configuration is done through 9 categories of methods that, by convention, should should be done in the order specified below.
+The specific binding configuration is done through 9 categories of methods that, by convention, should be done in the order specified below.
 
 ```csharp
 // * means source generated
@@ -247,7 +248,7 @@ b.Bind<SomeClass>().Default().FromConstructor();
 ## Default
 
 This source generated method is where most of the "magic" of the library happens.
-The source generator will inspect the `TConcrete` type and generate code to register the `Inject`, `Initialize` and `InitializeAsync`** methods when available.
+The source generator will inspect the `TConcrete` type and generate code to register the `Inject`, `Initialize`, and `InitializeAsync`** methods when available.
 It will also inspect the type for `IDisposable` or `IAsyncDisposable`** and disable the automatic disposal behaviour when it does not implement it.
 
 Think of this system as "duck typing" via source generation: if a method matches the expected name and signature, it will be invoked, regardless of interface inheritance.
@@ -371,7 +372,7 @@ class Enemy : MonoBehaviour
 class ParentDependency { }
 class SubDependency {}
 
-b.Bind<ParentDepdendency>().Default().FromConstructor();
+b.Bind<ParentDependency>().Default().FromConstructor();
 foreach(var enemy in enemiesInScene) //enemiesInScene 
 {
     b.Bind<Enemy>().FromSubContainerResolve(sub => {
@@ -411,7 +412,7 @@ The injection will be done in reverse dependency order. Injected objects will al
 The injection can be used to hook into the object creation lifecycle and run custom code.
 Any amount of injection callbacks can be registered
 
-As stated on the `Default` section, calling the source generated method will handle the register the `Inject` method on `TConcrete` automatically.
+As stated on the `Default` section, calling the source generated method will handle the registration of the `Inject` method on `TConcrete` automatically.
 
 The inject method has two usecases
 1. Inject dependencies when the constructor can't be used (this happens for instance in unity3d)
@@ -446,7 +447,7 @@ That said, cyclic dependencies are often a sign of flawed design. If you encount
 
 The Initialize method allows for post-injection initialization of types.
 The initialization will NOT happen immediately after the object injection. It will be queued and run later.
-The initialization will be done in reverse resolution order. In other words, injected objects will already be initialized themselves.
+The initialization will be done in reverse resolution order. In other words, dependent objects will already be initialized themselves.
 The initialization will not happen more than once for any instance.
 The initialization can also be used to hook into the object creation lifecycle and run other custom user code.
 Any amount of initialization callback can be registered
@@ -496,9 +497,9 @@ b.Bind<SomeFeature>()
     .LinkFeature();
 ```
 
-Imagine you have some `IFeature` interface in your project and you want to some shared initialization code to the ones that have it. You can add this code in an "Link" extension method. Internally this extension method should just call the `Initialize` method and add whatever extra logic the feature requires.
+Imagine you have an `IFeature` interface in your project and you want to add some shared initialization code to the ones that have it. You can add this code in an "Link" extension method. Internally this extension method should just call the `Initialize` method and add whatever extra logic the feature requires.
 
-You may find further Link examples already present in the library [here](https://github.com/PereViader/ManualDi/blob/540cb3d3155d81dc8925d9ab5769d2a18e61e81b/ManualDi.Unity3d/Assets/ManualDi.Unity3d/Runtime/Extensions/TypeBindingLinkExtensions.cs#L8)
+You may find further Link examples already present in the library [here](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Sync.Unity3d/Assets/ManualDi.Sync.Unity3d/Runtime/Extensions/TypeBindingLinkExtensions.cs#L8)
 
 ## Dispose
 
@@ -507,7 +508,7 @@ The Dispose extension method allows defining behavior that will run when the obj
 The container will dispose of the objects when itself is disposed.
 The objects will be disposed in reverse resolution order.
 
-If an object implements the IDisposable interface, it doesn't need to call Dispose, it will be Disposed automatically.
+If an object implements the IDisposable interface, it doesn't need a manual `Dispose` call in the binding; it will be disposed of automatically.
 
 The default source generated method will apply a very slight optimization by precalculating types implementing IDisposable. However calling Default is not required.
 
@@ -679,8 +680,8 @@ b.Bind<A>().Default().FromConstructor();
 
 The source generator will inject all bound instances of a type if the dependency declared is one of the following types `List<T>` `IList<T>` `IReadOnlyList<T>` `IEnumerable<T>`
 The resolved dependencies will be resolved using `ResolveAll<T>`
-If the whole collection is nullable, the provided collection will always have `Count > 0` otherwise null.
-If the underlying `T` is nullable, the resulting list will be converted from `T` to `T?`. This is not recommended, the nullable values will never be null.
+If the collection itself is declared nullable (e.g., `List<T>?`), it will be `null` if no matching bindings are found. Otherwise (e.g. `List<T>`), an empty list will be injected if no matching bindings are found. If matching bindings exist, the list will contain them.
+If the generic type argument `T` is nullable (e.g., `List<T?>`), the source generator will accommodate this. This is generally not recommended, as individual resolved dependencies are typically expected to be non-null unless explicitly bound as nullable.
 
 The differences between `TCollection<T?>` and `TCollection<T>?`:
 - `TCollection<T?>` does a single resolution but allocates a list every time
@@ -751,8 +752,8 @@ List<SomeService> services = container.ResolveAll<SomeService>();
 
 # Startups
 
-The container provides functionality that queues work to be done once the continer is built and ready.
-By using this you can define the entry points of your application declarativly during the installation of the container.
+The container provides functionality that queues work to be done once the container is built and ready.
+By using this you can define the entry points of your application declaratively during the installation of the container.
 
 ```csharp
 class Startup
@@ -790,7 +791,7 @@ The container provides two specialized Installers
 - `MonoBehaviourInstaller` 
 - `ScriptableObjectInstaller`
 
-This is the idiomatic Unity way to have both the configuration and engine object references in the same place.
+This is an idiomatic Unity way to have both the configuration and engine object references in the same place.
 These classes just implement the `IInstaller` interface, there is no requirement for these classes to be used, so feel free to use IInstaller directly if you want.
 
 ```csharp
@@ -853,13 +854,13 @@ public class SomeFeatureInstaller : MonoBehaviourInstaller
 ```
 
 As seen in the snippet above, my recommendation is that whatever dependencies may be necessary on an installer are provided as public members.
-This way Unity3d will serialize them so they can be linked through the inspector. Private serialize field members may be used but they add extra unnecesary boilerplate. 
+This way Unity3d will serialize them so they can be linked through the inspector. Private `[SerializeField]` members may be used, but they can add unnecessary boilerplate compared to public fields for this purpose.
 
 Most methods have several optional parameters.
 
 Special attention to `Transform? parent = null`. This one will define the parent transform used when instantiating new instances.
 
-Special attention to `bool destroyOnDispose = true` one. This one will be available on creation strategies that create new instances.
+Special attention to the `bool destroyOnDispose = true` parameter. This one will be available on creation strategies that create new instances.
 If the parameter is left as `true`, when the container is disposed, it will first destroy the instance.
 This is the necessary default behaviour due to the game likely needing those resources cleaned up for example from shared Additive scenes and wanting the default behaviour to be the safest.
 If the scene the resource is created on will then be deleted, there is no need to destroy it during the disposal of the container, so feel free to set the parameter as `false` for a faster disposal.
@@ -909,7 +910,7 @@ This means that these entry points cannot be started by themselves. They need to
 
 If the data provided to these entry points, implements `IInstaller`, then the data will also be installed to the container.
 Otherwise, it will just be available through the `Data` property of the EntryPoint.
-If the subordinate container requires all the dependencies of the parent container, it is recommended to set the parent container on the EntryPointData object.
+If the subordinate entry point requires access to the parent container's dependencies, it is recommended to set the parent container on the EntryPointData object.
 
 ```csharp
 public class EntryPointData : IInstaller
@@ -984,7 +985,7 @@ class InitialSceneEntryPoint : MonoBehaviourSubordinateEntryPoint<EntryPointData
 }
 ```
 
-And this is how a subordinate entry point on a scene could be started
+And this is an example of how a subordinate entry point on a scene (or as a prefab) could be initiated
 
 ```csharp
 public class Data
@@ -1026,7 +1027,7 @@ class Example
 }
 ```
 
-and this is an example of how you could use a subordinate prefab
+and this is an example of how you could initiate a subordinate entry point that is part of a prefab
 
 
 ```csharp
@@ -1052,7 +1053,7 @@ Feel free to ignore the container classes and implement your custom entry points
 Link methods are a great way to interconnect different features right from the container.
 The library provides a few, but adding your own custom ones for your use cases is a great way to speed up development.
 
-- `LinkDontDestroyOnLoad`: The object will have don't destroy on load called on it when the container is bound. Behaviour can be customized with the optional parameters
+- `LinkDontDestroyOnLoad`: The GameObject associated with the bound component will have `DontDestroyOnLoad` called on it when the container is bound. Behaviour can be customized with the optional parameters
 
 ```csharp
 class Installer : MonoBehaviourInstaller

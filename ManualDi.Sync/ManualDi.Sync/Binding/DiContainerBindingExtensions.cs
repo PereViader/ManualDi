@@ -103,8 +103,14 @@ namespace ManualDi.Sync
             diContainerBindings.AddBinding(binding, typeof(TApparent));
         }
         
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Obsolete("Use QueueStartup instead.")]
         public static DiContainerBindings WithStartup<T>(this DiContainerBindings diContainerBindings, Action<T> startup)
+        {
+            return QueueStartup<T>(diContainerBindings, startup);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DiContainerBindings QueueStartup<T>(this DiContainerBindings diContainerBindings, Action<T> startup)
         {
             diContainerBindings.QueueStartup(c =>
             {

@@ -106,7 +106,7 @@ namespace ManualDi.Async
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static DiContainerBindings WithStartup<T>(this DiContainerBindings diContainerBindings, Action<T> startup)
+        public static DiContainerBindings QueueStartup<T>(this DiContainerBindings diContainerBindings, Action<T> startup)
         {
             diContainerBindings.QueueStartup(c =>
             {

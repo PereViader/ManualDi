@@ -78,7 +78,7 @@ public void ApplicationEntryPoint
                 b.Bind<SomeClass>().Default().FromConstructor();
                 b.Bind<IOtherClass, OtherClass>().Default().FromConstructor();
                 b.Bind<Startup>().Default().FromConstructor();
-                b.WithStartup<Startup>(static startup => startup.Execute());
+                b.QueueStartup<Startup>(static startup => startup.Execute());
             })
             .Build();
     }
@@ -153,7 +153,7 @@ public void ApplicationEntryPoint
                 b.Bind<SomeClass>().Default().FromConstructor();
                 b.Bind<IOtherClass, OtherClass>().Default().FromConstructor();
                 b.Bind<Startup>().Default().FromConstructor();
-                b.WithStartup<Startup>(static async (startup, ct) => startup.Execute(ct));
+                b.QueueStartup<Startup>(static async (startup, ct) => startup.Execute(ct));
             })
             .Build(CancellationToken.None);
     }
@@ -233,7 +233,7 @@ Let's briefly discuss some concepts from the library
 - Instance initialization is accomplished by adding an `Initialize` or `InitializeAsync`** method.
 - The `Default` method configures the `Binding` to use `TConcrete`'s `Inject`, `Initialize` and `InitializeAsync`** methods
 - Instances are injected and initialized in the same order they are created
-- Once the object graph is created and initialized, `WithStartup` callbacks are invoked
+- Once the object graph is created and initialized, `QueueStartup` callbacks are invoked
 
 # Binding
 
@@ -808,7 +808,7 @@ class SomeService
 
 b.Bind<SomeService>().Default().FromConstructor();
 b.Bind<Startup>().Default().FromConstructor();
-b.WithStartup<Startup>(o => o.Start());
+b.QueueStartup<Startup>(o => o.Start());
 ```
 
 In the snippet above, the following will happen when the container is built:
@@ -909,7 +909,7 @@ If the scene the resource is created on will then be deleted, there is no need t
 An entry point is a place where some context of your application is meant to start.
 In the case of ManualDi, it is where the object graph is configured and then the container is started.
 
-The last binding of an entry point will usually make use of WithStartup, to run any logic necessary after the container is created.
+The last binding of an entry point will usually make use of QueueStartup, to run any logic necessary after the container is created.
 
 ### RootEntryPoint
 
@@ -937,7 +937,7 @@ class InitialSceneEntryPoint : MonoBehaviourRootEntryPoint
         b.Bind<Dependency1>().Default().FromInstance(dependency1);
         b.Bind<Dependency2>().Default().FromInstance(dependency2);
         b.Bind<Startup>().Default().FromConstructor();
-        b.WithStartup<Startup>(o => o.Start());
+        b.QueueStartup<Startup>(o => o.Start());
     }
 }
 ```
@@ -1019,7 +1019,7 @@ class InitialSceneEntryPoint : MonoBehaviourSubordinateEntryPoint<EntryPointData
         b.Bind<Dependency2>().Default().FromInstance(dependency2);
         b.Bind<Facade>().Default().FromInstance(Facade);
         b.Bind<Startup>().Default().FromConstructor();
-        b.WithStartup<Startup>(o => o.Start());
+        b.QueueStartup<Startup>(o => o.Start());
     }
 }
 ```

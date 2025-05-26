@@ -83,7 +83,7 @@ public class TestContainerLifecycle
                 .Initialize(o => ((IStartup)o).InitializeAsync());
 
             
-            b.WithStartup<IStartup>(e => e.Run());
+            b.QueueStartup<IStartup>(e => e.Run());
         }).Build(CancellationToken.None);
         
         await container.DisposeAsync();

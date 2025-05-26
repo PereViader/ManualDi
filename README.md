@@ -1,11 +1,11 @@
 [![Test and publish](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml/badge.svg)](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml) [![Unity version 2022.3.29](https://img.shields.io/badge/Unity-2022.3.29-57b9d3.svg?style=flat&logo=unity)](https://github.com/PereViader/ManualDi.Unity3d) [![OpenUPM ManualDi.Sync](https://img.shields.io/npm/v/com.pereviader.manualdi.sync.unity3d?label=openupm%20sync&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.pereviader.manualdi.sync.unity3d/) [![OpenUPM ManualDi.Async](https://img.shields.io/npm/v/com.pereviader.manualdi.async.unity3d?label=openupm%20async&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.pereviader.manualdi.async.unity3d/) [![NuGet ManualDi.Sync](https://img.shields.io/nuget/v/ManualDi.Sync?label=nuget%20sync)](https://www.nuget.org/packages/ManualDi.Sync) [![NuGet ManualDi.Async](https://img.shields.io/nuget/v/ManualDi.Async?label=nuget%20async)](https://www.nuget.org/packages/ManualDi.Async) [![Release](https://img.shields.io/github/release/PereViader/ManualDi.svg?label=github%20release)](https://github.com/PereViader/ManualDi/releases/latest)
 
 Welcome to ManualDi – a fast and extensible C# dependency injection library.
-- Unified API to create, inject, initialize and startup the application
-- Synchronous and asynchronous library variants with similar APIs.
-- Supercharge the container with tailored extensions for your application
+- Unified API to create, inject, initialize and startup the application.
+- Synchronous and asynchronous library variants.
+- Supercharge the container with tailored extensions for your application.
 - Source generation, no reflection - Faster and more memory efficient than most other dependency injection containers.
-- Seamless Unity3D game engine integration
+- Seamless Unity3D game engine integration.
 
 
 # Benchmark

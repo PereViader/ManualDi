@@ -27,10 +27,8 @@ namespace ManualDi.Sync
             where TConcrete : TApparent1, TApparent2
         {
             diContainerBindings.BindingRedirection<TApparent2, TApparent1>();
-            
-            Binding<TApparent1, TConcrete> concrete = new();
-            diContainerBindings.AddBinding(concrete, typeof(TConcrete));
-            return concrete;
+
+            return diContainerBindings.Bind<TApparent1, TConcrete>();
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -40,9 +38,7 @@ namespace ManualDi.Sync
             diContainerBindings.BindingRedirection<TApparent2, TApparent1>();
             diContainerBindings.BindingRedirection<TApparent3, TApparent1>();
             
-            Binding<TApparent1, TConcrete> concrete = new();
-            diContainerBindings.AddBinding(concrete, typeof(TConcrete));
-            return concrete;
+            return diContainerBindings.Bind<TApparent1, TConcrete>();
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -53,9 +49,7 @@ namespace ManualDi.Sync
             diContainerBindings.BindingRedirection<TApparent3, TApparent1>();
             diContainerBindings.BindingRedirection<TApparent4, TApparent1>();
             
-            Binding<TApparent1, TConcrete> concrete = new();
-            diContainerBindings.AddBinding(concrete, typeof(TConcrete));
-            return concrete;
+            return diContainerBindings.Bind<TApparent1, TConcrete>();
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -64,9 +58,7 @@ namespace ManualDi.Sync
         {
             diContainerBindings.BindingRedirection<TApparent, TConcrete>();
             
-            Binding<TConcrete, TConcrete> concrete = new();
-            diContainerBindings.AddBinding(concrete, typeof(TConcrete));
-            return concrete;
+            return diContainerBindings.Bind<TConcrete>();
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -76,9 +68,7 @@ namespace ManualDi.Sync
             diContainerBindings.BindingRedirection<TApparent1, TConcrete>();
             diContainerBindings.BindingRedirection<TApparent2, TConcrete>();
             
-            Binding<TConcrete, TConcrete> concrete = new();
-            diContainerBindings.AddBinding(concrete, typeof(TConcrete));
-            return concrete;
+            return diContainerBindings.Bind<TConcrete>();
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -89,9 +79,7 @@ namespace ManualDi.Sync
             diContainerBindings.BindingRedirection<TApparent2, TConcrete>();
             diContainerBindings.BindingRedirection<TApparent3, TConcrete>();
             
-            Binding<TConcrete, TConcrete> concrete = new();
-            diContainerBindings.AddBinding(concrete, typeof(TConcrete));
-            return concrete;
+            return diContainerBindings.Bind<TConcrete>();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -103,9 +91,7 @@ namespace ManualDi.Sync
             diContainerBindings.BindingRedirection<TApparent3, TConcrete>();
             diContainerBindings.BindingRedirection<TApparent4, TConcrete>();
 
-            Binding<TConcrete, TConcrete> concrete = new();
-            diContainerBindings.AddBinding(concrete, typeof(TConcrete));
-            return concrete;
+            return diContainerBindings.Bind<TConcrete>();
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

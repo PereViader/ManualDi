@@ -446,10 +446,10 @@ foreach(var enemy in enemiesInScene)
 ## Inject
 
 The Inject method allows for post-construction injection of types.
-The injection will be run only once.
-The injection will be done in reverse dependency order. Injected objects will already be injected themselves.
-The injection can be used to hook into the object creation lifecycle and run custom code.
-Any amount of injection callbacks can be registered
+
+Binding injection is done in reverse dependency order. Injected objects will already be injected themselves.
+
+The injection can be used to hook into the object creation lifecycle and run custom code. Each individual binding can any amount of Inject calls and will run in order added.
 
 As stated on the `Default` section, calling the source generated method will handle the registration of the`Inject` method on `TConcrete` automatically.
 
@@ -485,11 +485,12 @@ That said, cyclic dependencies are often a sign of flawed design. If you encount
 ## Initialize
 
 The Initialize method allows for post-injection initialization of types.
-The initialization will NOT happen immediately after the object injection. It will be queued and run later.
-The initialization will be done in reverse resolution order. In other words, dependent objects will already be initialized themselves.
+
+Binding initialization is done in reverse dependency order. Injected objects will already be injected themselves.
+
+The injection can be used to hook into the object creation lifecycle and run custom code. Each individual binding can any amount of Initialize calls and will run in order added.
+
 The initialization will not happen more than once for any instance.
-The initialization can also be used to hook into the object creation lifecycle and run other custom user code.
-Any amount of initialization callback can be registered
 
 As stated on the `Default` section, calling the source generated method will handle the Initialize method automatically.
 
@@ -542,10 +543,9 @@ You may find further Link examples already present in the library [here](https:/
 
 ## Dispose
 
-Objects may implement the IDisposable interface or require custom teardown logic. 
-The Dispose extension method allows defining behavior that will run when the object is disposed. 
+The Dispose extension method allows defining behavior that will run when the object is disposed.
 The container will dispose of the objects when itself is disposed.
-The objects will be disposed in reverse resolution order.
+The objects will be disposed in reverse dependency order.
 
 If an object implements the `IDisposable` or `IAsyncDisposable`** interface, it doesn't need a manual `Dispose` call in the binding; it will be disposed of automatically.
 
@@ -575,7 +575,7 @@ c.Dispose(); // A is the first object disposed, then B
 
 ### SkipDisposable
 
-When this extension method is used, the container skips the runtime check for `IDisposable` and `IAsyncDisposable`** during the disposal phase, and consequently, does not dispose the instances.
+When this extension method is used, the container skips the runtime check for `IDisposable` and `IAsyncDisposable`** during the disposal phase for the instance where it is used and, consequently, does not dispose the instance.
 
 Delegates registered using the `Dispose` method will still be invoke.
 
@@ -594,16 +594,19 @@ c.Resolve<int>(x => x.Id("Potato")); // returns 1
 c.Resolve<int>(x => x.Id("Banana")); // returns 5
 ```
 
-Note: This feature can be nice to use, but I usually prefer using it sparingly. This is because it introduces the need for the provider and consumer to share two points of information (Type and Id) instead of just one (Type)
+Note: This feature can be nice to use, prefer using it sparingly. This is because it introduces the need for the provider and consumer to share two points of information (Type and Id) instead of just one (Type)
 
 An alternative to it is to register delegates instead. Delegates used this way encode the two concepts into one.
 
-```
+```csharp
 delegate int GetPotatoInt();
+delegate int GetBananaInt();
 
 b.Bind<GetPotatoInt>().FromInstance(() => 1);
+b.Bind<GetPotatoInt>().FromInstance(() => 2);
 
-int value = c.Resolve<GetPotatoInt>()();
+int value1 = c.Resolve<GetPotatoInt>()(); // 1
+int value2 = c.Resolve<GetBananaInt>()(); // 2
 ```
 
 ### Source generator
@@ -853,25 +856,28 @@ public class SomeFeatureInstaller : MonoBehaviourInstaller
 
 When using the container in the Unity3d game engine the library provides specialized extensions for object construction
 
-- `FromGameObjectGetComponentInParent`: Retrieves a component from the parent of a GameObject.
-- `FromGameObjectGetComponentsInParent`: Retrieves all components of a specific type from the parent of a GameObject.
-- `FromGameObjectGetComponentInChildren`: Retrieves a component from the children of a GameObject.
-- `FromGameObjectGetComponentsInChildren`: Retrieves all components of a specific type from the children of a GameObject.
-- `FromGameObjectGetComponent`: Retrieves a component from the current GameObject.
-- `FromGameObjectAddComponent`: Adds a component to the current GameObject.
-- `FromGameObjectGetComponents`: Retrieves all components of a specific type from the current GameObject.
-- `FromInstantiateComponent`: Instantiates a component and optionally sets a parent.
+- `FromGameObjectGetComponent`: Retrieves a component directly from a given GameObject.
+- `FromGameObjectGetComponentInChildren`: Retrieves a component from the children of a given GameObject.
+- `FromGameObjectGetComponentInParent`: Retrieves a component from the parent of a given GameObject.
+- `FromGameObjectAddComponent`: Adds a new component to a GameObject and optionally schedules it for destruction on disposal.
+- `FromInstantiateComponent`: Instantiates a given component, optionally setting a parent and scheduling it for destruction on disposal.
 - `FromInstantiateGameObjectGetComponent`: Instantiates a GameObject and retrieves a specific component from it.
-- `FromInstantiateGameObjectGetComponentInChildren`: Instantiates a GameObject and retrieves a component from its children.
-- `FromInstantiateGameObjectGetComponents`: Instantiates a GameObject and retrieves all components of a specific type.
-- `FromInstantiateGameObjectGetComponentsInChildren`: Instantiates a GameObject and retrieves all components from its children.
-- `FromInstantiateGameObjectAddComponent`: Instantiates a GameObject and adds a component to it.
-- `FromObjectResource`: Loads an object from a Unity resource file by its path.
-- `FromInstantiateGameObjectResourceGetComponent`: Instantiates a GameObject from a resource file and retrieves a component from it.
-- `FromInstantiateGameObjectResourceGetComponentInChildren`: Instantiates a GameObject from a resource and retrieves a component from its children.
-- `FromInstantiateGameObjectResourceGetComponents`: Instantiates a GameObject from a resource and retrieves all components of a specific type.
-- `FromInstantiateGameObjectResourceGetComponentsInChildren`: Instantiates a GameObject from a resource and retrieves all components from its children.
-- `FromInstantiateGameObjectResourceAddComponent`: Instantiates a GameObject from a resource and adds a component to it.
+- `FromInstantiateGameObjectGetComponentInChildren`: Instantiates a GameObject and retrieves a component from one of its children.
+- `FromInstantiateGameObjectAddComponent`: Instantiates a GameObject and adds a new component to it.
+- `FromAsyncInstantiateOperation`**: Binds using a user-supplied asynchronous component instantiation operation.
+- `FromAsyncInstantiateOperationGetComponent`**: Asynchronously instantiates a GameObject and retrieves a specific component from it.
+- `FromLoadSceneAsyncGetComponent`**: Loads a scene additively and retrieves a specific component from the root GameObjects of the scene.
+- `FromLoadSceneAsyncGetComponentInChildren`**: Loads a scene additively and retrieves a specific component from any children in the root GameObjects of the scene.
+- `FromAddressablesLoadAssetAsync`**: Asynchronously loads an asset from the Addressables system using a key.
+- `FromAddressablesLoadAssetAsyncGetComponent`**: Loads a GameObject asset from Addressables and retrieves a component from it.
+- `FromAddressablesLoadAssetAsyncGetComponentInChildren`**: Loads a GameObject asset from Addressables and retrieves a component from its children.
+- `FromAddressablesLoadSceneAsyncGetComponent`**: Loads a scene via Addressables and retrieves a specific component from the root GameObjects of the scene.
+- `FromAddressablesLoadSceneAsyncGetComponentInChildren`**: Loads a scene via Addressables and retrieves a specific component from the root GameObjects of the scene.
+- `FromObjectResource`: Loads an object from the Unity Resources folder.
+- `FromInstantiateGameObjectResourceGetComponent`: Instantiates a GameObject from the Resources folder and retrieves a component from it.
+- `FromInstantiateGameObjectResourceGetComponentInChildren`: Instantiates a GameObject from the Resources folder and retrieves a component from one of its children.
+- `FromInstantiateGameObjectResourceAddComponent`: Instantiates a GameObject from the Resources folder and adds a new component to it.
+
 
 Use them like this.
 

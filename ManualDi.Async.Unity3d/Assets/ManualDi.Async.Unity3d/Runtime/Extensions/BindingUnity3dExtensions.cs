@@ -13,7 +13,28 @@ namespace ManualDi.Async.Unity3d
 {
     public static class BindingUnity3dExtensions
     {
+        
         #region From GameObject
+        
+        public static Binding<TInterface, TConcrete> FromGameObjectGetComponent<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding,
+            GameObject gameObject
+        )
+            where TConcrete : Component
+        {
+            binding.FromMethod(_ => gameObject.GetComponent<TConcrete>());
+            return binding;
+        }
+        
+        public static Binding<TInterface, TConcrete> FromGameObjectGetComponentInChildren<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding,
+            GameObject gameObject
+        )
+            where TConcrete : Component
+        {
+            binding.FromMethod(_ => gameObject.GetComponentInChildren<TConcrete>());
+            return binding;
+        }
         
         public static Binding<TInterface, TConcrete> FromGameObjectGetComponentInParent<TInterface, TConcrete>(
             this Binding<TInterface, TConcrete> binding,
@@ -25,26 +46,6 @@ namespace ManualDi.Async.Unity3d
             return binding;
         }
         
-        public static Binding<TInterface, TConcrete> FromGameObjectGetComponentInChildren<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
-            GameObject gameObject
-            )
-            where TConcrete : Component
-        {
-            binding.FromMethod(_ => gameObject.GetComponentInChildren<TConcrete>());
-            return binding;
-        }
-
-        public static Binding<TInterface, TConcrete> FromGameObjectGetComponent<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
-            GameObject gameObject
-            )
-            where TConcrete : Component
-        {
-            binding.FromMethod(_ => gameObject.GetComponent<TConcrete>());
-            return binding;
-        }
-
         public static Binding<TInterface, TConcrete> FromGameObjectAddComponent<TInterface, TConcrete>(
             this Binding<TInterface, TConcrete> binding,
             GameObject gameObject,
@@ -169,6 +170,106 @@ namespace ManualDi.Async.Unity3d
         
         #endregion
         
+        #region From Object Resource
+
+        public static Binding<TInterface, TConcrete> FromObjectResource<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding,
+            string path
+        )
+            where TConcrete : UnityEngine.Object
+        {
+            binding.FromMethod(_ => Resources.Load<TConcrete>(path));
+            return binding;
+        }
+
+        #endregion
+        
+        #region From Instantiate GameObject Resource
+        
+        public static Binding<TInterface, TConcrete> FromInstantiateGameObjectResourceGetComponent<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding,
+            string path,
+            Transform? parent = null,
+            bool worldPositionStays = false,
+            bool destroyOnDispose = true
+        )
+            where TConcrete : Component
+        {
+            binding.FromMethod(c =>
+            {
+                var gameObject = Resources.Load<GameObject>(path);
+                var instance = Object.Instantiate(gameObject, parent, worldPositionStays);
+                
+                if (destroyOnDispose)
+                {
+                    c.QueueDispose(() =>
+                    {
+                        Object.Destroy(instance);
+                    });
+                }
+                
+                return instance.GetComponent<TConcrete>();
+            });
+            
+            return binding;
+        }
+        
+        public static Binding<TInterface, TConcrete> FromInstantiateGameObjectResourceGetComponentInChildren<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding,
+            string path,
+            Transform? parent = null,
+            bool worldPositionStays = false,
+            bool destroyOnDispose = true
+        )
+            where TConcrete : Component
+        {
+            GameObject? instance = null;
+            binding.FromMethod(c =>
+            {
+                var gameObject = Resources.Load<GameObject>(path);
+                instance = Object.Instantiate(gameObject, parent, worldPositionStays);
+                
+                if (destroyOnDispose)
+                {
+                    c.QueueDispose(() => Object.Destroy(instance));
+                }
+                
+                return instance.GetComponentInChildren<TConcrete>();
+            });
+            return binding;
+        }
+        
+        public static Binding<TInterface, TConcrete> FromInstantiateGameObjectResourceAddComponent<TInterface, TConcrete>(
+            this Binding<TInterface, TConcrete> binding,
+            string path,
+            Transform? parent = null,
+            bool worldPositionStays = false,
+            bool destroyOnDispose = true
+        )
+            where TConcrete : Component
+        {
+            binding.FromMethod(c =>
+            {
+                var gameObject = Resources.Load<GameObject>(path);
+                var instance = Object.Instantiate(gameObject, parent, worldPositionStays);
+
+                if (destroyOnDispose)
+                {
+                    c.QueueDispose(() => Object.Destroy(instance));
+                }
+                
+                return instance.AddComponent<TConcrete>();
+            });
+            return binding;
+        }
+        
+        #endregion
+        
+        //Above this line is shared code between ManualDi.Sync and ManualDi.Async
+        //Below this line is ManualDi.Async specific
+        
+        #region From Async Instantiate
+        
         /// <summary>
         /// Use this method to Call Object.InstantiateAsync
         /// </summary>
@@ -264,6 +365,9 @@ namespace ManualDi.Async.Unity3d
             return await tcs.Task;
         }
         
+        #endregion
+        
+        #region From Load Scene Async
         public static Binding<TInterface, TConcrete> FromLoadSceneAsyncGetComponent<TInterface, TConcrete>(
             this Binding<TInterface, TConcrete> binding,
             string sceneName
@@ -368,5 +472,7 @@ namespace ManualDi.Async.Unity3d
         
             await tcs.Task;
         }
+        
+        #endregion
     }
 }

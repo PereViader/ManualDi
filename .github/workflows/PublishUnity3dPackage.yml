@@ -26,6 +26,13 @@ jobs:
           echo "Release exists $release_exists"
           echo "exists=$release_exists" >> $GITHUB_OUTPUT
 
+      - name: Get changelog
+        id: get-changelog
+        if: ${{ steps.release-exists.outputs.exists == 'false' }}
+        run: |
+          payload=$(git log $(git describe --tags --abbrev=0 main)..main --pretty=format:"%s%b")
+          echo "changelog<<EOF"$'\n'"$payload"$'\n'EOF >> "$GITHUB_OUTPUT"
+
       - name: Create Sync Package
         if: ${{ steps.release-exists.outputs.exists == 'false' }}
         run: |
@@ -42,6 +49,7 @@ jobs:
         with:
           tag_name: v${{ steps.get-version.outputs.version }}
           name: ManualDi Unity3d v${{ steps.get-version.outputs.version }}
+          body: ${{ steps.get-changelog.outputs.changelog }}
           files: |
             ManualDi.Sync.Unity3d.Package/com.pereviader.manualdi.sync.unity3d-${{ steps.get-version.outputs.version }}.tgz
             ManualDi.Async.Unity3d.Package/com.pereviader.manualdi.async.unity3d-${{ steps.get-version.outputs.version }}.tgz

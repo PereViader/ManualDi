@@ -11,16 +11,23 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4.1.4
+        with:
+          fetch-depth: 0
 
       - id: get-version
         run: |
           source .env
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+          if [[ "$VERSION" == *preview* ]]; then
+            echo "isPrerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "isPrerelease=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Check if release exists
         id: release-exists
         env:
-          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           release_exists=$(gh release view "v${{ steps.get-version.outputs.version }}" &> /dev/null && echo "true" || echo "false")
           echo "Release exists $release_exists"
@@ -50,6 +57,7 @@ jobs:
           tag_name: v${{ steps.get-version.outputs.version }}
           name: ManualDi Unity3d v${{ steps.get-version.outputs.version }}
           body: ${{ steps.get-changelog.outputs.changelog }}
+          prerelease: ${{ steps.get-version.outputs.isPrerelease }}
           files: |
             ManualDi.Sync.Unity3d.Package/com.pereviader.manualdi.sync.unity3d-${{ steps.get-version.outputs.version }}.tgz
             ManualDi.Async.Unity3d.Package/com.pereviader.manualdi.async.unity3d-${{ steps.get-version.outputs.version }}.tgz

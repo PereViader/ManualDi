@@ -105,7 +105,7 @@ public class SomeClass
 
     public void Inject(IOtherClass otherClass)
     {
-        //Called after Construct
+        //Called after constructor
         //Should only be used when to break cyclic dependencies between dependencies
         //When you need to use it, it usually means there is a problem in the design of your object graph
         //Dependencies taken from Inject will always sort those dependencies at the end.  
@@ -182,7 +182,7 @@ public class SomeClass
 
     public void Inject(IOtherClass otherClass)
     {
-        //Called after Construct
+        //Called after constructor
         //Should only be used when to break cyclic dependencies between dependencies
         //When you need to use it, it usually means there is a problem in the design of your object graph
         //Dependencies taken from Inject will always sort those dependencies at the end.  

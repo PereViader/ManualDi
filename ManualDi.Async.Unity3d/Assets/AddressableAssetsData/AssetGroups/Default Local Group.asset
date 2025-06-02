@@ -17,11 +17,6 @@ MonoBehaviour:
     m_SerializedData: []
   m_GUID: 9fc736e29c5d8bb4596f142419e1e258
   m_SerializeEntries:
-  - m_GUID: 6154248f06a88774c9abd3c4bd1f22ab
-    m_Address: Assets/ManualDi.Async.Unity3d/Tests/TestAssets/TestAddressableLoadScene.unity
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: 38b092172ed9f0144bd11c5daa0bc70e
     m_Address: Assets/ManualDi.Async.Unity3d/Tests/TestAssets/TestLoadGetGomponent.prefab
     m_ReadOnly: 0

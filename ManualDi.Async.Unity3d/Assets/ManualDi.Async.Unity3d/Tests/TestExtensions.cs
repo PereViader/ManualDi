@@ -19,7 +19,7 @@ namespace ManualDi.Async.Unity3d.Tests.PlayMode
             {
                 yield return null;
             }
-
+            
             if (task.Exception is not null)
             {
                 throw task.Exception.InnerException!;

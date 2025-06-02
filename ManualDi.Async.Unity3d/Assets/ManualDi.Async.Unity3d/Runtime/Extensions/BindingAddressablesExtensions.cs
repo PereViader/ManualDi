@@ -10,7 +10,7 @@ using UnityEngine.SceneManagement;
 
 namespace ManualDi.Async.Unity3d
 {
-    public static class BindingAddressablesUnity3dExtensions
+    public static class BindingAddressablesExtensions
     {
         #region From Addressables Load Asset Async
         public static Binding<TInterface, TConcrete> FromAddressablesLoadAssetAsync<TInterface, TConcrete>(
@@ -58,7 +58,7 @@ namespace ManualDi.Async.Unity3d
         )
             where TConcrete : UnityEngine.Object
         {
-            var load = Addressables.LoadAssetAsync<TConcrete>(key);
+            AsyncOperationHandle<TConcrete> load = Addressables.LoadAssetAsync<TConcrete>(key);
             c.QueueDispose(() => Addressables.Release(load));
             
             var asset = await load.Task.WithCancellation(ct);
@@ -126,11 +126,8 @@ namespace ManualDi.Async.Unity3d
             CancellationToken ct
         )
         {
-            var load = Addressables.LoadSceneAsync(key, LoadSceneMode.Additive);
-            c.QueueAsyncDispose(async () =>
-            {
-                await Addressables.UnloadSceneAsync(load).Task;
-            });
+            AsyncOperationHandle<SceneInstance> load = Addressables.LoadSceneAsync(key, LoadSceneMode.Additive);
+            c.QueueAsyncDispose(async () => await Addressables.UnloadSceneAsync(load).Task);
             
             var sceneInstance = await load.Task.WithCancellation(ct);
             if (load.Status == AsyncOperationStatus.Failed)

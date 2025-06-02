@@ -10,20 +10,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a0bbf71e1403497d981463b7b8e61a54, type: 3}
-  m_Name: TestAddressablesAssets
+  m_Name: TestAssetReferences
   m_EditorClassIdentifier: 
-  GetComponentAsset:
+  GetComponentAssetReference:
     m_AssetGUID: 11332fd542fe4c74f81a9df8cb6be3ed
     m_SubObjectName: 
     m_SubObjectType: 
     m_EditorAssetChanged: 0
-  GetComponentInChildrenAsset:
+  GetComponentInChildrenAssetReference:
     m_AssetGUID: 38b092172ed9f0144bd11c5daa0bc70e
     m_SubObjectName: 
     m_SubObjectType: 
     m_EditorAssetChanged: 0
-  LoadSceneAsset:
+  SceneAssetReference:
     m_AssetGUID: 6154248f06a88774c9abd3c4bd1f22ab
     m_SubObjectName: 
     m_SubObjectType: 
     m_EditorAssetChanged: 0
+  GetComponentPrefab: {fileID: 8688128341542179809, guid: 11332fd542fe4c74f81a9df8cb6be3ed, type: 3}
+  GetComponentInChildrenPrefab: {fileID: 8688128341542179809, guid: 38b092172ed9f0144bd11c5daa0bc70e, type: 3}
+  SceneName: SceneAsset

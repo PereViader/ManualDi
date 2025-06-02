@@ -152,34 +152,42 @@ namespace ManualDi.Async
                 cancellationToken,
                 containerDisposablesCount);
 
-            diContainer.QueueDispose(() =>
+            try
             {
-                foreach (var action in disposeActions)
+                diContainer.QueueDispose(() =>
                 {
-                    action.Invoke();
-                }
-            });
+                    foreach (var action in disposeActions)
+                    {
+                        action.Invoke();
+                    }
+                });
 
-            await diContainer.InitializeCreate();
-            await diContainer.InitializeInject();
-            await diContainer.IntiailizeInitialize();
+                await diContainer.InitializeCreate();
+                await diContainer.InitializeInject();
+                await diContainer.IntiailizeInitialize();
             
-            foreach (var injectDelegate in injectDelegates)
-            {
-                injectDelegate.Invoke(diContainer);
-            }
+                foreach (var injectDelegate in injectDelegates)
+                {
+                    injectDelegate.Invoke(diContainer);
+                }
 
-            foreach (var initializationDelegate in initializationDelegates)
-            {
-                initializationDelegate.Invoke(diContainer);
-            }
+                foreach (var initializationDelegate in initializationDelegates)
+                {
+                    initializationDelegate.Invoke(diContainer);
+                }
 
-            foreach (var startupDelegate in startupDelegates)
-            {
-                startupDelegate.Invoke(diContainer);
-            }
+                foreach (var startupDelegate in startupDelegates)
+                {
+                    startupDelegate.Invoke(diContainer);
+                }
 
-            return diContainer;
+                return diContainer;
+            }
+            catch (Exception)
+            {
+                await diContainer.DisposeAsync();
+                throw;
+            }
         }
     }
 }

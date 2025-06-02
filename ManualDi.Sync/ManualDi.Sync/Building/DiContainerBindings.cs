@@ -87,32 +87,40 @@ namespace ManualDi.Sync
                 containerInitializationsCount,
                 containerDisposablesCount);
 
-            diContainer.QueueDispose(new ActionDisposableWrapper(() =>
+            try
             {
-                foreach (var action in disposeActions)
+                diContainer.QueueDispose(new ActionDisposableWrapper(() =>
                 {
-                    action.Invoke();
+                    foreach (var action in disposeActions)
+                    {
+                        action.Invoke();
+                    }
+                }));
+
+                diContainer.Initialize();
+
+                foreach (var injectDelegate in injectDelegates)
+                {
+                    injectDelegate.Invoke(diContainer);
                 }
-            }));
 
-            diContainer.Initialize();
-            
-            foreach (var injectDelegate in injectDelegates)
-            {
-                injectDelegate.Invoke(diContainer);
+                foreach (var initializationDelegate in initializationDelegates)
+                {
+                    initializationDelegate.Invoke(diContainer);
+                }
+
+                foreach (var startupDelegate in startupDelegates)
+                {
+                    startupDelegate.Invoke(diContainer);
+                }
+
+                return diContainer;
             }
-
-            foreach (var initializationDelegate in initializationDelegates)
+            catch (Exception)
             {
-                initializationDelegate.Invoke(diContainer);
+                diContainer.Dispose();
+                throw;
             }
-
-            foreach (var startupDelegate in startupDelegates)
-            {
-                startupDelegate.Invoke(diContainer);
-            }
-
-            return diContainer;
         }
     }
 }

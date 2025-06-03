@@ -732,13 +732,16 @@ If the generic type argument `T` is nullable (e.g., `List<T?>`), the source gene
 ```csharp
 public class A
 {
-    public 
-    [Inject] List<object> ListObj {get; set;}
-    [Inject] IList<int> IListInt {get; set;}
-    [Inject] IReadOnlyList<obj> IReadOnlyListObj {get; set;}
-    [Inject] IEnumerable<int> IEnumerableInt {get; set;}
-    [Inject] List<object>? NullableList {get; set;} //Either null or Count > 0
-    [Inject] List<object?> NullableGenericList {get; set;} //Valid but NOT recommended
+    public A(
+        List<object> listObj,
+        IList<int> iListInt,
+        IReadOnlyList<obj> iReadOnlyListObj,
+        IEnumerable<int> iEnumerableInt,
+        List<object>? nullableList, //Either null or Count > 0
+        List<object?> nullableGenericList //Valid but NOT recommended
+        )
+    {
+    }
 }
 
 b.Bind<A>().Default().FromConstructor();
@@ -888,34 +891,33 @@ public class SomeFeatureInstaller : MonoBehaviourInstaller
     public string ResourcePath;
     public Toggle TogglePrefab;
     public GameObject SomeGameObject;
+    public AddressableReference SceneReference;
 
     public override Install(DiContainerBindings b)
     {
         b.Bind<Toggle>().FromInstantiateComponent(TogglePrefab, canvasTransform);
         b.Bind<Image>().FromInstantiateGameObjectResourceGetComponent(ResourcePath);
-        b.Bind<SomeFeature>().FromGameObjectGetComponent(SomeGameObject);
+        b.Bind<SomeFeature>().Default().FromGameObjectGetComponent(SomeGameObject);
+        b.Bind<SceneReferences>().Default().FromAddressablesLoadAssetAsyncGetComponent(SceneReference);
     }
 }
 ```
 
-As seen in the snippet above, my recommendation is that whatever dependencies may be necessary on an installer are provided as public members.
-This way Unity3d will serialize them so they can be linked through the inspector. Private `[SerializeField]` members may be used, but they add extra unnecesary boilerplate compared to public fields. 
+Serialize UnityEngine.Object dependancies should be serialized on installers and bound during installation.
+Using `public` member variables to serialize references instead of `[SerializeField] private` ones should be prefered to avoid boilerplate.
 
-Most methods have several optional parameters.
-
-Special attention to `Transform? parent = null`. This one will define the parent transform used when instantiating new instances.
-
-Special attention to the `bool destroyOnDispose = true` parameter. This one will be available on creation strategies that create new instances.
-If the parameter is left as `true`, when the container is disposed, it will first destroy the instance.
-This is the necessary default behaviour due to the game likely needing those resources cleaned up for example from shared Additive scenes and wanting the default behaviour to be the safest.
-If the scene the resource is created on will then be deleted, there is no need to destroy it during the disposal of the container, so feel free to set the parameter as `false` for a faster disposal.
+Most of the From methods that do instantiation, have several optional parameters. For instance:
+- `Transform? parent = null` defines the parent transform used when instantiating new instances.
+- `bool destroyOnDispose = true` will cleanup instanciated instances upon disposal of the container
 
 ## EntryPoints
 
-An entry point is a place where some context of your application is meant to start.
+An entry point is the place where some context of your application is meant to start.
 In the case of ManualDi, it is where the object graph is configured and then the container is started.
 
-The last binding of an entry point will usually make use of QueueStartup, to run any logic necessary after the container is created.
+The last binding of an entry point will usually make use of QueueStartup, to actually initiate the behaviour for the context it represents.
+
+In simple terms, an EntryPoint is a root Installer where you call other Installers from 
 
 ### RootEntryPoint
 
@@ -950,12 +952,14 @@ class InitialSceneEntryPoint : MonoBehaviourRootEntryPoint
 
 ### SubordinateEntryPoint
 
-Subordinate entry points will depend on other container or require other data.
-This means that these entry points cannot be started by themselves. They need to be started by some other part of your application.
+ 
+Subordinate entry points cannot are entry points that can not be started by themselves. 
+They need to be started by some other part of your application because they depend on external data / container.
+These entry points may optionally also return some `TFacade` to the caller.
 
-If the data provided to these entry points, implements `IInstaller`, then the data will also be installed to the container.
-Otherwise, it will just be available through the `Data` property of the EntryPoint.
-If the subordinate entry point requires access to the parent container's dependencies, it is recommended to set the parent container on the EntryPointData object.
+The data provided to the container is available on the entrypoint through the `Data` property.
+When the data implements `IInstaller` it is also installed to the container.
+When access to a parent container is necessary, doing it on the data type is the recommended pattern.
 
 ```csharp
 public class EntryPointData : IInstaller
@@ -971,13 +975,15 @@ public class EntryPointData : IInstaller
 
 These entry points may also optionally return a `TContext` object resolved from the container.
 
-Doing such a thing is useful to provide a facade to the systems created.
+That `TContext` can be used as a facade for the external system to interact with it.
 
 Use the appropriate type depending on how you want to structure your application:
 - `MonoBehaviourSubordinateEntryPoint<TData>`
 - `MonoBehaviourSubordinateEntryPoint<TData, TContext>`
 - `ScriptableObjectSubordinateEntryPoint<TData>`
 - `ScriptableObjectSubordinateEntryPoint<TData, TContext>`
+
+Note: MonoBehaviour ones will probably be the most common
 
 ```csharp
 public class Startup
@@ -1001,17 +1007,23 @@ public class EntryPointData : IInstaller
 
 public class Facade : MonoBehaviour
 {
-    [Inject] public Dependency1? Dependency1 { get; set; }
-    [Inject] public Dependency2 Dependency2 { get; set; }
+    private Dependency1? _dependency1;
+    private Dependency2 _dependency2;
+
+    public void Inject(Dependency1? dependency1, Dependency2 dependency2)
+    {
+        _dependency1 = dependency1;
+        _dependency2 = dependency2;
+    }
 
     public void DoSomething1()
     {
-        Dependency1?.DoSomething1();
+        _dependency1?.DoSomething1();
     }
 
     public void DoSomething2()
     {
-        Dependency2.DoSomething2();
+        _dependency2.DoSomething2();
     }
 }
 
@@ -1040,11 +1052,16 @@ public class Data
 
 public class SceneFacade
 {
-    [Inject] Data Data { get; set; }
+    private readonly Data _data;
+
+    public SceneFacade(Data _data) 
+    {
+        _data = data;
+    }
 
     public void DoSomething() 
     {  
-        Console.WriteLine(Data.Name);
+        Console.WriteLine(data.Name);
     }
 }
 
@@ -1078,11 +1095,13 @@ and this is an example of how you could initiate a subordinate entry point that 
 ```csharp
 class Example : MonoBehaviour
 {
-    public SceneEntryPoint EntryPoint;
+    public SceneEntryPoint EntryPointPrefab;
 
     void Start()
     {        
         var data = new Data() { Name = "Charles" };
+
+        var entryPoint = Instantiate(EntryPointPrefab, transform);
         var facade = entryPoint.Initiate(data)
         
         facade.DoSomething();

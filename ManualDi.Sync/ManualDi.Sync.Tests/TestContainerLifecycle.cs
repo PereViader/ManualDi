@@ -69,7 +69,7 @@ public class TestContainerLifecycle
                 .FromInstance(resolveAfter)
                 .Dispose((o, c) => o.Dispose());
             
-            b.WithStartup<IStartup>(e => e.Run());
+            b.QueueStartup<IStartup>(e => e.Run());
         }).Build();
 
         container.Resolve<IResolveAfter>().Run();

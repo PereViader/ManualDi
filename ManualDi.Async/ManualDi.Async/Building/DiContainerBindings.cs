@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,10 +13,9 @@ namespace ManualDi.Async
     {
         private readonly Dictionary<IntPtr, Binding> bindingsByType;
         private readonly List<ContainerDelegate> injectDelegates;
-        private readonly List<ContainerDelegate> initializationDelegates;
+        private readonly List<ContainerDelegate> initializeDelegates;
         private readonly List<ContainerDelegate> startupDelegates;
-        private readonly List<Action> disposeActions;
-        private readonly int? containerDisposablesCount;
+        private readonly List<object> disposables;
         
         int bindingCount;
 
@@ -26,16 +26,14 @@ namespace ManualDi.Async
             int? injectCapacity = null,
             int? initializationCapacity = null,
             int? disposeCapacity = null,
-            int? startupCapacity = null,
-            int? containerDisposablesCount = null
+            int? startupCapacity = null
             )
         {
             bindingsByType = bindingsCapacity.HasValue ? new(bindingsCapacity.Value) : new();
             injectDelegates = injectCapacity.HasValue ? new(injectCapacity.Value) : new();
-            initializationDelegates = initializationCapacity.HasValue ? new(initializationCapacity.Value) : new();
-            disposeActions = disposeCapacity.HasValue ? new(disposeCapacity.Value) : new();
+            initializeDelegates = initializationCapacity.HasValue ? new(initializationCapacity.Value) : new();
+            disposables = disposeCapacity.HasValue ? new(disposeCapacity.Value) : new();
             startupDelegates = startupCapacity.HasValue ? new(startupCapacity.Value) : new();
-            this.containerDisposablesCount = containerDisposablesCount;
         }
         
         internal void AddBinding(Binding binding, Type type)
@@ -57,14 +55,26 @@ namespace ManualDi.Async
             innerbinding.NextBinding = binding;
         }
         
-        public void QueueInjection(ContainerDelegate containerDelegate)
+        public void QueueInject(ContainerDelegate containerDelegate)
         {
             injectDelegates.Add(containerDelegate);
         }
+        
+        [Obsolete("Use QueueInject instead")]
+        public void QueueInjection(ContainerDelegate containerDelegate)
+        {
+            QueueInject(containerDelegate);
+        }
 
+        public void QueueInitialize(ContainerDelegate containerDelegate)
+        {
+            initializeDelegates.Add(containerDelegate);
+        }
+        
+        [Obsolete("Use QueueInitialize instead")]
         public void QueueInitialization(ContainerDelegate containerDelegate)
         {
-            initializationDelegates.Add(containerDelegate);
+            QueueInitialize(containerDelegate);
         }
         
         public void QueueStartup(ContainerDelegate containerDelegate)
@@ -74,7 +84,22 @@ namespace ManualDi.Async
         
         public void QueueDispose(Action action)
         {
-            disposeActions.Add(action);
+            disposables.Add(action);
+        }
+        
+        public void QueueDispose(IDisposable disposable)
+        {
+            disposables.Add(disposable);
+        }
+        
+        public void QueueAsyncDispose(Func<ValueTask> action)
+        {
+            disposables.Add(action);
+        }
+        
+        public void QueueAsyncDispose(IAsyncDisposable asyncDisposable)
+        {
+            disposables.Add(asyncDisposable);
         }
         
         public DiContainerBindings WithParentContainer(IDiContainer? diContainer)
@@ -105,16 +130,8 @@ namespace ManualDi.Async
                         bindingsByType,
                         bindingCount,
                         c,
-                        ct,
-                        containerDisposablesCount);
-
-                    subContainer.QueueDispose(() =>
-                    {
-                        foreach (var action in disposeActions)
-                        {
-                            action.Invoke();
-                        }
-                    });
+                        disposables,
+                        ct);
 
                     await subContainer.InitializeCreate();
 
@@ -131,7 +148,7 @@ namespace ManualDi.Async
                         injectDelegate.Invoke(subContainer);
                     }
 
-                    foreach (var initializationDelegate in initializationDelegates)
+                    foreach (var initializationDelegate in initializeDelegates)
                     {
                         initializationDelegate.Invoke(subContainer);
                     }
@@ -143,25 +160,17 @@ namespace ManualDi.Async
                 });
         }
         
-        public async ValueTask<DiContainer> Build(CancellationToken cancellationToken)
+        public async ValueTask<DiContainer> Build(CancellationToken ct)
         {
             var diContainer = new DiContainer(
                 bindingsByType,
                 bindingCount,
                 parentDiContainer,
-                cancellationToken,
-                containerDisposablesCount);
+                disposables,
+                ct);
 
             try
             {
-                diContainer.QueueDispose(() =>
-                {
-                    foreach (var action in disposeActions)
-                    {
-                        action.Invoke();
-                    }
-                });
-
                 await diContainer.InitializeCreate();
                 await diContainer.InitializeInject();
                 await diContainer.IntiailizeInitialize();
@@ -171,9 +180,9 @@ namespace ManualDi.Async
                     injectDelegate.Invoke(diContainer);
                 }
 
-                foreach (var initializationDelegate in initializationDelegates)
+                foreach (var initializeDelegate in initializeDelegates)
                 {
-                    initializationDelegate.Invoke(diContainer);
+                    initializeDelegate.Invoke(diContainer);
                 }
 
                 foreach (var startupDelegate in startupDelegates)

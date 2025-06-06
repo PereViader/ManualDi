@@ -25,11 +25,11 @@ namespace ManualDi.Async
             Dictionary<IntPtr, Binding> bindingsByType,
             int count,
             IDiContainer? parentDiContainer,
-            CancellationToken cancellationToken,
-            int? disposablesCount = null)
+            List<object> disposables,
+            CancellationToken cancellationToken)
         {
             bindings = new (count);
-            disposables = disposablesCount.HasValue ? new(disposablesCount.Value) : new();
+            this.disposables = disposables;
             disposedValue = false;
             
             cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);

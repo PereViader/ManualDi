@@ -11,6 +11,8 @@ namespace ManualDi.Async.Unity3d
         public IDiContainer? Container { get; private set; }
         public TData? Data { get; private set; }
         
+        private bool _disposed;
+        
         public async ValueTask Initiate(TData data, CancellationToken ct)
         {
             if (IsInitialized)
@@ -42,18 +44,19 @@ namespace ManualDi.Async.Unity3d
             await DisposeAsync();
         }
 
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
-            if (Container is null)
+            if (_disposed)
             {
-                return default;
+                return;
             }
-
-            Data = default;
-
-            var container = Container;
+            _disposed = true;
+            if (Container is not null)
+            {
+                await Container.DisposeAsync();
+            }
             Container = null;
-            return container.DisposeAsync();
+            Data = default;
         }
 
         public abstract void Install(DiContainerBindings b);
@@ -65,6 +68,8 @@ namespace ManualDi.Async.Unity3d
         public IDiContainer? Container { get; private set; }
         public TContext? Context { get; private set; }
         public TData? Data { get; private set; }
+        
+        private bool _disposed;
         
         public async ValueTask<TContext> Initiate(TData data, CancellationToken ct)
         {
@@ -102,19 +107,20 @@ namespace ManualDi.Async.Unity3d
             await DisposeAsync();
         }
 
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
-            if (Container is null)
+            if (_disposed)
             {
-                return default;
+                return;
             }
-
+            _disposed = true;
+            if (Container is not null)
+            {
+                await Container.DisposeAsync();
+            }
+            Container = null;
             Data = default;
             Context = default;
-
-            var container = Container;
-            Container = null;
-            return container.DisposeAsync();
         }
 
         public abstract void Install(DiContainerBindings b);

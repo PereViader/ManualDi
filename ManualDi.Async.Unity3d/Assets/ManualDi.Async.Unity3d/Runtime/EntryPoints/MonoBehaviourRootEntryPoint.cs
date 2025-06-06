@@ -12,6 +12,8 @@ namespace ManualDi.Async.Unity3d
         public bool IsInitialized => Container is not null;
         public IDiContainer? Container { get; private set; }
         
+        private bool _disposed;
+        
         public async void Start()
         {
             if (!InitializeOnStart)
@@ -19,7 +21,7 @@ namespace ManualDi.Async.Unity3d
                 return;
             }
             
-            await Initiate(CancellationToken.None);
+            await Initiate(destroyCancellationToken);
         }
 
         public async ValueTask Initiate(CancellationToken ct)
@@ -47,16 +49,18 @@ namespace ManualDi.Async.Unity3d
             await DisposeAsync();
         }
 
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
-            if (Container is null)
+            if (_disposed)
             {
-                return default;
+                return;
             }
-
-            var container = Container;
+            _disposed = true;
+            if (Container is not null)
+            {
+                await Container.DisposeAsync();
+            }
             Container = null;
-            return container.DisposeAsync();
         }
 
         public abstract void Install(DiContainerBindings b);

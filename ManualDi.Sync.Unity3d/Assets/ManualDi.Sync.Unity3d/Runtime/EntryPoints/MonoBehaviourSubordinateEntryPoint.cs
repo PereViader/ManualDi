@@ -9,6 +9,8 @@ namespace ManualDi.Sync.Unity3d
         public IDiContainer? Container { get; private set; }
         public TData? Data { get; private set; }
         
+        private bool _disposed;
+        
         public void Initiate(TData data)
         {
             if (IsInitialized)

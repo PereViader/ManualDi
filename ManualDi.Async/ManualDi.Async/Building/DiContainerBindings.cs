@@ -17,7 +17,8 @@ namespace ManualDi.Async
         private readonly List<ContainerDelegate> startupDelegates;
         private readonly List<object> disposables;
         
-        int bindingCount;
+        private int bindingCount;
+        private bool failureDebugReportEnabled;
 
         private IDiContainer? parentDiContainer;
 
@@ -107,6 +108,12 @@ namespace ManualDi.Async
             parentDiContainer = diContainer;
             return this;
         }
+        
+        public DiContainerBindings WithFailureDebugReport()
+        {
+            failureDebugReportEnabled = true;
+            return this;
+        }
 
         public Action<IDependencyResolver> GatherDependencies()
         {
@@ -192,9 +199,21 @@ namespace ManualDi.Async
 
                 return diContainer;
             }
-            catch (Exception)
+            catch (Exception buildException)
             {
-                await diContainer.DisposeAsync();
+                if (failureDebugReportEnabled)
+                {
+                    buildException.Data.Add(DiContainer.FailureDebugReportKey, diContainer.GetFailureDebugReport());
+                }
+                
+                try
+                {
+                    await diContainer.DisposeAsync();
+                }
+                catch (Exception disposeException)
+                {
+                    throw new AggregateException(buildException, disposeException);
+                }
                 throw;
             }
         }

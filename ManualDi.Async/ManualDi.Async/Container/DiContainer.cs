@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,6 +10,8 @@ namespace ManualDi.Async
 {
     public sealed class DiContainer : IDiContainer
     {
+        public const string FailureDebugReportKey = "ManualDi.FailureDebugReport";
+
         private readonly Dictionary<IntPtr, Binding> bindingsByType;
         private readonly List<Binding> bindings;
         private readonly IDiContainer? parentDiContainer;
@@ -36,12 +39,22 @@ namespace ManualDi.Async
             
             this.bindingsByType = bindingsByType;
             this.parentDiContainer = parentDiContainer;
+            SetupBindings();
+        }
+        
+        public string GetFailureDebugReport()
+        {
+            var stringBuilder = new StringBuilder();
+            foreach (var binding in bindings)
+            {
+                stringBuilder.AppendLine($"Apparent: {binding.ApparentType}, Concrete: {binding.ConcreteType}, Id: {binding.Id}");
+            }
+            
+            return stringBuilder.ToString();
         }
         
         internal async ValueTask InitializeCreate()
         {
-            SetupBindings();
-
             var ct = CancellationToken;
 
             var count = bindings.Count;

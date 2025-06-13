@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Microsoft.CodeAnalysis.CSharp;
+using ManualDi.Async.Attributes;
 
 
 namespace ManualDi.Async.Generators
@@ -24,16 +25,34 @@ namespace ManualDi.Async.Generators
         {
             var typeReferencesProvider = context.CompilationProvider
                 .Select(TypeReferences.Create);
-            
-            //https://www.thinktecture.com/en/net/roslyn-source-generators-code-according-to-dependencies/
-            // Create a provider for metadata references
+
+            // Provider for classes to generate
             var classProvider = context.SyntaxProvider
                 .CreateSyntaxProvider(IsSyntaxNodeValid, GetClassDeclaration)
                 .Where(x => x is not null);
 
-            var combined = classProvider.Combine(typeReferencesProvider);
+            // Provider for extension methods with [ManualDiGeneratorExtension]
+            var extensionMethodProvider = context.SyntaxProvider
+                .CreateSyntaxProvider(
+                    (node, _) => node is MethodDeclarationSyntax m && m.AttributeLists.Count > 0 && m.Modifiers.Any(SyntaxKind.StaticKeyword),
+                    (ctx, ct) =>
+                    {
+                        var method = ctx.SemanticModel.GetDeclaredSymbol(ctx.Node, ct) as IMethodSymbol;
+                        if (method == null || !method.IsExtensionMethod)
+                            return null;
+                        var hasAttr = method.GetAttributes().Any(attr => attr.AttributeClass?.ToDisplayString() == typeof(ManualDiGeneratorExtensionAttribute).FullName);
+                        return hasAttr ? method : null;
+                    })
+                .Where(x => x is not null);
 
-            context.RegisterSourceOutput(combined, Generate!);
+            // Combine all providers
+            var combined = classProvider.Combine(typeReferencesProvider).Combine(extensionMethodProvider.Collect());
+
+            context.RegisterSourceOutput(combined, (ctx, tuple) =>
+            {
+                var ((classSymbol, typeReferences), extensionMethods) = tuple;
+                Generate(ctx, classSymbol, typeReferences, extensionMethods!);
+            });
         }
 
         private static bool IsSyntaxNodeValid(SyntaxNode node, CancellationToken ct)
@@ -96,11 +115,10 @@ namespace ManualDi.Async.Generators
             stringBuilder.AppendLine($$"""
             #nullable enable
             using System.Runtime.CompilerServices;
-
             namespace ManualDi.Async
-            {
+            {{
                 public static class ManualDiGenerated{{className.Replace(".","")}}Extensions
-                {
+                {{
             """);
 
             var generationContext = new GenerationClassContext(stringBuilder, className, classSymbol, obsoleteText, typeReferences);
@@ -112,11 +130,76 @@ namespace ManualDi.Async.Generators
             
             AddDefault(generationContext, accessibility);
 
-            stringBuilder.AppendLine("""
+            // Apply all matching generator extension methods
+            foreach (var ext in extensionMethods)
+            {
+                // Check if the extension method's TConcrete constraint is satisfied by this class
+                if (ext.TypeParameters.Length < 2) continue;
+                var tConcreteParam = ext.TypeParameters.Last();
+                var constraint = tConcreteParam.ConstraintTypes.FirstOrDefault();
+                if (constraint != null && (classSymbol.AllInterfaces.Concat(new[] { classSymbol }).Any(i => SymbolEqualityComparer.Default.Equals(i, constraint))))
+                {
+                    stringBuilder.AppendLine($"        // Applied extension: {ext.Name}");
+                    stringBuilder.AppendLine($"        binding = {ext.ContainingType.ToDisplayString()}.{ext.Name}<T, {className}>(binding);");
                 }
             }
-            """);
+            stringBuilder.AppendLine("        }");
+            stringBuilder.AppendLine("    }");
+            stringBuilder.AppendLine("}");
             
+            context.AddSource($"ManualDiGeneratedExtensions.{className}.g.cs", SourceText.From(stringBuilder.ToString(), Encoding.UTF8));
+        }
+
+        private void Generate(SourceProductionContext context, INamedTypeSymbol classSymbol, TypeReferences? typeReferences, ImmutableArray<IMethodSymbol> extensionMethods)
+        {
+            if (typeReferences is null)
+            {
+                return;
+            }
+            if (classSymbol.IsAbstract)
+            {
+                return;
+            }
+            var accessibility = GetSymbolAccessibility(classSymbol);
+            if (accessibility is not (Accessibility.Public or Accessibility.Internal))
+            {
+                return;
+            }
+            var className = FullyQualifyTypeWithoutNullable(classSymbol);
+            var obsoleteText = typeReferences.IsSymbolObsolete(classSymbol)
+                ? "[System.Obsolete]\r\n"
+                : "";
+            var stringBuilder = new StringBuilder();
+            stringBuilder.AppendLine($$"""
+            #nullable enable
+            using System.Runtime.CompilerServices;
+            namespace ManualDi.Async
+            {{
+                public static class ManualDiGenerated{{className.Replace(".","")}}Extensions
+                {{
+            """);
+            var generationContext = new GenerationClassContext(stringBuilder, className, classSymbol, obsoleteText, typeReferences);
+            if (!typeReferences.IsUnityEngineObject(classSymbol))
+            {
+                AddFromConstructor(generationContext);
+            }
+            AddDefault(generationContext, accessibility);
+            // Apply all matching generator extension methods
+            foreach (var ext in extensionMethods)
+            {
+                // Check if the extension method's TConcrete constraint is satisfied by this class
+                if (ext.TypeParameters.Length < 2) continue;
+                var tConcreteParam = ext.TypeParameters.Last();
+                var constraint = tConcreteParam.ConstraintTypes.FirstOrDefault();
+                if (constraint != null && (classSymbol.AllInterfaces.Concat(new[] { classSymbol }).Any(i => SymbolEqualityComparer.Default.Equals(i, constraint))))
+                {
+                    stringBuilder.AppendLine($"        // Applied extension: {ext.Name}");
+                    stringBuilder.AppendLine($"        binding = {ext.ContainingType.ToDisplayString()}.{ext.Name}<T, {className}>(binding);");
+                }
+            }
+            stringBuilder.AppendLine("        }");
+            stringBuilder.AppendLine("    }");
+            stringBuilder.AppendLine("}");
             context.AddSource($"ManualDiGeneratedExtensions.{className}.g.cs", SourceText.From(stringBuilder.ToString(), Encoding.UTF8));
         }
 

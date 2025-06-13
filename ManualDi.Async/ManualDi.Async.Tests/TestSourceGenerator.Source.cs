@@ -3,6 +3,23 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using ManualDi.Async;
+using ManualDi.Async.Attributes;
+
+// --- Begin: Test for generator extension attribute ---
+public interface ITickable { }
+
+public static class TickableServiceManualDiExtensions
+{
+    [ManualDiGeneratorExtension]
+    public static Binding<TApparent, TConcrete> LinkTickable<TApparent, TConcrete>(this Binding<TApparent, TConcrete> binding)
+        where TConcrete : ITickable
+    {
+        return binding;
+    }
+}
+
+public class MyTickable : ITickable { }
+// --- End: Test for generator extension attribute ---
 
 namespace SomeNamespace.Subnamespace
 {

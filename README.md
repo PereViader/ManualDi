@@ -656,7 +656,7 @@ class SomeFeatureInstaller : IInstaller
 }
 ```
 
-### Building different object graphs at runtime
+# Building different object graphs at runtime
 
 A common requirement when implementing gamemodes, doing A/B tests or taking any other data driven approach is to build different object graphs.
 
@@ -704,6 +704,46 @@ else
     b.Bind<ISomeFeature, DisabledSomeFeature>().Default().FromConstructor();
 }
 ```
+
+# Failure debug report
+(ManualDi.Async**)
+
+An async object graph might sometimes be complicated to understand the order things will run. When an exception happens during the DiContainer creation and initialization it can sometimes be difficult to understand why.
+
+The failure debug report adds more data when an exception to the exception so that you can better understand the order in which things run.
+
+This feature is opt in and can be used by enabling it on `DiContainerBindings`
+
+```csharp
+try
+{
+    await using var container = await new DiContainerBindings()
+        .Install(b =>
+        {
+            b.Bind<object>()
+                .DependsOn(x => x.ConstructorDependency<int>())
+                .FromMethod(x => throw new Exception());
+            b.Bind<int>();
+        })
+        .WithFailureDebugReport()  // enable the report
+        .Build(CancellationToken.None);
+}
+catch (Exception e)
+{
+    var report = (string)e.Data[DiContainer.FailureDebugReportKey]!; // get the report
+    //use this report to check the order of dependencies 
+    return;
+}
+```
+
+The report will return the order of creation, injection and initialization. The example above returns 
+
+```csharp
+Apparent: System.Int32, Concrete: System.Int32, Id: 
+Apparent: System.Object, Concrete: System.Object, Id: 
+```
+
+Note: If you think there is some other piece of data that should be added open a discussion with the suggestion.
 
 # Extra Source Generator features
 

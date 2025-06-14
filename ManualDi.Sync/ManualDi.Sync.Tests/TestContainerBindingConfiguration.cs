@@ -7,11 +7,11 @@ public class TestContainerBindingConfiguration
     public class TestConfig;
     
     [Test]
-    public async Task ResolveInstance_ProperlyResolveAfterInstanceIsAvailable()
+    public void ResolveInstance_ProperlyResolveAfterInstanceIsAvailable()
     {
         var instance = new TestConfig();
-
-        await using var container = await new DiContainerBindings()
+        
+        using var container = new DiContainerBindings()
             .Install(b =>
             {
                 //Configs can't be resolved before they have been bound to the container
@@ -22,12 +22,12 @@ public class TestContainerBindingConfiguration
                 
                 //Bind the config to the container
                 b.Bind<TestConfig>().Default().FromInstance(instance);
-
+        
                 //Configs can be resolved at any time after they have been bound to the container
                 var found = b.ResolveInstance<TestConfig>();
                 Assert.That(found, Is.SameAs(instance));
-            }).Build(CancellationToken.None);
-
+            }).Build();
+        
         var resolvedInstance = container.Resolve<TestConfig>();
         Assert.That(resolvedInstance, Is.SameAs(instance));
     }

@@ -7,13 +7,15 @@ namespace ManualDi.Sync
     
     public sealed class DiContainerBindings
     {
-        private readonly Dictionary<IntPtr, Binding> bindingsByType;
+        internal readonly Dictionary<IntPtr, Binding> bindingsByType;
         private readonly List<ContainerDelegate> injectDelegates;
         private readonly List<ContainerDelegate> initializationDelegates;
         private readonly List<ContainerDelegate> startupDelegates;
         private readonly List<Action> disposeActions;
         private readonly int? containerInitializationsCount;
         private readonly int? containerDisposablesCount;
+        
+        internal readonly BindingContext bindingContext = new();
 
         private IDiContainer? parentDiContainer;
 

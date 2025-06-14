@@ -120,7 +120,7 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<T, SomeNamespace.Subnamespace.InternalInitialize> Default<T>(this Binding<T, SomeNamespace.Subnamespace.InternalInitialize> binding)
         {
-            return binding.Initialize(static (o, c) => o.Initialize())
+            return binding.Initialize(static (o, c) => ((SomeNamespace.Subnamespace.InternalInitialize)o).Initialize())
                 .DontDispose();
         }
     }
@@ -167,7 +167,8 @@ namespace ManualDi.Sync
         {
             return binding.Inject(static (o, c) => 
                 {
-                    o.Inject();
+                    var to = (SomeNamespace.Subnamespace.PublicInitialize)o;
+                    to.Inject();
                 })
                 .DontDispose();
         }
@@ -215,7 +216,8 @@ namespace ManualDi.Sync
         {
             return binding.Inject(static (o, c) => 
                 {
-                    o.Inject();
+                    var to = (SomeNamespace.Subnamespace.InternalInject)o;
+                    to.Inject();
                 })
                 .DontDispose();
         }
@@ -241,7 +243,8 @@ namespace ManualDi.Sync
         {
             return binding.Inject(static (o, c) => 
                 {
-                    o.Inject();
+                    var to = (SomeNamespace.Subnamespace.PublicInject)o;
+                    to.Inject();
                 })
                 .DontDispose();
         }
@@ -359,10 +362,11 @@ internal static Binding<T, SomeNamespace.Subnamespace.Obsolete> FromConstructor<
         [System.Obsolete]
 internal static Binding<T, SomeNamespace.Subnamespace.Obsolete> Default<T>(this Binding<T, SomeNamespace.Subnamespace.Obsolete> binding)
         {
-            return binding.Initialize(static (o, c) => o.Initialize())
+            return binding.Initialize(static (o, c) => ((SomeNamespace.Subnamespace.Obsolete)o).Initialize())
                 .Inject(static (o, c) => 
                 {
-                    o.Inject();
+                    var to = (SomeNamespace.Subnamespace.Obsolete)o;
+                    to.Inject();
                 })
                 .DontDispose();
         }
@@ -388,10 +392,11 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<T, SomeNamespace.Subnamespace.NullableDependency> Default<T>(this Binding<T, SomeNamespace.Subnamespace.NullableDependency> binding)
         {
-            return binding.Initialize(static (o, c) => o.Initialize())
+            return binding.Initialize(static (o, c) => ((SomeNamespace.Subnamespace.NullableDependency)o).Initialize())
                 .Inject(static (o, c) => 
                 {
-                    o.Inject(
+                    var to = (SomeNamespace.Subnamespace.NullableDependency)o;
+                    to.Inject(
                         c.ResolveNullable<object>(),
                         c.ResolveNullableValue<int>());
                 })
@@ -521,10 +526,11 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<T, SomeNamespace.Subnamespace.ListInject> Default<T>(this Binding<T, SomeNamespace.Subnamespace.ListInject> binding)
         {
-            return binding.Initialize(static (o, c) => o.Initialize())
+            return binding.Initialize(static (o, c) => ((SomeNamespace.Subnamespace.ListInject)o).Initialize())
                 .Inject(static (o, c) => 
                 {
-                    o.Inject(
+                    var to = (SomeNamespace.Subnamespace.ListInject)o;
+                    to.Inject(
                         c.ResolveAll<object>());
                 })
                 .DontDispose();
@@ -549,10 +555,11 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<T, SomeNamespace.Subnamespace.InjectIdAttribute> Default<T>(this Binding<T, SomeNamespace.Subnamespace.InjectIdAttribute> binding)
         {
-            return binding.Initialize(static (o, c) => o.Initialize())
+            return binding.Initialize(static (o, c) => ((SomeNamespace.Subnamespace.InjectIdAttribute)o).Initialize())
                 .Inject(static (o, c) => 
                 {
-                    o.Inject(
+                    var to = (SomeNamespace.Subnamespace.InjectIdAttribute)o;
+                    to.Inject(
                         c.Resolve<object>(static x => x.Id("Potato")),
                         c.Resolve<float>(static x => x.Id("Banana")),
                         c.Resolve<object>());
@@ -581,10 +588,11 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<T, MultipleOfEach> Default<T>(this Binding<T, MultipleOfEach> binding)
         {
-            return binding.Initialize(static (o, c) => o.Initialize())
+            return binding.Initialize(static (o, c) => ((MultipleOfEach)o).Initialize())
                 .Inject(static (o, c) => 
                 {
-                    o.Inject(
+                    var to = (MultipleOfEach)o;
+                    to.Inject(
                         c.Resolve<object>());
                 })
                 .DontDispose();
@@ -681,12 +689,11 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<T, UnityEngine.SomeMonoBehaviour> Default<T>(this Binding<T, UnityEngine.SomeMonoBehaviour> binding)
         {
-            return binding.Initialize(static (o, c) => o.Initialize())
+            return binding.Initialize(static (o, c) => ((UnityEngine.SomeMonoBehaviour)o).Initialize())
                 .Inject(static (o, c) => 
                 {
-                    o.Construct(
-                        c.Resolve<int>());
-                    o.Inject(
+                    var to = (UnityEngine.SomeMonoBehaviour)o;
+                    to.Inject(
                         c.Resolve<object>());
                 })
                 .DontDispose();

@@ -73,15 +73,20 @@ namespace ManualDi.Sync
             var previousInjectedBinding = injectedBinding;
             injectedBinding = binding;
 
-            var instance = binding.Create(this)
-                ?? throw new InvalidOperationException($"Could not create object for Binding with Apparent type {binding.ApparentType} and Concrete type {binding.ConcreteType}");
-
+            var instance = injectedBinding.FromDelegate switch
+            {
+                FromDelegate fromDelegate => fromDelegate.Invoke(this) ??
+                    throw new InvalidOperationException($"Could not create object for Binding with Apparent type {injectedBinding.ApparentType} and Concrete type {injectedBinding.ConcreteType}"),
+                not null => injectedBinding.FromDelegate,
+                null => throw new InvalidOperationException($"The from delegate for Binding with Apparent type {injectedBinding.ApparentType} and Concrete type {injectedBinding.ConcreteType} is null"),
+            };
+            
             binding.Instance = instance;
             
-            var initialize = binding.Inject(this, instance);
-            if (initialize)
+            binding.InjectionDelegate?.Invoke(instance, this);
+            if (binding.InitializationDelegate is not null)
             {
-                diContainerInitializer.QueueInitialize((IInitializeBinding)binding, instance);
+                diContainerInitializer.QueueInitialize(binding.InitializationDelegate, instance);
             }
             
             if (binding.TryToDispose && instance is IDisposable disposable)

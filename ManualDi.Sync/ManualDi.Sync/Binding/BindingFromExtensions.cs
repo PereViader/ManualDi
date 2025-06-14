@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace ManualDi.Sync
 {
@@ -9,7 +10,8 @@ namespace ManualDi.Sync
             this Binding<TApparent, TConcrete> binding
             )
         {
-            binding.CreateConcreteDelegate = static c => c.Resolve<TConcrete>();
+            FromDelegate fromDelegate = static c => c.Resolve<TConcrete>();
+            binding.FromDelegate = fromDelegate;
             return binding;
         }
 
@@ -19,7 +21,8 @@ namespace ManualDi.Sync
             FilterBindingDelegate filterBindingDelegate
             )
         {
-            binding.CreateConcreteDelegate = c => c.Resolve<TConcrete>(filterBindingDelegate);
+            FromDelegate fromDelegate = c => c.Resolve<TConcrete>(filterBindingDelegate);
+            binding.FromDelegate = fromDelegate;
             return binding;
         }
         
@@ -29,16 +32,18 @@ namespace ManualDi.Sync
             InstallDelegate installDelegate
         )
         {
-            IDiContainer? subContainer = null;
-            binding.CreateConcreteDelegate = c =>
+            FromDelegate fromDelegate = c =>
             {
                 var bindings = new DiContainerBindings()
-                    .WithParentContainer(c)
                     .Install(installDelegate);
                 
-                subContainer = bindings.Build();
+                IDiContainer subContainer = bindings.Build();
+                binding.Dispose((_, _) => subContainer.Dispose());
                 return subContainer.Resolve<TConcrete>();
             };
+            
+            IDiContainer? subContainer = null;
+            binding.FromDelegate = fromDelegate;
             binding.Dispose((_, _) => subContainer?.Dispose());
             return binding;
         }
@@ -50,7 +55,7 @@ namespace ManualDi.Sync
         )
         {
             IDiContainer? subContainer = null;
-            binding.CreateConcreteDelegate = c =>
+            FromDelegate fromDelegate = c =>
             {
                 var bindings = new DiContainerBindings()
                     .Install(installDelegate);
@@ -58,6 +63,7 @@ namespace ManualDi.Sync
                 subContainer = bindings.Build();
                 return subContainer.Resolve<TConcrete>();
             };
+            binding.FromDelegate = fromDelegate;
             binding.Dispose((_, _) => subContainer?.Dispose());
             return binding;
         }
@@ -68,17 +74,17 @@ namespace ManualDi.Sync
             TConcrete instance
             )
         {
-            binding.CreateConcreteDelegate = _ => instance;
+            binding.FromDelegate = instance;
             return binding;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<TApparent, TConcrete> FromMethod<TApparent, TConcrete>(
             this Binding<TApparent, TConcrete> binding,
-            CreateDelegate<TConcrete> createDelegate
+            FromDelegate fromDelegate
             )
         {
-            binding.CreateConcreteDelegate = createDelegate;
+            binding.FromDelegate = fromDelegate;
             return binding;
         }
     }

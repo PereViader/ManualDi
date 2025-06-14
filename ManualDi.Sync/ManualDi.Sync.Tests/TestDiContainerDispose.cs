@@ -70,7 +70,7 @@ public class TestDiContainerDispose
     public void TestDisposeCustom()
     {
         var instance = new object();
-        var disposeAction = Substitute.For<InstanceContainerDelegate<object>>();
+        var disposeAction = Substitute.For<InstanceContainerDelegate>();
 
         IDiContainer container = new DiContainerBindings().Install(b =>
         {

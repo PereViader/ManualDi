@@ -51,23 +51,23 @@ public class TestContainerLifecycle
         {
             b.Bind<IInjectChild>()
                 .FromInstance(injectChild)
-                .Inject((o, c) => o.Inject())
-                .Initialize((o, c) => o.Initialize())
-                .Dispose((o, c) => o.Dispose());
+                .Inject((o, c) => ((IInjectChild)o).Inject())
+                .Initialize((o, c) => ((IInjectChild)o).Initialize())
+                .Dispose((o, c) => ((IInjectChild)o).Dispose());
 
             b.Bind<IInitChild>()
                 .FromInstance(initChild)
-                .Inject((o, c) => o.Inject())
-                .Initialize((o, c) => o.Initialize())
-                .Dispose((o, c) => o.Dispose());
+                .Inject((o, c) => ((IInitChild)o).Inject())
+                .Initialize((o, c) => ((IInitChild)o).Initialize())
+                .Dispose((o, c) => ((IInitChild)o).Dispose());
 
             b.Bind<IStartup>()
                 .FromInstance(startup)
-                .Dispose((o, c) => o.Dispose());
+                .Dispose((o, c) => ((IStartup)o).Dispose());
 
             b.Bind<IResolveAfter>()
                 .FromInstance(resolveAfter)
-                .Dispose((o, c) => o.Dispose());
+                .Dispose((o, c) => ((IResolveAfter)o).Dispose());
             
             b.QueueStartup<IStartup>(e => e.Run());
         }).Build();

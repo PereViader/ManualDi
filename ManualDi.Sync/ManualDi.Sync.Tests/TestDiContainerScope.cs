@@ -8,8 +8,8 @@ namespace ManualDi.Sync.Tests
         [Test]
         public void TestSingle()
         {
-            var factoryMethodDelegate = Substitute.For<CreateDelegate<object>>();
-            var injectionDelegate = Substitute.For<InstanceContainerDelegate<object>>();
+            var factoryMethodDelegate = Substitute.For<FromDelegate>();
+            var injectionDelegate = Substitute.For<InstanceContainerDelegate>();
 
             factoryMethodDelegate.Invoke(Arg.Any<IDiContainer>()).Returns(c => new object());
 

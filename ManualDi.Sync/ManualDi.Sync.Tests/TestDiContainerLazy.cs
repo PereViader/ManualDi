@@ -8,7 +8,7 @@ public class TestDiContainerLazy
     [Test]
     public void TestNonLazy()
     {
-        var builderFunc = Substitute.For<CreateDelegate<object>>();
+        var builderFunc = Substitute.For<FromDelegate>();
         builderFunc.Invoke(Arg.Any<IDiContainer>()).Returns(new object());
 
         using var _ = new DiContainerBindings().Install(b =>

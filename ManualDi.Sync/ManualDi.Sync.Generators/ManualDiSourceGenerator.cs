@@ -336,7 +336,9 @@ namespace ManualDi.Sync.Generators
                 context.StringBuilder.Append("                    ");
             }
             
-            context.StringBuilder.Append(".Initialize(static (o, c) => o.Initialize())");
+            context.StringBuilder.Append(".Initialize(static (o, c) => ((");
+            context.StringBuilder.Append(context.ClassName);
+            context.StringBuilder.Append(")o).Initialize())");
             return true;
         }
 
@@ -348,15 +350,8 @@ namespace ManualDi.Sync.Generators
                 .Where(x => x is { Name: "Inject", DeclaredAccessibility: Accessibility.Public or Accessibility.Internal, IsStatic: false })
                 .OrderByDescending(x => x.DeclaredAccessibility)
                 .FirstOrDefault();
-            
-            var constructMethod = context.ClassSymbol
-                .GetMembers()
-                .OfType<IMethodSymbol>()
-                .Where(x => x is { Name: "Construct", DeclaredAccessibility: Accessibility.Public or Accessibility.Internal, IsStatic: false })
-                .OrderByDescending(x => x.DeclaredAccessibility)
-                .FirstOrDefault();
 
-            if (injectMethod is null && constructMethod is null)
+            if (injectMethod is null)
             {
                 return isOnNewLine;
             }
@@ -367,21 +362,17 @@ namespace ManualDi.Sync.Generators
                 context.StringBuilder.Append("                ");
             }
             
-            context.StringBuilder.AppendLine($$"""
+            context.StringBuilder.Append($$"""
             .Inject(static (o, c) => 
                             {
+                                var to = (
             """);
-            
-            if (constructMethod is not null)
-            {
-                context.StringBuilder.Append("                    o.Construct(");
-                CreateMethodResolution(constructMethod, "                        ", context.TypeReferences, context.StringBuilder);
-                context.StringBuilder.AppendLine(");");
-            }
+            context.StringBuilder.Append(context.ClassName);
+            context.StringBuilder.AppendLine(")o;");
             
             if (injectMethod is not null)
             {
-                context.StringBuilder.Append("                    o.Inject(");
+                context.StringBuilder.Append("                    to.Inject(");
                 CreateMethodResolution(injectMethod, "                        ", context.TypeReferences, context.StringBuilder);
                 context.StringBuilder.AppendLine(");");
             }

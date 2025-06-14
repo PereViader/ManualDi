@@ -10,7 +10,7 @@ namespace ManualDi.Sync
         // in the same list, thus having them be closer in memory and thus more cache friendly
         // however this requires us to track how many of those commands happen on each depth level
         // so we can keep track of how many belong to each depth level
-        public readonly List<(IInitializeBinding initializeBinding, object instance)> Initializations;
+        public readonly List<(InstanceContainerDelegate initializeBinding, object instance)> Initializations;
         public int CurrentDepthInitializations;
 
         /// <summary>
@@ -27,10 +27,10 @@ namespace ManualDi.Sync
     internal static class DiContainerInitializerExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void QueueInitialize(ref this DiContainerInitializer o, IInitializeBinding binding, object instance)
+        public static void QueueInitialize(ref this DiContainerInitializer o, InstanceContainerDelegate initializeDelegate, object instance)
         {
             o.CurrentDepthInitializations += 1;
-            o.Initializations.Add((binding, instance));
+            o.Initializations.Add((initializeDelegate, instance));
         }
 
         public static void InitializeCurrentLevelQueued(ref this DiContainerInitializer o, DiContainer container)
@@ -41,8 +41,8 @@ namespace ManualDi.Sync
             
             for (int i = initializationStartIndex; i < o.Initializations.Count; i++)
             {
-                var (binding, instance) = o.Initializations[i];
-                binding.InitializeObject(instance, container);
+                var (initializeDelegate, instance) = o.Initializations[i];
+                initializeDelegate.Invoke(instance, container);
             }
             
             o.Initializations.RemoveRange(initializationStartIndex, initializationCount);

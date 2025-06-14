@@ -25,7 +25,7 @@ public class TestDiContainerDispose
     }
         
     [Test]
-    public void TestDontDisposePreventsDispose()
+    public void TestSkipDisposablePreventsDispose()
     {
         IDiContainer container = new DiContainerBindings().Install(b =>
         {

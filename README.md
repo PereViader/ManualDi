@@ -1005,7 +1005,7 @@ public class EntryPointData : IInstaller
     {
         if(Dependency1 is not null)
         {
-            b.Bind<Dependency1>().FromInstance(Dependency1).DontDispose();
+            b.Bind<Dependency1>().FromInstance(Dependency1).SkipDisposable();
         }
     }
 }

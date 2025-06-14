@@ -15,7 +15,7 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<T, SomeNamespace.Subnamespace.Public> Default<T>(this Binding<T, SomeNamespace.Subnamespace.Public> binding)
         {
-            return binding.DontDispose();
+            return binding.SkipDisposable();
         }
     }
 }
@@ -37,7 +37,7 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<T, SomeNamespace.Subnamespace.Internal> Default<T>(this Binding<T, SomeNamespace.Subnamespace.Internal> binding)
         {
-            return binding.DontDispose();
+            return binding.SkipDisposable();
         }
     }
 }
@@ -53,7 +53,7 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<T, SomeNamespace.Subnamespace.InternalPrivateConstructor> Default<T>(this Binding<T, SomeNamespace.Subnamespace.InternalPrivateConstructor> binding)
         {
-            return binding.DontDispose();
+            return binding.SkipDisposable();
         }
     }
 }
@@ -76,7 +76,7 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<T, SomeNamespace.Subnamespace.PublicAndPrivateConstructor> Default<T>(this Binding<T, SomeNamespace.Subnamespace.PublicAndPrivateConstructor> binding)
         {
-            return binding.DontDispose();
+            return binding.SkipDisposable();
         }
     }
 }
@@ -98,7 +98,7 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<T, SomeNamespace.Subnamespace.Internal2> Default<T>(this Binding<T, SomeNamespace.Subnamespace.Internal2> binding)
         {
-            return binding.DontDispose();
+            return binding.SkipDisposable();
         }
     }
 }
@@ -121,7 +121,7 @@ namespace ManualDi.Sync
         public static Binding<T, SomeNamespace.Subnamespace.InternalInitialize> Default<T>(this Binding<T, SomeNamespace.Subnamespace.InternalInitialize> binding)
         {
             return binding.Initialize(static (o, c) => ((SomeNamespace.Subnamespace.InternalInitialize)o).Initialize())
-                .DontDispose();
+                .SkipDisposable();
         }
     }
 }
@@ -170,7 +170,7 @@ namespace ManualDi.Sync
                     var to = (SomeNamespace.Subnamespace.PublicInitialize)o;
                     to.Inject();
                 })
-                .DontDispose();
+                .SkipDisposable();
         }
     }
 }
@@ -192,7 +192,7 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<T, SomeNamespace.Subnamespace.StaticInitialize> Default<T>(this Binding<T, SomeNamespace.Subnamespace.StaticInitialize> binding)
         {
-            return binding.DontDispose();
+            return binding.SkipDisposable();
         }
     }
 }
@@ -219,7 +219,7 @@ namespace ManualDi.Sync
                     var to = (SomeNamespace.Subnamespace.InternalInject)o;
                     to.Inject();
                 })
-                .DontDispose();
+                .SkipDisposable();
         }
     }
 }
@@ -246,7 +246,7 @@ namespace ManualDi.Sync
                     var to = (SomeNamespace.Subnamespace.PublicInject)o;
                     to.Inject();
                 })
-                .DontDispose();
+                .SkipDisposable();
         }
     }
 }
@@ -268,7 +268,7 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<T, SomeNamespace.Subnamespace.StaticInject> Default<T>(this Binding<T, SomeNamespace.Subnamespace.StaticInject> binding)
         {
-            return binding.DontDispose();
+            return binding.SkipDisposable();
         }
     }
 }
@@ -291,7 +291,7 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<T, SomeNamespace.Subnamespace.ConstructorWithGenericArgument> Default<T>(this Binding<T, SomeNamespace.Subnamespace.ConstructorWithGenericArgument> binding)
         {
-            return binding.DontDispose();
+            return binding.SkipDisposable();
         }
     }
 }
@@ -314,7 +314,7 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<T, SomeNamespace.Subnamespace.InjectReferencePropertyClass> Default<T>(this Binding<T, SomeNamespace.Subnamespace.InjectReferencePropertyClass> binding)
         {
-            return binding.DontDispose();
+            return binding.SkipDisposable();
         }
     }
 }
@@ -338,7 +338,7 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<T, SomeNamespace.Subnamespace.InjectValueNullablePropertyClass> Default<T>(this Binding<T, SomeNamespace.Subnamespace.InjectValueNullablePropertyClass> binding)
         {
-            return binding.DontDispose();
+            return binding.SkipDisposable();
         }
     }
 }
@@ -368,7 +368,7 @@ internal static Binding<T, SomeNamespace.Subnamespace.Obsolete> Default<T>(this 
                     var to = (SomeNamespace.Subnamespace.Obsolete)o;
                     to.Inject();
                 })
-                .DontDispose();
+                .SkipDisposable();
         }
     }
 }
@@ -400,7 +400,7 @@ namespace ManualDi.Sync
                         c.ResolveNullable<object>(),
                         c.ResolveNullableValue<int>());
                 })
-                .DontDispose();
+                .SkipDisposable();
         }
     }
 }
@@ -422,7 +422,7 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<T, SomeNamespace.Subnamespace.Static.PublicNested> Default<T>(this Binding<T, SomeNamespace.Subnamespace.Static.PublicNested> binding)
         {
-            return binding.DontDispose();
+            return binding.SkipDisposable();
         }
     }
 }
@@ -444,7 +444,7 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<T, SomeNamespace.Subnamespace.Static.InternalNested> Default<T>(this Binding<T, SomeNamespace.Subnamespace.Static.InternalNested> binding)
         {
-            return binding.DontDispose();
+            return binding.SkipDisposable();
         }
     }
 }
@@ -533,7 +533,7 @@ namespace ManualDi.Sync
                     to.Inject(
                         c.ResolveAll<object>());
                 })
-                .DontDispose();
+                .SkipDisposable();
         }
     }
 }
@@ -564,7 +564,7 @@ namespace ManualDi.Sync
                         c.Resolve<float>(static x => x.Id("Banana")),
                         c.Resolve<object>());
                 })
-                .DontDispose();
+                .SkipDisposable();
         }
     }
 }
@@ -595,7 +595,7 @@ namespace ManualDi.Sync
                     to.Inject(
                         c.Resolve<object>());
                 })
-                .DontDispose();
+                .SkipDisposable();
         }
     }
 }
@@ -619,7 +619,7 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<T, InjectContainer> Default<T>(this Binding<T, InjectContainer> binding)
         {
-            return binding.DontDispose();
+            return binding.SkipDisposable();
         }
     }
 }
@@ -641,7 +641,7 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<T, InitializeAsyncCheck> Default<T>(this Binding<T, InitializeAsyncCheck> binding)
         {
-            return binding.DontDispose();
+            return binding.SkipDisposable();
         }
     }
 }
@@ -657,7 +657,7 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<T, UnityEngine.Object> Default<T>(this Binding<T, UnityEngine.Object> binding)
         {
-            return binding.DontDispose();
+            return binding.SkipDisposable();
         }
     }
 }
@@ -673,7 +673,7 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<T, UnityEngine.MonoBeheviour> Default<T>(this Binding<T, UnityEngine.MonoBeheviour> binding)
         {
-            return binding.DontDispose();
+            return binding.SkipDisposable();
         }
     }
 }
@@ -696,7 +696,7 @@ namespace ManualDi.Sync
                     to.Inject(
                         c.Resolve<object>());
                 })
-                .DontDispose();
+                .SkipDisposable();
         }
     }
 }

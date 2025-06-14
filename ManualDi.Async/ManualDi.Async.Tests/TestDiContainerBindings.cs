@@ -30,7 +30,7 @@ public class TestDiContainerBindings
         var injectionDelegate = Substitute.For<ContainerDelegate>();
 
         await using var container = await new DiContainerBindings()
-            .Install(b => b.QueueInjection(injectionDelegate))
+            .Install(b => b.QueueInject(injectionDelegate))
             .Build(CancellationToken.None);
 
         injectionDelegate.Received(1).Invoke(Arg.Is<IDiContainer>(container));
@@ -42,7 +42,7 @@ public class TestDiContainerBindings
         var initializationDelegate = Substitute.For<ContainerDelegate>();
 
         await using var container = await new DiContainerBindings()
-            .Install(b => b.QueueInitialization(initializationDelegate))
+            .Install(b => b.QueueInitialize(initializationDelegate))
             .Build(CancellationToken.None);
 
         initializationDelegate.Received(1).Invoke(Arg.Is<IDiContainer>(container));
@@ -71,8 +71,8 @@ public class TestDiContainerBindings
         var container = await new DiContainerBindings()
             .Install(b =>
             {
-                b.QueueInjection(injectionDelegate);
-                b.QueueInitialization(initializationDelegate);
+                b.QueueInject(injectionDelegate);
+                b.QueueInitialize(initializationDelegate);
                 b.QueueStartup(startupDelegate);
                 b.QueueDispose(disposeDelegate);
             })

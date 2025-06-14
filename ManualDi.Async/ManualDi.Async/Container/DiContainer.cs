@@ -70,8 +70,8 @@ namespace ManualDi.Async
                     FromDelegate fromDelegate => fromDelegate.Invoke(this) ??
                                                  throw new InvalidOperationException(
                                                      $"Could not create object for Binding with Apparent type {injectedBinding.ApparentType} and Concrete type {injectedBinding.ConcreteType}"),
+                    not null => injectedBinding.FromDelegate,
                     null => throw new InvalidOperationException($"The from delegate for Binding with Apparent type {injectedBinding.ApparentType} and Concrete type {injectedBinding.ConcreteType} is null"),
-                    _ => throw new InvalidOperationException($"The from delegate for Binding with Apparent type {injectedBinding.ApparentType} and Concrete type {injectedBinding.ConcreteType} is of an unsupported type"),
                 };
                 
                 if (injectedBinding.TryToDispose)

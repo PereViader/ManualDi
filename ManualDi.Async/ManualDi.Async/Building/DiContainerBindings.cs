@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,7 +9,7 @@ namespace ManualDi.Async
     
     public sealed class DiContainerBindings
     {
-        private readonly Dictionary<IntPtr, Binding> bindingsByType;
+        internal readonly Dictionary<IntPtr, Binding> bindingsByType;
         private readonly List<ContainerDelegate> injectDelegates;
         private readonly List<ContainerDelegate> initializeDelegates;
         private readonly List<ContainerDelegate> startupDelegates;
@@ -21,6 +19,8 @@ namespace ManualDi.Async
         private bool failureDebugReportEnabled;
 
         private IDiContainer? parentDiContainer;
+
+        internal BindingContext bindingContext = new();
 
         public DiContainerBindings(
             int? bindingsCapacity = null, 

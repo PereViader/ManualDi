@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using System.Xml.Schema;
 
 namespace ManualDi.Async
 {
@@ -104,7 +104,7 @@ namespace ManualDi.Async
             
             diContainerBindings.AddBinding(binding, typeof(TApparent));
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DiContainerBindings QueueStartup<T>(this DiContainerBindings diContainerBindings, Action<T> startup)
         {
@@ -114,6 +114,115 @@ namespace ManualDi.Async
                 startup.Invoke(resolved);
             });
             return diContainerBindings;
+
+        }
+
+        /// <summary>
+        /// Resolve instance can be used during the binding provess to resolve instances from bindings that use the FromInstance creation strategy
+        /// Using this method is useful for doing conditional logic on bindings using the data present on the instances
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool TryResolveInstance<TConfig>(this DiContainerBindings bindings, [NotNullWhen(true)] out TConfig? config)
+        {
+            var binding = bindings.GetBinding(typeof(TConfig));
+            if (binding is not { FromDelegate: TConfig instance })
+            {
+                config = default;
+                return false;
+            }
+
+            config = instance;
+            return true;
+        }
+        
+        /// <summary>
+        /// Resolve instance can be used during the binding provess to resolve instances from bindings that use the FromInstance creation strategy
+        /// Using this method is useful for doing conditional logic on bindings using the data present on the instances
+        /// </summary>
+        /// <code>
+        /// var config = bindings.ResolveInstance<SomeFeatureConfig>();
+        /// if(config.IsEnabled)
+        /// {
+        ///    bindings.Bind<ISomeFeature, EnabledSomeFeature>().Default().FromConstructor();
+        /// }
+        /// else
+        /// {
+        ///    bindings.Bind<ISomeFeature, DisabledSomeFeature>().Default().FromConstructor();
+        /// }
+        /// <code>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TConfig ResolveInstance<TConfig>(this DiContainerBindings bindings)
+        {
+            if (!bindings.TryResolveInstance<TConfig>(out var config))
+            {
+                throw new InvalidOperationException($"Could not resolve instance for binding of type {typeof(TConfig).FullName}");
+            }
+            
+            return config;
+        }
+        
+        /// <summary>
+        /// Resolve instance can be used during the binding provess to resolve instances from bindings that use the FromInstance creation strategy
+        /// Using this method is useful for doing conditional logic on bindings using the data present on the instances
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TConfig? ResolveInstanceNullable<TConfig>(this DiContainerBindings bindings)
+            where TConfig : class
+        {
+            var binding = bindings.GetBinding(typeof(TConfig));
+            if (binding is not { FromDelegate: TConfig instance })
+            {
+                return null;
+            }
+
+            return instance;
+        }
+        
+        /// <summary>
+        /// Resolve instance can be used during the binding provess to resolve instances from bindings that use the FromInstance creation strategy
+        /// Using this method is useful for doing conditional logic on bindings using the data present on the instances
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TConfig? ResolveInstanceNullableValue<TConfig>(this DiContainerBindings bindings)
+            where TConfig : struct
+        {
+            var binding = bindings.GetBinding(typeof(TConfig));
+            if (binding is not { FromDelegate: TConfig instance })
+            {
+                return null;
+            }
+
+            return instance;
+        }
+        
+        //This method is a duplicate of the one in DiContainer so that we can use it to resolve instances during the binding
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static Binding? GetBinding(this DiContainerBindings diContainerBindings, Type type)
+        {
+            if (!diContainerBindings.bindingsByType.TryGetValue(type.TypeHandle.Value, out Binding? binding))
+            {
+                return null;
+            }
+
+            if (binding.FilterBindingDelegate is null)
+            {
+                return binding;
+            }
+
+            //bindingContext.InjectedIntoBinding = injectedBinding;
+            do
+            {
+                diContainerBindings.bindingContext.Binding = binding;
+
+                if (binding.FilterBindingDelegate?.Invoke(diContainerBindings.bindingContext) ?? true)
+                {
+                    return binding;
+                }
+
+                binding = binding.NextBinding;
+            } while (binding is not null);
+            
+            return null;
         }
     }
 }

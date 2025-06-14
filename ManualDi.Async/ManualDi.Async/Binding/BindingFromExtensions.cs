@@ -42,7 +42,8 @@ namespace ManualDi.Async
             TConcrete instance
         )
         {
-            return binding.FromMethod(_ => instance);
+            binding.FromDelegate = instance;
+            return binding;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -22,7 +22,7 @@ namespace ManualDi.Async
 
     public sealed class BindingContext
     {
-        public Binding Binding = default!; // Optimization: we assume that it will be filled
+        public Binding Binding = null!; // Optimization: we assume that it will be filled
         public Binding? InjectedIntoBinding;
     }
 

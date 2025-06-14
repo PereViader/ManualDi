@@ -64,161 +64,117 @@ In the section below we will add two examples, check the `ApplicationEntryPoint`
     - The container and object graph is be created
     - Startup callbacks of the application are invoked
 
-## ManualDi.Sync
+## ManualDi.Sync sample
 
 ```csharp
-public void ApplicationEntryPoint
-{
-    private DiContainer _diContainer;
- 
-    public void StartApplication()
-    {
-        _diContainer = new DiContainerBindings() 
-            .Install(b => {
-                b.Bind<SomeClass>().Default().FromConstructor();
-                b.Bind<IOtherClass, OtherClass>().Default().FromConstructor();
-                b.Bind<Startup>().Default().FromConstructor();
-                b.QueueStartup<Startup>(static startup => startup.Execute());
-            })
-            .Build();
-    }
+using _diContainer = new DiContainerBindings()
+    .Install(b => {
+        //Setup the instances involved in the object graph
+        // The order of instantiation, injection and subsequent initialization is the reverse of the dependency graph
+        // A consistent and reliable order of execution prevents issues that happen when instances are used when not yet properly initialized
+        b.Bind<SomeClass>().Default().FromConstructor();
+        b.Bind<IOtherClass, OtherClass>().Default().FromConstructor();
+        b.Bind<Startup>().Default().FromConstructor();
 
-    public void StopApplication()
-    {
-        if(_diContainer == null) return;
-
-        _diContainer.Dispose();
-        _diContainer = null;
-    }
-}
-    
-//Once it reaches this line, both classes will have been created, initialized in the proper order and Startup.Execute will have been run
-
-public class SomeClass
-{
-    public SomeClass(IOtherClass otherClass)
-    {
-        // All required classes are instantiated in an initial pass.
-        // The order of instantiation and subsequent method execution is determined dynamically at runtime
-        // based on dependency analysis, ensuring automatic adaptation to changes.
-    }
-
-    public void Inject(IOtherClass otherClass)
-    {
-        //Called after constructor
-        //Should only be used when to break cyclic dependencies between dependencies
-        //When you need to use it, it usually means there is a problem in the design of your object graph
-        //Dependencies taken from Inject will always sort those dependencies at the end.  
-    }
-
-    public void Initialize() { 
-        // Called after Inject
-        // Should be used to implement actual initialization logic.
-        // Other methods should have NO logic, only store references and wire the object graph
-        // By having logic ONLY on Intialize methods, the library guarantees that there won't be issues in initialization
-        // All methods other than the constructor are called in order of dependencies
-        // In this example SomeClass.Initialize runs after OtherClass.Initialize (because SomeClass depends on IOtherClass)
-    }
-}
+        // Instruct the container the Startup logic to run once all dependencies created and initialized.
+        b.QueueStartup<Startup>(static startup => startup.Execute());
+    })
+    .Build();
 
 public interface IOtherClass { }
 
 public class OtherClass : IOtherClass
 {
+    // Runs first because the class does not depend on anything else
     public void Initialize() { 
-        // Some initialization here
+        Console.WriteLine("OtherClass.Initialize");
     }
 }
 
-public class Startup(SomeClass someClass, IOtherClass otherClass) // Constructor injected
+public class SomeClass(IOtherClass otherClass)
 {
+    // SomeClass.Initialize runs after OtherClass.Initialize
+    public void Initialize() { 
+        Console.WriteLine("SomeClass.Initialize");
+    }
+}
+
+public class Startup(SomeClass someClass)
+{
+    private IOtherClass otherClass;
+
+    //Inject runs after the constructor
+    public void Inject(IOtherClass otherClass)
+    {
+        this.otherClass = otherClass;
+    }
+
+    // Runs after SomeClass.Initialize and OtherClass.InitializeAsync
     public void Execute()
     {
-        //This runs after SomeClass.Initialize and OtherClass.Initialize
+        Console.WriteLine("Startup.Execute");
     }
 }
 ```
 
-## ManualDi.Async
+## ManualDi.Async sample
 
 ```csharp
-public void ApplicationEntryPoint
-{
-    private DiContainer _diContainer;
- 
-    public void StartApplication()
-    {
-        await using DiContainer diContainer = await new DiContainerBindings()
-            .Install(b => {
-                b.Bind<SomeClass>().Default().FromConstructor();
-                b.Bind<IOtherClass, OtherClass>().Default().FromConstructor();
-                b.Bind<Startup>().Default().FromConstructor();
-                b.QueueStartup<Startup>(static async (startup, ct) => startup.Execute(ct));
-            })
-            .Build(CancellationToken.None);
-    }
+await using _diContainer = await new DiContainerBindings()
+    .Install(b => {
+        //Setup the instances involved in the object graph
+        // The order of instantiation, injection and subsequent initialization is the reverse of the dependency graph
+        // A consistent and reliable order of execution prevents issues that happen when instances are used when not yet properly initialized
+        b.Bind<SomeClass>().Default().FromConstructor();
+        b.Bind<IOtherClass, OtherClass>().Default().FromConstructor();
+        b.Bind<Startup>().Default().FromConstructor();
 
-    public ValueTask StopApplication()
-    {
-        if(_diContainer == null) return;
-
-        var task = _diContainer.DisposeAsync();
-        _diContainer = null;
-        return task;
-    }
-}
-
-    
-//Once it reaches this line, both classes will have been created, initialized in the proper order and Startup.Execute will have been run
-
-public class SomeClass
-{
-    public SomeClass(IOtherClass otherClass)
-    {
-        // All required classes are instantiated in an initial pass.
-        // The order of instantiation and subsequent method execution is determined dynamically at runtime
-        // based on dependency analysis, ensuring automatic adaptation to changes.
-    }
-
-    public void Inject(IOtherClass otherClass)
-    {
-        //Called after constructor
-        //Should only be used when to break cyclic dependencies between dependencies
-        //When you need to use it, it usually means there is a problem in the design of your object graph
-        //Dependencies taken from Inject will always sort those dependencies at the end.  
-    }
-
-    public void Initialize() { 
-        // Called after Inject
-        // Should be used to implement actual initialization logic.
-        // Other methods should have NO logic, only store references and wire the object graph
-        // By having logic ONLY on Intialize methods, the library guarantees that there won't be issues in initialization
-        // All methods other than the constructor are called in order of dependencies
-        // In this example SomeClass.Initialize runs after OtherClass.InitializeAsync (because SomeClass depends on IOtherClass)
-    }
-}
+        // Instruct the container the Startup logic to run once all dependencies created and initialized.
+        b.QueueStartup<Startup>(static async (startup, ct) => startup.Execute(ct));
+    })
+    .Build(CancellationToken.None);
 
 public interface IOtherClass { }
 
 public class OtherClass : IOtherClass
 {
-    public void InitializeAsync() { 
-        // Some initialization here
+    // Runs first because the class does not depend on anything else
+    public Task InitializeAsync(CancellationToken ct) { 
+        Console.WriteLine("OtherClass.InitializeAsync");
+        return Task.CompletedTask;
     }
 }
 
-public class Startup(SomeClass someClass, IOtherClass otherClass) // Constructor injected
+public class SomeClass(IOtherClass otherClass)
 {
+    // SomeClass.Initialize runs after OtherClass.InitializeAsync
+    public void Initialize() { 
+        Console.WriteLine("SomeClass.Initialize");
+    }
+}
+
+public class Startup(SomeClass someClass)
+{
+    private IOtherClass otherClass;
+
+    //Inject runs after the constructor
+    public void Inject(IOtherClass otherClass)
+    {
+        this.otherClass = otherClass;
+    }
+
+    // Runs after SomeClass.Initialize and OtherClass.InitializeAsync
     public async Task Execute(CancellationToken ct)
     {
-        //This runs after SomeClass.Initialize and OtherClass.InitializeAsync
+        Console.WriteLine("Startup.Execute");
+        return Task.CompletedTask;
     }
 }
 ```
 
 # Quick concepts
 
-Let's briefly discuss some concepts from the library
+Let's briefly discuss a few concepts from the library to get a high level overview
 
 - The container is created using a builder `DiContainerBindings`
 - Container instance creation are configured through `Bind` method overloads.

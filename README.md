@@ -656,6 +656,55 @@ class SomeFeatureInstaller : IInstaller
 }
 ```
 
+### Building different object graphs at runtime
+
+A common requirement when implementing gamemodes, doing A/B tests or taking any other data driven approach is to build different object graphs.
+
+This can be accomplished in ManualDi by running different Bind statements depending on the data.
+
+Bindings that are created using `FromInstance` can be resolved from `DiContainerBindings` after they have been bound using parallel Resolve methods
+- ResolveInstance
+- TryResolveInstance
+- ResolveInstanceNullable
+- ResolveInstanceNullableValue
+
+Resolved instances during installation are provided 'as is,' without any initialization or callbacks performed.
+
+Keep in mind that using this is not always necessary you can also provide parameters on extension method / instance installers. However this is not always possible and can introduce a lot of boilerplate thus adding complexity for little gain. Using this feature trades bolierplate for compilation safety, thus you need to weight what is the best approach for your use case.
+
+This could be some sample feature implemented using this
+
+```csharp
+//On some installer X do
+b.Bind<SomeConfig>().FromInstance(new SomeConfig(IsEnabled: true))
+
+
+//On some installer Y do
+var config = b.ResolveInstance<SomeConfig>();
+if(config.IsEnabled)
+{
+    b.Bind<ISomeFeature, EnabledSomeFeature>().Default().FromConstructor();
+}
+else
+{
+    b.Bind<ISomeFeature, DisabledSomeFeature>().Default().FromConstructor();
+}
+```
+
+When doing A/B tests and doing continuous integration, my recommendation is that you implement some feature flag source that is always enabled and allows you to conditionally toggle features on and off easily without needing to have a custom config for each one
+
+```csharp
+var featureFlags = b.ResolveInstance<IFeatureFlags>();
+if(featureFlags.IsEnabled(FeatureFlagConstants.SomeFeature))
+{
+    b.Bind<ISomeFeature, EnabledSomeFeature>().Default().FromConstructor();
+}
+else
+{
+    b.Bind<ISomeFeature, DisabledSomeFeature>().Default().FromConstructor();
+}
+```
+
 # Extra Source Generator features
 
 ## Nullable

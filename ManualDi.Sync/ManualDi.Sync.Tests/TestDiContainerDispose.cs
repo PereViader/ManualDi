@@ -29,7 +29,7 @@ public class TestDiContainerDispose
     {
         IDiContainer container = new DiContainerBindings().Install(b =>
         {
-            b.Bind<IDisposable>().FromInstance(Substitute.For<IDisposable>()).DontDispose();
+            b.Bind<IDisposable>().FromInstance(Substitute.For<IDisposable>()).SkipDisposable();
         }).Build();
 
         var disposable = container.Resolve<IDisposable>();

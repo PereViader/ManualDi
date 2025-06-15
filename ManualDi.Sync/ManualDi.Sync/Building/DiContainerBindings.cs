@@ -17,7 +17,8 @@ namespace ManualDi.Sync
         
         internal readonly BindingContext bindingContext = new();
 
-        private IDiContainer? parentDiContainer;
+        internal IDiContainer? parentDiContainer;
+        internal DiContainerBindings? parentDiContainerBindings;
 
         public DiContainerBindings(
             int? bindingsCapacity = null, 
@@ -77,7 +78,21 @@ namespace ManualDi.Sync
         
         public DiContainerBindings WithParentContainer(IDiContainer? diContainer)
         {
+            if (parentDiContainerBindings is not null)
+            {
+                throw new InvalidOperationException($"Can't have both parent DiContainer and DiContainerBindings");
+            }
             parentDiContainer = diContainer;
+            return this;
+        }
+        
+        public DiContainerBindings WithParentBindings(DiContainerBindings? diContainerBindings)
+        {
+            if (parentDiContainer is not null)
+            {
+                throw new InvalidOperationException($"Can't have both parent DiContainer and DiContainerBindings");
+            }
+            parentDiContainerBindings = diContainerBindings;
             return this;
         }
         

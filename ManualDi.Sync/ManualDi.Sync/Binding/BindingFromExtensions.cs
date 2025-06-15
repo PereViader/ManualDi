@@ -27,6 +27,7 @@ namespace ManualDi.Sync
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Obsolete("Use b.BindSubContainer<TApparent>(...) instead, when using this this method, it will not have access to b.ResolveInstance<TConfig> present on the parent DiContainerBindings")]
         public static Binding<TApparent, TConcrete> FromSubContainerResolve<TApparent, TConcrete>(
             this Binding<TApparent, TConcrete> binding,
             InstallDelegate installDelegate
@@ -49,6 +50,7 @@ namespace ManualDi.Sync
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Obsolete("Use b.BindSubContainer<TApparent>(...) instead, when using this this method, it will not have access to b.ResolveInstance<TConfig> present on the parent DiContainerBindings")]
         public static Binding<TApparent, TConcrete> FromIsolatedSubContainerResolve<TApparent, TConcrete>(
             this Binding<TApparent, TConcrete> binding,
             InstallDelegate installDelegate

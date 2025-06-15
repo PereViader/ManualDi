@@ -122,9 +122,36 @@ namespace ManualDi.Sync
         }
         
         /// <summary>
-        /// Resolve instance can be used during the binding provess to resolve instances from bindings that use the FromInstance creation strategy
-        /// Using this method is useful for doing conditional logic on bindings using the data present on the instances
+        /// Resolve instance can be used during the binding process to resolve instances during installation.
+        /// It enables data-driven creation of the object graph.
+        /// It can resolve instances from a parent container after WithParentContainer has been called.
+        /// It can resolve instances when FromInstance is used for a binding on the current container.
         /// </summary>
+        /// <code>
+        /// <![CDATA[
+        /// var config = bindings.ResolveInstance<SomeFeatureConfig>();
+        /// if(config.IsEnabled)
+        /// {
+        ///    bindings.Bind<ISomeFeature, EnabledSomeFeature>().Default().FromConstructor();
+        /// }
+        /// else
+        /// {
+        ///    bindings.Bind<ISomeFeature, DisabledSomeFeature>().Default().FromConstructor();
+        /// }
+        /// ]]>
+        /// </code>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TConfig ResolveInstance<TConfig>(this DiContainerBindings bindings)
+        {
+            if (!bindings.TryResolveInstance<TConfig>(out var config))
+            {
+                throw new InvalidOperationException($"Could not resolve instance for binding of type {typeof(TConfig).FullName}");
+            }
+            
+            return config;
+        }
+        
+        /// <inheritdoc cref="ResolveInstance{TConfig}(DiContainerBindings)"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryResolveInstance<TConfig>(this DiContainerBindings bindings, [NotNullWhen(true)] out TConfig? config)
         {
@@ -149,36 +176,7 @@ namespace ManualDi.Sync
             return bindings.parentDiContainer.TryResolve<TConfig>(out config);
         }
         
-        /// <summary>
-        /// Resolve instance can be used during the binding provess to resolve instances from bindings that use the FromInstance creation strategy
-        /// Using this method is useful for doing conditional logic on bindings using the data present on the instances
-        /// </summary>
-        /// <code>
-        /// var config = bindings.ResolveInstance<SomeFeatureConfig>();
-        /// if(config.IsEnabled)
-        /// {
-        ///    bindings.Bind<ISomeFeature, EnabledSomeFeature>().Default().FromConstructor();
-        /// }
-        /// else
-        /// {
-        ///    bindings.Bind<ISomeFeature, DisabledSomeFeature>().Default().FromConstructor();
-        /// }
-        /// <code>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TConfig ResolveInstance<TConfig>(this DiContainerBindings bindings)
-        {
-            if (!bindings.TryResolveInstance<TConfig>(out var config))
-            {
-                throw new InvalidOperationException($"Could not resolve instance for binding of type {typeof(TConfig).FullName}");
-            }
-            
-            return config;
-        }
-        
-        /// <summary>
-        /// Resolve instance can be used during the binding provess to resolve instances from bindings that use the FromInstance creation strategy
-        /// Using this method is useful for doing conditional logic on bindings using the data present on the instances
-        /// </summary>
+        /// <inheritdoc cref="ResolveInstance{TConfig}(DiContainerBindings)"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TConfig? ResolveInstanceNullable<TConfig>(this DiContainerBindings bindings)
             where TConfig : class
@@ -197,10 +195,7 @@ namespace ManualDi.Sync
             return bindings.parentDiContainer?.ResolveNullable<TConfig>();
         }
         
-        /// <summary>
-        /// Resolve instance can be used during the binding provess to resolve instances from bindings that use the FromInstance creation strategy
-        /// Using this method is useful for doing conditional logic on bindings using the data present on the instances
-        /// </summary>
+        /// <inheritdoc cref="ResolveInstance{TConfig}(DiContainerBindings)"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TConfig? ResolveInstanceNullableValue<TConfig>(this DiContainerBindings bindings)
             where TConfig : struct

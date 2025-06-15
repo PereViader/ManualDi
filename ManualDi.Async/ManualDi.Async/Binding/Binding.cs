@@ -54,7 +54,7 @@ namespace ManualDi.Async
         internal FilterBindingDelegate? FilterBindingDelegate;
         internal Action<IDependencyResolver>? Dependencies;
         internal object? Id;
-        internal object? FromDelegate;
+        internal object? FromDelegate; //Contains either FromDelegate or FromAsyncDelegate or an instance of type TConcrete
         internal object? InjectionDelegate;
         internal object? InitializationDelegate;
         

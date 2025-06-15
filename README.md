@@ -221,7 +221,7 @@ The specific binding configuration is done through 9 categories of methods that,
 // TApparent is optional and will be equal to TConcrete when undefined
 Bind<(TApparent,)? TConcrete>() 
     .Default*
-    .From[Constructor*|Instance|Method|MethodAsync**|ContainerResolve|SubContainerResolve|...]  //There are many more
+    .From[Constructor*|Instance|Method|MethodAsync**|...]  //There are many more
     .DependsOn**
     .Inject
     .Initialize
@@ -346,56 +346,6 @@ However the recommended pattern when implementing this is to use the `Bind` over
 
 ```csharp
 b.Bind<IFirst, ISecond, SomeClass>().Default().FromConstructor();
-```
-
-### SubContainerResolve
-
-The instance is created using a sub-container built via the provided installer.
-This is useful for encapsulating parts of the object graph into isolated sub-containers.
-The sub-container inherits from the main container, allowing its bindings to depend on types registered in the parent.
-When using this approach, do not call Default on the main binding—Default should be invoked within the sub-container’s installation instead.
-
-Question: When would I do this?
-Answer: For instance, think of a Unity3d game that has many enemies on a scene and you want to bind all enemies to the container so that their dependencies are setup and it is properly initialized.
-
-```csharp
-class Enemy : MonoBehaviour
-{ 
-    public void Inject(ParentDependency parentDependency, SubDependency subDependency) { }
-    public void Initialize() { }
-}
-class ParentDependency { }
-class SubDependency {}
-
-b.Bind<ParentDependency>().Default().FromConstructor();
-foreach(var enemy in enemiesInScene) //enemiesInScene 
-{
-    b.Bind<Enemy>().FromSubContainerResolve(sub => {
-        sub.Bind<Enemy>().Default().FromInstance(enemy);
-        sub.Bind<SubDependency>().Default().FromConstructor();
-    });
-}
-```
-
-### IsolatedSubContainerResolve
-
-Works just like `SubContainerResolve` but the subcontainer will not inherit from the main container.
-Thus nothing from the main container will be resolvable. 
-
-```csharp
-class Enemy : MonoBehaviour
-{ 
-    public void Inject(SubDependency subDependency) { }
-}
-class SubDependency {}
-
-foreach(var enemy in enemiesInScene)
-{
-    b.Bind<Enemy>().FromSubContainerResolve(sub => {
-        sub.Bind<Enemy>().Default().FromInstance(enemy);
-        sub.Bind<SubDependency>().Default().FromConstructor();
-    });
-}
 ```
 
 
@@ -618,6 +568,56 @@ b.Bind<SomeValue>().Default().FromConstructor().WithId("2"); // will be provided
 b.Bind<FailValue>().Default().FromConstructor(); // will fail at runtime when resolved
 ```
 
+# BindSubContainer
+
+The instance is created using a sub-container built via the provided installer.
+This is useful for encapsulating parts of the object graph into isolated sub-containers.
+The sub-container inherits from the main container, allowing its bindings to depend on types registered in the parent.
+When using this approach, do not call Default on the main binding—Default should be invoked within the sub-container’s installation instead.
+
+Question: When would I do this?
+Answer: For instance, think of a Unity3d game that has many enemies on a scene and you want to bind all enemies to the container so that their dependencies are setup and it is properly initialized.
+
+```csharp
+class Enemy : MonoBehaviour
+{ 
+    public void Inject(ParentDependency parentDependency, SubDependency subDependency) { }
+    public void Initialize() { }
+}
+class ParentDependency { }
+class SubDependency {}
+
+b.Bind<ParentDependency>().Default().FromConstructor();
+foreach(var enemy in enemiesInScene) //enemiesInScene 
+{
+    b.BindSubContainer<Enemy>(sub => {
+        sub.Bind<Enemy>().Default().FromInstance(enemy);
+        sub.Bind<SubDependency>().Default().FromConstructor();
+    });
+}
+```
+
+### BindIsolatedSubContainer
+
+Works just like `BindSubContainer` but the subcontainer will not inherit from the main container.
+Thus nothing from the main container will be resolvable. 
+
+```csharp
+class Enemy : MonoBehaviour
+{ 
+    public void Inject(SubDependency subDependency) { }
+}
+class SubDependency {}
+
+foreach(var enemy in enemiesInScene)
+{
+    b.BindIsolatedSubContainer<Enemy>(sub => {
+        sub.Bind<Enemy>().Default().FromInstance(enemy);
+        sub.Bind<SubDependency>().Default().FromConstructor();
+    });
+}
+```
+
 # Installers
 
 In order to group features in a sensible way, bindings will usually be grouped on Installer classes.
@@ -662,24 +662,27 @@ A common requirement when implementing gamemodes, doing A/B tests or taking any 
 
 This can be accomplished in ManualDi by running different Bind statements depending on the data.
 
-Bindings that are created using `FromInstance` can be resolved from `DiContainerBindings` after they have been bound using parallel Resolve methods
+The available resolution methods are available on `DiContainerBinding` are:
 - ResolveInstance
 - TryResolveInstance
 - ResolveInstanceNullable
 - ResolveInstanceNullableValue
 
-Resolved instances during installation are provided 'as is,' without any initialization or callbacks performed.
+Bindings that are created using `FromInstance` can be resolved from `DiContainerBindings` after they have been bound. Keep in mind that instances are provided 'as is,' without any initialization or callbacks performed, because at the time of installation nothing will have been triggered yet.
 
-Keep in mind that using this is not always necessary you can also provide parameters on extension method / instance installers. However this is not always possible and can introduce a lot of boilerplate thus adding complexity for little gain. Using this feature trades bolierplate for compilation safety, thus you need to weight what is the best approach for your use case.
+When `WithParentContainer` is used, all bindings on the parent can container can be resolved
+
+When `BindSubContainer` is used, the subcontainer can access the same the base installer could
+
+Keep in mind that using this is not always necessary you can also provide parameters on extension method / instance installers. However this is not always possible and can introduce a lot of boilerplate thus adding complexity for little gain. Using this feature trades compilation safety for fewer bolierplate, thus you need to weight what is the best approach for your use case.
 
 This could be some sample feature implemented using this
 
 ```csharp
-//On some installer X do
+//On some installer do
 b.Bind<SomeConfig>().FromInstance(new SomeConfig(IsEnabled: true))
 
-
-//On some installer Y do
+//On another installer for the same container do
 var config = b.ResolveInstance<SomeConfig>();
 if(config.IsEnabled)
 {
@@ -691,9 +694,13 @@ else
 }
 ```
 
-When doing A/B tests and doing continuous integration, my recommendation is that you implement some feature flag source that is always enabled and allows you to conditionally toggle features on and off easily without needing to have a custom config for each one
+When doing A/B tests and doing continuous integration, my recommendation is that you implement some feature flag source that is always available and allows you to conditionally toggle features on and off easily without needing to have a custom config for each one
 
 ```csharp
+//On some installer for the parent container do
+b.Bind<IFeatureFlags, FeatureFlags>().Default().FromConstructor();
+
+//On another installer for child container
 var featureFlags = b.ResolveInstance<IFeatureFlags>();
 if(featureFlags.IsEnabled(FeatureFlagConstants.SomeFeature))
 {
@@ -744,6 +751,7 @@ Apparent: System.Object, Concrete: System.Object, Id:
 ```
 
 Note: If you think there is some other piece of data that should be added open a discussion with the suggestion.
+
 
 # Extra Source Generator features
 

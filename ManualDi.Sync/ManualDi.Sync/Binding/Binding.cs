@@ -20,7 +20,7 @@ namespace ManualDi.Sync
         public bool TryToDispose = true;
         public FilterBindingDelegate? FilterBindingDelegate;
         public object? Id;
-        public object? FromDelegate;
+        public object? FromDelegate; // Contains either FromDelegate or an instance of type TConcrete
         public InstanceContainerDelegate? InjectionDelegate;
         public InstanceContainerDelegate? InitializationDelegate;
         

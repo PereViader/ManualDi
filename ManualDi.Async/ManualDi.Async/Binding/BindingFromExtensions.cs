@@ -68,6 +68,7 @@ namespace ManualDi.Async
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Obsolete("Use b.BindSubContainer<TApparent>(...) instead, when using this this method, it will not have access to b.ResolveInstance<TConfig> present on the parent DiContainerBindings")]
         public static Binding<TApparent, TConcrete> FromSubContainerResolve<TApparent, TConcrete>(
             this Binding<TApparent, TConcrete> binding,
             InstallDelegate installDelegate
@@ -79,27 +80,11 @@ namespace ManualDi.Async
         }
         
         /// <summary>
-        /// Use this method when subcontainer runtime dependency resolution is too costly.
-        /// Note: You'll need to manually maintain them when they change
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TApparent, TConcrete> FromSubContainerResolve<TApparent, TConcrete>(
-            this Binding<TApparent, TConcrete> binding,
-            InstallDelegate installDelegate,
-            Action<IDependencyResolver> dependencies
-        )
-        {
-            return new DiContainerBindings()
-                .Install(installDelegate)
-                .BindAsSubContainer(binding, false)
-                .DependsOn(dependencies);
-        }
-        
-        /// <summary>
         /// Creates a subcontainer and resolves the apparent type from it
         /// The object graph must be self sufficient and not depend on the parent container 
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Obsolete("Use b.BindSubContainer<TApparent>(...) instead, when using this this method, it will not have access to b.ResolveInstance<TConfig> present on the parent DiContainerBindings")]
         public static Binding<TApparent, TConcrete> FromIsolatedSubContainerResolve<TApparent, TConcrete>(
             this Binding<TApparent, TConcrete> binding,
             InstallDelegate installDelegate

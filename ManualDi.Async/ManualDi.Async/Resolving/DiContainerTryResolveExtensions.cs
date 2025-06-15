@@ -7,7 +7,7 @@ namespace ManualDi.Async
     public static class DiContainerTryResolveExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryResolve<T>(this IDiContainer diContainer, [MaybeNullWhen(false)] out T resolution)
+        public static bool TryResolve<T>(this IDiContainer diContainer, [NotNullWhen(true)] out T? resolution)
         {
             var result = diContainer.ResolveContainer(typeof(T));
             if (result is null)
@@ -21,7 +21,7 @@ namespace ManualDi.Async
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryResolve<T>(this IDiContainer diContainer, FilterBindingDelegate filterBindingDelegate, [MaybeNullWhen(false)] out T resolution)
+        public static bool TryResolve<T>(this IDiContainer diContainer, FilterBindingDelegate filterBindingDelegate, [NotNullWhen(true)] out T? resolution)
         {
             var result = diContainer.ResolveContainer(typeof(T), filterBindingDelegate);
             if (result is null)
@@ -35,14 +35,14 @@ namespace ManualDi.Async
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryResolve(this IDiContainer diContainer, Type type, [MaybeNullWhen(false)] out object resolution)
+        public static bool TryResolve(this IDiContainer diContainer, Type type, [NotNullWhen(true)] out object? resolution)
         {
             resolution = diContainer.ResolveContainer(type);
             return resolution is not null;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryResolve(this IDiContainer diContainer, Type type, FilterBindingDelegate filterBindingDelegate, [MaybeNullWhen(false)] out object resolution)
+        public static bool TryResolve(this IDiContainer diContainer, Type type, FilterBindingDelegate filterBindingDelegate, [NotNullWhen(true)] out object? resolution)
         {
             resolution = diContainer.ResolveContainer(type, filterBindingDelegate);
             return resolution is not null;

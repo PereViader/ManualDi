@@ -125,14 +125,24 @@ namespace ManualDi.Async
         public static bool TryResolveInstance<TConfig>(this DiContainerBindings bindings, [NotNullWhen(true)] out TConfig? config)
         {
             var binding = bindings.GetBinding(typeof(TConfig));
-            if (binding is not { FromDelegate: TConfig instance })
+            if (binding is { FromDelegate: TConfig instance })
+            {
+                config = instance;
+                return true;
+            }
+            
+            if(bindings.parentDiContainerBindings is not null && bindings.parentDiContainerBindings.TryResolveInstance<TConfig>(out config))
+            {
+                return true;
+            }
+
+            if (bindings.parentDiContainer is null)
             {
                 config = default;
                 return false;
             }
 
-            config = instance;
-            return true;
+            return bindings.parentDiContainer.TryResolve<TConfig>(out config);
         }
         
         /// <summary>
@@ -170,12 +180,17 @@ namespace ManualDi.Async
             where TConfig : class
         {
             var binding = bindings.GetBinding(typeof(TConfig));
-            if (binding is not { FromDelegate: TConfig instance })
+            if (binding is { FromDelegate: TConfig instance })
             {
-                return null;
+                return instance;
+            }
+            
+            if(bindings.parentDiContainerBindings is not null && bindings.parentDiContainerBindings.TryResolveInstance<TConfig>(out var parentInstance))
+            {
+                return parentInstance;
             }
 
-            return instance;
+            return bindings.parentDiContainer?.ResolveNullable<TConfig>();
         }
         
         /// <summary>
@@ -187,12 +202,17 @@ namespace ManualDi.Async
             where TConfig : struct
         {
             var binding = bindings.GetBinding(typeof(TConfig));
-            if (binding is not { FromDelegate: TConfig instance })
+            if (binding is { FromDelegate: TConfig instance })
             {
-                return null;
+                return instance;
+            }
+            
+            if(bindings.parentDiContainerBindings is not null && bindings.parentDiContainerBindings.TryResolveInstance<TConfig>(out var parentInstance))
+            {
+                return parentInstance;
             }
 
-            return instance;
+            return bindings.parentDiContainer?.ResolveNullableValue<TConfig>();
         }
         
         //This method is a duplicate of the one in DiContainer so that we can use it to resolve instances during the binding
@@ -223,6 +243,25 @@ namespace ManualDi.Async
             } while (binding is not null);
             
             return null;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TApparent, TApparent> BindSubContainer<TApparent>(this DiContainerBindings bindings, InstallDelegate installDelegate)
+        {
+            var binding = bindings.Bind<TApparent>();
+            return new DiContainerBindings()
+                .WithParentBindings(bindings)
+                .Install(installDelegate)
+                .BindAsSubContainer(binding, true);
+        }
+        
+        public static Binding<TApparent, TApparent> BindIsolatedSubContainer<TApparent>(this DiContainerBindings bindings, InstallDelegate installDelegate)
+        {
+            var binding = bindings.Bind<TApparent>();
+            return new DiContainerBindings()
+                .WithParentBindings(bindings)
+                .Install(installDelegate)
+                .BindAsSubContainer(binding, false);
         }
     }
 }

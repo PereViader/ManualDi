@@ -68,12 +68,12 @@ public class TestDiContainerFromMethods
         await using var container = await new DiContainerBindings().Install(b =>
         {
             //Added in the reverse order they will need to be created in
-            b.Bind<ParentMonoBehaviourTestInject>().FromSubContainerResolve(b =>
+            b.BindSubContainer<ParentMonoBehaviourTestInject>(b =>
             {
                 b.Bind<ParentMonoBehaviourTestInject>().Default().FromInstance(new ());
             });
             
-            b.Bind<ParentPureTestInject>().FromSubContainerResolve(b =>
+            b.BindSubContainer<ParentPureTestInject>(b =>
             {
                 b.Bind<ParentPureTestInject>().Default().FromConstructor();
             });
@@ -178,7 +178,7 @@ public class TestDiContainerFromMethods
 
     private static void InstallSubContainerDependencies(DiContainerBindings b)
     {
-        b.Bind<ChildResolveAll>().FromSubContainerResolve(b =>
+        b.BindSubContainer<ChildResolveAll>(b =>
         {
             b.Bind<ChildConstructorDependency>().Default().FromConstructor();
             b.Bind<ChildConstructorFilterDependency>().Default().FromConstructor().WithId("id");

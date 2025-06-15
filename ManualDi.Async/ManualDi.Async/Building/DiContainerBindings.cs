@@ -18,8 +18,9 @@ namespace ManualDi.Async
         private int bindingCount;
         private bool failureDebugReportEnabled;
 
-        private IDiContainer? parentDiContainer;
-
+        internal IDiContainer? parentDiContainer;
+        internal DiContainerBindings? parentDiContainerBindings;
+        
         internal BindingContext bindingContext = new();
 
         public DiContainerBindings(
@@ -105,7 +106,21 @@ namespace ManualDi.Async
         
         public DiContainerBindings WithParentContainer(IDiContainer? diContainer)
         {
+            if (parentDiContainerBindings is not null)
+            {
+                throw new InvalidOperationException($"Can't have both parent DiContainer and DiContainerBindings");
+            }
             parentDiContainer = diContainer;
+            return this;
+        }
+        
+        public DiContainerBindings WithParentBindings(DiContainerBindings? diContainerBindings)
+        {
+            if (parentDiContainer is not null)
+            {
+                throw new InvalidOperationException($"Can't have both parent DiContainer and DiContainerBindings");
+            }
+            parentDiContainerBindings = diContainerBindings;
             return this;
         }
         
@@ -121,7 +136,7 @@ namespace ManualDi.Async
             return dependencyExtractor.ResolveDependencies;
         }
         
-        public Binding<TApparent, TConcrete> BindAsSubContainer<TApparent, TConcrete>(Binding<TApparent, TConcrete> binding, bool calculateDependencies)
+        internal Binding<TApparent, TConcrete> BindAsSubContainer<TApparent, TConcrete>(Binding<TApparent, TConcrete> binding, bool calculateDependencies)
         {
             if (calculateDependencies)
             {

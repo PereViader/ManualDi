@@ -1,4 +1,3 @@
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
@@ -29,8 +28,7 @@ namespace ManualDi.Async.Unity3d.Tests.PlayMode
                     return _instance;
                 }
                 
-                var assets = AssetDatabase.FindAssets($"t:{nameof(TestAssetReferences)}");
-                _instance = AssetDatabase.LoadAssetAtPath<TestAssetReferences>(AssetDatabase.GUIDToAssetPath(assets[0]));
+                _instance = Addressables.LoadAssetAsync<TestAssetReferences>("TestAssetReferences").WaitForCompletion();
                 return _instance;
             }
         }

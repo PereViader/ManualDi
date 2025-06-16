@@ -86,7 +86,7 @@ namespace ManualDi.Async.Unity3d.Tests.PlayMode
                             .FromAddressablesLoadSceneAsyncGetComponent(TestAssetReferences.Instance.SceneAssetReference);
 
                         //Intercept delegate and use it to cancel the token on the same frame after starting the load
-                        FromAsyncDelegate fromDelegate = binding.TryGetFromAsyncDelegate()!;
+                        FromAsyncDelegate fromDelegate = binding.GetFromAsyncDelegateNullable()!;
                         binding.FromMethodAsync((c, ct) =>
                         {
                             var task = fromDelegate(c, ct);
@@ -136,7 +136,7 @@ namespace ManualDi.Async.Unity3d.Tests.PlayMode
                             .FromAddressablesLoadAssetAsync(TestAssetReferences.Instance.GetComponentAssetReference);
 
                         //Intercept delegate and use it to cancel the token on the same frame after starting the load
-                        FromAsyncDelegate fromDelegate = binding.TryGetFromAsyncDelegate()!;
+                        FromAsyncDelegate fromDelegate = binding.GetFromAsyncDelegateNullable()!;
                         binding.FromMethodAsync((c, ct) =>
                         {
                             var task = fromDelegate(c, ct);

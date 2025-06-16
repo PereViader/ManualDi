@@ -26,6 +26,20 @@ namespace ManualDi.Async
             return binding;
         }
         
+        public static FromAsyncDelegate? GetFromAsyncDelegateNullable<TApparent, TConcrete>(
+            this Binding<TApparent, TConcrete> binding
+        )
+        {
+            return binding.FromDelegate as FromAsyncDelegate;
+        }
+        
+        public static FromDelegate? GetFromDelegateNullable<TApparent, TConcrete>(
+            this Binding<TApparent, TConcrete> binding
+        )
+        {
+            return binding.FromDelegate as FromDelegate;
+        }
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<TApparent, TConcrete> DependsOn<TApparent, TConcrete>(
             this Binding<TApparent, TConcrete> binding,

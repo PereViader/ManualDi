@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -52,4 +51,3 @@ public static class SyncUtilsCommonDll
         };
     }
 }
-#endif

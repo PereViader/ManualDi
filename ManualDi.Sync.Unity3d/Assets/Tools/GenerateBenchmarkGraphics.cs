@@ -26,9 +26,9 @@ public static class GenerateBenchmarkGraphic
     [MenuItem("Tools/Generate benchmark graphic")]
     public static async void Execute()
     {
-        if(FixZenjectNotBuilding.ApplyFix())
+        if (FixZenjectNotBuilding.ApplyFix())
         {
-            UnityEngine.Debug.Log("Zenject fix applied, please re-run after recompilation is complete");
+            Debug.Log("Zenject fix applied, please re-run after recompilation is complete");
             return;
         }
         
@@ -36,10 +36,10 @@ public static class GenerateBenchmarkGraphic
 
         var parsedResults = new[]
             {
-                "ManualDi.Async.Unity3d.Tests.ContainerPerformanceTest.ManualDi",
-                "ManualDi.Async.Unity3d.Tests.ContainerPerformanceTest.Reflex",
-                "ManualDi.Async.Unity3d.Tests.ContainerPerformanceTest.VContainer",
-                "ManualDi.Async.Unity3d.Tests.ContainerPerformanceTest.Zenject",
+                "ManualDi.Sync.Unity3d.Tests.ContainerPerformanceTest.ManualDi",
+                "ManualDi.Sync.Unity3d.Tests.ContainerPerformanceTest.Reflex",
+                "ManualDi.Sync.Unity3d.Tests.ContainerPerformanceTest.VContainer",
+                "ManualDi.Sync.Unity3d.Tests.ContainerPerformanceTest.Zenject",
             }
             .Select(x => (Name: x.Split(".").Last(), TestResult: FindByName(testResults, x)))
             .Select(x => (x.Name, ParseMedianValuesWithRegex(x.TestResult.Output)))

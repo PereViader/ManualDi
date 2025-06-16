@@ -1,5 +1,5 @@
 {
-    "name": "ManualDi.Async.Tools",
+    "name": "ManualDi.Sync.Tools",
     "rootNamespace": "",
     "references": [
         "GUID:14f8b558cd941e545961d1d8d31254f0",

@@ -22,9 +22,11 @@ BenchmarkDotNet [Sync](https://github.com/PereViader/ManualDi/blob/main/ManualDi
 
 Unity3d [Sync](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Sync.Unity3d/Assets/ManualDi.Sync.Unity3d/Tests/Benchmark.cs) and [Async](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Async.Unity3d/Assets/ManualDi.Async.Unity3d/Tests/Benchmark.cs) benchmarks between [Zenject](https://github.com/modesttree/Zenject), [VContainer](https://github.com/hadashiA/VContainer), [Reflex](https://github.com/gustavopsantos/Reflex) and ManualDi
 
-> TODO update this graphic blow. ManualDi.Sync is now a bit faster and is missing ManualDi.Async which is a bit slower than the Sync version
 
-![Unity3d-Container-Benchmark](https://github.com/user-attachments/assets/67065b14-dea1-494a-b53e-469ebaf50101)
+![Unity3d-Container-Benchmark](https://github.com/user-attachments/assets/1d697925-0a6a-480d-83c5-703f9706b80b)
+- Zenject performance measured with Reflection Baking enabled
+- VContainer performance measured with source generation enabled
+- Performance measured on a windows standalone build
 
 # Installation
 

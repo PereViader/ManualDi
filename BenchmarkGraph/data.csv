@@ -1,0 +1,6 @@
+Container,Time,GC
+ManualDi.Sync,10300,51
+ManualDi.Async,15200,59
+Reflex,14100,88
+VContainer,33600,249
+Zenject,91300,419

@@ -31,7 +31,7 @@ namespace ManualDi.Async.Unity3d
                     {
                         if (previousParent == null)
                         {
-                            if (destroyIfPreviousParentDestroyed)
+                            if (destroyIfPreviousParentDestroyed && to != null)
                             {
                                 UnityEngine.Object.Destroy(to.gameObject);
                             }

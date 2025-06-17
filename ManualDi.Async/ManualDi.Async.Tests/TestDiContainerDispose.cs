@@ -31,7 +31,7 @@ public class TestDiContainerDispose
     {
         IDiContainer container = await new DiContainerBindings().Install(b =>
         {
-            b.Bind<IDisposable>().FromInstance(Substitute.For<IDisposable>()).DontDispose();
+            b.Bind<IDisposable>().FromInstance(Substitute.For<IDisposable>()).SkipDisposable();
         }).Build(CancellationToken.None);
 
         var disposable = container.Resolve<IDisposable>();

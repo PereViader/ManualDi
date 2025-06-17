@@ -552,7 +552,7 @@ namespace ManualDi.Async.Generators
             var isOnNewLine = AddInitialize(generationClassContext, false);
             isOnNewLine = AddInitializeAsync(generationClassContext, isOnNewLine);
             isOnNewLine = AddInject(generationClassContext, isOnNewLine);
-            _ = AddDontDispose(generationClassContext, isOnNewLine);
+            _ = AddSkipDisposable(generationClassContext, isOnNewLine);
 
             generationClassContext.StringBuilder.AppendLine("""
             ;
@@ -560,7 +560,7 @@ namespace ManualDi.Async.Generators
             """);
         }
 
-        private static bool AddDontDispose(GenerationClassContext context, bool isOnNewLine)
+        private static bool AddSkipDisposable(GenerationClassContext context, bool isOnNewLine)
         {
             if (context.TypeReferences.IsIDisposable(context.ClassSymbol))
             {
@@ -572,7 +572,7 @@ namespace ManualDi.Async.Generators
                 context.StringBuilder.AppendLine();
                 context.StringBuilder.Append("                ");
             }
-            context.StringBuilder.Append(".DontDispose()");
+            context.StringBuilder.Append(".SkipDisposable()");
             return true;
         }
 

@@ -5,7 +5,7 @@ namespace ManualDi.Async
     public static class BindingDisposableExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TBinding DontDispose<TBinding>(this TBinding binding)
+        public static TBinding SkipDisposable<TBinding>(this TBinding binding)
             where TBinding : Binding
         {
             binding.TryToDispose = false;

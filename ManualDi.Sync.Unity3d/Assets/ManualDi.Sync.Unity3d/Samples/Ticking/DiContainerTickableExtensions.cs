@@ -8,15 +8,15 @@
             where TConcrete : ITickable
         {
             return binding.Inject((o, c) =>
+            {
+                var tickableService = c.Resolve<ITickableService>();
+                tickableService.Add(o, TickType.Update);
+
+                c.QueueDispose(() =>
                 {
-                    var tickableService = c.Resolve<ITickableService>();
-                    tickableService.Add(o, TickType.Update);
-                })
-                .Dispose((o, c) =>
-                {
-                    var tickableService = c.Resolve<ITickableService>();
                     tickableService.Remove(o, TickType.Update);
                 });
+            });
         }
         
         public static Binding<TInterface, TConcrete> LinkTickable<TInterface, TConcrete>(
@@ -26,15 +26,14 @@
             where TConcrete : ITickable
         {
             return binding.Inject((o, c) =>
+            {
+                var tickableService = c.Resolve<ITickableService>();
+                tickableService.Add(o, tickType);
+                c.QueueDispose(() =>
                 {
-                    var tickableService = c.Resolve<ITickableService>();
-                    tickableService.Add(o, tickType);
-                })
-                .Dispose((o, c) =>
-                {
-                    var tickableService = c.Resolve<ITickableService>();
                     tickableService.Remove(o, tickType);
                 });
+            });
         }
     }
 }

@@ -36,7 +36,7 @@ namespace ManualDi.Async.Unity3d.Samples.Ticking
 
                 c.QueueDispose(() =>
                 {
-                    tickableService.Remove(to, TickType.Update);
+                    tickableService.Remove(to, tickType);
                 });
             });
         }

@@ -8,7 +8,7 @@ Welcome to ManualDi – a fast and extensible C# dependency injection library.
 - Seamless Unity3D game engine integration.
 
 
-# Benchmark
+# Benchmark and Comparison
 
 BenchmarkDotNet [Sync](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Sync/ManualDi.Sync.Benchmark/Benchmark.cs) and [Async](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Async/ManualDi.Async.Benchmark/Benchmark.cs) benchmarks between Microsoft and ManualDi
 
@@ -27,6 +27,35 @@ Unity3d [Sync](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Sync.Un
 - Zenject performance measured with Reflection Baking enabled
 - VContainer performance measured with source generation enabled
 - Performance measured on a windows standalone build
+
+|  | ManualDi.Sync | ManualDi.Async | Reflex | VContainer | Zenject |
+|---|:---:|:---:|:---:|:---:|:---:|
+| Lifetimes | Single *(1) | Single *(1) | Single<br/>Transient | Single<br/>Transient<br/>Scoped | Single<br/>Transient<br/>Scoped |
+| Lazy | ❌ *(2) | ❌ *(2) | ✅ | ❌ | ✅ |
+| Scopes | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Runtime (lower is better) | 0.11 | 0.16 | 0.15 | 0.36 | 1 |
+| Memory (lower is better) | 0.12 | 0.14 | 0.21 | 0.59 | 1 |
+| Resolution During Installation | ✅ | ✅ | ✅ | ❌ | ❌ |
+| Object Injection | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Object Initialization | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Object Lifecycle Hooks | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Startup Hooks | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Avoids Reflection | ✅ | ✅ | ❌ *(3) | ❌ *(3) | ❌ *(3) |
+
+*This table is still WIP, please open a discussion if you have any suggestion. 
+
+- (1) ManualDi only works with Single scope.
+  - Context overload is a problem when working on large codebases. Having a single one alleviates developer requirements.
+  - Scoped can be achived by setting up the instance on child container. The container is effectively another scope.
+  - Transient can be achived by setting up a factory class. The factory class can be used to create the instance at runtime.
+
+- (2) ManualDi does not support lazy binding. All bound instances will get created and injected.
+  - Context overload is a problem when working on large codebases. Lazy bindings are usually a source of bugs and confusion.
+
+- (3) Reflex, VContainer, Zenject don't avoid Reflection by default but.
+  - They do work on IL2CPP (some have some caveats).
+  - Reflex only uses reflection on a few places.
+  - VContainer has an optional Source Generator that can replace the reflection based execution.
 
 # Installation
 

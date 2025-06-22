@@ -1,12 +1,36 @@
 [![Test and publish](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml/badge.svg)](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml) [![Unity version 2022.3.29](https://img.shields.io/badge/Unity-2022.3.29-57b9d3.svg?style=flat&logo=unity)](https://github.com/PereViader/ManualDi.Unity3d) [![OpenUPM ManualDi.Sync](https://img.shields.io/npm/v/com.pereviader.manualdi.sync.unity3d?label=openupm%20sync&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.pereviader.manualdi.sync.unity3d/) [![OpenUPM ManualDi.Async](https://img.shields.io/npm/v/com.pereviader.manualdi.async.unity3d?label=openupm%20async&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.pereviader.manualdi.async.unity3d/) [![NuGet ManualDi.Sync](https://img.shields.io/nuget/v/ManualDi.Sync?label=nuget%20sync)](https://www.nuget.org/packages/ManualDi.Sync) [![NuGet ManualDi.Async](https://img.shields.io/nuget/v/ManualDi.Async?label=nuget%20async)](https://www.nuget.org/packages/ManualDi.Async) [![Release](https://img.shields.io/github/release/PereViader/ManualDi.svg?label=github%20release)](https://github.com/PereViader/ManualDi/releases/latest)
 
-Welcome to ManualDi – a fast and extensible C# dependency injection library.
+Welcome to ManualDi – a fast and extensible C# dependency injection library
 - Unified API to create, inject, initialize and startup the application.
+- Focuses on reducing boilerplate
 - Synchronous and asynchronous library variants.
 - Supercharge the container with tailored extensions for your application.
 - Source generation, no reflection - Faster and more memory efficient than most other dependency injection containers.
 - Seamless Unity3D game engine integration.
 
+# Why use Dependency Injection
+
+## General
+
+- Fail Faster: The application can only start when the whole object graph is correct. Runtime failures on the object graph are much harder to implement into the codebase.
+
+- Decouples Components: Classes do not create the objects they depend on. Instead, these dependencies are "injected" from an external source. This decoupling means that components are not tightly bound to specific implementations of their dependencies.
+
+- Explicit Dependencies: With constructor/method injection, a class's dependencies are listed right in its signature. This makes the code self-documenting. You can immediately see what a class needs to function, making it far easier for new developers to understand the architecture and for you to reason about your own code.
+
+- Enhances Flexibility: Because components are not tied to concrete classes but rather to interfaces or abstractions, you can easily swap out implementations of a dependency without altering the dependent class. For instance, you could switch from a SQL database to a NoSQL database with minimal code changes in your business logic.
+
+- Encourages Reusable Components: By removing direct dependencies on other concrete classes, components become more self-contained and can be more easily reused across different parts of an application or even in different projects.
+
+- Easier Refactoring: With loosely coupled components, refactoring or updating a part of the application is less likely to have a cascading effect on other parts of the codebase. Changes to a dependency's implementation details do not require changes in the classes that consume it, as long as the contract (interface) remains the same.
+
+- Effortless Testing: When testing a component that is implemented with dependency injection in mind, you can inject mock/stub/fake/... implementations. This allows you to isolate the unit of code you are testing from the rest of the system, leading to more reliable and focused tests.
+
+## Unity3d
+
+- Supercharge Serialized objects: Unity has a great system to serialize data on UnityEngine.Objects. Adding a DiContainer on top means that you can easily connect that data with your code-driven implementation.
+
+- Cross-Scene Dependencies: Object dependencies are tricky to interconnect when multiple dynamically scenes and/or prefabs are loaded. ManualDi in Unity3d facilitate interconnecting those with minimal boilerplate.
 
 # Benchmark and Comparison
 
@@ -98,7 +122,7 @@ In the section below we will add two examples, check the `ApplicationEntryPoint`
 ## ManualDi.Sync sample
 
 ```csharp
-using _diContainer = new DiContainerBindings()
+using DiContainer diContainer = new DiContainerBindings()
     .Install(b => {
         //Setup the instances involved in the object graph
         // The order of instantiation, injection and subsequent initialization is the reverse of the dependency graph
@@ -151,7 +175,7 @@ public class Startup(SomeClass someClass)
 ## ManualDi.Async sample
 
 ```csharp
-await using _diContainer = await new DiContainerBindings()
+await using DiContainer diContainer = await new DiContainerBindings()
     .Install(b => {
         //Setup the instances involved in the object graph
         // The order of instantiation, injection and subsequent initialization is the reverse of the dependency graph
@@ -1219,3 +1243,100 @@ class Installer : MonoBehaviourInstaller
 ```
 
 Note: There is a sample in the package that provides a Tickable system and a LinkTickable extension. This system allows for having Update like behaviour on any class.
+
+
+# How and why does ManualDi help
+
+## Comparing ManualDi and manual injection
+In order to understand how ManualDi will help you write fewer and better lines of code, let see the difference between a composition root with and without ManualDi.
+
+Note: For the sake of the example, we will use an API inspired by the Unity3d engine. Keep in mind that the Unity3d engine API is not exaclty like the example below.
+
+Imagine you have a very simple game with a gameplay scene and a player
+```csharp
+var gameplayScene = await SceneManager.LoadSceneAsync("GameplayScene");
+var player = await Addressables.InstantiateAsync<Player>("Player");
+
+gameplayScene.Inject(player);
+player.Initialize();
+```
+
+Notice that we are doing manual creation and injection of instances followed up by the required initialization calls each component requires.
+Let's some new piece of functionality to the example and observe how it changes. 
+
+```csharp
+var gameplayScene = await SceneManager.LoadSceneAsync("GameplayScene");
+var player = await Addressables.InstantiateAsync<Player>("Player");
+var saveSystem = new SaveSystem(player)
+
+gameplayScene.Inject(player);
+player.Initialize();
+await saveSystem.InitializeAsync();
+gameplayScene.Initialize();
+
+...
+
+Addressable.Unload(player)
+SceneManager.UnloadScene(gameplayScene);
+```
+
+Notice that we required to add some new piece of creation of injection on top and then called the associated piece of initialization code below.
+Notice that the order of injection and initialization call is very important, those calls cannot be executed in any random way, the order of execution of these methods must be the reverse of dependencies in order to have a logically sound execution.
+
+Let's change the save system to do more work and also handle storing some scene data.
+
+```csharp
+var gameplayScene = await SceneManager.LoadSceneAsync("GameplayScene");
+var player = await Addressables.InstantiateAsync<Player>("Player");
+var saveSystem = new SaveSystem(player, gameplayScene)
+
+gameplayScene.Inject(player);
+player.Initialize();
+gameplayScene.Initialize();
+await saveSystem.InitializeAsync();
+
+...
+
+Addressable.Unload(player)
+SceneManager.UnloadScene(gameplayScene);
+```
+
+Notice that in order to keep the rule stated above where depedencies are initialized in reverse dependency order, the initialize call has been moved some lines below.
+Not following this rule is a common source of bugs given components can use non initialized components.
+
+ManualDI handles all of this automatically, freeing us from maintaining all of it.
+
+Initially, when just two components were present. The equivalent code using ManualDi would be
+
+```csharp
+b.Bind<GameplayScene>().Default().FromLoadSceneAsync("GameplayScene");
+b.Bind<Player>().Default().FromAddressableInstantiate("Player");
+```
+
+Then adding the save SaveSystem
+
+```csharp
+b.Bind<GameplayScene>().Default().FromLoadSceneAsync("GameplayScene");
+b.Bind<Player>().Default().FromAddressableInstantiate("Player");
+b.Bind<SaveSystem>().Default().FromConstructor();
+```
+
+Notice that the snippet above works for both when the save system interacts with just the player and both the player and scene. This is because ManualDi alaways runs things in the proper order by taking into account the dependencies of components.
+
+Also notice that all of the disposal responsabilities are also handled by ManualDi without specifying anything about it.
+
+## Tradeoffs
+
+ManualDi is not perfect, it does have some tradeoffs, that of course in my opinion are completely worth it.
+
+Positive:
+- Less code: Because the code is implemented using source generation and using a dynamic layer that handles the execution order, there is much less code to write. A single line of ManualDi code handles: creation, disposal and order of execution.
+- Agile: Because there is less code to write and the code to write is updated automatically when requirements change, the team can be faster.
+- Fewer source control conflicts: Because each component is implemented in isolation to the others, source control conflicts are much less likely to happen.
+- Dynamically configurable: ManualDi can create dependencies with different types at runtime easily. Compile safe code requires adding even more code when anything like it.
+
+Negative:
+
+- Not compile safe: Because the container is adding a dynamic layer, the compiler can't verify all the required dependencies are properly registered. 
+- Slower: Because the container is adding a dynamic layer, the indirection makes the code slower than the compile safe conuterpart.
+    - Even if slower, ManualDi is significally fast to the point where it is usually not a problem

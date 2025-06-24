@@ -37,11 +37,12 @@ Welcome to ManualDi – a fast and extensible C# dependency injection library
 BenchmarkDotNet [Sync](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Sync/ManualDi.Sync.Benchmark/Benchmark.cs) and [Async](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Async/ManualDi.Async.Benchmark/Benchmark.cs) benchmarks between Microsoft and ManualDi
 
 ```
-| Method           | Mean      | Error     | StdDev    | Gen0   | Gen1   | Allocated |
-|----------------- |----------:|----------:|----------:|-------:|-------:|----------:|
-| ManualDi.Sync    | 4.244 us  | 0.0823 us | 0.0948 us | 0.2747 | 0.0076 |  13.73 KB |
-| ManualDi.Async   | 6.858 us  | 0.1267 us | 0.1185 us | 0.3128 | 0.0153 |  15.51 KB |
-| MicrosoftDi      | 39.258 us | 0.2415 us | 0.2259 us | 2.5024 | 0.6714 | 122.87 KB |
+| Method         | Mean [ns] | Error [ns]  | StdDev [ns] | Gen0   | Gen1   | Allocated [KB] |
+|------------    |----------:|------------:|------------:|-------:|-------:|---------------:|
+| NoContainer    |  2.598 ns |   0.0811 ns |   0.1137 ns | 0.0005 | 0.0000 |        0.02 KB |
+| ManualDi.Sync  |  4,047 ns |  76.3106 ns |  74.9472 ns | 0.2747 | 0.0076 |       13.77 KB |
+| ManualDi.Async |  6,787 ns |  91.7127 ns |  85.7881 ns | 0.3128 | 0.0153 |        15.4 KB |
+| MicrosoftDi    | 40,357 ns | 796.7055 ns |    1,142 ns | 2.5024 | 0.6714 |      122.87 KB |
 ```
 
 Unity3d [Sync](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Sync.Unity3d/Assets/ManualDi.Sync.Unity3d/Tests/Benchmark.cs) and [Async](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Async.Unity3d/Assets/ManualDi.Async.Unity3d/Tests/Benchmark.cs) benchmarks between [Zenject](https://github.com/modesttree/Zenject), [VContainer](https://github.com/hadashiA/VContainer), [Reflex](https://github.com/gustavopsantos/Reflex) and ManualDi

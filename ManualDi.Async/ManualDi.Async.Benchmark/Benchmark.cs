@@ -1,11 +1,18 @@
 ﻿using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.DependencyInjection;
+using static ManualDi.Async.Benchmark.ManualDiInstallerExtensions;
 
 namespace ManualDi.Async.Benchmark;
 
 [MemoryDiagnoser]
 public class Benchmark
 {
+    [Benchmark]
+    public Service100 NoContainer()
+    {
+        return CreateWithoutContainer();
+    }
+    
     [Benchmark]
     public async Task<Service100> ManualDi()
     {
@@ -16,7 +23,7 @@ public class Benchmark
         return manualDiContainer.Resolve<Service100>();
     }
     
-    //[Benchmark]
+    [Benchmark]
     public Service100 MicrosoftDi()
     {
         var microsoftDiContainer = new ServiceCollection()

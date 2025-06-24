@@ -1,11 +1,18 @@
 ﻿using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.DependencyInjection;
+using static ManualDi.Sync.Benchmark.ManualDiInstallerExtensions;
 
 namespace ManualDi.Sync.Benchmark;
 
 [MemoryDiagnoser]
 public class Benchmark
 {
+    [Benchmark]
+    public Service100 NoContainer()
+    {
+        return CreateWithoutContainer();
+    }
+    
     [Benchmark]
     public Service100 ManualDi()
     {

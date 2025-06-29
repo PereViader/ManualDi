@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ManualDi.Async
 {
@@ -114,7 +116,17 @@ namespace ManualDi.Async
                 startup.Invoke(resolved);
             });
             return diContainerBindings;
-
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DiContainerBindings QueueStartupAsync<T>(this DiContainerBindings diContainerBindings, Func<T, CancellationToken, Task> startup)
+        {
+            diContainerBindings.QueueStartupAsync((c, ct) =>
+            {
+                var resolved = c.Resolve<T>();
+                return startup.Invoke(resolved, ct);
+            });
+            return diContainerBindings;
         }
 
         /// <summary>

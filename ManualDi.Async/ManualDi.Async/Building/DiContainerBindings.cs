@@ -6,13 +6,14 @@ using System.Threading.Tasks;
 namespace ManualDi.Async
 {
     public delegate void ContainerDelegate(IDiContainer diContainer);
-    
+    public delegate Task AsyncContainerDelegate(IDiContainer diContainer, CancellationToken token);
+
     public sealed class DiContainerBindings
     {
         internal readonly Dictionary<IntPtr, Binding> bindingsByType;
         private readonly List<ContainerDelegate> injectDelegates;
         private readonly List<ContainerDelegate> initializeDelegates;
-        private readonly List<ContainerDelegate> startupDelegates;
+        private readonly List<object> startupDelegates;
         private readonly List<object> disposables;
         
         private int bindingCount;
@@ -82,6 +83,11 @@ namespace ManualDi.Async
         public void QueueStartup(ContainerDelegate containerDelegate)
         {
             startupDelegates.Add(containerDelegate);
+        }
+        
+        public void QueueStartupAsync(AsyncContainerDelegate asyncContainerDelegate)
+        {
+            startupDelegates.Add(asyncContainerDelegate);
         }
         
         public void QueueDispose(Action action)
@@ -161,7 +167,7 @@ namespace ManualDi.Async
                     return subContainer.Resolve<TConcrete>();
                 })
                 .InjectAsync(async (_, _, _) => await subContainer.InitializeInject())
-                .InitializeAsync(async (_, _) =>
+                .InitializeAsync(async (_, ct) =>
                 {
                     await subContainer.IntiailizeInitialize();
 
@@ -177,7 +183,17 @@ namespace ManualDi.Async
 
                     foreach (var startupDelegate in startupDelegates)
                     {
-                        startupDelegate.Invoke(subContainer);
+                        switch (startupDelegate)
+                        {
+                            case AsyncContainerDelegate asyncStartupDelegate:
+                                await asyncStartupDelegate.Invoke(subContainer, ct);
+                                break;
+                            case ContainerDelegate syncStartupDelegate:
+                                syncStartupDelegate.Invoke(subContainer);
+                                break;
+                            default:
+                                throw new InvalidOperationException($"Unexpected startup delegate type: {startupDelegate.GetType()}");
+                        }
                     }
                 });
         }
@@ -209,7 +225,17 @@ namespace ManualDi.Async
 
                 foreach (var startupDelegate in startupDelegates)
                 {
-                    startupDelegate.Invoke(diContainer);
+                    switch (startupDelegate)
+                    {
+                        case AsyncContainerDelegate asyncStartupDelegate:
+                            await asyncStartupDelegate.Invoke(diContainer, ct);
+                            break;
+                        case ContainerDelegate syncStartupDelegate:
+                            syncStartupDelegate.Invoke(diContainer);
+                            break;
+                        default:
+                            throw new InvalidOperationException($"Unexpected startup delegate type: {startupDelegate.GetType()}");
+                    }
                 }
 
                 return diContainer;

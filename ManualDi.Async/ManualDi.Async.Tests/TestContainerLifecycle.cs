@@ -47,7 +47,8 @@ public class TestContainerLifecycle
         var child1Child = Substitute.For<IChild1Child>();
         var child2Child = Substitute.For<IChild2Child>();
         var startup = Substitute.For<IStartup>();
-
+        var startupAsyncAction = Substitute.For<Action>();
+        
         var container = await new DiContainerBindings().Install(b =>
         {
             b.Bind<IChild1>()
@@ -84,6 +85,11 @@ public class TestContainerLifecycle
 
             
             b.QueueStartup<IStartup>(e => e.Run());
+            b.QueueStartupAsync<IStartup>((e, ct) =>
+            {
+                startupAsyncAction.Invoke();
+                return Task.CompletedTask;
+            });
         }).Build(CancellationToken.None);
         
         await container.DisposeAsync();
@@ -103,6 +109,7 @@ public class TestContainerLifecycle
             startup.InitializeAsync();
 
             startup.Run();
+            startupAsyncAction.Invoke();
         });
     }
 }

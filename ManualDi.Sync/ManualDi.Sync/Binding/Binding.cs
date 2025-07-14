@@ -26,6 +26,7 @@ namespace ManualDi.Sync
         
         internal Binding? NextBinding;
         internal object? Instance;
+        internal BindingScope Scope;
     }
     
     public sealed class Binding<TApparent, TConcrete> : Binding

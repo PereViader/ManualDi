@@ -103,6 +103,7 @@ namespace ManualDi.Sync.Generators
             if (!typeReferences.IsUnityEngineObject(classSymbol))
             {
                 AddFromConstructor(generationContext);
+                AddTransientFromConstructor(generationContext);
             }
             
             AddDefault(generationContext, accessibility);
@@ -202,6 +203,40 @@ namespace ManualDi.Sync.Generators
                     }
             
             """);
+        }
+        
+        private static void AddTransientFromConstructor(GenerationClassContext context)
+        {
+            var constructors = context.ClassSymbol
+                .Constructors
+                .Where(c => c.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal)
+                .OrderByDescending(x => x.DeclaredAccessibility)
+                .ToArray();
+                
+            if (constructors.Length == 0)
+            {
+                return;
+            }
+            
+            var constructor = constructors[0];
+
+            var accessibility = GetSymbolAccessibility(constructor);
+            var accessibilityString = GetAccessibilityString(accessibility);
+            
+            context.StringBuilder.Append($$"""
+                                                   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                                                   {{context.ObsoleteText}}{{accessibilityString}} static Binding<T, {{context.ClassName}}> TransientFromConstructor<T>(this Binding<T, {{context.ClassName}}> binding)
+                                                   {
+                                                       return binding.TransientFromMethod(static c => new {{context.ClassName}}(
+                                           """);
+            
+            CreateMethodResolution(constructor, "                ", context.TypeReferences, context.StringBuilder);
+            
+            context.StringBuilder.AppendLine($$"""
+                                               ));
+                                                       }
+
+                                               """);
         }
 
         private static void CreateMethodResolution(IMethodSymbol constructor, string tabs, TypeReferences typeReferences, StringBuilder stringBuilder)

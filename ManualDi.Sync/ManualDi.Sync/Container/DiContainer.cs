@@ -81,7 +81,8 @@ namespace ManualDi.Sync
                 null => throw new InvalidOperationException($"The from delegate for Binding with Apparent type {injectedBinding.ApparentType} and Concrete type {injectedBinding.ConcreteType} is null"),
             };
             
-            binding.Instance = instance;
+            if (binding.Scope != BindingScope.Transient)
+                binding.Instance = instance;
             
             binding.InjectionDelegate?.Invoke(instance, this);
             if (binding.InitializationDelegate is not null)

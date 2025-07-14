@@ -89,5 +89,16 @@ namespace ManualDi.Sync
             binding.FromDelegate = fromDelegate;
             return binding;
         }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TApparent, TConcrete> TransientFromMethod<TApparent, TConcrete>(
+            this Binding<TApparent, TConcrete> binding,
+            FromDelegate fromDelegate
+        )
+        {
+            binding.Scope = BindingScope.Transient;
+            binding.FromDelegate = fromDelegate;
+            return binding;
+        }
     }
 }

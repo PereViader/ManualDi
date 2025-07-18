@@ -35,7 +35,10 @@ namespace ManualDi.Sync
                 Binding? binding = firstBinding.Value;
                 while (binding is not null)
                 {
-                    ResolveBinding(binding);
+                    if (!binding.IsTransient)
+                    {
+                        ResolveBinding(binding);
+                    }
                     binding = binding.NextBinding;
                 }
             }
@@ -80,8 +83,11 @@ namespace ManualDi.Sync
                 not null => injectedBinding.FromDelegate,
                 null => throw new InvalidOperationException($"The from delegate for Binding with Apparent type {injectedBinding.ApparentType} and Concrete type {injectedBinding.ConcreteType} is null"),
             };
-            
-            binding.Instance = instance;
+
+            if (!binding.IsTransient)
+            {
+                binding.Instance = instance;
+            }
             
             binding.InjectionDelegate?.Invoke(instance, this);
             if (binding.InitializationDelegate is not null)

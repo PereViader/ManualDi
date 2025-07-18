@@ -23,7 +23,8 @@ namespace ManualDi.Sync
         public object? FromDelegate; // Contains either FromDelegate or an instance of type TConcrete
         public InstanceContainerDelegate? InjectionDelegate;
         public InstanceContainerDelegate? InitializationDelegate;
-        
+
+        public bool IsTransient; // Binding is either transient or single
         internal Binding? NextBinding;
         internal object? Instance;
     }

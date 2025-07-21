@@ -69,7 +69,7 @@ Unity3d [Sync](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Sync.Un
 
 *This table is still WIP, please open a discussion if you have any suggestion.
 
-- (2) ManualDi.Sync does not have Scoped scope.
+- (1) ManualDi.Sync does not have Scoped scope.
   - Scoped can be achived by setting up the binding on the child container. That child container is effectively another scope.
 
 - (2) ManualDi.Async only works with Single scope.

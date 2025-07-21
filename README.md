@@ -53,31 +53,33 @@ Unity3d [Sync](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Sync.Un
 - VContainer performance measured with source generation enabled
 - Performance measured on a windows standalone build
 
-|  | ManualDi.Sync | ManualDi.Async | Reflex | VContainer | Zenject |
-|---|:---:|:---:|:---:|:---:|:---:|
-| Lifetimes | Single *(1) | Single *(1) | Single<br/>Transient | Single<br/>Transient<br/>Scoped | Single<br/>Transient<br/>Scoped |
-| Lazy | ❌ *(2) | ❌ *(2) | ✅ | ❌ | ✅ |
-| Scopes | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Runtime (lower is better) | 0.11 | 0.16 | 0.15 | 0.36 | 1 |
-| Memory (lower is better) | 0.12 | 0.14 | 0.21 | 0.59 | 1 |
-| Resolution During Installation | ✅ | ✅ | ✅ | ❌ | ❌ |
-| Object Injection | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Object Initialization | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Object Lifecycle Hooks | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Startup Hooks | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Avoids Reflection | ✅ | ✅ | ❌ *(3) | ❌ *(3) | ❌ *(3) |
+|                                 |ManualDi.Sync|ManualDi.Async|Reflex|VContainer|Zenject|
+|---------------------------------|:-------------------------:|:--------------:|:--------------------:|:-------------------------------:|:-------------------------------:|
+| Lifetimes                       |Single<br/>Transient *(1)|Single *(2)|Single<br/>Transient|Single<br/>Transient<br/>Scoped|Single<br/>Transient<br/>Scoped|
+| Runtime (lower is better)       |0.11|0.16|0.15|0.36|1|
+| Memory (lower is better)        |0.12|0.14|0.21|0.59|1|
+| Object Injection                |✅|✅|✅|✅|✅|
+| Scopes                          |✅|✅|✅|✅|✅|
+| Resolution During Installation  |✅|✅|✅|❌|❌|
+| Object Initialization           |✅|✅|❌|❌|❌|
+| Object Lifecycle Hooks          |✅|✅|❌|❌|❌|
+| Startup Hooks                   |✅|✅|❌|❌|❌|
+| Lazy                            |❌ *(3)|❌ *(3)|✅|❌|✅|
+| Avoids Reflection               |✅|✅|❌ *(4)|❌ *(4)|❌ *(4)|
 
-*This table is still WIP, please open a discussion if you have any suggestion. 
+*This table is still WIP, please open a discussion if you have any suggestion.
 
-- (1) ManualDi only works with Single scope.
-  - Context overload is a problem when working on large codebases. Having a single one alleviates developer requirements.
-  - Scoped can be achived by setting up the instance on child container. The container is effectively another scope.
+- (2) ManualDi.Sync does not have Scoped scope.
+  - Scoped can be achived by setting up the binding on the child container. That child container is effectively another scope.
+
+- (2) ManualDi.Async only works with Single scope.
   - Transient can be achived by setting up a factory class. The factory class can be used to create the instance at runtime.
+  - Scoped can be achived by setting up the binding on the child container. That child container is effectively another scope.
 
-- (2) ManualDi does not support lazy binding. All bound instances will get created and injected.
-  - Context overload is a problem when working on large codebases. Lazy bindings are usually a source of bugs and confusion.
+- (3) ManualDi does not support lazy binding. All bound instances will get created and injected.
+  - Lazy bindings are usually a source of bugs and confusion.
 
-- (3) Reflex, VContainer, Zenject don't avoid Reflection by default but.
+- (4) Reflex, VContainer, Zenject don't avoid Reflection by default but.
   - They do work on IL2CPP (some have some caveats).
   - Reflex only uses reflection on a few places.
   - VContainer has an optional Source Generator that can replace the reflection based execution.
@@ -113,19 +115,20 @@ Note: A limitation of the source generator is that it does not run for partial c
 - Alive Phase: Container is returned to the user and it can be kept until it is no longer necessary. 
 - Disposal Phase: The container and its resources are released.
 
-In the section below we will add two examples, check the `ApplicationEntryPoint` to see an example of the lifecycle
+In the section below we will add two examples to see an example of the lifecycle
 
 - Creating the builder and installing the bindings is where the binding phase happens
 - Within the execution of the `Build` method both the Building and Startup phase will happen
     - The container and object graph is be created
     - Startup callbacks of the application are invoked
+- Notice that the container variable is `using` or `await using` in order to ensure that the container is disposed of when it is no longer needed.
 
 ## ManualDi.Sync sample
 
 ```csharp
 using DiContainer diContainer = new DiContainerBindings()
     .Install(b => {
-        //Setup the instances involved in the object graph
+        // Setup the instances involved in the object graph
         // The order of instantiation, injection and subsequent initialization is the reverse of the dependency graph
         // A consistent and reliable order of execution prevents issues that happen when instances are used when not yet properly initialized
         b.Bind<SomeClass>().Default().FromConstructor();
@@ -178,7 +181,7 @@ public class Startup(SomeClass someClass)
 ```csharp
 await using DiContainer diContainer = await new DiContainerBindings()
     .Install(b => {
-        //Setup the instances involved in the object graph
+        // Setup the instances involved in the object graph
         // The order of instantiation, injection and subsequent initialization is the reverse of the dependency graph
         // A consistent and reliable order of execution prevents issues that happen when instances are used when not yet properly initialized
         b.Bind<SomeClass>().Default().FromConstructor();
@@ -273,9 +276,11 @@ The specific binding configuration is done through 9 categories of methods that,
 ```csharp
 // * means source generated
 // ** means ManualDi.Async only
+// *** means ManualDi.Sync only
 
 // TApparent is optional and will be equal to TConcrete when undefined
-Bind<(TApparent,)? TConcrete>() 
+Bind<(TApparent,)? TConcrete>()
+    .Transient***
     .Default*
     .From[Constructor*|Instance|Method|MethodAsync**|...]  //There are many more
     .DependsOn**
@@ -293,6 +298,24 @@ When resolving, if multiple bindings match, the first one that satisfies the res
 ```csharp
 b.Bind<SomeClass>().Default().FromConstructor(); // When calling c.Resolve<SomeClass>() this one is returned
 b.Bind<SomeClass>().Default().FromConstructor();
+```
+### Transient
+
+*** ManualDi.Sync only
+
+When this method is used on a binding, the container will create a new instance every time that Binding type is resolved.
+Bindings that use `Transient` will not be created if no one resolves them. This means that if you use a Transient binding together with some `Link` extension method, the Transient instance will never be created and thus the `Link` extension method will never be called.
+
+In the example below, both `A` and `B` will be injected with a brand new instance of `SomeTransient`.
+
+```cssharp
+class SomeTransient;
+class A(SomeTransient someTransient);
+class B(SomeTransient someTransient);
+
+b.Bind<SomeClass>().Transient().Default().FromConstructor();
+b.Bind<A>().Default().FromConstructor();
+b.Bind<B>().Default().FromConstructor();
 ```
 
 

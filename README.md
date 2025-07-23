@@ -18,7 +18,7 @@ Welcome to ManualDi – a fast and extensible C# dependency injection library
 
 - Explicit Dependencies: With constructor/method injection, a class's dependencies are listed right in its signature. This makes the code self-documenting. You can immediately see what a class needs to function, making it far easier for new developers to understand the architecture and for you to reason about your own code.
 
-- Enhances Flexibility: Because components are not tied to concrete classes but rather to interfaces or abstractions, you can easily swap out implementations of a dependency without altering the dependent class. For instance, you could switch from a SQL database to a NoSQL database with minimal code changes in your business logic.
+- Enhances Flexibility: Because components are not tied to concrete classes but rather to abstractions, you can easily swap out implementations of a dependency without altering the dependent class. This easily lets you implement A/B tests and the implementation of a whole system without the consumers noticing as long as the interface contract is maintained.
 
 - Encourages Reusable Components: By removing direct dependencies on other concrete classes, components become more self-contained and can be more easily reused across different parts of an application or even in different projects.
 
@@ -110,7 +110,7 @@ Note: A limitation of the source generator is that it does not run for partial c
 # Container Lifecycle
 
 - Binding Phase: Container binding configuration is defined 
-- Building Phase: Binding configurastion is used to create the object graph
+- Building Phase: Binding configuration is used to create the object graph
 - Startup Phase: Startup callbacks are run.
 - Alive Phase: Container is returned to the user and it can be kept until it is no longer necessary. 
 - Disposal Phase: The container and its resources are released.
@@ -235,20 +235,18 @@ public class Startup(SomeClass someClass)
 
 Let's briefly discuss a few concepts from the library to get a high level overview
 
-- The container is created using a builder `DiContainerBindings`
-- Container instance creation are configured through `Bind` method overloads.
-- The type exposed will depend on the `Bind<TConcrete>()`/`Bind<TApparent, TConcrete>()` method used 
-- Configuration of the binding is performed on the `Binding` object returned by the `Bind` method.
-- The library achieves speed via source generated, reflection-free, `Default` and `FromConstructor` methods
-- Using the source-generated methods is optional but the container's recommended pattern
-- The `FromConstructor` method configures the Binding to use `TConcrete`'s constructor, resolving parameters from the container
-- There are many other construction methods other than `FromConstructor` available.
-- Instances are created in inverse dependency order.
-- Method injection is accomplished by adding an `Inject` method to your instances.
+- The container is created using a builder `DiContainerBindings`.
+- Container configuration is setup through a fluent API available through `Bind` methods.
+- Speed is achived via source generated, reflection-free, `Default` and `FromConstructor` methods.
+- The `FromConstructor` method instructs the Binding to use `TConcrete`'s constructor, resolving parameters from the container.
+- There are more construction methods other than `FromConstructor`.
+- Method injection is accomplished by adding an `Inject` method to your Types.
 - Instance initialization is accomplished by adding an `Initialize` or `InitializeAsync`** method.
 - The `Default` method configures the `Binding` to use `TConcrete`'s `Inject`, `Initialize` and `InitializeAsync`** methods
-- Instances are injected and initialized in the same order they are created
+- Instances are created injected and initialized in inverse dependency order.
 - Once the object graph is created and initialized, `QueueStartup` callbacks are invoked
+- Once all Startup callbacks are run, the container is returned to the user
+- When the application wants to dispose of the object graph dangling from the container, it can do it by disposing of the container
 
 # Binding
 
@@ -261,8 +259,8 @@ The fluent binding API begins by calling `Binding<TApparent, TConcrete>`.
 
 Let's see an example
 ```csharp
-interface IInterface { }
-class Implementation : IInterface {}
+interface IInterface;
+class Implementation : IInterface;
 
 b.Bind<IInterface, Implementation>()...
 ...
@@ -270,7 +268,7 @@ c.Resolve<IInterface>() // Succeeds
 c.Resolve<Implementation>() // Runtime error
 ```
 
-Use the returned value of the bind method, to configure the binding and tell the container how it should create, inject, initialize and dispose the instance.
+Use the flunt API available on the returned value of the `Bind` method, to configure the container how it should create, inject, initialize and dispose the instance.
 The specific binding configuration is done through 9 categories of methods that, by convention, should be done in the order specified below.
 
 ```csharp
@@ -278,8 +276,7 @@ The specific binding configuration is done through 9 categories of methods that,
 // ** means ManualDi.Async only
 // *** means ManualDi.Sync only
 
-// TApparent is optional and will be equal to TConcrete when undefined
-Bind<(TApparent,)? TConcrete>()
+Bind<(TApparent,)* TConcrete>()
     .Transient***
     .Default*
     .From[Constructor*|Instance|Method|MethodAsync**|...]  //There are many more
@@ -292,8 +289,13 @@ Bind<(TApparent,)? TConcrete>()
     .[Any other custom extension method your project implements]
 ```
 
-Keep in mind that you can bind multiple implementations to the same `TApparent` type.
-When resolving, if multiple bindings match, the first one that satisfies the resolution rules will be returned.
+`TApparent` is optional and will be equal to `TConcrete` when undefined
+
+When you define one or more `TApparent` on a single binding, the underlying `TConcrete` instance will be redirected to each one of them
+
+Keep in mind that you can have more than one binding to the same `TApparent` type. 
+
+Resolving a type on the container will return the first one that satisfies the resolution rules. (Read more below on `When` binding constraints)
 
 ```csharp
 b.Bind<SomeClass>().Default().FromConstructor(); // When calling c.Resolve<SomeClass>() this one is returned
@@ -313,7 +315,7 @@ class SomeTransient;
 class A(SomeTransient someTransient);
 class B(SomeTransient someTransient);
 
-b.Bind<SomeClass>().Transient().Default().FromConstructor();
+b.Bind<SomeTransient>().Transient().Default().FromConstructor();
 b.Bind<A>().Default().FromConstructor();
 b.Bind<B>().Default().FromConstructor();
 ```
@@ -322,27 +324,26 @@ b.Bind<B>().Default().FromConstructor();
 ## Default
 
 This source generated method is where most of the "magic" of the library happens.
-The source generator will inspect the `TConcrete` type and generate code to register the `Inject`, `Initialize` and `InitializeAsync`** methods when available.
-It will also inspect the type for `IDisposable` or `IAsyncDisposable`** and disable the automatic disposal behaviour when it does not implement it.
+The source generator will inspect the `TConcrete` type and generate code to register `Inject`, `Initialize` and `InitializeAsync`** methods when available on the type.
+It will also inspect the type for `IDisposable` or `IAsyncDisposable`** and disable the automatic disposal behaviour when the type does not implement them.
 
-Think of this system as "duck typing" via source generation: if a method matches the expected name and signature, it will be invoked, regardless of interface inheritance.
+Think of this system as "duck typing" via source generation. When the type has a method that matches the expected contract, the container will invoke it.
 
-For detailed behavior of each of the registered methods, refer to the sections below.
+For detailed behavior on each of the registered methods, refer to the sections below.
 
 When there are multiple candidates for a given method:
 - public methods are preferred over internal ones.
 - in case multiple methods with the same visibility exist, the first one found top-to-bottom is selected.
 
 ```csharp
-public class A { }
+public class A;
 public class B {
     public void Inject(A a) { } //Sample only, prefer using the constructor
 }
 public class C {
     public void Initialize() { }
 }
-public class D {
-    public D(A a) { }
+public class D(A a) {
     public void Inject(C c, A a) { } //Sample only, prefer using the constructor
     public Task InitializeAsync(CancellationToken ct) { ... }
 }
@@ -353,10 +354,10 @@ b.Bind<C>().Default().FromConstructor(); // Default calls Initialize
 b.Bind<D>().Default().FromConstructor(); // Default calls Inject and InitializeAsync
 ```
 
-Using `Default` is optional, but it is the recommended pattern in this library as it accelerates development.
+Using `Default` is not required, but is the recommended pattern this library encourages.
 By using it, developers only need to implement standardized DI boilerplate once.
 Any subsequent changes to the types are automatically handled by the source generator.
-For this reason, it’s best to always include it—even if the type doesn’t initially define any of the methods.
+For this reason, it’s best to always include it, even when the type doesn’t initially define any of the methods.
 
 ## From
 
@@ -367,7 +368,7 @@ The `From` methods define the instantiation strategy the container should use fo
 This method is source generated ONLY when there is a single `public`/`internal` accessible constructor.
 
 The container creates the instance using the constructor of the `TConcrete` type. 
-Dependencies necessary on the constructor will get resolved from the container.
+Any dependencies necessary on the constructor will get resolved from the container.
 
 ```csharp
 b.Bind<T>().Default().FromConstructor();
@@ -375,7 +376,7 @@ b.Bind<T>().Default().FromConstructor();
 
 ### Instance
 
-The container does not create the instance—it is provided externally and used as-is.
+The container does not create the instance. It is provided externally and used as-is.
 
 ```csharp
 b.Bind<T>().Default().FromInstance(new T())
@@ -383,8 +384,9 @@ b.Bind<T>().Default().FromInstance(new T())
 
 ### Method
 
-The instance is created using the provided delegate. The container is passed in as a parameter, allowing it to resolve any required dependencies.
-Note: All synchronous `From` configuration methods end up calling this one
+The instance is created using the provided delegate. 
+
+The delegate receives the container as a parameter, allowing it to resolve any required dependencies. 
 
 ```csharp
 b.Bind<T>().Default().FromMethod(c => new T(c.Resolve<SomeService>()))
@@ -393,8 +395,11 @@ b.Bind<T>().Default().FromMethod(c => new T(c.Resolve<SomeService>()))
 ### MethodAsync 
 (**ManualDi.Async only)
 
-The instance is created using the provided async delegate. The container and a cancellation token is passed in as a parameter, allowing it to resolve any required dependencies and handle cancellation.
-Note: All asynchronous `From` configuration methods end up calling this one
+The instance is created using the provided async delegate.
+
+The delegate receives the container as a parameter, allowing it to resolve any required dependencies.
+
+The delegate also receives a cancellation token. That cancellation token will be canceled instantly when the container is disposed.
 
 ```csharp
 b.Bind<T>().Default().FromMethodAsync(async (c, ct) => {
@@ -413,9 +418,10 @@ Don't call `Default` when using this, otherwise you get multiple calls on `Injec
 
 In the example below, there is `SomeClass` that is bound individually and then two more bindings expose the `SomeClass`
 ```csharp
-interface IFirst { }
-interface ISecond { }
-public class SomeClass : IFirst, ISecond { }
+interface IFirst;
+interface ISecond;
+class SomeClass : IFirst, ISecond;
+
 b.Bind<SomeClass>().Default().FromConstructor();
 b.Bind<IFirst, SomeClass>().FromContainerResolve();
 b.Bind<ISecond, SomeClass>().FromContainerResolve();
@@ -430,27 +436,31 @@ b.Bind<IFirst, ISecond, SomeClass>().Default().FromConstructor();
 
 ## Inject
 
-The Inject method allows for post-construction injection of types.
+The `Inject` method allows for post-construction injection of types. 
 
-Binding injection is done in reverse dependency order. Injected objects will already be injected themselves.
+Avoid running any logic within `Inject` methods, only assign member variables with the parameters provided. All initialization logic is meant to be run on `Initialize` calls.
 
-The injection can be used to hook into the object creation lifecycle and run custom code. Each individual binding can any amount of Inject calls and will run in order added.
+Binding injection happens in reverse dependency order. Injected objects will already be injected themselves.
 
-As stated on the `Default` section, calling the source generated method will handle the registration of the`Inject` method on `TConcrete` automatically.
+The injection can be used to hook into the object creation lifecycle and run custom code. Each individual binding can have any amount of Inject calls that will be run in the order added.
+
+As stated on the `Default` section, calling that source generated method will handle the registration of the`Inject` method on `TConcrete` automatically.
 
 The inject method has two usecases
-1. Inject dependencies when the constructor can't be used (this happens for instance in unity3d)
+1. Inject dependencies when the constructor can't be used (this happens for instance in unity3d where all UnityEngine.Object can't use the constructor)
 2. Workaround Cyclic dependencies that prevent the object graph from being wired
-Warning: Cyclic dependencies usually highlight a problem in the design of the code. If you find such a problem in your codebase, consider redesigning the code before applying the following proposal.
 
-This next example will fail
+**Warning**: Cyclic dependencies usually highlight a problem in the design of the code. If you find such a problem in your codebase, consider redesigning the code before applying the proposal below.
+
+This snippet below is an example of a cyclic dependency. It is not possible to implement this with ManualDi nor manually.
 
 ```csharp
 public class A(B b);
 public class B(A a);
 ```
 
-In order to fix this, the chain must be broken with `Inject`.
+In order to fix this, while keeping the same design, even if not recommended, the chain must be broken using the `Inject` method.
+
 When using `ManualDi.Async` adding the `CyclicDependency`** attribute is also necessary in order to break down cyclic dependencies. Without the attribute it might work, but just due to chance. Using it, will update the creation order of dependencies to avoid issues.
 
 ```csharp
@@ -464,20 +474,22 @@ public class B
 
 Note: When dealing with cyclic dependencies, the usual method execution order may not hold.
 Normally, Initialize is called on a type’s dependencies before being called on the type itself.
-However, with cyclic dependencies, this order is not guaranteed, and additional synchronization logic may be required to ensure correct behavior.
+However, with cyclic dependencies, this order cannot be guaranteed given the types are already breaking the necessary contract for this to be possible. When this happens,additional synchronization logic on those types may be required in order to ensure correct behavior.
 That said, cyclic dependencies are often a sign of flawed design. If you encounter them, it’s usually better to refactor the architecture rather than patch around the issue.
+
+While you should always keep an eye for cyclic dependencies while designing your object graph, you will quickly notice them once you run your application given it won't be able to start and fail during the building process of the container.
 
 ## Initialize
 
 The Initialize method allows for post-injection initialization of types.
 
-Binding initialization is done in reverse dependency order. Injected objects will already be injected themselves.
+Binding initialization is done in reverse dependency order. Initialized objects will already be initialized themselves.
 
-The injection can be used to hook into the object creation lifecycle and run custom code. Each individual binding can any amount of Initialize calls and will run in order added.
+The initialization can be used to hook into the object creation lifecycle and run custom code. Each individual binding can have any amount of Initialize calls that will be run in the order added.
 
 The initialization will not happen more than once for any instance.
 
-As stated on the `Default` section, calling the source generated method will handle the Initialize method automatically.
+As stated on the `Default` section, calling that source generated method will handle the registration of the `Initialize` method automatically.
 
 
 ```csharp
@@ -487,17 +499,18 @@ b.Bind<object>()
     .Initialize((o, c) => Console.WriteLine("2")); // And then this is called
 ```
 
+In the example below, `A.Initialize` will be invoked first and then `B.Initialize` given `B` depends on `A`
+
+
 ```csharp
-public class A
+class A
 {
-    public void Initialize() { }
+    void Initialize() { }
 }
 
-public class B
-{
-    public B(A a) { }
-    
-    public void Initialize() { }
+class B(A a)
+{    
+    void Initialize() { }
 }
 
 //This is the manual implementation without Default
@@ -514,7 +527,7 @@ Creating custom extension methods that call Initialize is the recommended way to
 ### Example: Interconnect some features
 
 ```csharp
-class SomeFeature : IFeature { }
+class SomeFeature : IFeature;
 
 b.Bind<SomeFeature>()
     .Default()
@@ -522,19 +535,23 @@ b.Bind<SomeFeature>()
     .LinkFeature();
 ```
 
-Imagine you have an `IFeature` interface in your project and you want to add some shared initialization code to the ones that have it. You can add this code in an "Link" extension method. Internally this extension method should just call the `Initialize` method and add whatever extra logic the feature requires.
+Imagine you have an `IFeature` interface in your project and you want to add some shared initialization code to the ones that have it. You can add this reusable code as "Link" extension method. Internally these extension methods can use the `Inject`/`Initialize` methods and add whatever extra logic the feature requires.
 
 You may find further Link examples already present in the library [here](https://github.com/PereViader/ManualDi/blob/540cb3d3155d81dc8925d9ab5769d2a18e61e81b/ManualDi.Unity3d/Assets/ManualDi.Unity3d/Runtime/Extensions/TypeBindingLinkExtensions.cs#L8)
 
 ## Dispose
 
-The Dispose extension method allows defining behavior that will run when the object is disposed.
+When an object implements the `IDisposable` or `IAsyncDisposable`** interface, it doesn't need a manual `Dispose` call in the binding; it will be disposed of automatically.
+
+Using the `Default` source-generated method provides a slight optimization by skipping a runtime check for IDisposable and IAsyncDisposable.
+
+The `Dispose` extension method allows defining behavior that will run when the object is disposed.
 The container will dispose of the objects when itself is disposed.
 The objects will be disposed in reverse dependency order.
 
-If an object implements the `IDisposable` or `IAsyncDisposable`** interface, it doesn't need a manual `Dispose` call in the binding; it will be disposed of automatically.
+Using the `Dispose` is fine when readability is preferred, however notice that this method is just a shorthand for calling `QueueDispose` within an `Inject` callback. Calling `QueueDipose` directly is preferred when you want performance. 
 
-Using the `Default` source-generated method provides a slight optimization by skipping a runtime check for IDisposable and IAsyncDisposable.
+The delegates registered on `Dispose`/`QueueDispose` methods will always be run regardless of `SkipDisposable` being used.
 
 ```csharp
 class A : IDisposable 
@@ -542,18 +559,13 @@ class A : IDisposable
     public void Dispose() { }    
 }
 
-class B 
+class B(A a)
 {
-    public B(A a) { }
     public void DoCleanup() { }
 }
 
 b.Bind<A>().Default().FromConstructor(); // No need to call Dispose because the object is IDisposable
 b.Bind<B>().Default().FromConstructor().Dispose((o,c) => o.DoCleanup());
-
-// ...
-
-B b = c.Resolve<B>();
 
 c.Dispose(); // A is the first object disposed, then B
 ```
@@ -562,7 +574,7 @@ c.Dispose(); // A is the first object disposed, then B
 
 When this extension method is used, the container skips the runtime check for `IDisposable` and `IAsyncDisposable`** during the disposal phase for the instance where it is used and, consequently, does not dispose the instance.
 
-Delegates registered using the `Dispose` method will still be invoke.
+Delegates registered using the `Dispose`/`QueueDispose` methods will still be invoked.
 
 
 ## WithId
@@ -599,13 +611,12 @@ int value2 = c.Resolve<GetBananaInt>()(); // 2
 The id functionality can be used on method and property dependencies by using the Inject attribute and providing a string id to it
 
 ```csharp
-class A
-{
-    public void Inject(int a, [Id("Other")] object b) { ... }
-}
+class A(int a, [Id("Other")] object b);
 
-//Will resolve the object with the requested Id
-o.Inject(
+b.Bind<A>().Default().FromConstructor();
+
+//Within FromConstructor the snippet below will run
+new A(
     c.Resolve<int>(),
     c.Resolve<object>(x => x.Id("Other"))
 )
@@ -617,15 +628,15 @@ The `When` extension method allows defining filtering conditions as part of the 
 
 ### InjectedIntoType
 
-Allows filtering bindings using the injected Concrete type
+Allows filtering bindings by the `TConcrete` type of the Binding where it is being injected to.
 
 ```csharp
-class SomeValue(int Value) { }
-class OtherValue(int Value) { }
-class FailValue(int Value) { }
+class SomeValue(int Value);
+class OtherValue(int Value);
+class FailValue(int Value);
 
-b.Bind<int>().FromInstance(1).When(x => x.InjectedIntoType<SomeValue>())
-b.Bind<int>().FromInstance(2).When(x => x.InjectedIntoType<OtherValue>())
+b.Bind<int>().FromInstance(1).When(x => x.InjectedIntoType<SomeValue>());
+b.Bind<int>().FromInstance(2).When(x => x.InjectedIntoType<OtherValue>());
 
 b.Bind<SomeValue>().Default().FromConstructor(); // will be provided 1
 b.Bind<OtherValue>().Default().FromConstructor(); // will be provided 2
@@ -634,10 +645,10 @@ b.Bind<FailValue>().Default().FromConstructor(); // will fail at runtime when re
 
 ### InjectedIntoId
 
-Allows filtering bindings using the injected Concrete type
+Allows filtering bindings by the id of the Binding where it is being injected to.
 
 ```csharp
-class SomeValue(int Value) { }
+class SomeValue(int Value);
 
 b.Bind<int>().FromInstance(1).When(x => x.InjectedIntoId("1"));
 b.Bind<int>().FromInstance(2).When(x => x.InjectedIntoId("2"));
@@ -652,22 +663,22 @@ b.Bind<FailValue>().Default().FromConstructor(); // will fail at runtime when re
 The instance is created using a sub-container built via the provided installer.
 This is useful for encapsulating parts of the object graph into isolated sub-containers.
 The sub-container inherits from the main container, allowing its bindings to depend on types registered in the parent.
-When using this approach, do not call Default on the main binding—Default should be invoked within the sub-container’s installation instead.
+When using this approach, do not call `Default` on the main binding. Default should be invoked within the sub-container’s installation instead.
 
-Question: When would I do this?
-Answer: For instance, think of a Unity3d game that has many enemies on a scene and you want to bind all enemies to the container so that their dependencies are setup and it is properly initialized.
+Question: When/Why would I do this?
+Answer: For instance, think of a Unity3d game that has many enemies on a scene and you want to bind all enemies to the container so that their dependencies are setup and it is properly initialized. By doing this, each enemy can have its own independent container scope and object graph. 
 
 ```csharp
+class ParentDependency;
+class SubDependency;
 class Enemy : MonoBehaviour
 { 
     public void Inject(ParentDependency parentDependency, SubDependency subDependency) { }
     public void Initialize() { }
 }
-class ParentDependency { }
-class SubDependency {}
 
 b.Bind<ParentDependency>().Default().FromConstructor();
-foreach(var enemy in enemiesInScene) //enemiesInScene 
+foreach(var enemy in enemiesInScene)
 {
     b.BindSubContainer<Enemy>(sub => {
         sub.Bind<Enemy>().Default().FromInstance(enemy);
@@ -699,17 +710,17 @@ foreach(var enemy in enemiesInScene)
 
 # Installers
 
-In order to group features in a sensible way, bindings will usually be grouped on Installer classes.
+In order to group features in a sensible way, bindings should be grouped on Installer classes.
 These classes may be implemented either as object instances that implement `IInstaller` or as extension methods.
-Unless you explicitly need to use actual instances, this library recommends to prefer extension methods.
+Unless you explicitly need to use actual instances, this library recommends using extension methods, given they can be used without creating garbage.
 
 ```csharp
-class A { }
-class B { }
-interface IC { }
-class C : IC { }
+class A;
+class B;
+interface IC;
+class C : IC;
 
-//Extension method (recommended)
+//Extension method installer (recommended)
 static class SomeFeatureInstaller
 {
     public static DiContainerBindings InstallSomeFunctionality(this DiContainerBindings b)
@@ -721,8 +732,7 @@ static class SomeFeatureInstaller
     }
 }
 
-//Or
-
+//Installer instance 
 class SomeFeatureInstaller : IInstaller
 {
     public static DiContainerBindings Install(DiContainerBindings b)
@@ -739,9 +749,33 @@ class SomeFeatureInstaller : IInstaller
 
 A common requirement when implementing gamemodes, doing A/B tests or taking any other data driven approach is to build different object graphs.
 
-This can be accomplished in ManualDi by running different Bind statements depending on the data.
+This can be accomplished in ManualDi by conditionally running different Bind statements.
 
-The available resolution methods are available on `DiContainerBinding` are:
+The conditional logic can rely for example on external parameters provided to the installer.
+
+```csharp
+static class SomeFeatureInstaller
+{
+    public static DiContainerBindings InstallSomeFunctionality(this DiContainerBindings b, bool isEnabled)
+    {
+        if(isEnabled)
+        {
+            b.Bind<ISomeFeature, EnabledSomeFeature>().Default().FromConstructor();
+        }
+        else
+        {
+            b.Bind<ISomeFeature, DisabledSomeFeature>().Default().FromConstructor();
+        }
+        return b;
+    }
+}
+```
+
+This however requires adding parameters on installers which is not possible in all cases and can require undesired bolierplate.
+
+Another way to do this is by resolving instances during the binding process of the container.
+
+The available resolution methods available on `DiContainerBinding` are:
 - ResolveInstance
 - TryResolveInstance
 - ResolveInstanceNullable
@@ -848,7 +882,9 @@ public class A
     public A(object obj, int? nullableValue) { }
 }
 
+//This will create an instance of A with an object instance and a null int
 b.Bind<A>().Default().FromConstructor();
+b.Bind<object>.Default().FromInstance();
 ```
 
 ## Collection
@@ -883,7 +919,7 @@ b.Bind<A>().Default().FromConstructor();
 
 Notice that resolution can only be done on apparent types, not concrete types. Concrete types are there so the container can provide a type safe fluent API.
 
-If you use the source generated methods, you will usually not interact with the Resolution methods.
+You should rarely use these methods, only using them when implementing reusable Link methods or some very edge case logic. Under most circumpstances you should rely on the source generated methods that implement calling these for you.
 
 Resolutions can be done in the following ways:
 
@@ -933,9 +969,8 @@ The container provides functionality that queues work to be done once the contai
 By using this you can define the entry points of your application declaratively during the installation of the container.
 
 ```csharp
-class Startup
+class Startup(SomeService someService)
 {
-    public Startup(...) { ... }
     public void Start() { ... }
 }
 
@@ -955,10 +990,30 @@ In the snippet above, the following will happen when the container is built:
 - `SomeService`'s `Initialize` method is called
 - `Startup`'s `Start` method is called
 
-# Unity3d
+## Tradeoffs
 
-When using the container in unity, do not rely on Awake / Start. Instead, rely on Inject / Initialize / InitializeAsync.
-You may still use Awake / Start if the classes involved are not injected through the container.
+ManualDi is not perfect, it does have some tradeoffs, that of course in my opinion are completely worth it.
+
+Positive:
+- Less code: Because the code is implemented using source generation and using a dynamic layer that handles the execution order, there is much less code to write. A single line of ManualDi code handles: creation, disposal and order of execution.
+- Agile: Because there is less code to write and the code to write is updated automatically when requirements change, the team can be faster.
+- Fewer source control conflicts: Because each component is implemented in isolation to the others, source control conflicts are much less likely to happen.
+- Dynamically configurable: ManualDi can create dependencies with different types at runtime easily. Compile safe code requires adding even more code when anything like it.
+
+Negative:
+
+- Not compile safe: Because the container is adding a dynamic layer, the compiler can't verify all the required dependencies are properly registered. 
+- Slower: Because the container is adding a dynamic layer, the indirection makes the code slower than the compile safe conuterpart.
+    - Even if slower, ManualDi is significally fast to the point where it is usually not a problem
+
+
+
+---
+# Unity3d
+From this point below, the documentation is Unity3d integration specific.
+
+When using the container in unity, avoid relying on `Awake` / `Start`. Instead, rely on Inject / Initialize / InitializeAsync.
+You may still use `Awake` / `Start` if the classes involved are not injected through the container.
 
 By relying on the container and not on native Unity3d callbacks you can be certain that the dependencies of your classes are Injected and Initialized in the proper order.
 
@@ -969,7 +1024,7 @@ The container provides two specialized Installers
 - `ScriptableObjectInstaller`
 
 This is the idiomatic Unity way to have both the configuration and engine object references in the same place.
-These classes just implement the `IInstaller` interface, there is no requirement for these classes to be used, so feel free to use IInstaller directly if you want.
+Using these classes is not required, they are just abstract classes that implement `IInstaller`. Feel free to use `IInstaller` directly if you prefer that.
 
 ```csharp
 public class SomeFeatureInstaller : MonoBehaviourInstaller
@@ -1035,8 +1090,9 @@ public class SomeFeatureInstaller : MonoBehaviourInstaller
 }
 ```
 
-Serialize UnityEngine.Object dependancies should be serialized on installers and bound during installation.
-Using `public` member variables to serialize references instead of `[SerializeField] private` ones should be prefered to avoid boilerplate.
+There is no need to remember them exactly, just use your IDE autocomplete functionality.
+
+UnityEngine.Object dependancies should be serialized on installers and bound during installation.
 
 Most of the From methods that do instantiation, have several optional parameters. For instance:
 - `Transform? parent = null` defines the parent transform used when instantiating new instances.
@@ -1208,9 +1264,9 @@ public class SceneEntryPoint : MonoBehaviourSubordinateEntryPoint<Data, SceneFac
 
 class Example
 {
-    IEnumerator Run()
+    async Task Run()
     {
-        yield return SceneManager.LoadSceneAsync("TheScene", LoadSceneMode.Additive);
+        await SceneManager.LoadSceneAsync("TheScene", LoadSceneMode.Additive);
         
         var entryPoint = Object.FindObjectOfType<SceneEntryPoint>();
         var data = new Data() { Name = "Charles" };
@@ -1271,7 +1327,7 @@ Note: There is a sample in the package that provides a Tickable system and a Lin
 
 # How and why does ManualDi help
 
-## Comparing ManualDi and manual injection
+## Comparing manual creation and injection to ManualDi 
 In order to understand how ManualDi will help you write fewer and better lines of code, let see the difference between a composition root with and without ManualDi.
 
 Note: For the sake of the example, we will use an API inspired by the Unity3d engine. Keep in mind that the Unity3d engine API is not exaclty like the example below.
@@ -1283,6 +1339,11 @@ var player = await Addressables.InstantiateAsync<Player>("Player");
 
 gameplayScene.Inject(player);
 player.Initialize();
+
+...
+
+Addressable.Unload(player)
+SceneManager.UnloadScene(gameplayScene);
 ```
 
 Notice that we are doing manual creation and injection of instances followed up by the required initialization calls each component requires.
@@ -1348,19 +1409,3 @@ b.Bind<SaveSystem>().Default().FromConstructor();
 Notice that the snippet above works for both when the save system interacts with just the player and both the player and scene. This is because ManualDi alaways runs things in the proper order by taking into account the dependencies of components.
 
 Also notice that all of the disposal responsabilities are also handled by ManualDi without specifying anything about it.
-
-## Tradeoffs
-
-ManualDi is not perfect, it does have some tradeoffs, that of course in my opinion are completely worth it.
-
-Positive:
-- Less code: Because the code is implemented using source generation and using a dynamic layer that handles the execution order, there is much less code to write. A single line of ManualDi code handles: creation, disposal and order of execution.
-- Agile: Because there is less code to write and the code to write is updated automatically when requirements change, the team can be faster.
-- Fewer source control conflicts: Because each component is implemented in isolation to the others, source control conflicts are much less likely to happen.
-- Dynamically configurable: ManualDi can create dependencies with different types at runtime easily. Compile safe code requires adding even more code when anything like it.
-
-Negative:
-
-- Not compile safe: Because the container is adding a dynamic layer, the compiler can't verify all the required dependencies are properly registered. 
-- Slower: Because the container is adding a dynamic layer, the indirection makes the code slower than the compile safe conuterpart.
-    - Even if slower, ManualDi is significally fast to the point where it is usually not a problem

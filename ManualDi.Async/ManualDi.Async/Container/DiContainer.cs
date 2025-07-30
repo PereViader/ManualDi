@@ -190,8 +190,10 @@ namespace ManualDi.Async
             if (binding.BindingWiredState < BindingWiredState.Wired)
             {
                 binding.BindingWiredState = BindingWiredState.Wired;
+                var previousInjectedBinding = injectedBinding;
                 injectedBinding = binding;
                 binding.Dependencies?.Invoke(this);
+                injectedBinding = previousInjectedBinding;
                 bindings.Add(binding);
             }
         }
@@ -212,8 +214,10 @@ namespace ManualDi.Async
             if (binding.BindingWiredState < BindingWiredState.Wired)
             {
                 binding.BindingWiredState = BindingWiredState.Wired;
+                var previousInjectedBinding = injectedBinding;
                 injectedBinding = binding;
                 binding.Dependencies?.Invoke(this);
+                injectedBinding = previousInjectedBinding;
                 bindings.Add(binding);
             }
         }
@@ -230,8 +234,10 @@ namespace ManualDi.Async
             if (binding.BindingWiredState < BindingWiredState.Wired)
             {
                 binding.BindingWiredState = BindingWiredState.Wired;
+                var previousInjectedBinding = injectedBinding;
                 injectedBinding = binding;
                 binding.Dependencies?.Invoke(this);
+                injectedBinding = previousInjectedBinding;
                 bindings.Add(binding);
             }
         }
@@ -248,11 +254,13 @@ namespace ManualDi.Async
             if (binding.BindingWiredState < BindingWiredState.Wired)
             {
                 binding.BindingWiredState = BindingWiredState.Wired;
+                var previousInjectedBinding = injectedBinding;
                 injectedBinding = binding;
                 binding.Dependencies?.Invoke(this);
+                injectedBinding = previousInjectedBinding;
                 bindings.Add(binding);
             }
-        }
+        }   
 
         public void InjectionDependency<T>()
         {
@@ -261,7 +269,7 @@ namespace ManualDi.Async
             {
                 if (parentDiContainer is null)
                 {
-                    throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedBinding?.GetType().FullName ?? "null"} is not registered.");
+                    throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedBinding?.ConcreteType.FullName ?? "null"} is not registered.");
                 }
                 parentDiContainer.InjectionDependency<T>();
                 return;

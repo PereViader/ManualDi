@@ -6,14 +6,37 @@ namespace ManualDi.Async.Tests;
 
 public class TestDiContainerBindingWhen
 {
-    private record NestedInt(int Value);
+    internal class Special;
+    internal class Child;
+    internal class Root(Child child, Special special);
+    
+    public class NestedInt(int value)
+    {
+        public int Value { get; } = value;
+    }
+    
+    [Test]
+    public async Task TestWhenInjectedIntoNested()
+    {
+        //This test checks that the Binding pointer is not lost
+        //The Root depends on both Child and Special and special is the second dependency
+        //If this succeeds, it means that the Root binding pointer is not lost
+        await using var container = await new DiContainerBindings().Install(b =>
+            {
+                b.Bind<Special>().FromConstructor().When(x => x.InjectedIntoType<Root>());
+                b.Bind<Root>().FromConstructor();
+                b.Bind<Child>().FromConstructor();
+            })
+            .WithFailureDebugReport()
+            .Build(CancellationToken.None);
+    }
 
     [Test]
     public async Task TestWhenInjectedIntoType()
     {
         await using var container = await new DiContainerBindings().Install(b =>
         {
-            b.Bind<NestedInt>().FromMethod(c => new NestedInt(c.Resolve<int>())).DependsOn(d => d.ConstructorDependency<int>());
+            b.Bind<NestedInt>().FromConstructor();
             b.Bind<int>().FromInstance(1).When(x => x.InjectedIntoType<object>());
             b.Bind<int>().FromInstance(2).When(x => x.InjectedIntoType<NestedInt>());
         }).Build(CancellationToken.None);
@@ -27,7 +50,7 @@ public class TestDiContainerBindingWhen
     {
         await using var container = await new DiContainerBindings().Install(b =>
         {
-            b.Bind<NestedInt>().FromMethod(c => new NestedInt(c.Resolve<int>())).DependsOn(d => d.ConstructorDependency<int>()).WithId("2");
+            b.Bind<NestedInt>().FromConstructor().WithId("2");
             b.Bind<int>().FromInstance(1).When(x => x.InjectedIntoId("1"));
             b.Bind<int>().FromInstance(2).When(x => x.InjectedIntoId("2"));
         }).Build(CancellationToken.None);

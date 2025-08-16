@@ -37,7 +37,7 @@ public class TestDiContainerBindings
     }
 
     [Test]
-    public async Task TestQueueInitialization()
+    public async Task TestQueueInitialize()
     {
         var initializationDelegate = Substitute.For<ContainerDelegate>();
 
@@ -46,6 +46,18 @@ public class TestDiContainerBindings
             .Build(CancellationToken.None);
 
         initializationDelegate.Received(1).Invoke(Arg.Is<IDiContainer>(container));
+    }
+    
+    [Test]
+    public async Task TestQueueInitializeAsync()
+    {
+        var initializationDelegate = Substitute.For<AsyncContainerDelegate>();
+
+        await using var container = await new DiContainerBindings()
+            .Install(b => b.QueueInitializeAsync(initializationDelegate))
+            .Build(CancellationToken.None);
+
+        await initializationDelegate.Received(1).Invoke(Arg.Is<IDiContainer>(container), Arg.Any<CancellationToken>());
     }
     
     [Test]

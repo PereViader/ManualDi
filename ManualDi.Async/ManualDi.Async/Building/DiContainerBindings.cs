@@ -12,7 +12,7 @@ namespace ManualDi.Async
     {
         internal readonly Dictionary<IntPtr, Binding> bindingsByType;
         private readonly List<ContainerDelegate> injectDelegates;
-        private readonly List<ContainerDelegate> initializeDelegates;
+        private readonly List<object> initializeDelegates;
         private readonly List<object> startupDelegates;
         private readonly List<object> disposables;
         
@@ -72,6 +72,11 @@ namespace ManualDi.Async
         public void QueueInitialize(ContainerDelegate containerDelegate)
         {
             initializeDelegates.Add(containerDelegate);
+        }
+        
+        public void QueueInitializeAsync(AsyncContainerDelegate asyncContainerDelegate)
+        {
+            initializeDelegates.Add(asyncContainerDelegate);
         }
         
         [Obsolete("Use QueueInitialize instead")]
@@ -178,7 +183,17 @@ namespace ManualDi.Async
 
                     foreach (var initializationDelegate in initializeDelegates)
                     {
-                        initializationDelegate.Invoke(subContainer);
+                        switch (initializationDelegate)
+                        {
+                            case AsyncContainerDelegate asyncInitializationDelegate:
+                                await asyncInitializationDelegate.Invoke(subContainer, ct);
+                                break;
+                            case ContainerDelegate syncInitializationDelegate:
+                                syncInitializationDelegate.Invoke(subContainer);
+                                break;
+                            default:
+                                throw new InvalidOperationException($"Unexpected initialization delegate type: {initializationDelegate.GetType()}");
+                        }
                     }
 
                     foreach (var startupDelegate in startupDelegates)
@@ -218,9 +233,19 @@ namespace ManualDi.Async
                     injectDelegate.Invoke(diContainer);
                 }
 
-                foreach (var initializeDelegate in initializeDelegates)
+                foreach (var initializationDelegate in initializeDelegates)
                 {
-                    initializeDelegate.Invoke(diContainer);
+                    switch (initializationDelegate)
+                    {
+                        case AsyncContainerDelegate asyncInitializationDelegate:
+                            await asyncInitializationDelegate.Invoke(diContainer, ct);
+                            break;
+                        case ContainerDelegate syncInitializationDelegate:
+                            syncInitializationDelegate.Invoke(diContainer);
+                            break;
+                        default:
+                            throw new InvalidOperationException($"Unexpected initialization delegate type: {initializationDelegate.GetType()}");
+                    }
                 }
 
                 foreach (var startupDelegate in startupDelegates)

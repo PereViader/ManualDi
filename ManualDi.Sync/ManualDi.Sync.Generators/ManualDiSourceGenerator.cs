@@ -94,7 +94,7 @@ namespace ManualDi.Sync.Generators
 
             namespace ManualDi.Sync
             {
-                public static class ManualDiGenerated{{className.Replace(".","")}}Extensions
+                public static class ManualDiGenerated{{className.Replace(".","_")}}Extensions
                 {
             """);
 

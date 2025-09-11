@@ -324,3 +324,13 @@ namespace UnityEngine
         public void Initialize() { }
     }
 }
+
+public class MapNavMesh
+{
+    public class BakeData
+    {
+    }
+}
+
+[Obsolete("Use MapNavMesh.BakeData")]
+public class MapNavMeshBakeData : MapNavMesh.BakeData { }

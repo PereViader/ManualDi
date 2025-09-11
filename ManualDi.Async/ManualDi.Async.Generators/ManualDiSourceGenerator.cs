@@ -99,7 +99,7 @@ namespace ManualDi.Async.Generators
 
             namespace ManualDi.Async
             {
-                public static class ManualDiGenerated{{className.Replace(".","")}}Extensions
+                public static class ManualDiGenerated{{className.Replace(".","_")}}Extensions
                 {
             """);
 

@@ -8,30 +8,6 @@ Welcome to ManualDi – a fast and extensible C# dependency injection library
 - Source generation, no reflection - Faster and more memory efficient than most other dependency injection containers.
 - Seamless Unity3D game engine integration.
 
-# Why use Dependency Injection
-
-## General
-
-- Fail Faster: The application can only start when the whole object graph is correct. Runtime failures on the object graph are much harder to implement into the codebase.
-
-- Decouples Components: Classes do not create the objects they depend on. Instead, these dependencies are "injected" from an external source. This decoupling means that components are not tightly bound to specific implementations of their dependencies.
-
-- Explicit Dependencies: With constructor/method injection, a class's dependencies are listed right in its signature. This makes the code self-documenting. You can immediately see what a class needs to function, making it far easier for new developers to understand the architecture and for you to reason about your own code.
-
-- Enhances Flexibility: Because components are not tied to concrete classes but rather to abstractions, you can easily swap out implementations of a dependency without altering the dependent class. This easily lets you implement A/B tests and the implementation of a whole system without the consumers noticing as long as the interface contract is maintained.
-
-- Encourages Reusable Components: By removing direct dependencies on other concrete classes, components become more self-contained and can be more easily reused across different parts of an application or even in different projects.
-
-- Easier Refactoring: With loosely coupled components, refactoring or updating a part of the application is less likely to have a cascading effect on other parts of the codebase. Changes to a dependency's implementation details do not require changes in the classes that consume it, as long as the contract (interface) remains the same.
-
-- Effortless Testing: When testing a component that is implemented with dependency injection in mind, you can inject mock/stub/fake/... implementations. This allows you to isolate the unit of code you are testing from the rest of the system, leading to more reliable and focused tests.
-
-## Unity3d
-
-- Supercharge Serialized objects: Unity has a great system to serialize data on UnityEngine.Objects. Adding a DiContainer on top means that you can easily connect that data with your code-driven implementation.
-
-- Cross-Scene Dependencies: Object dependencies are tricky to interconnect when multiple dynamically scenes and/or prefabs are loaded. ManualDi in Unity3d facilitate interconnecting those with minimal boilerplate.
-
 # Benchmark and Comparison
 
 BenchmarkDotNet [Sync](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Sync/ManualDi.Sync.Benchmark/Benchmark.cs) and [Async](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Async/ManualDi.Async.Benchmark/Benchmark.cs) benchmarks between Microsoft and ManualDi
@@ -230,6 +206,30 @@ public class Startup(SomeClass someClass)
     }
 }
 ```
+
+# Why use Dependency Injection
+
+## General
+
+- Fail Faster: The application can only start when the whole object graph is correct. Runtime failures on the object graph are much harder to implement into the codebase.
+
+- Decouples Components: Classes do not create the objects they depend on. Instead, these dependencies are "injected" from an external source. This decoupling means that components are not tightly bound to specific implementations of their dependencies.
+
+- Explicit Dependencies: With constructor/method injection, a class's dependencies are listed right in its signature. This makes the code self-documenting. You can immediately see what a class needs to function, making it far easier for new developers to understand the architecture and for you to reason about your own code.
+
+- Enhances Flexibility: Because components are not tied to concrete classes but rather to abstractions, you can easily swap out implementations of a dependency without altering the dependent class. This easily lets you implement A/B tests and the implementation of a whole system without the consumers noticing as long as the interface contract is maintained.
+
+- Encourages Reusable Components: By removing direct dependencies on other concrete classes, components become more self-contained and can be more easily reused across different parts of an application or even in different projects.
+
+- Easier Refactoring: With loosely coupled components, refactoring or updating a part of the application is less likely to have a cascading effect on other parts of the codebase. Changes to a dependency's implementation details do not require changes in the classes that consume it, as long as the contract (interface) remains the same.
+
+- Effortless Testing: When testing a component that is implemented with dependency injection in mind, you can inject mock/stub/fake/... implementations. This allows you to isolate the unit of code you are testing from the rest of the system, leading to more reliable and focused tests.
+
+## Unity3d
+
+- Supercharge Serialized objects: Unity has a great system to serialize data on UnityEngine.Objects. Adding a DiContainer on top means that you can easily connect that data with your code-driven implementation.
+
+- Cross-Scene Dependencies: Object dependencies are tricky to interconnect when multiple dynamically scenes and/or prefabs are loaded. ManualDi in Unity3d facilitate interconnecting those with minimal boilerplate.
 
 # Quick concepts
 

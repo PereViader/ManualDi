@@ -260,7 +260,15 @@ namespace ManualDi.Sync.Generators
                 }
 
                 stringBuilder.Append("c.ResolveAll<");
-                stringBuilder.Append(FullyQualifyTypeWithoutNullable(listGenericType));
+                if (IsNullableTypeSymbol(listGenericType))
+                {
+                    stringBuilder.Append(FullyQualifyTypeWithNullable(listGenericType));
+                }
+                else
+                {
+                    stringBuilder.Append(FullyQualifyTypeWithoutNullable(listGenericType));    
+                }
+                
                 stringBuilder.Append(">(");
                 CreateIdResolution(id, stringBuilder);
                 stringBuilder.Append(")");

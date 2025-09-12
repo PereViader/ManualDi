@@ -769,4 +769,33 @@ public static Binding<T, MapNavMeshBakeData> Default<T>(this Binding<T, MapNavMe
     }
 }
 
+  
+#nullable enable
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Sync
+{
+    public static class ManualDiGeneratedTestOutParamExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<T, TestOutParam> FromConstructor<T>(this Binding<T, TestOutParam> binding)
+        {
+            return binding.FromMethod(static c => new TestOutParam(
+                out _));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<T, TestOutParam> Default<T>(this Binding<T, TestOutParam> binding)
+        {
+            return binding.Inject(static (o, c) => 
+                {
+                    var to = (TestOutParam)o;
+                    to.Inject(
+                        out _);
+                })
+                .SkipDisposable();
+        }
+    }
+}
+
 ]

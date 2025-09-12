@@ -334,3 +334,16 @@ public class MapNavMesh
 
 [Obsolete("Use MapNavMesh.BakeData")]
 public class MapNavMeshBakeData : MapNavMesh.BakeData { }
+
+public class TestOutParam
+{
+    public TestOutParam(out string test)
+    {
+        test = "test";
+    }
+    
+    public void Inject(out string test)
+    {
+        test = "test";
+    }
+}

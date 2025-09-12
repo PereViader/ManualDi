@@ -221,8 +221,9 @@ namespace ManualDi.Sync.Generators
                 
                 var attribute = typeReferences.GetIdAttribute(parameter);
                 var id = attribute is null ? null : GetInjectId(attribute);
+                var isOutParam = parameter.RefKind == RefKind.Out;
                 stringBuilder.Append(tabs);
-                CreteTypeResolution(parameter.Type, id, typeReferences, stringBuilder);
+                CreateTypeResolution(parameter.Type, isOutParam, id, typeReferences, stringBuilder);
             }
         }
 
@@ -236,8 +237,14 @@ namespace ManualDi.Sync.Generators
             }
         }
         
-        private static void CreteTypeResolution(ITypeSymbol typeSymbol, string? id, TypeReferences typeReferences,StringBuilder stringBuilder)
+        private static void CreateTypeResolution(ITypeSymbol typeSymbol, bool isOutParam, string? id, TypeReferences typeReferences,StringBuilder stringBuilder)
         {
+            if (isOutParam)
+            {
+                stringBuilder.Append("out _");
+                return;
+            }
+            
             if (typeReferences.IsSymbolDiContainer(typeSymbol))
             {
                 stringBuilder.Append("c");

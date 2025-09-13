@@ -237,8 +237,9 @@ namespace ManualDi.Async.Generators
                 
                 var attribute = typeReferences.GetIdAttribute(parameter);
                 var id = attribute is null ? null : GetInjectId(attribute);
+                var isOutParam = parameter.RefKind == RefKind.Out;
                 stringBuilder.Append(tabs);
-                CreteTypeResolution(parameter.Type, id, typeReferences, stringBuilder);
+                CreteTypeResolution(parameter.Type, id, isOutParam, typeReferences, stringBuilder);
             }
         }
         
@@ -254,6 +255,11 @@ namespace ManualDi.Async.Generators
             stringBuilder.AppendLine(".DependsOn(static d => {");
             foreach (var parameter in methodSymbol.Parameters)
             {
+                var isOutParam = parameter.RefKind == RefKind.Out;
+                if (isOutParam)
+                {
+                    continue;
+                }
                 stringBuilder.Append(tabs);
                 var attribute = typeReferences.GetIdAttribute(parameter);
                 var id = attribute is null ? null : GetInjectId(attribute);
@@ -278,6 +284,11 @@ namespace ManualDi.Async.Generators
             {
                 foreach (var parameter in injectMethodSymbol.Parameters)
                 {
+                    var isOutParam = parameter.RefKind == RefKind.Out;
+                    if (isOutParam)
+                    {
+                        continue;
+                    }
                     stringBuilder.Append(tabs);
                     var attribute = typeReferences.GetIdAttribute(parameter);
                     var id = attribute is null ? null : GetInjectId(attribute);
@@ -300,8 +311,14 @@ namespace ManualDi.Async.Generators
             }
         }
         
-        private static void CreteTypeResolution(ITypeSymbol typeSymbol, string? id, TypeReferences typeReferences,StringBuilder stringBuilder)
+        private static void CreteTypeResolution(ITypeSymbol typeSymbol, string? id, bool isOutParam, TypeReferences typeReferences,StringBuilder stringBuilder)
         {
+            if (isOutParam)
+            {
+                stringBuilder.Append("out _");
+                return;
+            }
+            
             if (typeReferences.IsSymbolDiContainer(typeSymbol))
             {
                 stringBuilder.Append("c");

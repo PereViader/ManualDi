@@ -411,6 +411,38 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Sync
 {
+    public static class ManualDiGeneratedSomeNamespace_Subnamespace_ArrayOfNullablesDependencyExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<T, SomeNamespace.Subnamespace.ArrayOfNullablesDependency> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.ArrayOfNullablesDependency> binding)
+        {
+            return binding.FromMethod(static c => new SomeNamespace.Subnamespace.ArrayOfNullablesDependency(
+                c.ResolveAll<object>().ConvertAll<object?>(x => x).ToArray(),
+                c.ResolveAll<int>().ConvertAll<int?>(x => x).ToArray()));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<T, SomeNamespace.Subnamespace.ArrayOfNullablesDependency> Default<T>(this Binding<T, SomeNamespace.Subnamespace.ArrayOfNullablesDependency> binding)
+        {
+            return binding.Initialize(static (o, c) => ((SomeNamespace.Subnamespace.ArrayOfNullablesDependency)o).Initialize())
+                .Inject(static (o, c) => 
+                {
+                    var to = (SomeNamespace.Subnamespace.ArrayOfNullablesDependency)o;
+                    to.Inject(
+                        c.ResolveAll<object>().ConvertAll<object?>(x => x).ToArray(),
+                        c.ResolveAll<int>().ConvertAll<int?>(x => x).ToArray());
+                })
+                .SkipDisposable();
+        }
+    }
+}
+
+  
+#nullable enable
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Sync
+{
     public static class ManualDiGeneratedSomeNamespace_Subnamespace_Static_PublicNestedExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

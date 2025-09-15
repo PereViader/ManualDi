@@ -154,6 +154,21 @@ namespace SomeNamespace.Subnamespace
         }
     }
     
+    public class ArrayOfNullablesDependency
+    {
+        public ArrayOfNullablesDependency(object?[] objects, int?[] values)
+        {
+        }
+
+        public void Inject(object?[] objects, int?[] values)
+        {
+        }
+
+        public void Initialize()
+        {
+        }
+    }
+    
     static class Static
     {
         public class PublicNested

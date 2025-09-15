@@ -461,6 +461,14 @@ namespace ManualDi.Sync
         internal static Binding<T, SomeNamespace.Subnamespace.ListInject> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.ListInject> binding)
         {
             return binding.FromMethod(static c => new SomeNamespace.Subnamespace.ListInject(
+                c.ResolveAll<object>().ToArray(),
+                c.ResolveAll<int>().ToArray(),
+                c.WouldResolve<object>() ? c.ResolveAll<object>().ToArray() : null,
+                c.WouldResolve<int>() ? c.ResolveAll<int>().ToArray() : null,
+                c.ResolveAll<object>().ConvertAll<object?>(x => x).ToArray(),
+                c.ResolveAll<int>().ConvertAll<int?>(x => x).ToArray(),
+                c.WouldResolve<object>() ? c.ResolveAll<object>().ConvertAll<object?>(x => x).ToArray() : null,
+                c.WouldResolve<int>() ? c.ResolveAll<int>().ConvertAll<int?>(x => x).ToArray() : null,
                 c.ResolveAll<object>(),
                 c.ResolveAll<int>(),
                 c.ResolveAll<object>(),

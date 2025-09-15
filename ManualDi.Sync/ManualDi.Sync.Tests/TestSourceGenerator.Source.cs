@@ -153,7 +153,7 @@ namespace SomeNamespace.Subnamespace
         {
         }
     }
-
+    
     static class Static
     {
         public class PublicNested
@@ -176,6 +176,14 @@ namespace SomeNamespace.Subnamespace
     class ListInject
     {
         public ListInject(
+            object[] arrayObject,
+            int[] arrayInt,
+            object[]? arrayObjectNullable,
+            int[]? arrayIntNullable,
+            object?[] arrayNullableObject,
+            int?[] arrayNullableInt,
+            object?[]? arrayNullableObjectNullable,
+            int?[]? arrayNullableIntNullable,
             IEnumerable<object> IEnumerableObject,
             IEnumerable<int> IEnumerableInt,
             IReadOnlyList<object> IReadOnlyListObject,

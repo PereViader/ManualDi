@@ -448,6 +448,47 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
+    public static class ManualDiGeneratedSomeNamespace_Subnamespace_ArrayOfNullablesDependencyExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<T, SomeNamespace.Subnamespace.ArrayOfNullablesDependency> FromConstructor<T>(this Binding<T, SomeNamespace.Subnamespace.ArrayOfNullablesDependency> binding)
+        {
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.ArrayOfNullablesDependency(
+                    c.ResolveAll<object>().ConvertAll<object?>(x => x).ToArray(),
+                    c.ResolveAll<int>().ConvertAll<int?>(x => x).ToArray()))
+                .DependsOn(static d => {
+                    d.ConstructorDependency<object?[]>();
+                    d.ConstructorDependency<int?[]>();
+                });
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<T, SomeNamespace.Subnamespace.ArrayOfNullablesDependency> Default<T>(this Binding<T, SomeNamespace.Subnamespace.ArrayOfNullablesDependency> binding)
+        {
+            return binding.Initialize(static o => ((SomeNamespace.Subnamespace.ArrayOfNullablesDependency)o).Initialize())
+                .Inject(static (o, c) => 
+                {
+                    var to = (SomeNamespace.Subnamespace.ArrayOfNullablesDependency)o;
+                    to.Inject(
+                        c.ResolveAll<object>().ConvertAll<object?>(x => x).ToArray(),
+                        c.ResolveAll<int>().ConvertAll<int?>(x => x).ToArray());
+                })
+                .DependsOn(static d => {
+                    d.ConstructorDependency<object?[]>();
+                    d.ConstructorDependency<int?[]>();
+                })
+                .SkipDisposable();
+        }
+    }
+}
+
+  
+#nullable enable
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Async
+{
     public static class ManualDiGeneratedSomeNamespace_Subnamespace_Static_PublicNestedExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -501,6 +542,14 @@ namespace ManualDi.Async
         {
             return binding
                 .FromMethod(static c => new SomeNamespace.Subnamespace.ListInject(
+                    c.ResolveAll<object>().ToArray(),
+                    c.ResolveAll<int>().ToArray(),
+                    c.WouldResolve<object>() ? c.ResolveAll<object>().ToArray() : null,
+                    c.WouldResolve<int>() ? c.ResolveAll<int>().ToArray() : null,
+                    c.ResolveAll<object>().ConvertAll<object?>(x => x).ToArray(),
+                    c.ResolveAll<int>().ConvertAll<int?>(x => x).ToArray(),
+                    c.WouldResolve<object>() ? c.ResolveAll<object>().ConvertAll<object?>(x => x).ToArray() : null,
+                    c.WouldResolve<int>() ? c.ResolveAll<int>().ConvertAll<int?>(x => x).ToArray() : null,
                     c.ResolveAll<object>(),
                     c.ResolveAll<int>(),
                     c.ResolveAll<object>(),
@@ -562,6 +611,14 @@ namespace ManualDi.Async
                     c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")).ConvertAll<object?>(x => x) : null,
                     c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")).ConvertAll<int?>(x => x) : null))
                 .DependsOn(static d => {
+                    d.ConstructorDependency<object[]>();
+                    d.ConstructorDependency<int[]>();
+                    d.NullableConstructorDependency<object[]>();
+                    d.NullableConstructorDependency<int[]>();
+                    d.ConstructorDependency<object?[]>();
+                    d.ConstructorDependency<int?[]>();
+                    d.NullableConstructorDependency<object?[]>();
+                    d.NullableConstructorDependency<int?[]>();
                     d.NullableConstructorDependency<object>();
                     d.NullableConstructorDependency<int>();
                     d.NullableConstructorDependency<object>();

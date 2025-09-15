@@ -319,20 +319,21 @@ namespace ManualDi.Async.Generators
                 return;
             }
             
+            if (typeReferences.IsCancellationToken(typeSymbol))
+            {
+                stringBuilder.Append("c.CancellationToken");
+                return;
+            }
+            
             if (typeReferences.IsSymbolDiContainer(typeSymbol))
             {
                 stringBuilder.Append("c");
                 return;
             }
 
-            if (typeReferences.IsCancellationToken(typeSymbol))
-            {
-                stringBuilder.Append("c.CancellationToken");
-                return;
-            }
-
             // Updated code below
-            var listGenericType = typeReferences.TryGetEnumerableType(typeSymbol);
+            var arraySymbol = (typeSymbol as IArrayTypeSymbol)?.ElementType;
+            var listGenericType = arraySymbol ?? typeReferences.TryGetEnumerableType(typeSymbol);
             if (listGenericType is not null)
             {
                 var isListNullable = IsNullableTypeSymbol(typeSymbol);
@@ -351,17 +352,23 @@ namespace ManualDi.Async.Generators
                 CreateIdResolution(id, stringBuilder);
                 stringBuilder.Append(")");
 
-                if (isListNullable)
+                if (IsNullableTypeSymbol(listGenericType))
                 {
-                    if (IsNullableTypeSymbol(listGenericType))
-                    {
-                        stringBuilder.Append(".ConvertAll<");
-                        stringBuilder.Append(FullyQualifyTypeWithNullable(listGenericType));
-                        stringBuilder.Append(">(x => x)");
-                    }
-                    stringBuilder.Append(" : null");
+                    stringBuilder.Append(".ConvertAll<");
+                    stringBuilder.Append(FullyQualifyTypeWithNullable(listGenericType));
+                    stringBuilder.Append(">(x => x)");
                 }
                 
+                if (arraySymbol is not null)
+                {
+                    stringBuilder.Append(".ToArray()");
+                }
+
+                if (isListNullable)
+                {
+                    stringBuilder.Append(" : null");
+                }
+
                 return;
             }
             

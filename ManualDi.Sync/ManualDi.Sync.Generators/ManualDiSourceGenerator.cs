@@ -272,14 +272,11 @@ namespace ManualDi.Sync.Generators
                 CreateIdResolution(id, stringBuilder);
                 stringBuilder.Append(")");
 
-                if (isListNullable)
+                if (IsNullableTypeSymbol(listGenericType))
                 {
-                    if (IsNullableTypeSymbol(listGenericType))
-                    {
-                        stringBuilder.Append(".ConvertAll<");
-                        stringBuilder.Append(FullyQualifyTypeWithNullable(listGenericType));
-                        stringBuilder.Append(">(x => x)");
-                    }
+                    stringBuilder.Append(".ConvertAll<");
+                    stringBuilder.Append(FullyQualifyTypeWithNullable(listGenericType));
+                    stringBuilder.Append(">(x => x)");
                 }
                 
                 if (arraySymbol is not null)

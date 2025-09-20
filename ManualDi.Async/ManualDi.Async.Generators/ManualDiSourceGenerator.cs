@@ -52,6 +52,14 @@ namespace ManualDi.Async.Generators
             {
                 return false;
             }
+            
+            // this searches for any property with using SyntaxKind.RequiredKeyword, the keyword is not available in CodeAnalysis 4.1.0
+            if (classDeclarationSyntax.Members
+                .OfType<PropertyDeclarationSyntax>()
+                .Any(p => p.Modifiers.Any(m => m.IsKind((SyntaxKind)8447)))) 
+            {
+                return false;
+            }
 
             return true;
         }

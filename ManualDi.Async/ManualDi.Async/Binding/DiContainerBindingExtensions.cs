@@ -29,82 +29,72 @@ namespace ManualDi.Async
         public static Binding<TApparent1, TConcrete> Bind<TApparent1, TApparent2, TConcrete>(this DiContainerBindings diContainerBindings)
             where TConcrete : TApparent1, TApparent2
         {
-            diContainerBindings.BindingRedirection<TApparent2, TApparent1>();
-            
-            return Bind<TApparent1, TConcrete>(diContainerBindings);
+            var binding = Bind<TApparent1, TConcrete>(diContainerBindings);
+            diContainerBindings.AddBinding(binding, typeof(TApparent2));
+            return binding;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<TApparent1, TConcrete> Bind<TApparent1, TApparent2, TApparent3, TConcrete>(this DiContainerBindings diContainerBindings)
             where TConcrete : TApparent1, TApparent2, TApparent3
         {
-            diContainerBindings.BindingRedirection<TApparent2, TApparent1>();
-            diContainerBindings.BindingRedirection<TApparent3, TApparent1>();
-            
-            return Bind<TApparent1, TConcrete>(diContainerBindings);
+            var binding = Bind<TApparent1, TConcrete>(diContainerBindings);
+            diContainerBindings.AddBinding(binding, typeof(TApparent2));
+            diContainerBindings.AddBinding(binding, typeof(TApparent3));
+            return binding;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<TApparent1, TConcrete> Bind<TApparent1, TApparent2, TApparent3, TApparent4, TConcrete>(this DiContainerBindings diContainerBindings)
             where TConcrete : TApparent1, TApparent2, TApparent3, TApparent4
         {
-            diContainerBindings.BindingRedirection<TApparent2, TApparent1>();
-            diContainerBindings.BindingRedirection<TApparent3, TApparent1>();
-            diContainerBindings.BindingRedirection<TApparent4, TApparent1>();
-            
-            return Bind<TApparent1, TConcrete>(diContainerBindings);
+            var binding = Bind<TApparent1, TConcrete>(diContainerBindings);
+            diContainerBindings.AddBinding(binding, typeof(TApparent2));
+            diContainerBindings.AddBinding(binding, typeof(TApparent3));
+            diContainerBindings.AddBinding(binding, typeof(TApparent4));
+            return binding;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<TConcrete, TConcrete> BindAll<TApparent, TConcrete>(this DiContainerBindings diContainerBindings)
             where TConcrete : TApparent
         {
-            diContainerBindings.BindingRedirection<TApparent, TConcrete>();
-            
-            return Bind<TConcrete>(diContainerBindings);
+            var binding = Bind<TConcrete>(diContainerBindings);
+            diContainerBindings.AddBinding(binding, typeof(TApparent));
+            return binding;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<TConcrete, TConcrete> BindAll<TApparent1, TApparent2, TConcrete>(this DiContainerBindings diContainerBindings)
             where TConcrete : TApparent1, TApparent2
         {
-            diContainerBindings.BindingRedirection<TApparent1, TConcrete>();
-            diContainerBindings.BindingRedirection<TApparent2, TConcrete>();
-            
-            return Bind<TConcrete>(diContainerBindings);
+            var binding = Bind<TConcrete>(diContainerBindings);
+            diContainerBindings.AddBinding(binding, typeof(TApparent1));
+            diContainerBindings.AddBinding(binding, typeof(TApparent2));
+            return binding;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<TConcrete, TConcrete> BindAll<TApparent1, TApparent2, TApparent3, TConcrete>(this DiContainerBindings diContainerBindings)
             where TConcrete : TApparent1, TApparent2, TApparent3
         {
-            diContainerBindings.BindingRedirection<TApparent1, TConcrete>();
-            diContainerBindings.BindingRedirection<TApparent2, TConcrete>();
-            diContainerBindings.BindingRedirection<TApparent3, TConcrete>();
-            
-            return Bind<TConcrete>(diContainerBindings);
+            var binding = Bind<TConcrete>(diContainerBindings);
+            diContainerBindings.AddBinding(binding, typeof(TApparent1));
+            diContainerBindings.AddBinding(binding, typeof(TApparent2));
+            diContainerBindings.AddBinding(binding, typeof(TApparent3));
+            return binding;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<TConcrete, TConcrete> BindAll<TApparent1, TApparent2, TApparent3, TApparent4, TConcrete>(this DiContainerBindings diContainerBindings)
             where TConcrete : TApparent1, TApparent2, TApparent3, TApparent4
         {
-            diContainerBindings.BindingRedirection<TApparent1, TConcrete>();
-            diContainerBindings.BindingRedirection<TApparent2, TConcrete>();
-            diContainerBindings.BindingRedirection<TApparent3, TConcrete>();
-            diContainerBindings.BindingRedirection<TApparent4, TConcrete>();
-
-            return Bind<TConcrete>(diContainerBindings);
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void BindingRedirection<TApparent, TConcrete>(this DiContainerBindings diContainerBindings)
-        {
-            var binding = new Binding<TApparent, TConcrete>()
-                .FromContainerResolve()
-                .DependsOn(static d => d.ConstructorDependency<TConcrete>());
-            
-            diContainerBindings.AddBinding(binding, typeof(TApparent));
+            var binding = Bind<TConcrete>(diContainerBindings);
+            diContainerBindings.AddBinding(binding, typeof(TApparent1));
+            diContainerBindings.AddBinding(binding, typeof(TApparent2));
+            diContainerBindings.AddBinding(binding, typeof(TApparent3));
+            diContainerBindings.AddBinding(binding, typeof(TApparent4));
+            return binding;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

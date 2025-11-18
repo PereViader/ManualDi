@@ -253,7 +253,7 @@ Let's briefly discuss a few concepts from the library to get a high level overvi
 The container configuration is done through a fluent API available on `DiContainerBindings`.
 This process can only be done during the initial phase and should not be altered afterwards. 
 
-The fluent binding API begins by calling `Binding<TApparent, TConcrete>`.
+The fluent binding API begins by calling `Bind<TApparent, TConcrete>`.
 - TApparent: It's the type that can be used when resolving the container.
 - TConcrete: It's type of the actual instance behind the scenes.
 

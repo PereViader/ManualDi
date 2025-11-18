@@ -14,7 +14,6 @@ namespace ManualDi.Sync
     
     public abstract class Binding
     {
-        public abstract Type ApparentType { get; }
         public abstract Type ConcreteType { get; }
         
         public bool TryToDispose = true;
@@ -29,9 +28,8 @@ namespace ManualDi.Sync
         internal object? Instance;
     }
     
-    public sealed class Binding<TApparent, TConcrete> : Binding
+    public sealed class Binding<TConcrete> : Binding
     {
-        public override Type ApparentType => typeof(TApparent);
         public override Type ConcreteType => typeof(TConcrete);
     }
 }

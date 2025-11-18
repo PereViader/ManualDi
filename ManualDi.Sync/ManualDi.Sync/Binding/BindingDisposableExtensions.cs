@@ -13,10 +13,11 @@ namespace ManualDi.Sync
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TApparent, TConcrete> Dispose<TApparent, TConcrete>(
-            this Binding<TApparent, TConcrete> binding,
+        public static TBinding Dispose<TBinding>(
+            this TBinding binding,
             InstanceContainerDelegate disposeDelegate
             )
+            where TBinding : Binding
         {
             binding.Inject((o, c) => c.QueueDispose(() => disposeDelegate.Invoke(o, c)));
             return binding;

@@ -7,24 +7,24 @@ namespace ManualDi.Sync
     public static class DiContainerBindingExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TConcrete, TConcrete> Bind<TConcrete>(this DiContainerBindings diContainerBindings)
+        public static Binding<TConcrete> Bind<TConcrete>(this DiContainerBindings diContainerBindings)
         {
-            Binding<TConcrete, TConcrete> binding = new();
+            Binding<TConcrete> binding = new();
             diContainerBindings.AddBinding(binding, typeof(TConcrete));
             return binding;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TApparent, TConcrete> Bind<TApparent, TConcrete>(this DiContainerBindings diContainerBindings)
+        public static Binding<TConcrete> Bind<TApparent, TConcrete>(this DiContainerBindings diContainerBindings)
             where TConcrete : TApparent
         {
-            Binding<TApparent, TConcrete> binding = new();
+            Binding<TConcrete> binding = new();
             diContainerBindings.AddBinding(binding, typeof(TApparent));
             return binding;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TApparent1, TConcrete> Bind<TApparent1, TApparent2, TConcrete>(this DiContainerBindings diContainerBindings)
+        public static Binding<TConcrete> Bind<TApparent1, TApparent2, TConcrete>(this DiContainerBindings diContainerBindings)
             where TConcrete : TApparent1, TApparent2
         {
             var binding = diContainerBindings.Bind<TApparent1, TConcrete>();
@@ -33,7 +33,7 @@ namespace ManualDi.Sync
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TApparent1, TConcrete> Bind<TApparent1, TApparent2, TApparent3, TConcrete>(this DiContainerBindings diContainerBindings)
+        public static Binding<TConcrete> Bind<TApparent1, TApparent2, TApparent3, TConcrete>(this DiContainerBindings diContainerBindings)
             where TConcrete : TApparent1, TApparent2, TApparent3
         {
             var binding = diContainerBindings.Bind<TApparent1, TConcrete>();
@@ -43,7 +43,7 @@ namespace ManualDi.Sync
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TApparent1, TConcrete> Bind<TApparent1, TApparent2, TApparent3, TApparent4, TConcrete>(this DiContainerBindings diContainerBindings)
+        public static Binding<TConcrete> Bind<TApparent1, TApparent2, TApparent3, TApparent4, TConcrete>(this DiContainerBindings diContainerBindings)
             where TConcrete : TApparent1, TApparent2, TApparent3, TApparent4
         {
             var binding = diContainerBindings.Bind<TApparent1, TConcrete>();
@@ -54,7 +54,7 @@ namespace ManualDi.Sync
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TConcrete, TConcrete> BindAll<TApparent, TConcrete>(this DiContainerBindings diContainerBindings)
+        public static Binding<TConcrete> BindAll<TApparent, TConcrete>(this DiContainerBindings diContainerBindings)
             where TConcrete : TApparent
         {
             var binding = diContainerBindings.Bind<TConcrete>();
@@ -63,7 +63,7 @@ namespace ManualDi.Sync
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TConcrete, TConcrete> BindAll<TApparent1, TApparent2, TConcrete>(this DiContainerBindings diContainerBindings)
+        public static Binding<TConcrete> BindAll<TApparent1, TApparent2, TConcrete>(this DiContainerBindings diContainerBindings)
             where TConcrete : TApparent1, TApparent2
         {
             var binding = diContainerBindings.Bind<TConcrete>();
@@ -73,7 +73,7 @@ namespace ManualDi.Sync
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TConcrete, TConcrete> BindAll<TApparent1, TApparent2, TApparent3, TConcrete>(this DiContainerBindings diContainerBindings)
+        public static Binding<TConcrete> BindAll<TApparent1, TApparent2, TApparent3, TConcrete>(this DiContainerBindings diContainerBindings)
             where TConcrete : TApparent1, TApparent2, TApparent3
         {
             var binding = diContainerBindings.Bind<TConcrete>();
@@ -84,7 +84,7 @@ namespace ManualDi.Sync
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TConcrete, TConcrete> BindAll<TApparent1, TApparent2, TApparent3, TApparent4, TConcrete>(this DiContainerBindings diContainerBindings)
+        public static Binding<TConcrete> BindAll<TApparent1, TApparent2, TApparent3, TApparent4, TConcrete>(this DiContainerBindings diContainerBindings)
             where TConcrete : TApparent1, TApparent2, TApparent3, TApparent4
         {
             var binding = diContainerBindings.Bind<TConcrete>();
@@ -236,7 +236,7 @@ namespace ManualDi.Sync
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TApparent, TApparent> BindSubContainer<TApparent>(
+        public static Binding<TApparent> BindSubContainer<TApparent>(
             this DiContainerBindings bindings,
             InstallDelegate installDelegate
         )
@@ -259,7 +259,7 @@ namespace ManualDi.Sync
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TApparent, TApparent> BindIsolatedSubContainer<TApparent>(
+        public static Binding<TApparent> BindIsolatedSubContainer<TApparent>(
             this DiContainerBindings bindings,
             InstallDelegate installDelegate
         )

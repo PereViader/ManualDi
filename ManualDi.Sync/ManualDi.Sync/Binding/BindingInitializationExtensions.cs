@@ -5,10 +5,10 @@ namespace ManualDi.Sync
     public static class BindingInitializationExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TApparent, TConcrete> Initialize<TApparent, TConcrete>(
-            this Binding<TApparent, TConcrete> binding,
-            InstanceContainerDelegate initializationDelegate
-            )
+        public static TBinding Initialize<TBinding>(
+            this TBinding binding, 
+            InstanceContainerDelegate initializationDelegate)
+            where TBinding : Binding
         {
             binding.InitializationDelegate += initializationDelegate;
             return binding;

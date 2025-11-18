@@ -79,9 +79,9 @@ namespace ManualDi.Sync
             var instance = injectedBinding.FromDelegate switch
             {
                 FromDelegate fromDelegate => fromDelegate.Invoke(this) ??
-                    throw new InvalidOperationException($"Could not create object for Binding with Apparent type {injectedBinding.ApparentType} and Concrete type {injectedBinding.ConcreteType}"),
+                    throw new InvalidOperationException($"Could not create object for Binding with Concrete type {injectedBinding.ConcreteType}"),
                 not null => injectedBinding.FromDelegate,
-                null => throw new InvalidOperationException($"The from delegate for Binding with Apparent type {injectedBinding.ApparentType} and Concrete type {injectedBinding.ConcreteType} is null"),
+                null => throw new InvalidOperationException($"The from delegate for Binding with Concrete type {injectedBinding.ConcreteType} is null"),
             };
 
             if (!binding.IsTransient)

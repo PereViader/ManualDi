@@ -198,7 +198,7 @@ namespace ManualDi.Sync.Generators
             
             context.StringBuilder.Append($$"""
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    {{context.ObsoleteText}}{{accessibilityString}} static Binding<T, {{context.ClassName}}> FromConstructor<T>(this Binding<T, {{context.ClassName}}> binding)
+                    {{context.ObsoleteText}}{{accessibilityString}} static Binding<{{context.ClassName}}> FromConstructor(this Binding<{{context.ClassName}}> binding)
                     {
                         return binding.FromMethod(static c => new {{context.ClassName}}(
             """);
@@ -400,7 +400,7 @@ namespace ManualDi.Sync.Generators
             
             generationClassContext.StringBuilder.Append($$"""
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    {{generationClassContext.ObsoleteText}}{{accessibilityString}} static Binding<T, {{generationClassContext.ClassName}}> Default<T>(this Binding<T, {{generationClassContext.ClassName}}> binding)
+                    {{generationClassContext.ObsoleteText}}{{accessibilityString}} static Binding<{{generationClassContext.ClassName}}> Default(this Binding<{{generationClassContext.ClassName}}> binding)
                     {
                         return binding
             """);

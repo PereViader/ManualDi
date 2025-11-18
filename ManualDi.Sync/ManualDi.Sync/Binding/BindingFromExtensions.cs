@@ -6,8 +6,8 @@ namespace ManualDi.Sync
     public static class BindingFromExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TApparent, TConcrete> FromContainerResolve<TApparent, TConcrete>(
-            this Binding<TApparent, TConcrete> binding
+        public static Binding<TConcrete> FromContainerResolve<TConcrete>(
+            this Binding<TConcrete> binding
             )
         {
             FromDelegate fromDelegate = static c => c.Resolve<TConcrete>();
@@ -16,8 +16,8 @@ namespace ManualDi.Sync
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TApparent, TConcrete> FromContainerResolve<TApparent, TConcrete>(
-            this Binding<TApparent, TConcrete> binding,
+        public static Binding<TConcrete> FromContainerResolve<TConcrete>(
+            this Binding<TConcrete> binding,
             FilterBindingDelegate filterBindingDelegate
             )
         {
@@ -28,8 +28,8 @@ namespace ManualDi.Sync
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [Obsolete("Use b.BindSubContainer<TApparent>(...) instead, when using this this method, it will not have access to b.ResolveInstance<TConfig> present on the parent DiContainerBindings")]
-        public static Binding<TApparent, TConcrete> FromSubContainerResolve<TApparent, TConcrete>(
-            this Binding<TApparent, TConcrete> binding,
+        public static Binding<TConcrete> FromSubContainerResolve<TConcrete>(
+            this Binding<TConcrete> binding,
             InstallDelegate installDelegate
         )
         {
@@ -51,8 +51,8 @@ namespace ManualDi.Sync
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [Obsolete("Use b.BindSubContainer<TApparent>(...) instead, when using this this method, it will not have access to b.ResolveInstance<TConfig> present on the parent DiContainerBindings")]
-        public static Binding<TApparent, TConcrete> FromIsolatedSubContainerResolve<TApparent, TConcrete>(
-            this Binding<TApparent, TConcrete> binding,
+        public static Binding<TConcrete> FromIsolatedSubContainerResolve<TConcrete>(
+            this Binding<TConcrete> binding,
             InstallDelegate installDelegate
         )
         {
@@ -71,8 +71,8 @@ namespace ManualDi.Sync
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TApparent, TConcrete> FromInstance<TApparent, TConcrete>(
-            this Binding<TApparent, TConcrete> binding,
+        public static Binding<TConcrete> FromInstance<TConcrete>(
+            this Binding<TConcrete> binding,
             TConcrete instance
             )
         {
@@ -81,8 +81,8 @@ namespace ManualDi.Sync
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TApparent, TConcrete> FromMethod<TApparent, TConcrete>(
-            this Binding<TApparent, TConcrete> binding,
+        public static Binding<TConcrete> FromMethod<TConcrete>(
+            this Binding<TConcrete> binding,
             FromDelegate fromDelegate
             )
         {

@@ -6,6 +6,35 @@ namespace ManualDi.Sync.Tests;
 
 public class TestDiContainerBindings
 {
+    private interface IInterface1;
+    private interface IInterface2;
+
+    private class Type : IInterface1, IInterface2;
+    
+    [Test]
+    public void TestBindingReturnsInstanceAndCallsOnlyOnce()
+    {
+        int counter = 0;
+        var container = new DiContainerBindings().Install(b =>
+        {
+            b.Bind<IInterface1, IInterface2, Type>()
+                .FromMethod(c =>
+                {
+                    counter++;
+                    return new Type();
+                })
+                .Inject(((o, c) => counter++))
+                .Initialize((o, c) => counter++);
+        }).Build();
+
+        var instance1 = container.Resolve<IInterface1>();
+        var instance2 = container.Resolve<IInterface2>();
+
+        Assert.That(counter, Is.EqualTo(3));
+        Assert.That(instance1, Is.EqualTo(instance2));
+    }
+    
+    
     [Test]
     public void TestQueueDispose()
     {

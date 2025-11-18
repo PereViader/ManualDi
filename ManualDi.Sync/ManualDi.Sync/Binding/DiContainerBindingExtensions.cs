@@ -27,81 +27,72 @@ namespace ManualDi.Sync
         public static Binding<TApparent1, TConcrete> Bind<TApparent1, TApparent2, TConcrete>(this DiContainerBindings diContainerBindings)
             where TConcrete : TApparent1, TApparent2
         {
-            diContainerBindings.BindingRedirection<TApparent2, TApparent1>();
-
-            return diContainerBindings.Bind<TApparent1, TConcrete>();
+            var binding = diContainerBindings.Bind<TApparent1, TConcrete>();
+            diContainerBindings.AddBinding(binding, typeof(TApparent2));
+            return binding;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<TApparent1, TConcrete> Bind<TApparent1, TApparent2, TApparent3, TConcrete>(this DiContainerBindings diContainerBindings)
             where TConcrete : TApparent1, TApparent2, TApparent3
         {
-            diContainerBindings.BindingRedirection<TApparent2, TApparent1>();
-            diContainerBindings.BindingRedirection<TApparent3, TApparent1>();
-            
-            return diContainerBindings.Bind<TApparent1, TConcrete>();
+            var binding = diContainerBindings.Bind<TApparent1, TConcrete>();
+            diContainerBindings.AddBinding(binding, typeof(TApparent2));
+            diContainerBindings.AddBinding(binding, typeof(TApparent3));
+            return binding;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<TApparent1, TConcrete> Bind<TApparent1, TApparent2, TApparent3, TApparent4, TConcrete>(this DiContainerBindings diContainerBindings)
             where TConcrete : TApparent1, TApparent2, TApparent3, TApparent4
         {
-            diContainerBindings.BindingRedirection<TApparent2, TApparent1>();
-            diContainerBindings.BindingRedirection<TApparent3, TApparent1>();
-            diContainerBindings.BindingRedirection<TApparent4, TApparent1>();
-            
-            return diContainerBindings.Bind<TApparent1, TConcrete>();
+            var binding = diContainerBindings.Bind<TApparent1, TConcrete>();
+            diContainerBindings.AddBinding(binding, typeof(TApparent2));
+            diContainerBindings.AddBinding(binding, typeof(TApparent3));
+            diContainerBindings.AddBinding(binding, typeof(TApparent4));
+            return binding;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<TConcrete, TConcrete> BindAll<TApparent, TConcrete>(this DiContainerBindings diContainerBindings)
             where TConcrete : TApparent
         {
-            diContainerBindings.BindingRedirection<TApparent, TConcrete>();
-            
-            return diContainerBindings.Bind<TConcrete>();
+            var binding = diContainerBindings.Bind<TConcrete>();
+            diContainerBindings.AddBinding(binding, typeof(TApparent));
+            return binding;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<TConcrete, TConcrete> BindAll<TApparent1, TApparent2, TConcrete>(this DiContainerBindings diContainerBindings)
             where TConcrete : TApparent1, TApparent2
         {
-            diContainerBindings.BindingRedirection<TApparent1, TConcrete>();
-            diContainerBindings.BindingRedirection<TApparent2, TConcrete>();
-            
-            return diContainerBindings.Bind<TConcrete>();
+            var binding = diContainerBindings.Bind<TConcrete>();
+            diContainerBindings.AddBinding(binding, typeof(TApparent1));
+            diContainerBindings.AddBinding(binding, typeof(TApparent2));
+            return binding;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<TConcrete, TConcrete> BindAll<TApparent1, TApparent2, TApparent3, TConcrete>(this DiContainerBindings diContainerBindings)
             where TConcrete : TApparent1, TApparent2, TApparent3
         {
-            diContainerBindings.BindingRedirection<TApparent1, TConcrete>();
-            diContainerBindings.BindingRedirection<TApparent2, TConcrete>();
-            diContainerBindings.BindingRedirection<TApparent3, TConcrete>();
-            
-            return diContainerBindings.Bind<TConcrete>();
+            var binding = diContainerBindings.Bind<TConcrete>();
+            diContainerBindings.AddBinding(binding, typeof(TApparent1));
+            diContainerBindings.AddBinding(binding, typeof(TApparent2));
+            diContainerBindings.AddBinding(binding, typeof(TApparent3));
+            return binding;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<TConcrete, TConcrete> BindAll<TApparent1, TApparent2, TApparent3, TApparent4, TConcrete>(this DiContainerBindings diContainerBindings)
             where TConcrete : TApparent1, TApparent2, TApparent3, TApparent4
         {
-            diContainerBindings.BindingRedirection<TApparent1, TConcrete>();
-            diContainerBindings.BindingRedirection<TApparent2, TConcrete>();
-            diContainerBindings.BindingRedirection<TApparent3, TConcrete>();
-            diContainerBindings.BindingRedirection<TApparent4, TConcrete>();
-
-            return diContainerBindings.Bind<TConcrete>();
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void BindingRedirection<TApparent, TConcrete>(this DiContainerBindings diContainerBindings)
-        {
-            var binding = new Binding<TApparent, TConcrete>()
-                .FromContainerResolve();
-            
-            diContainerBindings.AddBinding(binding, typeof(TApparent));
+            var binding = diContainerBindings.Bind<TConcrete>();
+            diContainerBindings.AddBinding(binding, typeof(TApparent1));
+            diContainerBindings.AddBinding(binding, typeof(TApparent2));
+            diContainerBindings.AddBinding(binding, typeof(TApparent3));
+            diContainerBindings.AddBinding(binding, typeof(TApparent4));
+            return binding;
         }
         
         [Obsolete("Use QueueStartup instead.")]

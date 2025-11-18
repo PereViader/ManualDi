@@ -6,9 +6,8 @@ namespace ManualDi.Async
     public static class BindingInjectionExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TApparent, TConcrete> Inject<TApparent, TConcrete>(
-            this Binding<TApparent, TConcrete> binding, 
-            InjectDelegate injectionDelegate)
+        public static TBinding Inject<TBinding>(this TBinding binding, InjectDelegate injectionDelegate)
+            where TBinding : Binding
         {
             binding.InjectionDelegate = binding.InjectionDelegate is null 
                 ? injectionDelegate 
@@ -26,9 +25,8 @@ namespace ManualDi.Async
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TApparent, TConcrete> InjectAsync<TApparent, TConcrete>(
-            this Binding<TApparent, TConcrete> binding, 
-            InjectAsyncDelegate injectionAsyncDelegate)
+        public static TBinding InjectAsync<TBinding>(this TBinding binding, InjectAsyncDelegate injectionAsyncDelegate)
+            where TBinding : Binding
         {
             binding.InjectionDelegate = binding.InjectionDelegate is null 
                 ? injectionAsyncDelegate 

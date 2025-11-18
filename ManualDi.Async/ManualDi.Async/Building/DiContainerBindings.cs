@@ -147,7 +147,7 @@ namespace ManualDi.Async
             return dependencyExtractor.ResolveDependencies;
         }
         
-        internal Binding<TApparent, TConcrete> BindAsSubContainer<TApparent, TConcrete>(Binding<TApparent, TConcrete> binding, bool calculateDependencies)
+        internal Binding<TConcrete> BindAsSubContainer<TConcrete>(Binding<TConcrete> binding, bool calculateDependencies)
         {
             if (calculateDependencies)
             {

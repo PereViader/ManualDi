@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 
 namespace ManualDi.Async
 {
     public static class BindingFromExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TApparent, TConcrete> FromMethod<TApparent, TConcrete>(
-            this Binding<TApparent, TConcrete> binding,
+        public static Binding<TConcrete> FromMethod<TConcrete>(
+            this Binding<TConcrete> binding,
             FromDelegate fromDelegate
         )
         {
@@ -17,8 +16,8 @@ namespace ManualDi.Async
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TApparent, TConcrete> FromMethodAsync<TApparent, TConcrete>(
-            this Binding<TApparent, TConcrete> binding,
+        public static Binding<TConcrete> FromMethodAsync<TConcrete>(
+            this Binding<TConcrete> binding,
             FromAsyncDelegate fromAsyncDelegate
         )
         {
@@ -26,23 +25,23 @@ namespace ManualDi.Async
             return binding;
         }
         
-        public static FromAsyncDelegate? GetFromAsyncDelegateNullable<TApparent, TConcrete>(
-            this Binding<TApparent, TConcrete> binding
+        public static FromAsyncDelegate? GetFromAsyncDelegateNullable<TConcrete>(
+            this Binding<TConcrete> binding
         )
         {
             return binding.FromDelegate as FromAsyncDelegate;
         }
         
-        public static FromDelegate? GetFromDelegateNullable<TApparent, TConcrete>(
-            this Binding<TApparent, TConcrete> binding
+        public static FromDelegate? GetFromDelegateNullable<TConcrete>(
+            this Binding<TConcrete> binding
         )
         {
             return binding.FromDelegate as FromDelegate;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TApparent, TConcrete> DependsOn<TApparent, TConcrete>(
-            this Binding<TApparent, TConcrete> binding,
+        public static Binding<TConcrete> DependsOn<TConcrete>(
+            this Binding<TConcrete> binding,
             Action<IDependencyResolver> action
         )
         {
@@ -51,8 +50,8 @@ namespace ManualDi.Async
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TApparent, TConcrete> FromInstance<TApparent, TConcrete>(
-            this Binding<TApparent, TConcrete> binding,
+        public static Binding<TConcrete> FromInstance<TConcrete>(
+            this Binding<TConcrete> binding,
             TConcrete instance
         )
         {
@@ -61,8 +60,8 @@ namespace ManualDi.Async
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TApparent, TConcrete> FromContainerResolve<TApparent, TConcrete>(
-            this Binding<TApparent, TConcrete> binding
+        public static Binding<TConcrete> FromContainerResolve<TConcrete>(
+            this Binding<TConcrete> binding
         )
         {
             return binding
@@ -71,8 +70,8 @@ namespace ManualDi.Async
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TApparent, TConcrete> FromContainerResolve<TApparent, TConcrete>(
-            this Binding<TApparent, TConcrete> binding,
+        public static Binding<TConcrete> FromContainerResolve<TConcrete>(
+            this Binding<TConcrete> binding,
             FilterBindingDelegate filterBindingDelegate
         )
         {
@@ -83,8 +82,8 @@ namespace ManualDi.Async
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [Obsolete("Use b.BindSubContainer<TApparent>(...) instead, when using this this method, it will not have access to b.ResolveInstance<TConfig> present on the parent DiContainerBindings")]
-        public static Binding<TApparent, TConcrete> FromSubContainerResolve<TApparent, TConcrete>(
-            this Binding<TApparent, TConcrete> binding,
+        public static Binding<TConcrete> FromSubContainerResolve<TConcrete>(
+            this Binding<TConcrete> binding,
             InstallDelegate installDelegate
         )
         {
@@ -99,8 +98,8 @@ namespace ManualDi.Async
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [Obsolete("Use b.BindSubContainer<TApparent>(...) instead, when using this this method, it will not have access to b.ResolveInstance<TConfig> present on the parent DiContainerBindings")]
-        public static Binding<TApparent, TConcrete> FromIsolatedSubContainerResolve<TApparent, TConcrete>(
-            this Binding<TApparent, TConcrete> binding,
+        public static Binding<TConcrete> FromIsolatedSubContainerResolve<TConcrete>(
+            this Binding<TConcrete> binding,
             InstallDelegate installDelegate
         )
         {

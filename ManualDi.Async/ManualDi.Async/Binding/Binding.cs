@@ -47,7 +47,6 @@ namespace ManualDi.Async
     
     public abstract class Binding
     {
-        public abstract Type ApparentType { get; }
         public abstract Type ConcreteType { get; }
         
         internal bool TryToDispose = true;
@@ -63,9 +62,8 @@ namespace ManualDi.Async
         internal object? Instance;
     }
 
-    public sealed class Binding<TApparent, TConcrete> : Binding
+    public sealed class Binding<TConcrete> : Binding
     {
-        public override Type ApparentType => typeof(TApparent);
         public override Type ConcreteType => typeof(TConcrete);
     }
 }

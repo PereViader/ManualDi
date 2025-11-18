@@ -8,8 +8,12 @@ public class TestDiContainerBindingWhen
 {
     internal class Special;
     internal class Child;
-    internal class Root(Child child, Special special);
-    
+    internal class Root(Child child, Special special)
+    {
+        private readonly Child Child = child;
+        private readonly Special Special = special;
+    }
+
     private interface IInterface2;
     private interface IInterface1;
 

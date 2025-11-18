@@ -7,10 +7,8 @@ namespace ManualDi.Async
     public static class BindingInitializationExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TApparent, TConcrete> Initialize<TApparent, TConcrete>(
-            this Binding<TApparent, TConcrete> binding,
-            InitializeDelegate initializationDelegate
-            )
+        public static TBinding Initialize<TBinding>(this TBinding binding, InitializeDelegate initializationDelegate)
+            where TBinding : Binding
         {
             binding.InitializationDelegate = binding.InitializationDelegate is null 
                 ? initializationDelegate 
@@ -28,10 +26,8 @@ namespace ManualDi.Async
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TApparent, TConcrete> InitializeAsync<TApparent, TConcrete>(
-            this Binding<TApparent, TConcrete> binding,
-            InitializeAsyncDelegate initializationAsyncDelegate
-        )
+        public static TBinding InitializeAsync<TBinding>(this TBinding binding, InitializeAsyncDelegate initializationAsyncDelegate)
+            where TBinding : Binding
         {
             binding.InitializationDelegate = binding.InitializationDelegate is null 
                 ? initializationAsyncDelegate 

@@ -1,2 +1,2 @@
-﻿Apparent: System.Int32, Concrete: System.Int32, Id: 
-Apparent: System.Object, Concrete: System.Object, Id: 
+﻿Concrete: System.Int32, Id: 
+Concrete: System.Object, Id: 

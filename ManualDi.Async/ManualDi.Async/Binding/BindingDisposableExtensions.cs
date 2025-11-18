@@ -13,10 +13,8 @@ namespace ManualDi.Async
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TApparent, TConcrete> Dispose<TApparent, TConcrete>(
-            this Binding<TApparent, TConcrete> binding,
-            DisposeObjectDelegate disposeObjectDelegate
-        )
+        public static TBinding Dispose<TBinding>(this TBinding binding, DisposeObjectDelegate disposeObjectDelegate) 
+            where TBinding : Binding
         {
             binding.Inject((o, c) =>
             {
@@ -26,10 +24,8 @@ namespace ManualDi.Async
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TApparent, TConcrete> Dispose<TApparent, TConcrete>(
-            this Binding<TApparent, TConcrete> binding,
-            DisposeObjectContextDelegate disposeObjectContextDelegate
-        )
+        public static TBinding Dispose<TBinding>(this TBinding binding, DisposeObjectContextDelegate disposeObjectContextDelegate)
+            where TBinding : Binding
         {
             binding.Inject((o, c) =>
             {
@@ -39,10 +35,8 @@ namespace ManualDi.Async
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TApparent, TConcrete> DisposeAsync<TApparent, TConcrete>(
-            this Binding<TApparent, TConcrete> binding,
-            AsyncDisposeObjectDelegate asyncDisposeObjectDelegate
-        )
+        public static TBinding DisposeAsync<TBinding>(this TBinding binding, AsyncDisposeObjectDelegate asyncDisposeObjectDelegate)
+            where TBinding : Binding
         {
             binding.Inject((o, c) =>
             {
@@ -52,10 +46,8 @@ namespace ManualDi.Async
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TApparent, TConcrete> DisposeAsync<TApparent, TConcrete>(
-            this Binding<TApparent, TConcrete> binding,
-            AsyncDisposeObjectContextDelegate asyncDisposeObjectContextDelegate
-        )
+        public static TBinding DisposeAsync<TBinding>(this TBinding binding, AsyncDisposeObjectContextDelegate asyncDisposeObjectContextDelegate)
+            where TBinding : Binding
         {
             binding.Inject((o, c) =>
             {

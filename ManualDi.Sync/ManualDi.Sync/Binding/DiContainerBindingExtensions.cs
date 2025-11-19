@@ -286,5 +286,55 @@ namespace ManualDi.Sync
             diContainerBindings.RemoveBinding(typeof(TApparent));
             return diContainerBindings;
         }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TConcrete> Rebind<TConcrete>(this DiContainerBindings diContainerBindings)
+        {
+            return diContainerBindings
+                .Unbind<TConcrete>()
+                .Bind<TConcrete>();
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TConcrete> Rebind<TApparent, TConcrete>(this DiContainerBindings diContainerBindings)
+            where TConcrete : TApparent
+        {
+            return diContainerBindings
+                .Unbind<TApparent>()
+                .Bind<TApparent, TConcrete>();
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TConcrete> Rebind<TApparent1, TApparent2, TConcrete>(this DiContainerBindings diContainerBindings)
+            where TConcrete : TApparent1, TApparent2
+        {
+            return diContainerBindings
+                .Unbind<TApparent1>()
+                .Unbind<TApparent2>()
+                .Bind<TApparent1, TApparent2, TConcrete>();
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TConcrete> Rebind<TApparent1, TApparent2, TApparent3, TConcrete>(this DiContainerBindings diContainerBindings)
+            where TConcrete : TApparent1, TApparent2, TApparent3
+        {
+            return diContainerBindings
+                .Unbind<TApparent1>()
+                .Unbind<TApparent2>()
+                .Unbind<TApparent3>()
+                .Bind<TApparent1, TApparent2, TApparent3, TConcrete>();
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TConcrete> Rebind<TApparent1, TApparent2, TApparent3, TApparent4, TConcrete>(this DiContainerBindings diContainerBindings)
+            where TConcrete : TApparent1, TApparent2, TApparent3, TApparent4
+        {
+            return diContainerBindings
+                .Unbind<TApparent1>()
+                .Unbind<TApparent2>()
+                .Unbind<TApparent3>()
+                .Unbind<TApparent4>()
+                .Bind<TApparent1, TApparent2, TApparent3, TApparent4, TConcrete>();
+        }
     }
 }

@@ -41,10 +41,10 @@ namespace ManualDi.Sync
         
         internal void AddBinding(Binding binding, Type type)
         {
-            var apparentType = type.TypeHandle.Value;
-            if (!bindingsByType.TryGetValue(apparentType, out var innerBinding))
+            var typeIntPtr = type.TypeHandle.Value;
+            if (!bindingsByType.TryGetValue(typeIntPtr, out var innerBinding))
             {
-                bindingsByType.Add(apparentType, binding);
+                bindingsByType.Add(typeIntPtr, binding);
                 return;
             }
 
@@ -54,6 +54,22 @@ namespace ManualDi.Sync
             }
             
             innerBinding.NextBinding = binding;
+        }
+
+        internal Binding? GetBinding(Type type)
+        {
+            var typeIntPtr = type.TypeHandle.Value;
+            if (!bindingsByType.TryGetValue(typeIntPtr, out var binding))
+            {
+                return null;
+            }
+            return binding;
+        }
+        
+        internal bool RemoveBinding(Type type)
+        {
+            var typeIntPtr = type.TypeHandle.Value;
+            return bindingsByType.Remove(typeIntPtr);
         }
         
         public void QueueInjection(ContainerDelegate containerDelegate)

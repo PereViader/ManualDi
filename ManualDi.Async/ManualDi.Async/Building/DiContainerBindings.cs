@@ -58,6 +58,22 @@ namespace ManualDi.Async
             innerbinding.NextBinding = binding;
         }
         
+        internal Binding? GetBinding(Type type)
+        {
+            var typeIntPtr = type.TypeHandle.Value;
+            if (!bindingsByType.TryGetValue(typeIntPtr, out var binding))
+            {
+                return null;
+            }
+            return binding;
+        }
+        
+        internal bool RemoveBinding(Type type)
+        {
+            var typeIntPtr = type.TypeHandle.Value;
+            return bindingsByType.Remove(typeIntPtr);
+        }
+        
         public void QueueInject(ContainerDelegate containerDelegate)
         {
             injectDelegates.Add(containerDelegate);

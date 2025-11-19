@@ -279,5 +279,12 @@ namespace ManualDi.Sync
             binding.FromDelegate = fromDelegate;
             return binding;
         }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DiContainerBindings Unbind<TApparent>(this DiContainerBindings diContainerBindings)
+        {
+            diContainerBindings.RemoveBinding(typeof(TApparent));
+            return diContainerBindings;
+        }
     }
 }

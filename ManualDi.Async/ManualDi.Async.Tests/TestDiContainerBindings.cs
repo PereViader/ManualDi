@@ -37,6 +37,19 @@ public class TestDiContainerBindings
     }
     
     [Test]
+    public async Task TestUnbind()
+    {
+        var container = await new DiContainerBindings().Install(b =>
+        {
+            b.Bind<int>().FromInstance(1);
+            b.Unbind<int>();
+        }).Build(CancellationToken.None);
+
+        var resolved = container.ResolveNullableValue<int>();
+        Assert.That(resolved.HasValue, Is.EqualTo(false));
+    }
+    
+    [Test]
     public async Task TestQueueDispose()
     {
         var action = Substitute.For<Action>();

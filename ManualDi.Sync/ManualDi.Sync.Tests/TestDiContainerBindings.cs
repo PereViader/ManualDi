@@ -34,6 +34,18 @@ public class TestDiContainerBindings
         Assert.That(instance1, Is.EqualTo(instance2));
     }
     
+    [Test]
+    public void TestUnbind()
+    {
+        var container = new DiContainerBindings().Install(b =>
+        {
+            b.Bind<int>().FromInstance(1);
+            b.Unbind<int>();
+        }).Build();
+
+        var resolved = container.ResolveNullableValue<int>();
+        Assert.That(resolved.HasValue, Is.EqualTo(false));
+    }
     
     [Test]
     public void TestQueueDispose()

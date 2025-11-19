@@ -260,5 +260,12 @@ namespace ManualDi.Async
                 .Install(installDelegate)
                 .BindAsSubContainer(binding, false);
         }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DiContainerBindings Unbind<TApparent>(this DiContainerBindings diContainerBindings)
+        {
+            diContainerBindings.RemoveBinding(typeof(TApparent));
+            return diContainerBindings;
+        }
     }
 }

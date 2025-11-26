@@ -3,8 +3,8 @@ namespace ManualDi.Async.Unity3d.Samples.Ticking
 {
     public static class DiContainerTickableExtensions
     {
-        public static Binding<TInterface, TConcrete> LinkTickable<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding
+        public static Binding<TConcrete> LinkTickable<TConcrete>(
+            this Binding<TConcrete> binding
         )
             where TConcrete : ITickable
         {
@@ -21,8 +21,8 @@ namespace ManualDi.Async.Unity3d.Samples.Ticking
             });
         }
         
-        public static Binding<TInterface, TConcrete> LinkTickable<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
+        public static Binding<TConcrete> LinkTickable<TConcrete>(
+            this Binding<TConcrete> binding,
             TickType tickType
         )
             where TConcrete : ITickable

@@ -2,25 +2,25 @@
 {
     public static class DiContainerTickableExtensions
     {
-        public static Binding<TInterface, TConcrete> LinkTickable<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding
+        public static Binding<TConcrete> LinkTickable<TConcrete>(
+            this Binding<TConcrete> binding
         )
             where TConcrete : ITickable
         {
             return binding.Inject((o, c) =>
             {
                 var tickableService = c.Resolve<ITickableService>();
-                tickableService.Add(o, TickType.Update);
+                tickableService.Add((ITickable)o, TickType.Update);
 
                 c.QueueDispose(() =>
                 {
-                    tickableService.Remove(o, TickType.Update);
+                    tickableService.Remove((ITickable)o, TickType.Update);
                 });
             });
         }
         
-        public static Binding<TInterface, TConcrete> LinkTickable<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
+        public static Binding<TConcrete> LinkTickable<TConcrete>(
+            this Binding<TConcrete> binding,
             TickType tickType
         )
             where TConcrete : ITickable
@@ -28,10 +28,10 @@
             return binding.Inject((o, c) =>
             {
                 var tickableService = c.Resolve<ITickableService>();
-                tickableService.Add(o, tickType);
+                tickableService.Add((ITickable)o, tickType);
                 c.QueueDispose(() =>
                 {
-                    tickableService.Remove(o, tickType);
+                    tickableService.Remove((ITickable)o, tickType);
                 });
             });
         }

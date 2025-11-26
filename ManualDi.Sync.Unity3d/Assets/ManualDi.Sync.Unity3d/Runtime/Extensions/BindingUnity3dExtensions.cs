@@ -6,8 +6,8 @@ namespace ManualDi.Sync.Unity3d
     {
         #region From GameObject
         
-        public static Binding<TInterface, TConcrete> FromGameObjectGetComponent<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
+        public static Binding<TConcrete> FromGameObjectGetComponent<TConcrete>(
+            this Binding<TConcrete> binding,
             GameObject gameObject
         )
             where TConcrete : Component
@@ -16,8 +16,8 @@ namespace ManualDi.Sync.Unity3d
             return binding;
         }
         
-        public static Binding<TInterface, TConcrete> FromGameObjectGetComponentInChildren<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
+        public static Binding<TConcrete> FromGameObjectGetComponentInChildren<TConcrete>(
+            this Binding<TConcrete> binding,
             GameObject gameObject
         )
             where TConcrete : Component
@@ -26,8 +26,8 @@ namespace ManualDi.Sync.Unity3d
             return binding;
         }
         
-        public static Binding<TInterface, TConcrete> FromGameObjectGetComponentInParent<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
+        public static Binding<TConcrete> FromGameObjectGetComponentInParent<TConcrete>(
+            this Binding<TConcrete> binding,
             GameObject gameObject
         )
             where TConcrete : Component
@@ -36,8 +36,8 @@ namespace ManualDi.Sync.Unity3d
             return binding;
         }
         
-        public static Binding<TInterface, TConcrete> FromGameObjectAddComponent<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
+        public static Binding<TConcrete> FromGameObjectAddComponent<TConcrete>(
+            this Binding<TConcrete> binding,
             GameObject gameObject,
             bool destroyOnDispose = true
             )
@@ -60,8 +60,8 @@ namespace ManualDi.Sync.Unity3d
 
         #region From Instantiate Component
 
-        public static Binding<TInterface, TConcrete> FromInstantiateComponent<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
+        public static Binding<TConcrete> FromInstantiateComponent<TConcrete>(
+            this Binding<TConcrete> binding,
             TConcrete component,
             Transform? parent = null,
             bool worldPositionStays = false,
@@ -86,8 +86,8 @@ namespace ManualDi.Sync.Unity3d
         
         #region From Instantiate GameObject
         
-        public static Binding<TInterface, TConcrete> FromInstantiateGameObjectGetComponent<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
+        public static Binding<TConcrete> FromInstantiateGameObjectGetComponent<TConcrete>(
+            this Binding<TConcrete> binding,
             GameObject gameObject,
             Transform? parent = null,
             bool worldPositionStays = false,
@@ -108,8 +108,8 @@ namespace ManualDi.Sync.Unity3d
             return binding;
         }
         
-        public static Binding<TInterface, TConcrete> FromInstantiateGameObjectGetComponentInChildren<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
+        public static Binding<TConcrete> FromInstantiateGameObjectGetComponentInChildren<TConcrete>(
+            this Binding<TConcrete> binding,
             GameObject gameObject,
             Transform? parent = null,
             bool worldPositionStays = false,
@@ -133,8 +133,8 @@ namespace ManualDi.Sync.Unity3d
             return binding;
         }
         
-        public static Binding<TInterface, TConcrete> FromInstantiateGameObjectAddComponent<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
+        public static Binding<TConcrete> FromInstantiateGameObjectAddComponent<TConcrete>(
+            this Binding<TConcrete> binding,
             GameObject gameObject,
             Transform? parent = null,
             bool worldPositionStays = false,
@@ -162,8 +162,8 @@ namespace ManualDi.Sync.Unity3d
         
         #region From Object Resource
 
-        public static Binding<TInterface, TConcrete> FromObjectResource<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
+        public static Binding<TConcrete> FromObjectResource<TConcrete>(
+            this Binding<TConcrete> binding,
             string path
         )
             where TConcrete : UnityEngine.Object
@@ -176,8 +176,8 @@ namespace ManualDi.Sync.Unity3d
         
         #region From Instantiate GameObject Resource
         
-        public static Binding<TInterface, TConcrete> FromInstantiateGameObjectResourceGetComponent<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
+        public static Binding<TConcrete> FromInstantiateGameObjectResourceGetComponent<TConcrete>(
+            this Binding<TConcrete> binding,
             string path,
             Transform? parent = null,
             bool worldPositionStays = false,
@@ -204,8 +204,8 @@ namespace ManualDi.Sync.Unity3d
             return binding;
         }
         
-        public static Binding<TInterface, TConcrete> FromInstantiateGameObjectResourceGetComponentInChildren<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
+        public static Binding<TConcrete> FromInstantiateGameObjectResourceGetComponentInChildren<TConcrete>(
+            this Binding<TConcrete> binding,
             string path,
             Transform? parent = null,
             bool worldPositionStays = false,
@@ -229,8 +229,8 @@ namespace ManualDi.Sync.Unity3d
             return binding;
         }
         
-        public static Binding<TInterface, TConcrete> FromInstantiateGameObjectResourceAddComponent<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
+        public static Binding<TConcrete> FromInstantiateGameObjectResourceAddComponent<TConcrete>(
+            this Binding<TConcrete> binding,
             string path,
             Transform? parent = null,
             bool worldPositionStays = false,

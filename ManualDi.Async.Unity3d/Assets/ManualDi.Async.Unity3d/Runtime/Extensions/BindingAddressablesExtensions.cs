@@ -13,8 +13,8 @@ namespace ManualDi.Async.Unity3d
     public static class BindingAddressablesExtensions
     {
         #region From Addressables Load Asset Async
-        public static Binding<TInterface, TConcrete> FromAddressablesLoadAssetAsync<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
+        public static Binding<TConcrete> FromAddressablesLoadAssetAsync<TConcrete>(
+            this Binding<TConcrete> binding,
             object key
         )
             where TConcrete : UnityEngine.Object
@@ -23,8 +23,8 @@ namespace ManualDi.Async.Unity3d
             return binding;
         }
 
-        public static Binding<TInterface, TConcrete> FromAddressablesLoadAssetAsyncGetComponent<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
+        public static Binding<TConcrete> FromAddressablesLoadAssetAsyncGetComponent<TConcrete>(
+            this Binding<TConcrete> binding,
             object key
         )
             where TConcrete : UnityEngine.Component
@@ -37,8 +37,8 @@ namespace ManualDi.Async.Unity3d
             return binding;
         }
         
-        public static Binding<TInterface, TConcrete> FromAddressablesLoadAssetAsyncGetComponentInChildren<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
+        public static Binding<TConcrete> FromAddressablesLoadAssetAsyncGetComponentInChildren<TConcrete>(
+            this Binding<TConcrete> binding,
             object key
         )
             where TConcrete : UnityEngine.Component
@@ -72,8 +72,8 @@ namespace ManualDi.Async.Unity3d
         #endregion
         
         #region From Addressables Load Scene Async
-        public static Binding<TInterface, TConcrete> FromAddressablesLoadSceneAsyncGetComponent<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
+        public static Binding<TConcrete> FromAddressablesLoadSceneAsyncGetComponent<TConcrete>(
+            this Binding<TConcrete> binding,
             object key
         )
             where TConcrete : UnityEngine.Object
@@ -96,8 +96,8 @@ namespace ManualDi.Async.Unity3d
             return binding;
         }
         
-        public static Binding<TInterface, TConcrete> FromAddressablesLoadSceneAsyncGetComponentInChildren<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
+        public static Binding<TConcrete> FromAddressablesLoadSceneAsyncGetComponentInChildren<TConcrete>(
+            this Binding<TConcrete> binding,
             object key
         )
             where TConcrete : UnityEngine.Component

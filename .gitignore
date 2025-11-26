@@ -9,12 +9,14 @@
 *.user
 *.userosscache
 *.sln.docstates
-ManualDi.Unity3d/UserSettings/*
-
-/ManualDi.Sync.Unity3d.Package/
-/ManualDi.Async.Unity3d.Package/
-/ManualDi.Sync.Nuget/
-/ManualDi.Async.Nuget/
+/ManualDi.*.Unity3d/UserSettings/*
+/ManualDi.*.Unity3d/*.csproj
+/ManualDi.*.Unity3d/*.sln
+/ManualDi.*.Unity3d/*.sln
+/ManualDi.*.Unity3d.Package/
+/ManualDi.*.Unity3d/Library/
+/ManualDi.*.Unity3d/Temp/
+/ManualDi.*.Nuget/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -82,7 +84,7 @@ StyleCopReport.xml
 *.ipdb
 *.pgc
 *.pgd
-*.rsp
+#*.rsp
 *.sbr
 *.tlb
 *.tli
@@ -195,7 +197,8 @@ PublishScripts/
 # NuGet Symbol Packages
 *.snupkg
 # The packages folder can be ignored because of Package Restore
-**/[Pp]ackages/*
+##**/[Pp]ackages/*
+
 # except build/, which is used as an MSBuild target.
 !**/[Pp]ackages/build/
 # Uncomment if necessary however generally it will be regenerated when needed

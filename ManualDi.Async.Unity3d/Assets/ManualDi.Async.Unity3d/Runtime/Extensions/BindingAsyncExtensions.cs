@@ -15,8 +15,8 @@ namespace ManualDi.Async.Unity3d
         /// <summary>
         /// Use this method to Call Object.InstantiateAsync
         /// </summary>
-        public static Binding<TInterface, TConcrete> FromAsyncInstantiateOperation<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
+        public static Binding<TConcrete> FromAsyncInstantiateOperation<TConcrete>(
+            this Binding<TConcrete> binding,
             Func<AsyncInstantiateOperation<TConcrete>> asyncInstantiateOperationFunc,
             bool destroyOnDispose = true
         )
@@ -41,8 +41,8 @@ namespace ManualDi.Async.Unity3d
             return binding;
         }
         
-        public static Binding<TInterface, TConcrete> FromAsyncInstantiateOperationGetComponent<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
+        public static Binding<TConcrete> FromAsyncInstantiateOperationGetComponent<TConcrete>(
+            this Binding<TConcrete> binding,
             Func<AsyncInstantiateOperation<GameObject>> asyncInstantiateOperationFunc,
             bool destroyOnDispose = true
         )
@@ -110,8 +110,8 @@ namespace ManualDi.Async.Unity3d
         #endregion
         
         #region From Load Scene Async
-        public static Binding<TInterface, TConcrete> FromLoadSceneAsyncGetComponent<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
+        public static Binding<TConcrete> FromLoadSceneAsyncGetComponent<TConcrete>(
+            this Binding<TConcrete> binding,
             string sceneName
         )
             where TConcrete : Component
@@ -158,8 +158,8 @@ namespace ManualDi.Async.Unity3d
             return binding;
         }
         
-        public static Binding<TInterface, TConcrete> FromLoadSceneAsyncGetComponentInChildren<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
+        public static Binding<TConcrete> FromLoadSceneAsyncGetComponentInChildren<TConcrete>(
+            this Binding<TConcrete> binding,
             string sceneName
         )
             where TConcrete : Component

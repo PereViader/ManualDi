@@ -6,8 +6,8 @@ namespace ManualDi.Sync.Unity3d
 {
     public static class BindingLinkExtensions
     {
-        public static Binding<TInterface, TConcrete> LinkDontDestroyOnLoad<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
+        public static Binding<TConcrete> LinkDontDestroyOnLoad<TConcrete>(
+            this Binding<TConcrete> binding,
             bool setAsRootTransform = true,
             bool keepPreviousParent = true,
             bool destroyIfPreviousParentDestroyed = true
@@ -46,8 +46,8 @@ namespace ManualDi.Sync.Unity3d
             return binding;
         }
         
-        public static Binding<TInterface, TConcrete> LinkButtonOnClick<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
+        public static Binding<TConcrete> LinkButtonOnClick<TInterface, TConcrete>(
+            this Binding<TConcrete> binding,
             Button button,
             Action<TConcrete, IDiContainer> onClick
             )
@@ -65,8 +65,8 @@ namespace ManualDi.Sync.Unity3d
             return binding;
         }
         
-        public static Binding<TInterface, TConcrete> LinkToggleOnValueChanged<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
+        public static Binding<TConcrete> LinkToggleOnValueChanged<TInterface, TConcrete>(
+            this Binding<TConcrete> binding,
             Toggle toggle,
             Action<TConcrete, IDiContainer, bool> onValueChanged
         )
@@ -84,8 +84,8 @@ namespace ManualDi.Sync.Unity3d
             return binding;
         }
         
-        public static Binding<TInterface, TConcrete> LinkSliderOnValueChanged<TInterface, TConcrete>(
-            this Binding<TInterface, TConcrete> binding,
+        public static Binding<TConcrete> LinkSliderOnValueChanged<TInterface, TConcrete>(
+            this Binding<TConcrete> binding,
             Slider slider,
             Action<TConcrete, IDiContainer, float> onValueChanged
         )

@@ -1,6 +1,6 @@
 using NUnit.Framework;
-using NSubstitute;
 using System;
+using System.Threading.Tasks;
 
 namespace ManualDi.Sync.Tests
 {
@@ -139,6 +139,68 @@ namespace ManualDi.Sync.Tests
             
             Assert.That(resA, Is.EqualTo(1));
             Assert.That(resB, Is.EqualTo(2));
+        }
+
+        [Test]
+        public async Task TestInvokeAsync_VoidReturn()
+        {
+            var container = new DiContainerBindings().Install(b =>
+            {
+                b.Bind<int>().FromInstance(5);
+            }).Build();
+            
+            int result = 0;
+            await container.InvokeDelegateUsingReflexionAsync(async (int a) => 
+            {
+                await Task.CompletedTask;
+                result = a;
+            });
+            
+            Assert.That(result, Is.EqualTo(5));
+        }
+
+        [Test]
+        public async Task TestInvokeAsync_ValueReturn()
+        {
+            var container = new DiContainerBindings().Install(b =>
+            {
+                b.Bind<int>().FromInstance(10);
+            }).Build();
+            
+            var result = await container.InvokeDelegateUsingReflexionAsync(async (int a) => 
+            {
+                await Task.CompletedTask;
+                return a * 2;
+            });
+            
+            Assert.That(result, Is.EqualTo(20));
+        }
+
+        [Test]
+        public async Task TestInvokeAsync_SyncDelegate_ValueReturn()
+        {
+            var container = new DiContainerBindings().Install(b =>
+            {
+                b.Bind<int>().FromInstance(5);
+            }).Build();
+            
+            var result = await container.InvokeDelegateUsingReflexionAsync((int a) => a * 2);
+            
+            Assert.That(result, Is.EqualTo(10));
+        }
+        
+        [Test]
+        public async Task TestInvokeAsync_SyncDelegate_VoidReturn()
+        {
+            var container = new DiContainerBindings().Install(b =>
+            {
+                b.Bind<int>().FromInstance(5);
+            }).Build();
+
+            int result = 0;
+            await container.InvokeDelegateUsingReflexionAsync((int a) => result = a);
+            
+            Assert.That(result, Is.EqualTo(5));
         }
     }
 }

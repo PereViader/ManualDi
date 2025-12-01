@@ -1,7 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace ManualDi.Sync
 {
@@ -9,12 +9,40 @@ namespace ManualDi.Sync
     {
         public static object? InvokeDelegateUsingReflexion(this IDiContainer diContainer, Delegate @delegate)
         {
-            var arguments = @delegate.Method.GetParameters()
+            var arguments = ResolveParameters(diContainer, @delegate);
+            return @delegate.DynamicInvoke(arguments);
+        }
+
+        public static async Task<object?> InvokeDelegateUsingReflexionAsync(this IDiContainer diContainer, Delegate @delegate)
+        {
+            var result = InvokeDelegateUsingReflexion(diContainer, @delegate);
+            if (result is not Task task)
+            {
+                return result;
+            }
+            await task;
+            var resultProperty = task.GetType().GetProperty("Result");
+            if (resultProperty is null)
+            {
+                return null;
+            }
+            return resultProperty.GetValue(task);
+        }
+
+        private static object?[] ResolveParameters(IDiContainer diContainer, Delegate @delegate)
+        {
+            return @delegate.Method.GetParameters()
                 .Select(parameter =>
                 {
                     var type = parameter.ParameterType;
                     var underlyingType = Nullable.GetUnderlyingType(type);
                     var resolutionType = underlyingType ?? type;
+
+                    if (resolutionType == typeof(IDiContainer))
+                    {
+                        return diContainer;
+                    }
+                    
                     var filter = CreateFilterForParameter(parameter);
 
                     var resolution = filter is null
@@ -34,8 +62,6 @@ namespace ManualDi.Sync
                     throw new InvalidOperationException($"Could not resolve element of type {type.FullName} for parameter {parameter.Name}");
                 })
                 .ToArray();
-            
-            return @delegate.DynamicInvoke(arguments);
         }
 
         private static FilterBindingDelegate? CreateFilterForParameter(ParameterInfo parameter)

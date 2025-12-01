@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace ManualDi.Sync
@@ -8,40 +9,44 @@ namespace ManualDi.Sync
     {
         public static object? InvokeDelegateUsingReflexion(this IDiContainer diContainer, Delegate @delegate)
         {
-            var methodInfo = @delegate.Method;
-            var parameters = methodInfo.GetParameters();
-            var arguments = new object?[parameters.Length];
+            var arguments = @delegate.Method.GetParameters()
+                .Select(parameter =>
+                {
+                    var type = parameter.ParameterType;
+                    var underlyingType = Nullable.GetUnderlyingType(type);
+                    var resolutionType = underlyingType ?? type;
+                    var filter = CreateFilterForParameter(parameter);
 
-            for (int i = 0; i < parameters.Length; i++)
+                    var resolution = filter is null
+                        ? diContainer.ResolveContainer(resolutionType)
+                        : diContainer.ResolveContainer(resolutionType, filter);
+
+                    if (resolution is not null)
+                    {
+                        return resolution;
+                    }
+
+                    if (IsNullable(parameter))
+                    {
+                        return null;
+                    }
+
+                    throw new InvalidOperationException($"Could not resolve element of type {type.FullName} for parameter {parameter.Name}");
+                })
+                .ToArray();
+            
+            return @delegate.DynamicInvoke(arguments);
+        }
+
+        private static FilterBindingDelegate? CreateFilterForParameter(ParameterInfo parameter)
+        {
+            var idAttribute = parameter.GetCustomAttribute<IdAttribute>();
+            if (idAttribute is null)
             {
-                var parameter = parameters[i];
-                var type = parameter.ParameterType;
-
-                var underlyingType = Nullable.GetUnderlyingType(type);
-                if (underlyingType is not null)
-                {
-                    arguments[i] = diContainer.ResolveContainer(underlyingType);
-                    continue;
-                }
-
-                var resolution = diContainer.ResolveContainer(type);
-                
-                if (resolution is not null)
-                {
-                    arguments[i] = resolution;
-                    continue;
-                }
-
-                if (IsNullable(parameter))
-                {
-                    arguments[i] = null;
-                    continue;
-                }
-
-                throw new InvalidOperationException($"Could not resolve element of type {type.FullName} for parameter {parameter.Name}");
+                return null;
             }
 
-            return @delegate.DynamicInvoke(arguments);
+            return c => c.Id(idAttribute.Id);
         }
 
         private static bool IsNullable(ParameterInfo parameter)
@@ -64,19 +69,19 @@ namespace ManualDi.Sync
         {
             if (TryGetNullableFlags(parameter.GetCustomAttributes(false), out var flags) && flags != null)
             {
-                return flags[0] == 2;
+                return flags[0] is 2;
             }
 
             // 2. Check method context
             if (TryGetNullableContext(parameter.Member.GetCustomAttributes(false), out var methodContext))
             {
-                return methodContext == 2;
+                return methodContext is 2;
             }
 
             // 3. Check type context
             if (TryGetNullableContext(parameter.Member.DeclaringType.GetCustomAttributes(false), out var typeContext))
             {
-                return typeContext == 2;
+                return typeContext is 2;
             }
 
             // Default to non-nullable (1) if no context found, or oblivious
@@ -88,7 +93,7 @@ namespace ManualDi.Sync
             foreach (var attribute in attributes)
             {
                 var type = attribute.GetType();
-                if (type.FullName == "System.Runtime.CompilerServices.NullableAttribute")
+                if (type.FullName is "System.Runtime.CompilerServices.NullableAttribute")
                 {
                     var field = type.GetField("NullableFlags");
                     if (field != null)
@@ -107,7 +112,7 @@ namespace ManualDi.Sync
             foreach (var attribute in attributes)
             {
                 var type = attribute.GetType();
-                if (type.FullName == "System.Runtime.CompilerServices.NullableContextAttribute")
+                if (type.FullName is "System.Runtime.CompilerServices.NullableContextAttribute")
                 {
                     var field = type.GetField("Flag");
                     if (field != null)

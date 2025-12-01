@@ -119,5 +119,26 @@ namespace ManualDi.Sync.Tests
             Assert.That(resInt, Is.EqualTo(42));
             Assert.That(resString, Is.Null);
         }
+        
+        [Test]
+        public void TestInvoke_WithIdAttribute_ResolvesCorrectInstance()
+        {
+            var container = new DiContainerBindings().Install(b =>
+            {
+                b.Bind<int>().FromInstance(1).WithId("A");
+                b.Bind<int>().FromInstance(2).WithId("B");
+            }).Build();
+
+            int resA = 0;
+            int resB = 0;
+            container.InvokeDelegateUsingReflexion(([Id("A")] int a, [Id("B")] int b) => 
+            {
+                resA = a;
+                resB = b;
+            });
+            
+            Assert.That(resA, Is.EqualTo(1));
+            Assert.That(resB, Is.EqualTo(2));
+        }
     }
 }

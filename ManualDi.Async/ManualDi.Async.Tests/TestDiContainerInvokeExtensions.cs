@@ -1,18 +1,19 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
-namespace ManualDi.Sync.Tests
+namespace ManualDi.Async.Tests
 {
     public class TestDiContainerInvokeExtensions
     {
         [Test]
-        public void TestInvoke_Int_Resolved()
+        public async Task TestInvoke_Int_Resolved()
         {
-            using var container = new DiContainerBindings().Install(b =>
+            await using var container = await new DiContainerBindings().Install(b =>
             {
                 b.Bind<int>().FromInstance(5);
-            }).Build();
+            }).Build(CancellationToken.None);
             
             int? result = null;
             container.InvokeDelegateUsingReflexion((int value)  => result = value);
@@ -21,11 +22,11 @@ namespace ManualDi.Sync.Tests
         }
 
         [Test]
-        public void TestInvoke_Int_NotResolved_Throws()
+        public async Task TestInvoke_Int_NotResolved_Throws()
         {
-            using var container = new DiContainerBindings().Install(b =>
+            await using var container = await new DiContainerBindings().Install(b =>
             {
-            }).Build();
+            }).Build(CancellationToken.None);
             
             Assert.Throws<InvalidOperationException>(() =>
             {
@@ -34,12 +35,12 @@ namespace ManualDi.Sync.Tests
         }
 
         [Test]
-        public void TestInvoke_NullableInt_Resolved()
+        public async Task TestInvoke_NullableInt_Resolved()
         {
-            using var container = new DiContainerBindings().Install(b =>
+            await using var container = await new DiContainerBindings().Install(b =>
             {
                 b.Bind<int>().FromInstance(5);
-            }).Build();
+            }).Build(CancellationToken.None);
             
             int? result = null;
             container.InvokeDelegateUsingReflexion((int? a) => result = a);
@@ -48,11 +49,11 @@ namespace ManualDi.Sync.Tests
         }
 
         [Test]
-        public void TestInvoke_NullableInt_NotResolved_ReturnsNull()
+        public async Task TestInvoke_NullableInt_NotResolved_ReturnsNull()
         {
-            using var container = new DiContainerBindings().Install(b =>
+            await using var container = await new DiContainerBindings().Install(b =>
             {
-            }).Build();
+            }).Build(CancellationToken.None);
             
             int? result = 5; // Initialize with non-null
             container.InvokeDelegateUsingReflexion((int? a) => result = a);
@@ -61,12 +62,12 @@ namespace ManualDi.Sync.Tests
         }
 
         [Test]
-        public void TestInvoke_String_Resolved()
+        public async Task TestInvoke_String_Resolved()
         {
-            using var container = new DiContainerBindings().Install(b =>
+            await using var container = await new DiContainerBindings().Install(b =>
             {
                 b.Bind<string>().FromInstance("hello");
-            }).Build();
+            }).Build(CancellationToken.None);
 
             string? result = null;
             container.InvokeDelegateUsingReflexion((string s) => result = s);
@@ -75,11 +76,11 @@ namespace ManualDi.Sync.Tests
         }
 
         [Test]
-        public void TestInvoke_String_NotResolved_Throws()
+        public async Task TestInvoke_String_NotResolved_Throws()
         {
-            using var container = new DiContainerBindings().Install(b =>
+            await using var container = await new DiContainerBindings().Install(b =>
             {
-            }).Build();
+            }).Build(CancellationToken.None);
             
             Assert.Throws<InvalidOperationException>(() =>
             {
@@ -88,11 +89,11 @@ namespace ManualDi.Sync.Tests
         }
 
         [Test]
-        public void TestInvoke_NullableString_NotResolved_ReturnsNull()
+        public async Task TestInvoke_NullableString_NotResolved_ReturnsNull()
         {
-            using var container = new DiContainerBindings().Install(b =>
+            await using var container = await new DiContainerBindings().Install(b =>
             {
-            }).Build();
+            }).Build(CancellationToken.None);
             
             string? result = "not null";
             container.InvokeDelegateUsingReflexion((string? s) => result = s);
@@ -101,12 +102,12 @@ namespace ManualDi.Sync.Tests
         }
         
         [Test]
-        public void TestInvoke_Mixed()
+        public async Task TestInvoke_Mixed()
         {
-            using var container = new DiContainerBindings().Install(b =>
+            await using var container = await new DiContainerBindings().Install(b =>
             {
                 b.Bind<int>().FromInstance(42);
-            }).Build();
+            }).Build(CancellationToken.None);
             
             int resInt = 0;
             string? resString = "initial";
@@ -121,13 +122,13 @@ namespace ManualDi.Sync.Tests
         }
         
         [Test]
-        public void TestInvoke_WithIdAttribute_ResolvesCorrectInstance()
+        public async Task TestInvoke_WithIdAttribute_ResolvesCorrectInstance()
         {
-            using var container = new DiContainerBindings().Install(b =>
+            await using var container = await new DiContainerBindings().Install(b =>
             {
                 b.Bind<int>().FromInstance(1).WithId("A");
                 b.Bind<int>().FromInstance(2).WithId("B");
-            }).Build();
+            }).Build(CancellationToken.None);
 
             int resA = 0;
             int resB = 0;
@@ -144,10 +145,10 @@ namespace ManualDi.Sync.Tests
         [Test]
         public async Task TestInvokeAsync_VoidReturn()
         {
-            using var container = new DiContainerBindings().Install(b =>
+            await using var container = await new DiContainerBindings().Install(b =>
             {
                 b.Bind<int>().FromInstance(5);
-            }).Build();
+            }).Build(CancellationToken.None);
             
             int result = 0;
             await container.InvokeDelegateUsingReflexionAsync(async (int a) => 
@@ -162,10 +163,10 @@ namespace ManualDi.Sync.Tests
         [Test]
         public async Task TestInvokeAsync_ValueReturn()
         {
-            using var container = new DiContainerBindings().Install(b =>
+            await using var container = await new DiContainerBindings().Install(b =>
             {
                 b.Bind<int>().FromInstance(10);
-            }).Build();
+            }).Build(CancellationToken.None);
             
             var result = await container.InvokeDelegateUsingReflexionAsync(async (int a) => 
             {
@@ -179,10 +180,10 @@ namespace ManualDi.Sync.Tests
         [Test]
         public async Task TestInvokeAsync_SyncDelegate_ValueReturn()
         {
-            using var container = new DiContainerBindings().Install(b =>
+            await using var container = await new DiContainerBindings().Install(b =>
             {
                 b.Bind<int>().FromInstance(5);
-            }).Build();
+            }).Build(CancellationToken.None);
             
             var result = await container.InvokeDelegateUsingReflexionAsync((int a) => a * 2);
             
@@ -192,15 +193,33 @@ namespace ManualDi.Sync.Tests
         [Test]
         public async Task TestInvokeAsync_SyncDelegate_VoidReturn()
         {
-            using var container = new DiContainerBindings().Install(b =>
+            await using var container = await new DiContainerBindings().Install(b =>
             {
                 b.Bind<int>().FromInstance(5);
-            }).Build();
+            }).Build(CancellationToken.None);
 
             int result = 0;
             await container.InvokeDelegateUsingReflexionAsync((int a) => result = a);
             
             Assert.That(result, Is.EqualTo(5));
+        }
+        
+        [Test]
+        public async Task TestInvokeAsync_CancellationToken_DisposesProperly()
+        {
+            var container = await new DiContainerBindings().Install(b =>
+            {
+                b.Bind<int>().FromInstance(5);
+            }).Build(CancellationToken.None);
+
+            CancellationToken cancellationToken = CancellationToken.None;
+            await container.InvokeDelegateUsingReflexionAsync((CancellationToken ct) => cancellationToken = ct);
+            
+            Assert.That(cancellationToken.IsCancellationRequested, Is.False);
+
+            await container.DisposeAsync();
+            
+            Assert.That(cancellationToken.IsCancellationRequested, Is.True);
         }
     }
 }

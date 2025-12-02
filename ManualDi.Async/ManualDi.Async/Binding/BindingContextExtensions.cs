@@ -8,7 +8,7 @@ namespace ManualDi.Async
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Id(this BindingContext bindingContext, object id)
         {
-            return bindingContext.Binding.Id == id;
+            return object.Equals(bindingContext.Binding.Id, id);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -26,7 +26,7 @@ namespace ManualDi.Async
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool InjectedIntoId(this BindingContext bindingContext, object id)
         {
-            return bindingContext.InjectedIntoBinding?.Id == id;
+            return object.Equals(bindingContext.InjectedIntoBinding?.Id, id);
         }
     }
 }

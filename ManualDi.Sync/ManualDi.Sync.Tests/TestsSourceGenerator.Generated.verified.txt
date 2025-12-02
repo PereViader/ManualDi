@@ -653,7 +653,7 @@ namespace ManualDi.Sync
         {
             return binding.FromMethod(static c => new InjectContainer(
                 c,
-                c.Resolve<System.Threading.CancellationToken>()));
+                c.CancellationToken));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

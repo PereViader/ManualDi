@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections;
+using System.Threading;
 
 namespace ManualDi.Sync
 {
     public interface IDiContainer : IDisposable
     {
+        CancellationToken CancellationToken { get; }
+        
         /// <summary>
         /// Non-generic resolution of a binding for its registered instance
         /// </summary>

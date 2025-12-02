@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ManualDi.Sync
@@ -41,6 +42,11 @@ namespace ManualDi.Sync
                     if (resolutionType == typeof(IDiContainer))
                     {
                         return diContainer;
+                    }
+
+                    if (resolutionType == typeof(CancellationToken))
+                    {
+                        return diContainer.CancellationToken;
                     }
                     
                     var filter = CreateFilterForParameter(parameter);

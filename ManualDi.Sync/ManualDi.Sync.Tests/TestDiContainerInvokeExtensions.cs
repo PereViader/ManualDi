@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ManualDi.Sync.Tests
@@ -201,6 +202,24 @@ namespace ManualDi.Sync.Tests
             await container.InvokeDelegateUsingReflexionAsync((int a) => result = a);
             
             Assert.That(result, Is.EqualTo(5));
+        }
+        
+        [Test]
+        public async Task TestInvokeAsync_CancellationToken_DisposesProperly()
+        {
+            var container = new DiContainerBindings().Install(b =>
+            {
+                b.Bind<int>().FromInstance(5);
+            }).Build();
+
+            CancellationToken cancellationToken = CancellationToken.None;
+            await container.InvokeDelegateUsingReflexionAsync((CancellationToken ct) => cancellationToken = ct);
+            
+            Assert.That(cancellationToken.IsCancellationRequested, Is.False);
+
+            container.Dispose();
+            
+            Assert.That(cancellationToken.IsCancellationRequested, Is.True);
         }
     }
 }

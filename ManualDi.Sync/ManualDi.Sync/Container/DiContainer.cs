@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace ManualDi.Sync
 {
@@ -10,11 +11,14 @@ namespace ManualDi.Sync
         private readonly Dictionary<IntPtr, Binding> allBindings;
         private readonly IDiContainer? parentDiContainer;
         private readonly BindingContext bindingContext = new();
+        private readonly CancellationTokenSource cancellationTokenSource = new();
         
         private DiContainerInitializer diContainerInitializer;
         private DiContainerDisposer diContainerDisposer;
         private Binding? injectedBinding;
-
+        
+        public CancellationToken CancellationToken => cancellationTokenSource.Token;
+        
         public DiContainer(
             Dictionary<IntPtr, Binding> allBindings, 
             IDiContainer? parentDiContainer,
@@ -231,6 +235,14 @@ namespace ManualDi.Sync
 
         public void Dispose()
         {
+            if (diContainerDisposer.DisposedValue)
+            {
+                return;
+            }
+            
+            cancellationTokenSource.Cancel();
+            cancellationTokenSource.Dispose();
+            
             diContainerDisposer.Dispose();
         }
     }

@@ -253,6 +253,12 @@ namespace ManualDi.Sync.Generators
                 return;
             }
             
+            if (typeReferences.IsCancellationToken(typeSymbol))
+            {
+                stringBuilder.Append("c.CancellationToken");
+                return;
+            }
+            
             if (typeReferences.IsSymbolDiContainer(typeSymbol))
             {
                 stringBuilder.Append("c");

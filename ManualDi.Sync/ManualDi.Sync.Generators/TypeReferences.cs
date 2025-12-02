@@ -17,8 +17,9 @@ public record TypeReferences
     private readonly INamedTypeSymbol ObsoleteAttributeTypeSymbol;
     private readonly INamedTypeSymbol IDisposableTypeSymbol;
     private readonly INamedTypeSymbol IDiContainerTypeSymbol;
+    private readonly INamedTypeSymbol CancellationTokenTypeSymbol;
 
-    public TypeReferences(INamedTypeSymbol? unityEngineObjectTypeSymbol, INamedTypeSymbol listTypeSymbol, INamedTypeSymbol iListTypeSymbol, INamedTypeSymbol iReadOnlyListTypeSymbol, INamedTypeSymbol iEnumerableTypeSymbol, INamedTypeSymbol iReadOnlyCollectionTypeSymbol, INamedTypeSymbol iCollectionTypeSymbol, INamedTypeSymbol injectAttributeTypeSymbol, INamedTypeSymbol obsoleteAttributeTypeSymbol, INamedTypeSymbol iDisposableTypeSymbol, INamedTypeSymbol iDiContainerTypeSymbol)
+    public TypeReferences(INamedTypeSymbol? unityEngineObjectTypeSymbol, INamedTypeSymbol listTypeSymbol, INamedTypeSymbol iListTypeSymbol, INamedTypeSymbol iReadOnlyListTypeSymbol, INamedTypeSymbol iEnumerableTypeSymbol, INamedTypeSymbol iReadOnlyCollectionTypeSymbol, INamedTypeSymbol iCollectionTypeSymbol, INamedTypeSymbol injectAttributeTypeSymbol, INamedTypeSymbol obsoleteAttributeTypeSymbol, INamedTypeSymbol iDisposableTypeSymbol, INamedTypeSymbol iDiContainerTypeSymbol, INamedTypeSymbol cancellationTokenTypeSymbol)
     {
         UnityEngineObjectTypeSymbol = unityEngineObjectTypeSymbol;
         ListTypeSymbol = listTypeSymbol;
@@ -31,6 +32,7 @@ public record TypeReferences
         ObsoleteAttributeTypeSymbol = obsoleteAttributeTypeSymbol;
         IDisposableTypeSymbol = iDisposableTypeSymbol;
         IDiContainerTypeSymbol = iDiContainerTypeSymbol;
+        CancellationTokenTypeSymbol = cancellationTokenTypeSymbol;
     }
     
     public static TypeReferences? Create(Compilation compilation, CancellationToken ct)
@@ -96,7 +98,13 @@ public record TypeReferences
             return null;
         }
         
-        return new TypeReferences(unityEngineObjectTypeSymbol, listTypeSymbol, iListTypeSymbol, iReadOnlyListTypeSymbol, iEnumerableTypeSymbol, iReadOnlyCollectionTypeSymbol, iCollectionTypeSymbol, injectAttributeTypeSymbol, obsoleteAttributeTypeSymbol, iDisposableTypeSymbol, diContainerTypeSymbol);
+        var cancellationTokenTypeSymbol = compilation.GetTypeByMetadataName("System.Threading.CancellationToken");
+        if (cancellationTokenTypeSymbol is null)
+        {
+            return null;
+        }
+        
+        return new TypeReferences(unityEngineObjectTypeSymbol, listTypeSymbol, iListTypeSymbol, iReadOnlyListTypeSymbol, iEnumerableTypeSymbol, iReadOnlyCollectionTypeSymbol, iCollectionTypeSymbol, injectAttributeTypeSymbol, obsoleteAttributeTypeSymbol, iDisposableTypeSymbol, diContainerTypeSymbol, cancellationTokenTypeSymbol);
     }
     
     public ITypeSymbol? TryGetEnumerableType(ITypeSymbol typeSymbol)
@@ -165,5 +173,10 @@ public record TypeReferences
             baseType = baseType.BaseType;
         }
         return false;
+    }
+    
+    public bool IsCancellationToken(ITypeSymbol namedTypeSymbol)
+    {
+        return SymbolEqualityComparer.Default.Equals(namedTypeSymbol, CancellationTokenTypeSymbol);
     }
 }

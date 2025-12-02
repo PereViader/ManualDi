@@ -205,7 +205,7 @@ namespace ManualDi.Async.Tests
         }
         
         [Test]
-        public async Task TestInvokeAsync_CancellationToken_DisposesProperly()
+        public async Task TestInvoke_CancellationToken_DisposesProperly()
         {
             var container = await new DiContainerBindings().Install(b =>
             {

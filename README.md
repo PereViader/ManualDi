@@ -81,7 +81,9 @@ Note: Source generation will only happen in csproj that are linked both with the
 
 Note: Source generator will never run on 3rd party libraries and System classes because they won't reference the generator.
 
-Note: A limitation of the source generator is that it does not run for partial classes defined across multiple declarations. It will only operate on partial classes that are declared once.
+Limitation of the source generator:
+- Does not run for partial classes defined across multiple declarations. It will only operate on partial classes that are declared once.
+- Does not run for classes that use the `required` keyword
 
 # Container Lifecycle
 

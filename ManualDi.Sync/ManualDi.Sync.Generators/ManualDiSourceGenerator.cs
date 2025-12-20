@@ -227,11 +227,8 @@ namespace ManualDi.Sync.Generators
                     isFirst = false;
                 }
                 
-                var attribute = typeReferences.GetIdAttribute(parameter);
-                var id = attribute is null ? null : GetInjectId(attribute);
-                var isOutParam = parameter.RefKind == RefKind.Out;
                 stringBuilder.Append(tabs);
-                CreateTypeResolution(parameter.Type, isOutParam, id, typeReferences, stringBuilder);
+                CreateTypeResolution(parameter, typeReferences, stringBuilder);
             }
         }
 
@@ -245,8 +242,13 @@ namespace ManualDi.Sync.Generators
             }
         }
         
-        private static void CreateTypeResolution(ITypeSymbol typeSymbol, bool isOutParam, string? id, TypeReferences typeReferences,StringBuilder stringBuilder)
+        private static void CreateTypeResolution(IParameterSymbol parameterSymbol, TypeReferences typeReferences, StringBuilder stringBuilder)
         {
+            var attribute = typeReferences.GetIdAttribute(parameterSymbol);
+            var id = attribute is null ? null : GetInjectId(attribute);
+            var typeSymbol = parameterSymbol.Type;
+            var isOutParam = parameterSymbol.RefKind == RefKind.Out;
+
             if (isOutParam)
             {
                 stringBuilder.Append("out _");

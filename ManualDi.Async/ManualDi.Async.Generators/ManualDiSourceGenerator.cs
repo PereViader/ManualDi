@@ -243,11 +243,8 @@ namespace ManualDi.Async.Generators
                     isFirst = false;
                 }
                 
-                var attribute = typeReferences.GetIdAttribute(parameter);
-                var id = attribute is null ? null : GetInjectId(attribute);
-                var isOutParam = parameter.RefKind == RefKind.Out;
                 stringBuilder.Append(tabs);
-                CreteTypeResolution(parameter.Type, id, isOutParam, typeReferences, stringBuilder);
+                CreteTypeResolution(parameter, typeReferences, stringBuilder);
             }
         }
         
@@ -269,42 +266,8 @@ namespace ManualDi.Async.Generators
                     continue;
                 }
                 stringBuilder.Append(tabs);
-                var attribute = typeReferences.GetIdAttribute(parameter);
-                var id = attribute is null ? null : GetInjectId(attribute);
-                CreteTypeDependency(true, parameter.Type, id, typeReferences, stringBuilder);
+                CreteTypeDependency(parameter, typeReferences, stringBuilder);
             }
-            stringBuilder.Append(tabs);
-            stringBuilder.Append("})");
-        }
-        
-        private static void CreateMethodPropertyDependencies(IMethodSymbol? injectMethodSymbol, string tabs, TypeReferences typeReferences, StringBuilder stringBuilder)
-        {
-            if (injectMethodSymbol?.Parameters.Length == 0)
-            {
-                return;
-            }
-
-            stringBuilder.AppendLine();
-            stringBuilder.Append(tabs);
-            stringBuilder.AppendLine(".DependsOn(static d => {");
-            
-            if (injectMethodSymbol is not null)
-            {
-                foreach (var parameter in injectMethodSymbol.Parameters)
-                {
-                    var isOutParam = parameter.RefKind == RefKind.Out;
-                    if (isOutParam)
-                    {
-                        continue;
-                    }
-                    stringBuilder.Append(tabs);
-                    var attribute = typeReferences.GetIdAttribute(parameter);
-                    var id = attribute is null ? null : GetInjectId(attribute);
-                    var isConstructor = !typeReferences.HasCyclicDependencyAttribute(parameter);
-                    CreteTypeDependency(isConstructor, parameter.Type, id, typeReferences, stringBuilder);
-                }
-            }
-            
             stringBuilder.Append(tabs);
             stringBuilder.Append("})");
         }
@@ -319,8 +282,13 @@ namespace ManualDi.Async.Generators
             }
         }
         
-        private static void CreteTypeResolution(ITypeSymbol typeSymbol, string? id, bool isOutParam, TypeReferences typeReferences,StringBuilder stringBuilder)
+        private static void CreteTypeResolution(IParameterSymbol parameterSymbol, TypeReferences typeReferences, StringBuilder stringBuilder)
         {
+            var attribute = typeReferences.GetIdAttribute(parameterSymbol);
+            var id = attribute is null ? null : GetInjectId(attribute);
+            var isOutParam = parameterSymbol.RefKind == RefKind.Out;
+            var typeSymbol = parameterSymbol.Type;
+            
             if (isOutParam)
             {
                 stringBuilder.Append("out _");
@@ -389,8 +357,13 @@ namespace ManualDi.Async.Generators
             stringBuilder.Append(")");
         }
         
-        private static void CreteTypeDependency(bool isConstructor, ITypeSymbol typeSymbol, string? id, TypeReferences typeReferences, StringBuilder stringBuilder)
+        private static void CreteTypeDependency(IParameterSymbol parameterSymbol, TypeReferences typeReferences, StringBuilder stringBuilder)
         {
+            var attribute = typeReferences.GetIdAttribute(parameterSymbol);
+            var id = attribute is null ? null : GetInjectId(attribute);
+            var isConstructor = !typeReferences.HasCyclicDependencyAttribute(parameterSymbol);
+            var typeSymbol = parameterSymbol.Type;
+            
             if (typeReferences.IsSymbolDiContainer(typeSymbol))
             {
                 stringBuilder.AppendLine("    // Injected DiContainer");
@@ -555,17 +528,11 @@ namespace ManualDi.Async.Generators
             """);
             context.StringBuilder.Append(context.ClassName);
             context.StringBuilder.AppendLine(")o;");
-            
-            if (injectMethod is not null)
-            {
-                context.StringBuilder.Append("                    to.Inject(");
-                CreateMethodResolution(injectMethod, "                        ", context.TypeReferences, context.StringBuilder);
-                context.StringBuilder.AppendLine(");");
-            }
-
+            context.StringBuilder.Append("                    to.Inject(");
+            CreateMethodResolution(injectMethod, "                        ", context.TypeReferences, context.StringBuilder);
+            context.StringBuilder.AppendLine(");");
             context.StringBuilder.Append("                })");
-            
-            CreateMethodPropertyDependencies(injectMethod, "                ", context.TypeReferences, context.StringBuilder);
+            CreateMethodDependencies(injectMethod, "                ", context.TypeReferences, context.StringBuilder);
             return true;
         }
 

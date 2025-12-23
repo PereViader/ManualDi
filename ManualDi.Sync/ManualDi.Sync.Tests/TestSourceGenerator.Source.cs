@@ -47,6 +47,14 @@ namespace SomeNamespace.Subnamespace
         {
         }
     }
+    
+    public class TaskInitialize
+    {
+        internal Task Initialize()
+        {
+            return Task.CompletedTask;
+        }
+    }
 
     public abstract class Abstract
     {

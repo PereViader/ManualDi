@@ -132,6 +132,28 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Sync
 {
+    public static class ManualDiGeneratedSomeNamespace_Subnamespace_TaskInitializeExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<SomeNamespace.Subnamespace.TaskInitialize> FromConstructor(this Binding<SomeNamespace.Subnamespace.TaskInitialize> binding)
+        {
+            return binding.FromMethod(static c => new SomeNamespace.Subnamespace.TaskInitialize());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<SomeNamespace.Subnamespace.TaskInitialize> Default(this Binding<SomeNamespace.Subnamespace.TaskInitialize> binding)
+        {
+            return binding.SkipDisposable();
+        }
+    }
+}
+
+  
+#nullable enable
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Sync
+{
     public static class ManualDiGeneratedSomeNamespace_Subnamespace_SomeDisposableExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -450,7 +450,8 @@ namespace ManualDi.Async.Generators
                 {
                     Name: "Initialize", 
                     DeclaredAccessibility: Accessibility.Public or Accessibility.Internal,
-                    IsStatic: false, 
+                    IsStatic: false,
+                    ReturnsVoid: true,
                     Parameters.Length: 0
                 });
                 

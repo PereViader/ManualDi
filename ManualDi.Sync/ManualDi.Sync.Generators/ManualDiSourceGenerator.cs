@@ -341,6 +341,7 @@ namespace ManualDi.Sync.Generators
                 {
                     Name: "Initialize", 
                     DeclaredAccessibility: Accessibility.Public or Accessibility.Internal,
+                    ReturnsVoid: true,
                     IsStatic: false, 
                     Parameters.Length: 0
                 });

@@ -120,20 +120,22 @@ using DiContainer diContainer = new DiContainerBindings()
 
 public interface IOtherClass { }
 
-public class OtherClass : IOtherClass
+public class OtherClass : IOtherClass, IDisposable
 {
     // Runs first because the class does not depend on anything else
-    public void Initialize() { 
-        Console.WriteLine("OtherClass.Initialize");
-    }
+    public void Initialize() => Console.WriteLine("OtherClass.Initialize");
+
+    // Runs last because the class does not depend on anything else
+    public void Dispose() => Console.WriteLine("SomeClass.Dispose");
 }
 
-public class SomeClass(IOtherClass otherClass)
+public class SomeClass(IOtherClass otherClass) : IDisposable
 {
     // SomeClass.Initialize runs after OtherClass.Initialize
-    public void Initialize() { 
-        Console.WriteLine("SomeClass.Initialize");
-    }
+    public void Initialize() => Console.WriteLine("SomeClass.Initialize");
+
+    // SomeClass.Dispose runs before OtherClass.Dispose
+    public void Dispose() => Console.WriteLine("SomeClass.Dispose");
 }
 
 public class Startup(SomeClass someClass)
@@ -141,17 +143,21 @@ public class Startup(SomeClass someClass)
     private IOtherClass otherClass;
 
     //Inject runs after the constructor
-    public void Inject(IOtherClass otherClass)
-    {
-        this.otherClass = otherClass;
-    }
+    public void Inject(IOtherClass otherClass) => this.otherClass = otherClass;
 
     // Runs after SomeClass.Initialize and OtherClass.InitializeAsync
-    public void Execute()
-    {
-        Console.WriteLine("Startup.Execute");
-    }
+    public void Execute() => Console.WriteLine("Startup.Execute");
 }
+```
+
+Sample output
+
+```
+OtherClass.Initialize
+SomeClass.Initialize
+Startup.Execute
+SomeClass.Dispose
+OtherClass.Dispose
 ```
 
 ## ManualDi.Async sample
@@ -173,21 +179,22 @@ await using DiContainer diContainer = await new DiContainerBindings()
 
 public interface IOtherClass { }
 
-public class OtherClass : IOtherClass
+public class OtherClass : IOtherClass, IAsyncDisposable
 {
     // Runs first because the class does not depend on anything else
-    public Task InitializeAsync(CancellationToken ct) { 
-        Console.WriteLine("OtherClass.InitializeAsync");
-        return Task.CompletedTask;
-    }
+    public async Task InitializeAsync(CancellationToken ct) => Console.WriteLine("OtherClass.InitializeAsync");
+
+    // Runs last because the class does not depend on anything else
+    public async ValueTask DisposeAsync() => Console.WriteLine("OtherClass.DisposeAsync");
 }
 
-public class SomeClass(IOtherClass otherClass)
+public class SomeClass(IOtherClass otherClass) : IDisposable
 {
     // SomeClass.Initialize runs after OtherClass.InitializeAsync
-    public void Initialize() { 
-        Console.WriteLine("SomeClass.Initialize");
-    }
+    public void Initialize() => Console.WriteLine("SomeClass.Initialize");
+
+    // SomeClass.Dispose runs before OtherClass.DisposeAsync
+    public void Dispose() => Console.WriteLine("SomeClass.Dispose");
 }
 
 public class Startup(SomeClass someClass)
@@ -195,18 +202,21 @@ public class Startup(SomeClass someClass)
     private IOtherClass otherClass;
 
     //Inject runs after the constructor
-    public void Inject(IOtherClass otherClass)
-    {
-        this.otherClass = otherClass;
-    }
+    public void Inject(IOtherClass otherClass) =>this.otherClass = otherClass;
 
     // Runs after SomeClass.Initialize and OtherClass.InitializeAsync
-    public async Task Execute(CancellationToken ct)
-    {
-        Console.WriteLine("Startup.Execute");
-        return Task.CompletedTask;
-    }
+    public async Task Execute(CancellationToken ct) => Console.WriteLine("Startup.Execute");
 }
+```
+
+Sample output
+
+```
+OtherClass.InitializeAsync
+SomeClass.Initialize
+Startup.Execute
+SomeClass.Dispose
+OtherClass.DisposeAsync
 ```
 
 # Why use Dependency Injection

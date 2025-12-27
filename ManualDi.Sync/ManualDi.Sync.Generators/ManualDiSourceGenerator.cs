@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
@@ -10,7 +11,7 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace ManualDi.Sync.Generators
 {
-    public record struct GenerationClassContext(StringBuilder StringBuilder, string ClassName, string TypeParameters, INamedTypeSymbol ClassSymbol, string ObsoleteText, TypeReferences TypeReferences);
+    public record struct GenerationContext(StringBuilder StringBuilder, string ClassName, string TypeParameters, INamedTypeSymbol ClassSymbol, string ObsoleteText, TypeReferences TypeReferences, CancellationToken CancellationToken);
 
     [Generator]
     public class ManualDiSourceGenerator : IIncrementalGenerator
@@ -73,11 +74,6 @@ namespace ManualDi.Sync.Generators
                 return;
             }
 
-            if (classSymbol.IsAbstract)
-            {
-                return;
-            }
-
             var accessibility = GetSymbolAccessibility(classSymbol);
             if (accessibility is not (Accessibility.Public or Accessibility.Internal))
             {
@@ -89,7 +85,7 @@ namespace ManualDi.Sync.Generators
                 .Replace(".", "_")
                 .Replace("<", "_")
                 .Replace(">", "_");
-                
+
             var typeParameters = classSymbol.TypeParameters.Length > 0
                 ? $"<{string.Join(", ", classSymbol.TypeParameters.Select(x => x.Name))}>"
                 : "";
@@ -110,7 +106,7 @@ namespace ManualDi.Sync.Generators
                 {
             """);
 
-            var generationContext = new GenerationClassContext(stringBuilder, className, typeParameters, classSymbol, obsoleteText, typeReferences);
+            var generationContext = new GenerationContext(stringBuilder, className, typeParameters, classSymbol, obsoleteText, typeReferences, context.CancellationToken);
 
             if (!typeReferences.IsUnityEngineObject(classSymbol))
             {
@@ -183,8 +179,13 @@ namespace ManualDi.Sync.Generators
             return visibility;
         }
 
-        private static void AddFromConstructor(GenerationClassContext context)
+        private static void AddFromConstructor(GenerationContext context)
         {
+            if (context.ClassSymbol.IsAbstract)
+            {
+                return;
+            }
+
             var constructors = context.ClassSymbol
                 .Constructors
                 .Where(c => c.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal)
@@ -336,7 +337,7 @@ namespace ManualDi.Sync.Generators
             return "ResolveNullable";
         }
 
-        private static bool AddInitialize(GenerationClassContext context, bool isOnNewLine)
+        private static bool AddInitialize(GenerationContext context, bool isOnNewLine)
         {
             var initializeMethod = context.ClassSymbol
                 .GetMembers()
@@ -367,7 +368,7 @@ namespace ManualDi.Sync.Generators
             return true;
         }
 
-        private static bool AddInject(GenerationClassContext context, bool isOnNewLine)
+        private static bool AddInject(GenerationContext context, bool isOnNewLine)
         {
             var injectMethod = context.ClassSymbol
                 .GetMembers()
@@ -401,29 +402,60 @@ namespace ManualDi.Sync.Generators
             return true;
         }
 
-        private static void AddDefault(GenerationClassContext generationClassContext, Accessibility typeAccessibility)
+        private static void AddDefault(GenerationContext generationContext, Accessibility accessibility)
         {
-            var accessibility = typeAccessibility;
             var accessibilityString = GetAccessibilityString(accessibility);
 
-            generationClassContext.StringBuilder.Append($$"""
+            generationContext.StringBuilder.Append($$"""
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    {{generationClassContext.ObsoleteText}}{{accessibilityString}} static Binding<{{generationClassContext.ClassName}}> Default{{generationClassContext.TypeParameters}}(this Binding<{{generationClassContext.ClassName}}> binding)
+                    {{generationContext.ObsoleteText}}{{accessibilityString}} static Binding<{{generationContext.ClassName}}> Default{{generationContext.TypeParameters}}(this Binding<{{generationContext.ClassName}}> binding)
                     {
-                        return binding
+                        return DefaultImpl{{(generationContext.ClassSymbol.TypeParameters.Length > 0 ? $"<{generationContext.ClassName}, {string.Join(", ", generationContext.ClassSymbol.TypeParameters.Select(x => x.Name))}>" : "")}}(binding);
+                    }
+                    
+                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            """);
+            generationContext.StringBuilder.AppendLine();
+
+            var defaultImplTypeParameters = generationContext.ClassSymbol.TypeParameters.Length > 0
+                ? $"<TDefaultImpl, {string.Join(", ", generationContext.ClassSymbol.TypeParameters.Select(x => x.Name))}>"
+                : "<TDefaultImpl>";
+
+            generationContext.StringBuilder.Append($$"""
+                    {{generationContext.ObsoleteText}}{{accessibilityString}} static Binding<TDefaultImpl> DefaultImpl{{defaultImplTypeParameters}}(Binding<TDefaultImpl> binding) where TDefaultImpl : {{generationContext.ClassName}}
+                    {
+
             """);
 
-            var isOnNewLine = AddInitialize(generationClassContext, false);
-            isOnNewLine = AddInject(generationClassContext, isOnNewLine);
-            _ = AddSkipDisposable(generationClassContext, isOnNewLine);
+            var baseType = generationContext.ClassSymbol.BaseType;
+            if (baseType is not null && ShouldGenerateCallToBase(baseType, generationContext))
+            {
+                var baseClassName = FullyQualifyTypeWithoutNullable(baseType.OriginalDefinition);
+                var baseExtensionsClassName = $"ManualDiGenerated{baseClassName.Replace(".", "_").Replace("<", "_").Replace(">", "_")}Extensions";
 
-            generationClassContext.StringBuilder.AppendLine("""
+                var typeArguments = new List<string>();
+                typeArguments.Add("TDefaultImpl");
+                foreach (var typeArgument in baseType.TypeArguments)
+                {
+                    typeArguments.Add(FullyQualifyTypeWithoutNullable(typeArgument));
+                }
+
+                generationContext.StringBuilder.AppendLine($"            {baseExtensionsClassName}.DefaultImpl<{string.Join(", ", typeArguments)}>(binding);");
+            }
+
+            generationContext.StringBuilder.Append("            return binding");
+
+            var isOnNewLine = AddInitialize(generationContext, false);
+            isOnNewLine = AddInject(generationContext, isOnNewLine);
+            _ = AddSkipDisposable(generationContext, isOnNewLine);
+
+            generationContext.StringBuilder.AppendLine("""
             ;
                     }
             """);
         }
 
-        private static bool AddSkipDisposable(GenerationClassContext context, bool isOnNewLine)
+        private static bool AddSkipDisposable(GenerationContext context, bool isOnNewLine)
         {
             if (context.TypeReferences.IsIDisposable(context.ClassSymbol))
             {
@@ -452,12 +484,8 @@ namespace ManualDi.Sync.Generators
 
         private static bool IsNullableTypeSymbol(ITypeSymbol typeSymbol)
         {
-            if (typeSymbol.NullableAnnotation == NullableAnnotation.Annotated || typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
-            {
-                return true;
-            }
-
-            return false;
+            return typeSymbol.NullableAnnotation is NullableAnnotation.Annotated ||
+                   typeSymbol.OriginalDefinition.SpecialType is SpecialType.System_Nullable_T;
         }
 
         private static ITypeSymbol? GetNonNullableType(ITypeSymbol typeSymbol)
@@ -479,6 +507,35 @@ namespace ManualDi.Sync.Generators
         private static string FullyQualifyTypeWithNullable(ITypeSymbol typeSymbol)
         {
             return typeSymbol.ToDisplayString();
+        }
+
+        private static bool ShouldGenerateCallToBase(INamedTypeSymbol typeSymbol, GenerationContext context)
+        {
+            if (typeSymbol.SpecialType is SpecialType.System_Object)
+            {
+                return false;
+            }
+
+            var accessibility = GetSymbolAccessibility(typeSymbol);
+            if (accessibility is not (Accessibility.Public or Accessibility.Internal))
+            {
+                return false;
+            }
+
+            if (typeSymbol.Locations.Any(static x => x.IsInSource))
+            {
+                return typeSymbol.DeclaringSyntaxReferences
+                    .Any(x => IsSyntaxNodeValid(x.GetSyntax(context.CancellationToken), context.CancellationToken));
+            }
+
+            //This only happens when the source generator runs on a precompiled DLL
+            var fileName = FullyQualifyTypeWithoutNullable(typeSymbol.OriginalDefinition)
+                .Replace(".", "_")
+                .Replace("<", "_")
+                .Replace(">", "_");
+
+            var expectedTypeName = $"ManualDi.Sync.ManualDiGenerated{fileName}Extensions";
+            return context.TypeReferences.TypeExists(expectedTypeName);
         }
     }
 }

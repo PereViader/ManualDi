@@ -19,8 +19,11 @@ public record TypeReferences
     private readonly INamedTypeSymbol IDiContainerTypeSymbol;
     private readonly INamedTypeSymbol CancellationTokenTypeSymbol;
 
-    public TypeReferences(INamedTypeSymbol? unityEngineObjectTypeSymbol, INamedTypeSymbol listTypeSymbol, INamedTypeSymbol iListTypeSymbol, INamedTypeSymbol iReadOnlyListTypeSymbol, INamedTypeSymbol iEnumerableTypeSymbol, INamedTypeSymbol iReadOnlyCollectionTypeSymbol, INamedTypeSymbol iCollectionTypeSymbol, INamedTypeSymbol injectAttributeTypeSymbol, INamedTypeSymbol obsoleteAttributeTypeSymbol, INamedTypeSymbol iDisposableTypeSymbol, INamedTypeSymbol iDiContainerTypeSymbol, INamedTypeSymbol cancellationTokenTypeSymbol)
+    public readonly Compilation Compilation;
+
+    public TypeReferences(Compilation compilation, INamedTypeSymbol? unityEngineObjectTypeSymbol, INamedTypeSymbol listTypeSymbol, INamedTypeSymbol iListTypeSymbol, INamedTypeSymbol iReadOnlyListTypeSymbol, INamedTypeSymbol iEnumerableTypeSymbol, INamedTypeSymbol iReadOnlyCollectionTypeSymbol, INamedTypeSymbol iCollectionTypeSymbol, INamedTypeSymbol injectAttributeTypeSymbol, INamedTypeSymbol obsoleteAttributeTypeSymbol, INamedTypeSymbol iDisposableTypeSymbol, INamedTypeSymbol iDiContainerTypeSymbol, INamedTypeSymbol cancellationTokenTypeSymbol)
     {
+        Compilation = compilation;
         UnityEngineObjectTypeSymbol = unityEngineObjectTypeSymbol;
         ListTypeSymbol = listTypeSymbol;
         IListTypeSymbol = iListTypeSymbol;
@@ -104,7 +107,7 @@ public record TypeReferences
             return null;
         }
         
-        return new TypeReferences(unityEngineObjectTypeSymbol, listTypeSymbol, iListTypeSymbol, iReadOnlyListTypeSymbol, iEnumerableTypeSymbol, iReadOnlyCollectionTypeSymbol, iCollectionTypeSymbol, injectAttributeTypeSymbol, obsoleteAttributeTypeSymbol, iDisposableTypeSymbol, diContainerTypeSymbol, cancellationTokenTypeSymbol);
+        return new TypeReferences(compilation, unityEngineObjectTypeSymbol, listTypeSymbol, iListTypeSymbol, iReadOnlyListTypeSymbol, iEnumerableTypeSymbol, iReadOnlyCollectionTypeSymbol, iCollectionTypeSymbol, injectAttributeTypeSymbol, obsoleteAttributeTypeSymbol, iDisposableTypeSymbol, diContainerTypeSymbol, cancellationTokenTypeSymbol);
     }
     
     public ITypeSymbol? TryGetEnumerableType(ITypeSymbol typeSymbol)
@@ -178,5 +181,10 @@ public record TypeReferences
     public bool IsCancellationToken(ITypeSymbol namedTypeSymbol)
     {
         return SymbolEqualityComparer.Default.Equals(namedTypeSymbol, CancellationTokenTypeSymbol);
+    }
+    
+    public bool TypeExists(string metadataName)
+    {
+        return Compilation.GetTypeByMetadataName(metadataName) is not null;
     }
 }

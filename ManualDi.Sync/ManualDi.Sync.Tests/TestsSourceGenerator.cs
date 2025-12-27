@@ -37,7 +37,7 @@ public class TestsSourceGenerator
         references.Add(MetadataReference.CreateFromFile(typeof(IDiContainer).Assembly.Location));
         
         var compilation = CSharpCompilation.Create("AssemblyName",
-            new[] { CSharpSyntaxTree.ParseText(SourceText.From(code, Encoding.UTF8)) },
+            [CSharpSyntaxTree.ParseText(SourceText.From(code, Encoding.UTF8))],
             references,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
                 .WithNullableContextOptions(NullableContextOptions.Enable));

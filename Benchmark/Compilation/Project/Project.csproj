@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>EXE</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>12</LangVersion>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <!-- SYNC -->
+    <PropertyGroup Condition="'$(Configuration)' == 'MANUALDI_SYNC'">
+        <DefineConstants>$(DefineConstants);MANUALDI_SYNC</DefineConstants>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(Configuration)' == 'MANUALDI_SYNC'">
+        <ProjectReference Include="..\..\..\ManualDi.Sync\ManualDi.Sync\ManualDi.Sync.csproj" />
+        <ProjectReference Include="..\..\..\ManualDi.Sync\ManualDi.Sync.Generators\ManualDi.Sync.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    </ItemGroup>
+    
+    <!-- ASYNC -->
+    <PropertyGroup Condition="'$(Configuration)' == 'MANUALDI_ASYNC'">
+        <DefineConstants>$(DefineConstants);MANUALDI_ASYNC</DefineConstants>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(Configuration)' == 'MANUALDI_ASYNC'">
+        <ProjectReference Include="..\..\..\ManualDi.Async\ManualDi.Async\ManualDi.Async.csproj" />
+        <ProjectReference Include="..\..\..\ManualDi.Async\ManualDi.Async.Generators\ManualDi.Async.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    </ItemGroup>
+    
+</Project>

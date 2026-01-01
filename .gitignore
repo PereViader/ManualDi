@@ -17,6 +17,7 @@
 /ManualDi.*.Unity3d/Library/
 /ManualDi.*.Unity3d/Temp/
 /ManualDi.*.Nuget/
+/Benchmark/Compilation/Project/Generated/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

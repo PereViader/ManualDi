@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace ManualDi.Sync.Generators
 {
-    public record struct GenerationClassContext(StringBuilder StringBuilder, string ClassName, INamedTypeSymbol ClassSymbol, string ObsoleteText, TypeReferences TypeReferences);
+    public record struct GenerationClassContext(StringBuilder StringBuilder, string ClassName, string TypeParameters, INamedTypeSymbol ClassSymbol, string ObsoleteText, TypeReferences TypeReferences);
 
     [Generator]
     public class ManualDiSourceGenerator : IIncrementalGenerator
@@ -19,7 +19,7 @@ namespace ManualDi.Sync.Generators
         {
             var typeReferencesProvider = context.CompilationProvider
                 .Select(TypeReferences.Create);
-            
+
             //https://www.thinktecture.com/en/net/roslyn-source-generators-code-according-to-dependencies/
             // Create a provider for metadata references
             var classProvider = context.SyntaxProvider
@@ -37,28 +37,23 @@ namespace ManualDi.Sync.Generators
             {
                 return false;
             }
-            
-            if (classDeclarationSyntax.TypeParameterList is not null)
-            {
-                return false;
-            }
 
             if (classDeclarationSyntax.Modifiers.Any(SyntaxKind.StaticKeyword))
             {
                 return false;
             }
-            
+
             // this searches for any property with using SyntaxKind.RequiredKeyword, the keyword is not available in CodeAnalysis 4.1.0
             if (classDeclarationSyntax.Members
                 .OfType<PropertyDeclarationSyntax>()
-                .Any(p => p.Modifiers.Any(m => m.IsKind((SyntaxKind)8447)))) 
+                .Any(p => p.Modifiers.Any(m => m.IsKind((SyntaxKind)8447))))
             {
                 return false;
             }
 
             return true;
         }
-        
+
         private static INamedTypeSymbol? GetClassDeclaration(GeneratorSyntaxContext context, CancellationToken ct)
         {
             var symbol = context.SemanticModel.GetDeclaredSymbol((ClassDeclarationSyntax)context.Node, ct);
@@ -77,12 +72,12 @@ namespace ManualDi.Sync.Generators
             {
                 return;
             }
-            
+
             if (classSymbol.IsAbstract)
             {
                 return;
             }
-            
+
             var accessibility = GetSymbolAccessibility(classSymbol);
             if (accessibility is not (Accessibility.Public or Accessibility.Internal))
             {
@@ -90,10 +85,19 @@ namespace ManualDi.Sync.Generators
             }
 
             var className = FullyQualifyTypeWithoutNullable(classSymbol);
-            var obsoleteText = typeReferences.IsSymbolObsolete(classSymbol)
-                ? "[System.Obsolete]\r\n" 
+            var fileName = className
+                .Replace(".", "_")
+                .Replace("<", "_")
+                .Replace(">", "_");
+                
+            var typeParameters = classSymbol.TypeParameters.Length > 0
+                ? $"<{string.Join(", ", classSymbol.TypeParameters.Select(x => x.Name))}>"
                 : "";
-            
+
+            var obsoleteText = typeReferences.IsSymbolObsolete(classSymbol)
+                ? "[System.Obsolete]\r\n"
+                : "";
+
             var stringBuilder = new StringBuilder();
 
             stringBuilder.AppendLine($$"""
@@ -102,17 +106,17 @@ namespace ManualDi.Sync.Generators
 
             namespace ManualDi.Sync
             {
-                public static class ManualDiGenerated{{className.Replace(".","_")}}Extensions
+                public static class ManualDiGenerated{{fileName}}Extensions
                 {
             """);
 
-            var generationContext = new GenerationClassContext(stringBuilder, className, classSymbol, obsoleteText, typeReferences);
+            var generationContext = new GenerationClassContext(stringBuilder, className, typeParameters, classSymbol, obsoleteText, typeReferences);
 
             if (!typeReferences.IsUnityEngineObject(classSymbol))
             {
                 AddFromConstructor(generationContext);
             }
-            
+
             AddDefault(generationContext, accessibility);
 
             stringBuilder.AppendLine("""
@@ -120,7 +124,7 @@ namespace ManualDi.Sync.Generators
             }
             """);
             
-            context.AddSource($"ManualDiGeneratedExtensions.{className}.g.cs", SourceText.From(stringBuilder.ToString(), Encoding.UTF8));
+            context.AddSource($"ManualDiGeneratedExtensions.{fileName}.g.cs", SourceText.From(stringBuilder.ToString(), Encoding.UTF8));
         }
 
         private static void ReportTypeNotFound(string typeName, SourceProductionContext context)
@@ -136,7 +140,7 @@ namespace ManualDi.Sync.Generators
             var diagnostic = Diagnostic.Create(descriptor, Location.None, typeName);
             context.ReportDiagnostic(diagnostic);
         }
-        
+
         private static string? GetInjectId(AttributeData attributeData)
         {
             var idArgument = attributeData.ConstructorArguments[0];
@@ -144,7 +148,7 @@ namespace ManualDi.Sync.Generators
             {
                 return null;
             }
-                
+
             return $"\"{idArgument.Value}\"";
         }
 
@@ -159,7 +163,7 @@ namespace ManualDi.Sync.Generators
                 _ => throw new ArgumentOutOfRangeException(nameof(accessibility), accessibility, null),
             };
         }
-        
+
         private static Accessibility GetSymbolAccessibility(ISymbol symbol)
         {
             // Recursively determine the effective accessibility of the type
@@ -186,7 +190,7 @@ namespace ManualDi.Sync.Generators
                 .Where(c => c.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal)
                 .OrderByDescending(x => x.DeclaredAccessibility)
                 .ToArray();
-                
+
             if (constructors.Length == 0)
             {
                 return;
@@ -195,20 +199,20 @@ namespace ManualDi.Sync.Generators
 
             var accessibility = GetSymbolAccessibility(constructor);
             var accessibilityString = GetAccessibilityString(accessibility);
-            
+
             context.StringBuilder.Append($$"""
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    {{context.ObsoleteText}}{{accessibilityString}} static Binding<{{context.ClassName}}> FromConstructor(this Binding<{{context.ClassName}}> binding)
+                    {{context.ObsoleteText}}{{accessibilityString}} static Binding<{{context.ClassName}}> FromConstructor{{context.TypeParameters}}(this Binding<{{context.ClassName}}> binding)
                     {
                         return binding.FromMethod(static c => new {{context.ClassName}}(
             """);
-            
+
             CreateMethodResolution(constructor, "                ", context.TypeReferences, context.StringBuilder);
-            
+
             context.StringBuilder.AppendLine($$"""
             ));
                     }
-            
+
             """);
         }
 
@@ -219,14 +223,14 @@ namespace ManualDi.Sync.Generators
             {
                 if (!isFirst)
                 {
-                    stringBuilder.AppendLine(",");    
+                    stringBuilder.AppendLine(",");
                 }
                 else
                 {
                     stringBuilder.AppendLine();
                     isFirst = false;
                 }
-                
+
                 stringBuilder.Append(tabs);
                 CreateTypeResolution(parameter, typeReferences, stringBuilder);
             }
@@ -241,7 +245,7 @@ namespace ManualDi.Sync.Generators
                 stringBuilder.Append(")");
             }
         }
-        
+
         private static void CreateTypeResolution(IParameterSymbol parameterSymbol, TypeReferences typeReferences, StringBuilder stringBuilder)
         {
             var attribute = typeReferences.GetIdAttribute(parameterSymbol);
@@ -254,13 +258,13 @@ namespace ManualDi.Sync.Generators
                 stringBuilder.Append("out _");
                 return;
             }
-            
+
             if (typeReferences.IsCancellationToken(typeSymbol))
             {
                 stringBuilder.Append("c.CancellationToken");
                 return;
             }
-            
+
             if (typeReferences.IsSymbolDiContainer(typeSymbol))
             {
                 stringBuilder.Append("c");
@@ -294,7 +298,7 @@ namespace ManualDi.Sync.Generators
                     stringBuilder.Append(FullyQualifyTypeWithNullable(listGenericType));
                     stringBuilder.Append(">(x => x)");
                 }
-                
+
                 if (arraySymbol is not null)
                 {
                     stringBuilder.Append(".ToArray()");
@@ -307,7 +311,7 @@ namespace ManualDi.Sync.Generators
 
                 return;
             }
-            
+
             stringBuilder.Append("c.");
             stringBuilder.Append(CreateContainerResolutionMethod(typeSymbol));
             stringBuilder.Append("<");
@@ -339,24 +343,24 @@ namespace ManualDi.Sync.Generators
                 .OfType<IMethodSymbol>()
                 .FirstOrDefault(x => x is
                 {
-                    Name: "Initialize", 
+                    Name: "Initialize",
                     DeclaredAccessibility: Accessibility.Public or Accessibility.Internal,
                     ReturnsVoid: true,
-                    IsStatic: false, 
+                    IsStatic: false,
                     Parameters.Length: 0
                 });
-                
+
             if (initializeMethod is null)
             {
                 return isOnNewLine;
             }
-            
+
             if (isOnNewLine)
             {
                 context.StringBuilder.AppendLine();
                 context.StringBuilder.Append("                    ");
             }
-            
+
             context.StringBuilder.Append(".Initialize(static (o, c) => ((");
             context.StringBuilder.Append(context.ClassName);
             context.StringBuilder.Append(")o).Initialize())");
@@ -376,28 +380,23 @@ namespace ManualDi.Sync.Generators
             {
                 return isOnNewLine;
             }
-            
+
             if (isOnNewLine)
             {
                 context.StringBuilder.AppendLine();
                 context.StringBuilder.Append("                ");
             }
-            
+
             context.StringBuilder.Append($$"""
-            .Inject(static (o, c) => 
+            .Inject(static (o, c) =>
                             {
                                 var to = (
             """);
             context.StringBuilder.Append(context.ClassName);
             context.StringBuilder.AppendLine(")o;");
-            
-            if (injectMethod is not null)
-            {
-                context.StringBuilder.Append("                    to.Inject(");
-                CreateMethodResolution(injectMethod, "                        ", context.TypeReferences, context.StringBuilder);
-                context.StringBuilder.AppendLine(");");
-            }
-
+            context.StringBuilder.Append("                    to.Inject(");
+            CreateMethodResolution(injectMethod, "                        ", context.TypeReferences, context.StringBuilder);
+            context.StringBuilder.AppendLine(");");
             context.StringBuilder.Append("                })");
             return true;
         }
@@ -406,10 +405,10 @@ namespace ManualDi.Sync.Generators
         {
             var accessibility = typeAccessibility;
             var accessibilityString = GetAccessibilityString(accessibility);
-            
+
             generationClassContext.StringBuilder.Append($$"""
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    {{generationClassContext.ObsoleteText}}{{accessibilityString}} static Binding<{{generationClassContext.ClassName}}> Default(this Binding<{{generationClassContext.ClassName}}> binding)
+                    {{generationClassContext.ObsoleteText}}{{accessibilityString}} static Binding<{{generationClassContext.ClassName}}> Default{{generationClassContext.TypeParameters}}(this Binding<{{generationClassContext.ClassName}}> binding)
                     {
                         return binding
             """);
@@ -430,7 +429,7 @@ namespace ManualDi.Sync.Generators
             {
                 return isOnNewLine;
             }
-                    
+
             if (isOnNewLine)
             {
                 context.StringBuilder.AppendLine();
@@ -447,28 +446,28 @@ namespace ManualDi.Sync.Generators
             {
                 return nonNullableType.ToDisplayString();
             }
-            
+
             return typeSymbol.ToDisplayString();
         }
-        
+
         private static bool IsNullableTypeSymbol(ITypeSymbol typeSymbol)
         {
             if (typeSymbol.NullableAnnotation == NullableAnnotation.Annotated || typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
             {
                 return true;
             }
-            
+
             return false;
         }
-        
+
         private static ITypeSymbol? GetNonNullableType(ITypeSymbol typeSymbol)
         {
-            if (typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T && 
+            if (typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T &&
                 typeSymbol is INamedTypeSymbol namedTypeSymbol)
             {
                 return namedTypeSymbol.TypeArguments[0];
             }
-            
+
             if (typeSymbol.NullableAnnotation == NullableAnnotation.Annotated)
             {
                 return typeSymbol.WithNullableAnnotation(NullableAnnotation.NotAnnotated);

@@ -109,6 +109,28 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Sync
 {
+    public static class ManualDiGeneratedSomeNamespace_Subnamespace_Generic_T_Extensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<SomeNamespace.Subnamespace.Generic<T>> FromConstructor<T>(this Binding<SomeNamespace.Subnamespace.Generic<T>> binding)
+        {
+            return binding.FromMethod(static c => new SomeNamespace.Subnamespace.Generic<T>());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<SomeNamespace.Subnamespace.Generic<T>> Default<T>(this Binding<SomeNamespace.Subnamespace.Generic<T>> binding)
+        {
+            return binding.SkipDisposable();
+        }
+    }
+}
+
+  
+#nullable enable
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Sync
+{
     public static class ManualDiGeneratedSomeNamespace_Subnamespace_InternalInitializeExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -187,7 +209,7 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<SomeNamespace.Subnamespace.PublicInitialize> Default(this Binding<SomeNamespace.Subnamespace.PublicInitialize> binding)
         {
-            return binding.Inject(static (o, c) => 
+            return binding.Inject(static (o, c) =>
                 {
                     var to = (SomeNamespace.Subnamespace.PublicInitialize)o;
                     to.Inject();
@@ -236,7 +258,7 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<SomeNamespace.Subnamespace.InternalInject> Default(this Binding<SomeNamespace.Subnamespace.InternalInject> binding)
         {
-            return binding.Inject(static (o, c) => 
+            return binding.Inject(static (o, c) =>
                 {
                     var to = (SomeNamespace.Subnamespace.InternalInject)o;
                     to.Inject();
@@ -263,7 +285,7 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<SomeNamespace.Subnamespace.PublicInject> Default(this Binding<SomeNamespace.Subnamespace.PublicInject> binding)
         {
-            return binding.Inject(static (o, c) => 
+            return binding.Inject(static (o, c) =>
                 {
                     var to = (SomeNamespace.Subnamespace.PublicInject)o;
                     to.Inject();
@@ -385,7 +407,7 @@ internal static Binding<SomeNamespace.Subnamespace.Obsolete> FromConstructor(thi
 internal static Binding<SomeNamespace.Subnamespace.Obsolete> Default(this Binding<SomeNamespace.Subnamespace.Obsolete> binding)
         {
             return binding.Initialize(static (o, c) => ((SomeNamespace.Subnamespace.Obsolete)o).Initialize())
-                .Inject(static (o, c) => 
+                .Inject(static (o, c) =>
                 {
                     var to = (SomeNamespace.Subnamespace.Obsolete)o;
                     to.Inject();
@@ -415,7 +437,7 @@ namespace ManualDi.Sync
         public static Binding<SomeNamespace.Subnamespace.NullableDependency> Default(this Binding<SomeNamespace.Subnamespace.NullableDependency> binding)
         {
             return binding.Initialize(static (o, c) => ((SomeNamespace.Subnamespace.NullableDependency)o).Initialize())
-                .Inject(static (o, c) => 
+                .Inject(static (o, c) =>
                 {
                     var to = (SomeNamespace.Subnamespace.NullableDependency)o;
                     to.Inject(
@@ -447,7 +469,7 @@ namespace ManualDi.Sync
         public static Binding<SomeNamespace.Subnamespace.ArrayOfNullablesDependency> Default(this Binding<SomeNamespace.Subnamespace.ArrayOfNullablesDependency> binding)
         {
             return binding.Initialize(static (o, c) => ((SomeNamespace.Subnamespace.ArrayOfNullablesDependency)o).Initialize())
-                .Inject(static (o, c) => 
+                .Inject(static (o, c) =>
                 {
                     var to = (SomeNamespace.Subnamespace.ArrayOfNullablesDependency)o;
                     to.Inject(
@@ -589,7 +611,7 @@ namespace ManualDi.Sync
         internal static Binding<SomeNamespace.Subnamespace.ListInject> Default(this Binding<SomeNamespace.Subnamespace.ListInject> binding)
         {
             return binding.Initialize(static (o, c) => ((SomeNamespace.Subnamespace.ListInject)o).Initialize())
-                .Inject(static (o, c) => 
+                .Inject(static (o, c) =>
                 {
                     var to = (SomeNamespace.Subnamespace.ListInject)o;
                     to.Inject(
@@ -618,7 +640,7 @@ namespace ManualDi.Sync
         internal static Binding<SomeNamespace.Subnamespace.InjectIdAttribute> Default(this Binding<SomeNamespace.Subnamespace.InjectIdAttribute> binding)
         {
             return binding.Initialize(static (o, c) => ((SomeNamespace.Subnamespace.InjectIdAttribute)o).Initialize())
-                .Inject(static (o, c) => 
+                .Inject(static (o, c) =>
                 {
                     var to = (SomeNamespace.Subnamespace.InjectIdAttribute)o;
                     to.Inject(
@@ -651,7 +673,7 @@ namespace ManualDi.Sync
         internal static Binding<MultipleOfEach> Default(this Binding<MultipleOfEach> binding)
         {
             return binding.Initialize(static (o, c) => ((MultipleOfEach)o).Initialize())
-                .Inject(static (o, c) => 
+                .Inject(static (o, c) =>
                 {
                     var to = (MultipleOfEach)o;
                     to.Inject(
@@ -752,7 +774,7 @@ namespace ManualDi.Sync
         public static Binding<UnityEngine.SomeMonoBehaviour> Default(this Binding<UnityEngine.SomeMonoBehaviour> binding)
         {
             return binding.Initialize(static (o, c) => ((UnityEngine.SomeMonoBehaviour)o).Initialize())
-                .Inject(static (o, c) => 
+                .Inject(static (o, c) =>
                 {
                     var to = (UnityEngine.SomeMonoBehaviour)o;
                     to.Inject(
@@ -849,7 +871,7 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<TestOutParam> Default(this Binding<TestOutParam> binding)
         {
-            return binding.Inject(static (o, c) => 
+            return binding.Inject(static (o, c) =>
                 {
                     var to = (TestOutParam)o;
                     to.Inject(

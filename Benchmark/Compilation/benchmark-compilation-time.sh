@@ -3,7 +3,7 @@
 # Configuration
 CSV_FILE="compilation-times.csv"
 PNG_FILE="compilation-times.png"
-COUNTS=(1000 100 0)
+COUNTS=(500 0)
 ITERATIONS=1
 
 # Helper function to measure build time

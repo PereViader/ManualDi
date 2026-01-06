@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedSomeNamespace_Subnamespace_PublicExtensions
+    public static class ManualDi_SomeNamespace_Subnamespace_Public_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<SomeNamespace.Subnamespace.Public> FromConstructor(this Binding<SomeNamespace.Subnamespace.Public> binding)
@@ -16,7 +16,14 @@ namespace ManualDi.Async
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<SomeNamespace.Subnamespace.Public> Default(this Binding<SomeNamespace.Subnamespace.Public> binding)
         {
-            return binding.SkipDisposable();
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.Public
+        {
+            return binding
+                .SkipDisposable();
         }
     }
 }
@@ -27,7 +34,7 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedSomeNamespace_Subnamespace_InternalExtensions
+    public static class ManualDi_SomeNamespace_Subnamespace_Internal_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<SomeNamespace.Subnamespace.Internal> FromConstructor(this Binding<SomeNamespace.Subnamespace.Internal> binding)
@@ -39,7 +46,14 @@ namespace ManualDi.Async
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<SomeNamespace.Subnamespace.Internal> Default(this Binding<SomeNamespace.Subnamespace.Internal> binding)
         {
-            return binding.SkipDisposable();
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.Internal
+        {
+            return binding
+                .SkipDisposable();
         }
     }
 }
@@ -50,12 +64,19 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedSomeNamespace_Subnamespace_InternalPrivateConstructorExtensions
+    public static class ManualDi_SomeNamespace_Subnamespace_InternalPrivateConstructor_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<SomeNamespace.Subnamespace.InternalPrivateConstructor> Default(this Binding<SomeNamespace.Subnamespace.InternalPrivateConstructor> binding)
         {
-            return binding.SkipDisposable();
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.InternalPrivateConstructor
+        {
+            return binding
+                .SkipDisposable();
         }
     }
 }
@@ -66,7 +87,7 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedSomeNamespace_Subnamespace_PublicAndPrivateConstructorExtensions
+    public static class ManualDi_SomeNamespace_Subnamespace_PublicAndPrivateConstructor_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<SomeNamespace.Subnamespace.PublicAndPrivateConstructor> FromConstructor(this Binding<SomeNamespace.Subnamespace.PublicAndPrivateConstructor> binding)
@@ -82,53 +103,13 @@ namespace ManualDi.Async
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<SomeNamespace.Subnamespace.PublicAndPrivateConstructor> Default(this Binding<SomeNamespace.Subnamespace.PublicAndPrivateConstructor> binding)
         {
-            return binding.SkipDisposable();
+            return DefaultImpl(binding);
         }
-    }
-}
-
-  
-#nullable enable
-using System.Runtime.CompilerServices;
-
-namespace ManualDi.Async
-{
-    public static class ManualDiGeneratedSomeNamespace_Subnamespace_Internal2Extensions
-    {
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Binding<SomeNamespace.Subnamespace.Internal2> FromConstructor(this Binding<SomeNamespace.Subnamespace.Internal2> binding)
+        public static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.PublicAndPrivateConstructor
         {
             return binding
-                .FromMethod(static c => new SomeNamespace.Subnamespace.Internal2());
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Binding<SomeNamespace.Subnamespace.Internal2> Default(this Binding<SomeNamespace.Subnamespace.Internal2> binding)
-        {
-            return binding.SkipDisposable();
-        }
-    }
-}
-
-  
-#nullable enable
-using System.Runtime.CompilerServices;
-
-namespace ManualDi.Async
-{
-    public static class ManualDiGeneratedSomeNamespace_Subnamespace_InternalInitializeExtensions
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<SomeNamespace.Subnamespace.InternalInitialize> FromConstructor(this Binding<SomeNamespace.Subnamespace.InternalInitialize> binding)
-        {
-            return binding
-                .FromMethod(static c => new SomeNamespace.Subnamespace.InternalInitialize());
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<SomeNamespace.Subnamespace.InternalInitialize> Default(this Binding<SomeNamespace.Subnamespace.InternalInitialize> binding)
-        {
-            return binding.Initialize(static o => ((SomeNamespace.Subnamespace.InternalInitialize)o).Initialize())
                 .SkipDisposable();
         }
     }
@@ -140,7 +121,202 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedSomeNamespace_Subnamespace_TaskInitializeExtensions
+    public static class ManualDi_SomeNamespace_Subnamespace_Internal2_Extensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<SomeNamespace.Subnamespace.Internal2> FromConstructor(this Binding<SomeNamespace.Subnamespace.Internal2> binding)
+        {
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.Internal2());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<SomeNamespace.Subnamespace.Internal2> Default(this Binding<SomeNamespace.Subnamespace.Internal2> binding)
+        {
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.Internal2
+        {
+            return binding
+                .SkipDisposable();
+        }
+    }
+}
+
+  
+#nullable enable
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Async
+{
+    public static class ManualDi_SomeNamespace_Subnamespace_Generic_T_Extensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<SomeNamespace.Subnamespace.Generic<T>> FromConstructor<T>(this Binding<SomeNamespace.Subnamespace.Generic<T>> binding)
+        {
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.Generic<T>());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<SomeNamespace.Subnamespace.Generic<T>> Default<T>(this Binding<SomeNamespace.Subnamespace.Generic<T>> binding)
+        {
+            return DefaultImpl<SomeNamespace.Subnamespace.Generic<T>, T>(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl, T>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.Generic<T>
+        {
+            return binding
+                .SkipDisposable();
+        }
+    }
+}
+
+  
+#nullable enable
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Async
+{
+    public static class ManualDi_SomeNamespace_Subnamespace_SealedGeneric_T_Extensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<SomeNamespace.Subnamespace.SealedGeneric<T>> FromConstructor<T>(this Binding<SomeNamespace.Subnamespace.SealedGeneric<T>> binding)
+        {
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.SealedGeneric<T>());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<SomeNamespace.Subnamespace.SealedGeneric<T>> Default<T>(this Binding<SomeNamespace.Subnamespace.SealedGeneric<T>> binding)
+        {
+            return binding
+                .SkipDisposable();
+        }
+    }
+}
+
+  
+#nullable enable
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Async
+{
+    public static class ManualDi_SomeNamespace_Subnamespace_Base_Extensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<SomeNamespace.Subnamespace.Base> FromConstructor(this Binding<SomeNamespace.Subnamespace.Base> binding)
+        {
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.Base());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<SomeNamespace.Subnamespace.Base> Default(this Binding<SomeNamespace.Subnamespace.Base> binding)
+        {
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.Base
+        {
+            return binding
+                .SkipDisposable();
+        }
+    }
+}
+
+  
+#nullable enable
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Async
+{
+    public static class ManualDi_SomeNamespace_Subnamespace_SelaledChildGeneric_T_Extensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<SomeNamespace.Subnamespace.SelaledChildGeneric<T>> FromConstructor<T>(this Binding<SomeNamespace.Subnamespace.SelaledChildGeneric<T>> binding)
+        {
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.SelaledChildGeneric<T>());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<SomeNamespace.Subnamespace.SelaledChildGeneric<T>> Default<T>(this Binding<SomeNamespace.Subnamespace.SelaledChildGeneric<T>> binding)
+        {
+            ManualDi_SomeNamespace_Subnamespace_Base_Extensions.DefaultImpl<SomeNamespace.Subnamespace.SelaledChildGeneric<T>>(binding);
+            return binding
+                .SkipDisposable();
+        }
+    }
+}
+
+  
+#nullable enable
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Async
+{
+    public static class ManualDi_SomeNamespace_Subnamespace_SelaledChildGeneric_T_Y_Extensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<SomeNamespace.Subnamespace.SelaledChildGeneric<T, Y>> FromConstructor<T, Y>(this Binding<SomeNamespace.Subnamespace.SelaledChildGeneric<T, Y>> binding)
+        {
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.SelaledChildGeneric<T, Y>());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<SomeNamespace.Subnamespace.SelaledChildGeneric<T, Y>> Default<T, Y>(this Binding<SomeNamespace.Subnamespace.SelaledChildGeneric<T, Y>> binding)
+        {
+            ManualDi_SomeNamespace_Subnamespace_Base_Extensions.DefaultImpl<SomeNamespace.Subnamespace.SelaledChildGeneric<T, Y>>(binding);
+            return binding
+                .SkipDisposable();
+        }
+    }
+}
+
+  
+#nullable enable
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Async
+{
+    public static class ManualDi_SomeNamespace_Subnamespace_InternalInitialize_Extensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<SomeNamespace.Subnamespace.InternalInitialize> FromConstructor(this Binding<SomeNamespace.Subnamespace.InternalInitialize> binding)
+        {
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.InternalInitialize());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<SomeNamespace.Subnamespace.InternalInitialize> Default(this Binding<SomeNamespace.Subnamespace.InternalInitialize> binding)
+        {
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.InternalInitialize
+        {
+            return binding
+                .Initialize(static o => ((SomeNamespace.Subnamespace.InternalInitialize)o).Initialize())
+                .SkipDisposable();
+        }
+    }
+}
+
+  
+#nullable enable
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Async
+{
+    public static class ManualDi_SomeNamespace_Subnamespace_TaskInitialize_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<SomeNamespace.Subnamespace.TaskInitialize> FromConstructor(this Binding<SomeNamespace.Subnamespace.TaskInitialize> binding)
@@ -152,7 +328,14 @@ namespace ManualDi.Async
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<SomeNamespace.Subnamespace.TaskInitialize> Default(this Binding<SomeNamespace.Subnamespace.TaskInitialize> binding)
         {
-            return binding.SkipDisposable();
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.TaskInitialize
+        {
+            return binding
+                .SkipDisposable();
         }
     }
 }
@@ -163,7 +346,30 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedSomeNamespace_Subnamespace_SomeDisposableExtensions
+    public static class ManualDi_SomeNamespace_Subnamespace_Abstract_Extensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<SomeNamespace.Subnamespace.Abstract> Default(this Binding<SomeNamespace.Subnamespace.Abstract> binding)
+        {
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.Abstract
+        {
+            return binding
+                .SkipDisposable();
+        }
+    }
+}
+
+  
+#nullable enable
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Async
+{
+    public static class ManualDi_SomeNamespace_Subnamespace_SomeDisposable_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<SomeNamespace.Subnamespace.SomeDisposable> FromConstructor(this Binding<SomeNamespace.Subnamespace.SomeDisposable> binding)
@@ -174,6 +380,12 @@ namespace ManualDi.Async
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<SomeNamespace.Subnamespace.SomeDisposable> Default(this Binding<SomeNamespace.Subnamespace.SomeDisposable> binding)
+        {
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.SomeDisposable
         {
             return binding;
         }
@@ -186,7 +398,7 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedSomeNamespace_Subnamespace_PublicInitializeExtensions
+    public static class ManualDi_SomeNamespace_Subnamespace_PublicInitialize_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<SomeNamespace.Subnamespace.PublicInitialize> FromConstructor(this Binding<SomeNamespace.Subnamespace.PublicInitialize> binding)
@@ -198,7 +410,14 @@ namespace ManualDi.Async
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<SomeNamespace.Subnamespace.PublicInitialize> Default(this Binding<SomeNamespace.Subnamespace.PublicInitialize> binding)
         {
-            return binding.Inject(static (o, c) => 
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.PublicInitialize
+        {
+            return binding
+                .Inject(static (o, c) =>
                 {
                     var to = (SomeNamespace.Subnamespace.PublicInitialize)o;
                     to.Inject();
@@ -214,7 +433,7 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedSomeNamespace_Subnamespace_StaticInitializeExtensions
+    public static class ManualDi_SomeNamespace_Subnamespace_StaticInitialize_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<SomeNamespace.Subnamespace.StaticInitialize> FromConstructor(this Binding<SomeNamespace.Subnamespace.StaticInitialize> binding)
@@ -226,7 +445,14 @@ namespace ManualDi.Async
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<SomeNamespace.Subnamespace.StaticInitialize> Default(this Binding<SomeNamespace.Subnamespace.StaticInitialize> binding)
         {
-            return binding.SkipDisposable();
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.StaticInitialize
+        {
+            return binding
+                .SkipDisposable();
         }
     }
 }
@@ -237,7 +463,7 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedSomeNamespace_Subnamespace_InternalInjectExtensions
+    public static class ManualDi_SomeNamespace_Subnamespace_InternalInject_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<SomeNamespace.Subnamespace.InternalInject> FromConstructor(this Binding<SomeNamespace.Subnamespace.InternalInject> binding)
@@ -249,7 +475,14 @@ namespace ManualDi.Async
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<SomeNamespace.Subnamespace.InternalInject> Default(this Binding<SomeNamespace.Subnamespace.InternalInject> binding)
         {
-            return binding.Inject(static (o, c) => 
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.InternalInject
+        {
+            return binding
+                .Inject(static (o, c) =>
                 {
                     var to = (SomeNamespace.Subnamespace.InternalInject)o;
                     to.Inject();
@@ -265,7 +498,7 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedSomeNamespace_Subnamespace_PublicInjectExtensions
+    public static class ManualDi_SomeNamespace_Subnamespace_PublicInject_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<SomeNamespace.Subnamespace.PublicInject> FromConstructor(this Binding<SomeNamespace.Subnamespace.PublicInject> binding)
@@ -277,7 +510,14 @@ namespace ManualDi.Async
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<SomeNamespace.Subnamespace.PublicInject> Default(this Binding<SomeNamespace.Subnamespace.PublicInject> binding)
         {
-            return binding.Inject(static (o, c) => 
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.PublicInject
+        {
+            return binding
+                .Inject(static (o, c) =>
                 {
                     var to = (SomeNamespace.Subnamespace.PublicInject)o;
                     to.Inject();
@@ -293,7 +533,7 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedSomeNamespace_Subnamespace_StaticInjectExtensions
+    public static class ManualDi_SomeNamespace_Subnamespace_StaticInject_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<SomeNamespace.Subnamespace.StaticInject> FromConstructor(this Binding<SomeNamespace.Subnamespace.StaticInject> binding)
@@ -305,7 +545,14 @@ namespace ManualDi.Async
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<SomeNamespace.Subnamespace.StaticInject> Default(this Binding<SomeNamespace.Subnamespace.StaticInject> binding)
         {
-            return binding.SkipDisposable();
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.StaticInject
+        {
+            return binding
+                .SkipDisposable();
         }
     }
 }
@@ -316,7 +563,7 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedSomeNamespace_Subnamespace_ConstructorWithGenericArgumentExtensions
+    public static class ManualDi_SomeNamespace_Subnamespace_ConstructorWithGenericArgument_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<SomeNamespace.Subnamespace.ConstructorWithGenericArgument> FromConstructor(this Binding<SomeNamespace.Subnamespace.ConstructorWithGenericArgument> binding)
@@ -332,7 +579,14 @@ namespace ManualDi.Async
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<SomeNamespace.Subnamespace.ConstructorWithGenericArgument> Default(this Binding<SomeNamespace.Subnamespace.ConstructorWithGenericArgument> binding)
         {
-            return binding.SkipDisposable();
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.ConstructorWithGenericArgument
+        {
+            return binding
+                .SkipDisposable();
         }
     }
 }
@@ -343,7 +597,7 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedSomeNamespace_Subnamespace_InjectReferencePropertyClassExtensions
+    public static class ManualDi_SomeNamespace_Subnamespace_InjectReferencePropertyClass_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<SomeNamespace.Subnamespace.InjectReferencePropertyClass> FromConstructor(this Binding<SomeNamespace.Subnamespace.InjectReferencePropertyClass> binding)
@@ -359,7 +613,14 @@ namespace ManualDi.Async
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<SomeNamespace.Subnamespace.InjectReferencePropertyClass> Default(this Binding<SomeNamespace.Subnamespace.InjectReferencePropertyClass> binding)
         {
-            return binding.SkipDisposable();
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.InjectReferencePropertyClass
+        {
+            return binding
+                .SkipDisposable();
         }
     }
 }
@@ -370,7 +631,7 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedSomeNamespace_Subnamespace_InjectValueNullablePropertyClassExtensions
+    public static class ManualDi_SomeNamespace_Subnamespace_InjectValueNullablePropertyClass_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<SomeNamespace.Subnamespace.InjectValueNullablePropertyClass> FromConstructor(this Binding<SomeNamespace.Subnamespace.InjectValueNullablePropertyClass> binding)
@@ -388,7 +649,14 @@ namespace ManualDi.Async
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<SomeNamespace.Subnamespace.InjectValueNullablePropertyClass> Default(this Binding<SomeNamespace.Subnamespace.InjectValueNullablePropertyClass> binding)
         {
-            return binding.SkipDisposable();
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.InjectValueNullablePropertyClass
+        {
+            return binding
+                .SkipDisposable();
         }
     }
 }
@@ -399,7 +667,7 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedSomeNamespace_Subnamespace_ObsoleteExtensions
+    public static class ManualDi_SomeNamespace_Subnamespace_Obsolete_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [System.Obsolete]
@@ -413,8 +681,16 @@ internal static Binding<SomeNamespace.Subnamespace.Obsolete> FromConstructor(thi
         [System.Obsolete]
 internal static Binding<SomeNamespace.Subnamespace.Obsolete> Default(this Binding<SomeNamespace.Subnamespace.Obsolete> binding)
         {
-            return binding.Initialize(static o => ((SomeNamespace.Subnamespace.Obsolete)o).Initialize())
-                .Inject(static (o, c) => 
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [System.Obsolete]
+internal static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.Obsolete
+        {
+            return binding
+                .Initialize(static o => ((SomeNamespace.Subnamespace.Obsolete)o).Initialize())
+                .Inject(static (o, c) =>
                 {
                     var to = (SomeNamespace.Subnamespace.Obsolete)o;
                     to.Inject();
@@ -430,7 +706,7 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedSomeNamespace_Subnamespace_NullableDependencyExtensions
+    public static class ManualDi_SomeNamespace_Subnamespace_NullableDependency_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<SomeNamespace.Subnamespace.NullableDependency> FromConstructor(this Binding<SomeNamespace.Subnamespace.NullableDependency> binding)
@@ -448,8 +724,15 @@ namespace ManualDi.Async
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<SomeNamespace.Subnamespace.NullableDependency> Default(this Binding<SomeNamespace.Subnamespace.NullableDependency> binding)
         {
-            return binding.Initialize(static o => ((SomeNamespace.Subnamespace.NullableDependency)o).Initialize())
-                .Inject(static (o, c) => 
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.NullableDependency
+        {
+            return binding
+                .Initialize(static o => ((SomeNamespace.Subnamespace.NullableDependency)o).Initialize())
+                .Inject(static (o, c) =>
                 {
                     var to = (SomeNamespace.Subnamespace.NullableDependency)o;
                     to.Inject(
@@ -471,7 +754,7 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedSomeNamespace_Subnamespace_ArrayOfNullablesDependencyExtensions
+    public static class ManualDi_SomeNamespace_Subnamespace_ArrayOfNullablesDependency_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<SomeNamespace.Subnamespace.ArrayOfNullablesDependency> FromConstructor(this Binding<SomeNamespace.Subnamespace.ArrayOfNullablesDependency> binding)
@@ -481,16 +764,23 @@ namespace ManualDi.Async
                     c.ResolveAll<object>().ConvertAll<object?>(x => x).ToArray(),
                     c.ResolveAll<int>().ConvertAll<int?>(x => x).ToArray()))
                 .DependsOn(static d => {
-                    d.ConstructorDependency<object?[]>();
-                    d.ConstructorDependency<int?[]>();
+                    d.NullableConstructorDependency<object>();
+                    d.NullableConstructorDependency<int>();
                 });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<SomeNamespace.Subnamespace.ArrayOfNullablesDependency> Default(this Binding<SomeNamespace.Subnamespace.ArrayOfNullablesDependency> binding)
         {
-            return binding.Initialize(static o => ((SomeNamespace.Subnamespace.ArrayOfNullablesDependency)o).Initialize())
-                .Inject(static (o, c) => 
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.ArrayOfNullablesDependency
+        {
+            return binding
+                .Initialize(static o => ((SomeNamespace.Subnamespace.ArrayOfNullablesDependency)o).Initialize())
+                .Inject(static (o, c) =>
                 {
                     var to = (SomeNamespace.Subnamespace.ArrayOfNullablesDependency)o;
                     to.Inject(
@@ -498,8 +788,8 @@ namespace ManualDi.Async
                         c.ResolveAll<int>().ConvertAll<int?>(x => x).ToArray());
                 })
                 .DependsOn(static d => {
-                    d.ConstructorDependency<object?[]>();
-                    d.ConstructorDependency<int?[]>();
+                    d.NullableConstructorDependency<object>();
+                    d.NullableConstructorDependency<int>();
                 })
                 .SkipDisposable();
         }
@@ -512,7 +802,7 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedSomeNamespace_Subnamespace_Static_PublicNestedExtensions
+    public static class ManualDi_SomeNamespace_Subnamespace_Static_PublicNested_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<SomeNamespace.Subnamespace.Static.PublicNested> FromConstructor(this Binding<SomeNamespace.Subnamespace.Static.PublicNested> binding)
@@ -524,7 +814,14 @@ namespace ManualDi.Async
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<SomeNamespace.Subnamespace.Static.PublicNested> Default(this Binding<SomeNamespace.Subnamespace.Static.PublicNested> binding)
         {
-            return binding.SkipDisposable();
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.Static.PublicNested
+        {
+            return binding
+                .SkipDisposable();
         }
     }
 }
@@ -535,7 +832,7 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedSomeNamespace_Subnamespace_Static_InternalNestedExtensions
+    public static class ManualDi_SomeNamespace_Subnamespace_Static_InternalNested_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<SomeNamespace.Subnamespace.Static.InternalNested> FromConstructor(this Binding<SomeNamespace.Subnamespace.Static.InternalNested> binding)
@@ -547,7 +844,14 @@ namespace ManualDi.Async
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<SomeNamespace.Subnamespace.Static.InternalNested> Default(this Binding<SomeNamespace.Subnamespace.Static.InternalNested> binding)
         {
-            return binding.SkipDisposable();
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.Static.InternalNested
+        {
+            return binding
+                .SkipDisposable();
         }
     }
 }
@@ -558,7 +862,7 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedSomeNamespace_Subnamespace_ListInjectExtensions
+    public static class ManualDi_SomeNamespace_Subnamespace_ListInject_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<SomeNamespace.Subnamespace.ListInject> FromConstructor(this Binding<SomeNamespace.Subnamespace.ListInject> binding)
@@ -634,14 +938,14 @@ namespace ManualDi.Async
                     c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")).ConvertAll<object?>(x => x) : null,
                     c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")).ConvertAll<int?>(x => x) : null))
                 .DependsOn(static d => {
-                    d.ConstructorDependency<object[]>();
-                    d.ConstructorDependency<int[]>();
-                    d.NullableConstructorDependency<object[]>();
-                    d.NullableConstructorDependency<int[]>();
-                    d.ConstructorDependency<object?[]>();
-                    d.ConstructorDependency<int?[]>();
-                    d.NullableConstructorDependency<object?[]>();
-                    d.NullableConstructorDependency<int?[]>();
+                    d.NullableConstructorDependency<object>();
+                    d.NullableConstructorDependency<int>();
+                    d.NullableConstructorDependency<object>();
+                    d.NullableConstructorDependency<int>();
+                    d.NullableConstructorDependency<object>();
+                    d.NullableConstructorDependency<int>();
+                    d.NullableConstructorDependency<object>();
+                    d.NullableConstructorDependency<int>();
                     d.NullableConstructorDependency<object>();
                     d.NullableConstructorDependency<int>();
                     d.NullableConstructorDependency<object>();
@@ -708,8 +1012,15 @@ namespace ManualDi.Async
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<SomeNamespace.Subnamespace.ListInject> Default(this Binding<SomeNamespace.Subnamespace.ListInject> binding)
         {
-            return binding.Initialize(static o => ((SomeNamespace.Subnamespace.ListInject)o).Initialize())
-                .Inject(static (o, c) => 
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.ListInject
+        {
+            return binding
+                .Initialize(static o => ((SomeNamespace.Subnamespace.ListInject)o).Initialize())
+                .Inject(static (o, c) =>
                 {
                     var to = (SomeNamespace.Subnamespace.ListInject)o;
                     to.Inject(
@@ -729,7 +1040,7 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedSomeNamespace_Subnamespace_InjectIdAttributeExtensions
+    public static class ManualDi_SomeNamespace_Subnamespace_InjectIdAttribute_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<SomeNamespace.Subnamespace.InjectIdAttribute> FromConstructor(this Binding<SomeNamespace.Subnamespace.InjectIdAttribute> binding)
@@ -741,8 +1052,15 @@ namespace ManualDi.Async
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<SomeNamespace.Subnamespace.InjectIdAttribute> Default(this Binding<SomeNamespace.Subnamespace.InjectIdAttribute> binding)
         {
-            return binding.Initialize(static o => ((SomeNamespace.Subnamespace.InjectIdAttribute)o).Initialize())
-                .Inject(static (o, c) => 
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.InjectIdAttribute
+        {
+            return binding
+                .Initialize(static o => ((SomeNamespace.Subnamespace.InjectIdAttribute)o).Initialize())
+                .Inject(static (o, c) =>
                 {
                     var to = (SomeNamespace.Subnamespace.InjectIdAttribute)o;
                     to.Inject(
@@ -766,7 +1084,36 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedMultipleOfEachExtensions
+    public static class ManualDi_SomeNamespace_Subnamespace_SealedClass_Extensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<SomeNamespace.Subnamespace.SealedClass> FromConstructor(this Binding<SomeNamespace.Subnamespace.SealedClass> binding)
+        {
+            return binding
+                .FromMethod(static c => new SomeNamespace.Subnamespace.SealedClass());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<SomeNamespace.Subnamespace.SealedClass> Default(this Binding<SomeNamespace.Subnamespace.SealedClass> binding)
+        {
+            return binding
+                .Inject(static (o, c) =>
+                {
+                    var to = (SomeNamespace.Subnamespace.SealedClass)o;
+                    to.Inject();
+                })
+                .SkipDisposable();
+        }
+    }
+}
+
+  
+#nullable enable
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Async
+{
+    public static class ManualDi_MultipleOfEach_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<MultipleOfEach> FromConstructor(this Binding<MultipleOfEach> binding)
@@ -784,8 +1131,15 @@ namespace ManualDi.Async
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<MultipleOfEach> Default(this Binding<MultipleOfEach> binding)
         {
-            return binding.Initialize(static o => ((MultipleOfEach)o).Initialize())
-                .Inject(static (o, c) => 
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : MultipleOfEach
+        {
+            return binding
+                .Initialize(static o => ((MultipleOfEach)o).Initialize())
+                .Inject(static (o, c) =>
                 {
                     var to = (MultipleOfEach)o;
                     to.Inject(
@@ -805,7 +1159,7 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedInjectContainerExtensions
+    public static class ManualDi_InjectContainer_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<InjectContainer> FromConstructor(this Binding<InjectContainer> binding)
@@ -823,30 +1177,13 @@ namespace ManualDi.Async
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<InjectContainer> Default(this Binding<InjectContainer> binding)
         {
-            return binding.SkipDisposable();
+            return DefaultImpl(binding);
         }
-    }
-}
-
-  
-#nullable enable
-using System.Runtime.CompilerServices;
-
-namespace ManualDi.Async
-{
-    public static class ManualDiGeneratedInitializeAsyncCheckExtensions
-    {
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Binding<InitializeAsyncCheck> FromConstructor(this Binding<InitializeAsyncCheck> binding)
+        internal static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : InjectContainer
         {
             return binding
-                .FromMethod(static c => new InitializeAsyncCheck());
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Binding<InitializeAsyncCheck> Default(this Binding<InitializeAsyncCheck> binding)
-        {
-            return binding.InitializeAsync(static (o, ct) => ((InitializeAsyncCheck)o).InitializeAsync(ct))
                 .SkipDisposable();
         }
     }
@@ -858,12 +1195,57 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedUnityEngine_ObjectExtensions
+    public static class ManualDi_InitializeAsyncCheck_Extensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<InitializeAsyncCheck> FromConstructor(this Binding<InitializeAsyncCheck> binding)
+        {
+            return binding
+                .FromMethod(static c => new InitializeAsyncCheck());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<InitializeAsyncCheck> Default(this Binding<InitializeAsyncCheck> binding)
+        {
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : InitializeAsyncCheck
+        {
+            return binding
+                .InitializeAsync(static (o, ct) => ((InitializeAsyncCheck)o).InitializeAsync(ct))
+                .SkipDisposable();
+        }
+    }
+}
+
+  
+#nullable enable
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Async
+{
+    public static class ManualDi_UnityEngine_Object_Extensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<UnityEngine.Object> FromConstructor(this Binding<UnityEngine.Object> binding)
+        {
+            return binding
+                .FromMethod(static c => new UnityEngine.Object());
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<UnityEngine.Object> Default(this Binding<UnityEngine.Object> binding)
         {
-            return binding.SkipDisposable();
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : UnityEngine.Object
+        {
+            return binding
+                .SkipDisposable();
         }
     }
 }
@@ -874,12 +1256,27 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedUnityEngine_MonoBeheviourExtensions
+    public static class ManualDi_UnityEngine_MonoBeheviour_Extensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<UnityEngine.MonoBeheviour> FromConstructor(this Binding<UnityEngine.MonoBeheviour> binding)
+        {
+            return binding
+                .FromMethod(static c => new UnityEngine.MonoBeheviour());
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<UnityEngine.MonoBeheviour> Default(this Binding<UnityEngine.MonoBeheviour> binding)
         {
-            return binding.SkipDisposable();
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : UnityEngine.MonoBeheviour
+        {
+            ManualDi_UnityEngine_Object_Extensions.DefaultImpl<TDefaultImpl>(binding);
+            return binding
+                .SkipDisposable();
         }
     }
 }
@@ -890,14 +1287,29 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedUnityEngine_SomeMonoBehaviourExtensions
+    public static class ManualDi_UnityEngine_SomeMonoBehaviour_Extensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<UnityEngine.SomeMonoBehaviour> FromConstructor(this Binding<UnityEngine.SomeMonoBehaviour> binding)
+        {
+            return binding
+                .FromMethod(static c => new UnityEngine.SomeMonoBehaviour());
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<UnityEngine.SomeMonoBehaviour> Default(this Binding<UnityEngine.SomeMonoBehaviour> binding)
         {
-            return binding.Initialize(static o => ((UnityEngine.SomeMonoBehaviour)o).Initialize())
-                    .InitializeAsync(static (o, ct) => ((UnityEngine.SomeMonoBehaviour)o).InitializeAsync(ct))
-                .Inject(static (o, c) => 
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : UnityEngine.SomeMonoBehaviour
+        {
+            ManualDi_UnityEngine_MonoBeheviour_Extensions.DefaultImpl<TDefaultImpl>(binding);
+            return binding
+                .Initialize(static o => ((UnityEngine.SomeMonoBehaviour)o).Initialize())
+                .InitializeAsync(static (o, ct) => ((UnityEngine.SomeMonoBehaviour)o).InitializeAsync(ct))
+                .Inject(static (o, c) =>
                 {
                     var to = (UnityEngine.SomeMonoBehaviour)o;
                     to.Inject(
@@ -919,7 +1331,7 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedMapNavMeshExtensions
+    public static class ManualDi_MapNavMesh_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<MapNavMesh> FromConstructor(this Binding<MapNavMesh> binding)
@@ -931,7 +1343,14 @@ namespace ManualDi.Async
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<MapNavMesh> Default(this Binding<MapNavMesh> binding)
         {
-            return binding.SkipDisposable();
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : MapNavMesh
+        {
+            return binding
+                .SkipDisposable();
         }
     }
 }
@@ -942,7 +1361,7 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedMapNavMesh_BakeDataExtensions
+    public static class ManualDi_MapNavMesh_BakeData_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<MapNavMesh.BakeData> FromConstructor(this Binding<MapNavMesh.BakeData> binding)
@@ -954,7 +1373,14 @@ namespace ManualDi.Async
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<MapNavMesh.BakeData> Default(this Binding<MapNavMesh.BakeData> binding)
         {
-            return binding.SkipDisposable();
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : MapNavMesh.BakeData
+        {
+            return binding
+                .SkipDisposable();
         }
     }
 }
@@ -965,7 +1391,7 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedMapNavMeshBakeDataExtensions
+    public static class ManualDi_MapNavMeshBakeData_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [System.Obsolete]
@@ -979,7 +1405,16 @@ public static Binding<MapNavMeshBakeData> FromConstructor(this Binding<MapNavMes
         [System.Obsolete]
 public static Binding<MapNavMeshBakeData> Default(this Binding<MapNavMeshBakeData> binding)
         {
-            return binding.SkipDisposable();
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [System.Obsolete]
+public static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : MapNavMeshBakeData
+        {
+            ManualDi_MapNavMesh_BakeData_Extensions.DefaultImpl<TDefaultImpl>(binding);
+            return binding
+                .SkipDisposable();
         }
     }
 }
@@ -990,7 +1425,7 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDiGeneratedTestOutParamExtensions
+    public static class ManualDi_TestOutParam_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<TestOutParam> FromConstructor(this Binding<TestOutParam> binding)
@@ -999,19 +1434,28 @@ namespace ManualDi.Async
                 .FromMethod(static c => new TestOutParam(
                     out _))
                 .DependsOn(static d => {
+                    // Injected Out
                 });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Binding<TestOutParam> Default(this Binding<TestOutParam> binding)
         {
-            return binding.Inject(static (o, c) => 
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : TestOutParam
+        {
+            return binding
+                .Inject(static (o, c) =>
                 {
                     var to = (TestOutParam)o;
                     to.Inject(
                         out _);
                 })
                 .DependsOn(static d => {
+                    // Injected Out
                 })
                 .SkipDisposable();
         }

@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 
-namespace ManualDi.Sync.Tests;
+namespace ManualDi.Async.Tests;
 
 public class TestDiContainerBindingsDefaultInheritance
 {
@@ -35,14 +37,14 @@ public class TestDiContainerBindingsDefaultInheritance
     }
 
     [Test]
-    public void TestDefaultInheritance()
+    public async Task TestDefaultInheritance()
     {
-        using var diContainer = new DiContainerBindings().Install(b =>
+        await using var diContainer = await new DiContainerBindings().Install(b =>
         {
             b.Bind<object>().FromInstance(new object());
             b.Bind<int>().FromInstance(42);
             b.Bind<Child>().Default().FromConstructor();
-        }).Build();
+        }).Build(CancellationToken.None);
 
         var instance = diContainer.Resolve<Child>();
         Assert.That(instance.Order, Is.EquivalentTo(new[]

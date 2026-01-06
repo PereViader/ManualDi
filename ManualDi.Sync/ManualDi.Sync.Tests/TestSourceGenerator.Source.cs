@@ -43,6 +43,22 @@ namespace SomeNamespace.Subnamespace
         public void Inject(int x) { }
     }
 
+    sealed class SealedGeneric<T>
+    {
+    }
+
+    class Base
+    {
+    }
+
+    sealed class SelaledChildGeneric<T> : Base
+    {
+    }
+
+    sealed class SealedChildGeneric<T, Y> : Base
+    {
+    }
+
     class ParentGeneric : Generic<int>
     {
         public ParentGeneric(int x) : base(x) { }
@@ -308,6 +324,11 @@ namespace SomeNamespace.Subnamespace
         public void Initialize()
         {
         }
+    }
+
+    public sealed class SealedClass
+    {
+        public void Inject() { }
     }
 }
 

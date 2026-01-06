@@ -41,13 +41,29 @@ namespace SomeNamespace.Subnamespace
     {
     }
 
+    sealed class SealedGeneric<T>
+    {
+    }
+
+    class Base
+    {
+    }
+
+    sealed class SelaledChildGeneric<T> : Base
+    {
+    }
+
+    sealed class SelaledChildGeneric<T, Y> : Base
+    {
+    }
+    
     public class InternalInitialize
     {
         internal void Initialize()
         {
         }
     }
-    
+
     public class TaskInitialize
     {
         internal Task Initialize()
@@ -161,7 +177,7 @@ namespace SomeNamespace.Subnamespace
         {
         }
     }
-    
+
     public class ArrayOfNullablesDependency
     {
         public ArrayOfNullablesDependency(object?[] objects, int?[] values)
@@ -222,53 +238,53 @@ namespace SomeNamespace.Subnamespace
 
             [Id("A")] IEnumerable<object> IEnumerableObjectId,
             [Id("A")] IEnumerable<int> IEnumerableIntId,
-            [Id("A")] IReadOnlyList<object> IReadOnlyListObjectId, 
+            [Id("A")] IReadOnlyList<object> IReadOnlyListObjectId,
             [Id("A")] IReadOnlyList<int> IReadOnlyListIntId,
             [Id("A")] IList<object> IListObjectId,
             [Id("A")] IList<int> IListIntId,
-            [Id("A")] List<object> ListObjectId, 
+            [Id("A")] List<object> ListObjectId,
             [Id("A")] List<int> ListIntId,
             [Id("A")] IReadOnlyCollection<object> IReadOnlyCollectionObjectId,
             [Id("A")] IReadOnlyCollection<int> IReadOnlyCollectionIntId,
             [Id("A")] ICollection<object> ICollectionObjectId,
             [Id("A")] ICollection<int> ICollectionIntId,
-            
+
             IEnumerable<object>? IEnumerableObjectNullable,
             IEnumerable<int>? IEnumerableIntNullable,
-            IReadOnlyList<object>? IReadOnlyListObjectNullable, 
+            IReadOnlyList<object>? IReadOnlyListObjectNullable,
             IReadOnlyList<int>? IReadOnlyListIntNullable,
             IList<object>? IListObjectNullable,
             IList<int>? IListIntNullable,
-            List<object>? ListObjectNullable, 
+            List<object>? ListObjectNullable,
             List<int>? ListIntNullable,
-            IReadOnlyCollection<object>? IReadOnlyCollectionObjectNullable, 
+            IReadOnlyCollection<object>? IReadOnlyCollectionObjectNullable,
             IReadOnlyCollection<int>? IReadOnlyCollectionIntNullable,
             ICollection<object>? ICollectionObjectNullable,
             ICollection<int>? ICollectionIntNullable,
-            
+
 
             [Id("A")] IEnumerable<object>? IEnumerableObjectNullableId,
             [Id("A")] IEnumerable<int>? IEnumerableIntNullableId,
-            [Id("A")] IReadOnlyList<object>? IReadOnlyListObjectNullableId, 
+            [Id("A")] IReadOnlyList<object>? IReadOnlyListObjectNullableId,
             [Id("A")] IReadOnlyList<int>? IReadOnlyListIntNullableId,
             [Id("A")] IList<object>? IListObjectNullableId,
             [Id("A")] IList<int>? IListIntNullableId,
-            [Id("A")] List<object>? ListObjectNullableId, 
+            [Id("A")] List<object>? ListObjectNullableId,
             [Id("A")] List<int>? ListIntNullableId,
-            [Id("A")] IReadOnlyCollection<object>? IReadOnlyCollectionObjectNullableId, 
+            [Id("A")] IReadOnlyCollection<object>? IReadOnlyCollectionObjectNullableId,
             [Id("A")] IReadOnlyCollection<int>? IReadOnlyCollectionIntNullableId,
             [Id("A")] ICollection<object>? ICollectionObjectNullableId,
             [Id("A")] ICollection<int>? ICollectionIntNullableId,
-            
+
             [Id("A")] IEnumerable<object?>? IEnumerableObjectNullableNullableId,
             [Id("A")] IEnumerable<int?>? IEnumerableIntNullableNullableId,
-            [Id("A")] IReadOnlyList<object?>? IReadOnlyListObjectNullableNullableId, 
+            [Id("A")] IReadOnlyList<object?>? IReadOnlyListObjectNullableNullableId,
             [Id("A")] IReadOnlyList<int?>? IReadOnlyListIntNullableNullableId,
             [Id("A")] IList<object?>? IListObjectNullableNullableId,
             [Id("A")] IList<int?>? IListIntNullableNullableId,
-            [Id("A")] List<object?>? ListObjectNullableNullableId, 
+            [Id("A")] List<object?>? ListObjectNullableNullableId,
             [Id("A")] List<int?>? ListIntNullableNullableId,
-            [Id("A")] IReadOnlyCollection<object?>? IReadOnlyCollectionObjectNullableNullableId, 
+            [Id("A")] IReadOnlyCollection<object?>? IReadOnlyCollectionObjectNullableNullableId,
             [Id("A")] IReadOnlyCollection<int?>? IReadOnlyCollectionIntNullableNullableId,
             [Id("A")] ICollection<object?>? ICollectionObjectNullableNullableId,
             [Id("A")] ICollection<int?>? ICollectionIntNullableNullableId
@@ -276,8 +292,8 @@ namespace SomeNamespace.Subnamespace
         {
         }
 
-        
-        
+
+
         public void Inject(List<object> objects)
         {
         }
@@ -302,33 +318,38 @@ namespace SomeNamespace.Subnamespace
         {
         }
     }
+
+    public sealed class SealedClass
+    {
+        public void Inject() { }
+    }
 }
 
 class MultipleOfEach
 {
-    internal MultipleOfEach(object o) {}
-    public MultipleOfEach(object o, object o2) {}  // <- it should use this one
-    
-    internal void Inject() {}
-    public void Inject(object o) {} // <- it should use this one
-    
-    internal void Initialize() {} // <- it should use this one
+    internal MultipleOfEach(object o) { }
+    public MultipleOfEach(object o, object o2) { }  // <- it should use this one
+
+    internal void Inject() { }
+    public void Inject(object o) { } // <- it should use this one
+
+    internal void Initialize() { } // <- it should use this one
 }
 
 class InjectContainer
 {
-    public InjectContainer(IDiContainer c, CancellationToken ct) {} // The container should be provided as is
+    public InjectContainer(IDiContainer c, CancellationToken ct) { } // The container should be provided as is
 }
 
 partial class Partial
 {
-    public Partial(object o) {}
-    void Inject(object o) {}
+    public Partial(object o) { }
+    void Inject(object o) { }
 }
 
 partial class Partial
 {
-    public void Initialize() {}
+    public void Initialize() { }
 }
 
 class InitializeAsyncCheck
@@ -372,7 +393,7 @@ public class TestOutParam
     {
         test = "test";
     }
-    
+
     public void Inject(out string test)
     {
         test = "test";

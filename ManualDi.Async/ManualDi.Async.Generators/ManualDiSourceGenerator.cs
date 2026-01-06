@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
@@ -7,33 +8,18 @@ using System.Text;
 using System.Threading;
 using Microsoft.CodeAnalysis.CSharp;
 
-
 namespace ManualDi.Async.Generators
 {
-    public record struct GenerationClassContext(
-        StringBuilder StringBuilder,
-        string ClassName,
-        INamedTypeSymbol ClassSymbol,
-        string ObsoleteText,
-        TypeReferences TypeReferences);
-
     [Generator]
     public class ManualDiSourceGenerator : IIncrementalGenerator
     {
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            var typeReferencesProvider = context.CompilationProvider
-                .Select(TypeReferences.Create);
-            
-            //https://www.thinktecture.com/en/net/roslyn-source-generators-code-according-to-dependencies/
-            // Create a provider for metadata references
-            var classProvider = context.SyntaxProvider
-                .CreateSyntaxProvider(IsSyntaxNodeValid, GetClassDeclaration)
+            var classData = context.SyntaxProvider
+                .CreateSyntaxProvider(IsSyntaxNodeValid, GetClassData)
                 .Where(x => x is not null);
 
-            var combined = classProvider.Combine(typeReferencesProvider);
-
-            context.RegisterSourceOutput(combined, Generate!);
+            context.RegisterSourceOutput(classData, Generate!);
         }
 
         private static bool IsSyntaxNodeValid(SyntaxNode node, CancellationToken ct)
@@ -42,63 +28,269 @@ namespace ManualDi.Async.Generators
             {
                 return false;
             }
-            
-            if (classDeclarationSyntax.TypeParameterList is not null)
-            {
-                return false;
-            }
 
             if (classDeclarationSyntax.Modifiers.Any(SyntaxKind.StaticKeyword))
             {
                 return false;
             }
-            
+
             // this searches for any property with using SyntaxKind.RequiredKeyword, the keyword is not available in CodeAnalysis 4.1.0
             if (classDeclarationSyntax.Members
                 .OfType<PropertyDeclarationSyntax>()
-                .Any(p => p.Modifiers.Any(m => m.IsKind((SyntaxKind)8447)))) 
+                .Any(p => p.Modifiers.Any(m => m.IsKind((SyntaxKind)8447))))
             {
                 return false;
             }
 
             return true;
         }
-        
-        private static INamedTypeSymbol? GetClassDeclaration(GeneratorSyntaxContext context, CancellationToken ct)
+
+        private static ClassData? GetClassData(GeneratorSyntaxContext context, CancellationToken ct)
         {
-            var symbol = context.SemanticModel.GetDeclaredSymbol((ClassDeclarationSyntax)context.Node, ct);
+            var classDeclaration = (ClassDeclarationSyntax)context.Node;
+            var symbol = context.SemanticModel.GetDeclaredSymbol(classDeclaration, ct);
             if (symbol is null || symbol.Locations.Length > 1)
             {
                 return null;
             }
 
-            return symbol;
-        }
-
-        private void Generate(SourceProductionContext context, (INamedTypeSymbol, TypeReferences?) arg)
-        {
-            var (classSymbol, typeReferences) = arg;
-            if (typeReferences is null)
-            {
-                return;
-            }
-            
-            if (classSymbol.IsAbstract)
-            {
-                return;
-            }
-            
-            var accessibility = GetSymbolAccessibility(classSymbol);
+            var accessibility = GetSymbolAccessibility(symbol);
             if (accessibility is not (Accessibility.Public or Accessibility.Internal))
             {
-                return;
+                return null;
             }
 
-            var className = FullyQualifyTypeWithoutNullable(classSymbol);
-            var obsoleteText = typeReferences.IsSymbolObsolete(classSymbol)
-                ? "[System.Obsolete]\r\n" 
-                : "";
-            
+            var className = FullyQualifyTypeWithoutNullable(symbol);
+            string fileName = ExtensionFileName(className);
+
+            var typeParameters = symbol.TypeParameters.Length > 0
+                ? string.Join(", ", symbol.TypeParameters.Select(x => x.Name))
+                : null;
+
+            var wellKnownTypes = new WellKnownTypes(context.SemanticModel.Compilation);
+            var obsoleteText = wellKnownTypes.IsSymbolObsolete(symbol) ? "[System.Obsolete]\r\n" : "";
+            var constructorParameters = GetConstructorParameters(symbol, wellKnownTypes);
+            var injectParameters = GetInjectMethodParameters(symbol, wellKnownTypes);
+            var hasInitializeMethod = HasInitializeMethod(symbol);
+            var hasInitializeAsyncMethod = HasInitializeAsyncMethod(symbol, wellKnownTypes);
+            var isDisposable = wellKnownTypes.IsIDisposable(symbol);
+            var baseTypeCall = GetBaseTypeCall(symbol, wellKnownTypes, context.SemanticModel.Compilation, ct);
+
+            return new ClassData(
+                FileName: fileName,
+                ClassName: className,
+                Namespace: symbol.ContainingNamespace.IsGlobalNamespace ? null : symbol.ContainingNamespace.ToDisplayString(),
+                Accessibility: GetAccessibilityString(accessibility),
+                TypeParameters: typeParameters,
+                ObsoleteText: obsoleteText,
+                ConstructorParameters: constructorParameters,
+                InjectMethodParameters: injectParameters,
+                HasInitializeMethod: hasInitializeMethod,
+                HasInitializeAsyncMethod: hasInitializeAsyncMethod,
+                IsDisposable: isDisposable,
+                BaseTypeCall: baseTypeCall,
+                IsSealed: symbol.IsSealed
+            );
+        }
+
+        private static string ExtensionFileName(string className)
+        {
+            var name = className
+                .Replace(".", "_")
+                .Replace("<", "_")
+                .Replace(">", "")
+                .Replace(",", "_")
+                .Replace(" ", "");
+
+            return $"ManualDi_{name}_Extensions";
+        }
+
+        private static List<Resolution>? GetConstructorParameters(INamedTypeSymbol classSymbol, WellKnownTypes types)
+        {
+            if (classSymbol.IsAbstract)
+            {
+                return null;
+            }
+
+            var constructors = classSymbol
+                .Constructors
+                .Where(c => c.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal)
+                .OrderByDescending(x => x.DeclaredAccessibility)
+                .ToArray();
+
+            if (constructors.Length is 0)
+            {
+                return null;
+            }
+
+            var constructor = constructors[0];
+            var parameters = new List<Resolution>();
+
+            foreach (var parameter in constructor.Parameters)
+            {
+                parameters.Add(CreateResolution(parameter, types));
+            }
+
+            return parameters;
+        }
+
+        private static List<Resolution>? GetInjectMethodParameters(INamedTypeSymbol classSymbol, WellKnownTypes types)
+        {
+            var injectMethod = classSymbol
+                .GetMembers()
+                .OfType<IMethodSymbol>()
+                .Where(x => x is { Name: "Inject", DeclaredAccessibility: Accessibility.Public or Accessibility.Internal, IsStatic: false })
+                .OrderByDescending(x => x.DeclaredAccessibility)
+                .FirstOrDefault();
+
+            if (injectMethod is null)
+            {
+                return null;
+            }
+
+            var parameters = new List<Resolution>(injectMethod.Parameters.Length);
+            foreach (var parameter in injectMethod.Parameters)
+            {
+                parameters.Add(CreateResolution(parameter, types));
+            }
+
+            return parameters;
+        }
+
+        private static bool HasInitializeMethod(INamedTypeSymbol classSymbol)
+        {
+            return classSymbol
+               .GetMembers()
+               .OfType<IMethodSymbol>()
+               .Any(x => x is
+               {
+                   Name: "Initialize",
+                   DeclaredAccessibility: Accessibility.Public or Accessibility.Internal,
+                   ReturnsVoid: true,
+                   IsStatic: false,
+                   Parameters.Length: 0
+               });
+        }
+
+        private static bool HasInitializeAsyncMethod(INamedTypeSymbol classSymbol, WellKnownTypes types)
+        {
+            return classSymbol
+               .GetMembers()
+               .OfType<IMethodSymbol>()
+               .Any(x => x is
+               {
+                   Name: "InitializeAsync",
+                   DeclaredAccessibility: Accessibility.Public or Accessibility.Internal,
+                   IsStatic: false,
+                   Parameters.Length: 1
+               } && SymbolEqualityComparer.Default.Equals(x.Parameters[0].Type, types.CancellationToken)
+                 && types.IsTask(x.ReturnType));
+        }
+
+        private static BaseTypeCall? GetBaseTypeCall(INamedTypeSymbol classSymbol, WellKnownTypes types, Compilation compilation, CancellationToken ct)
+        {
+            var baseType = classSymbol.BaseType;
+            if (baseType is null) return null;
+
+            if (baseType.SpecialType is SpecialType.System_Object)
+            {
+                return null;
+            }
+
+            var accessibility = GetSymbolAccessibility(baseType);
+            if (accessibility is not (Accessibility.Public or Accessibility.Internal))
+            {
+                return null;
+            }
+
+            bool shouldCallBase = false;
+            if (baseType.Locations.Any(static x => x.IsInSource))
+            {
+                shouldCallBase = baseType.DeclaringSyntaxReferences
+                    .Any(x => IsSyntaxNodeValid(x.GetSyntax(), ct));
+            }
+            else
+            {
+                var className = FullyQualifyTypeWithoutNullable(baseType.OriginalDefinition);
+                var expectedTypeName = ExtensionFileName(className);
+                shouldCallBase = compilation.GetTypeByMetadataName(expectedTypeName) is not null;
+            }
+
+            if (!shouldCallBase) return null;
+
+            var baseClassName = FullyQualifyTypeWithoutNullable(baseType.OriginalDefinition);
+            var baseExtensionsClassName = ExtensionFileName(baseClassName);
+            var typeArguments = new List<string>(baseType.TypeArguments.Length);
+            foreach (var typeArgument in baseType.TypeArguments)
+            {
+                typeArguments.Add(FullyQualifyTypeWithoutNullable(typeArgument));
+            }
+
+            return new BaseTypeCall(baseExtensionsClassName, string.Join(", ", typeArguments));
+        }
+
+        private static Resolution CreateResolution(IParameterSymbol parameter, WellKnownTypes types)
+        {
+            var typeSymbol = parameter.Type;
+            var isOutParam = parameter.RefKind == RefKind.Out;
+            if (isOutParam)
+            {
+                return OutResolution.Instance;
+            }
+
+            if (SymbolEqualityComparer.Default.Equals(typeSymbol, types.CancellationToken))
+            {
+                return CancellationTokenResolution.Instance;
+            }
+
+            if (SymbolEqualityComparer.Default.Equals(typeSymbol, types.DiContainer))
+            {
+                return ContainerResolution.Instance;
+            }
+
+            var injectAttribute = parameter.GetAttributes()
+                .FirstOrDefault(x => SymbolEqualityComparer.Default.Equals(x.AttributeClass, types.IdAttribute));
+
+            string? injectId = null;
+            if (injectAttribute is not null && injectAttribute.ConstructorArguments.Length > 0 && injectAttribute.ConstructorArguments[0].Value is object val)
+            {
+                injectId = $"\"{val}\"";
+            }
+
+            bool isCyclic = types.HasCyclicDependencyAttribute(parameter);
+
+            // Enumerable check
+            var arraySymbol = (typeSymbol as IArrayTypeSymbol)?.ElementType;
+            var listGenericType = arraySymbol ?? types.TryGetEnumerableType(typeSymbol);
+
+            if (listGenericType is not null)
+            {
+                var isListNullable = IsNullableTypeSymbol(typeSymbol); // Is the LIST itself nullable
+                var elementTypeWithNullability = FullyQualifyTypeWithNullable(listGenericType);
+                var elementTypeNoNullable = FullyQualifyTypeWithoutNullable(listGenericType);
+                var isElementNullable = IsNullableTypeSymbol(listGenericType);
+
+                return new EnumerableResolution(
+                    elementTypeNoNullable,
+                    injectId,
+                    new EnumerableInfo(isListNullable, isElementNullable, elementTypeWithNullability, arraySymbol is not null),
+                    isCyclic
+                );
+            }
+
+            // Standard resolution
+            var typeName = FullyQualifyTypeWithoutNullable(typeSymbol);
+            var method = "Resolve";
+            if (IsNullableTypeSymbol(typeSymbol))
+            {
+                method = typeSymbol.IsValueType ? "ResolveNullableValue" : "ResolveNullable";
+            }
+
+            return new ServiceResolution(typeName, injectId, method, isCyclic);
+        }
+
+        private void Generate(SourceProductionContext context, ClassData data)
+        {
             var stringBuilder = new StringBuilder();
 
             stringBuilder.AppendLine($$"""
@@ -107,55 +299,357 @@ namespace ManualDi.Async.Generators
 
             namespace ManualDi.Async
             {
-                public static class ManualDiGenerated{{className.Replace(".","_")}}Extensions
+                public static class {{data.FileName}}
                 {
             """);
 
-            var generationContext = new GenerationClassContext(stringBuilder, className, classSymbol, obsoleteText, typeReferences);
+            var closedTypeParameters = (data.TypeParameters is not null ? "<" + data.TypeParameters + ">" : "");
 
-            if (!typeReferences.IsUnityEngineObject(classSymbol))
+            // FromConstructor
+            if (data.ConstructorParameters is not null)
             {
-                AddFromConstructor(generationContext);
+                stringBuilder.Append($$"""
+                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                    {{data.ObsoleteText}}{{data.Accessibility}} static Binding<{{data.ClassName}}> FromConstructor{{closedTypeParameters}}(this Binding<{{data.ClassName}}> binding)
+                    {
+                        return binding
+                            .FromMethod(static c => new {{data.ClassName}}(
+            """);
+
+                bool isFirst = true;
+                foreach (var param in data.ConstructorParameters)
+                {
+                    if (!isFirst) stringBuilder.AppendLine(",");
+                    else { stringBuilder.AppendLine(); isFirst = false; }
+                    stringBuilder.Append("                    ");
+                    AppendResolution(stringBuilder, param);
+                }
+
+                stringBuilder.Append("))");
+
+                AppendMethodDependencies(stringBuilder, data.ConstructorParameters, "                ");
+
+                stringBuilder.AppendLine("""
+                ;
+                        }
+                
+                """);
             }
+
+            // Default
+            stringBuilder.Append($$"""
+                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                    {{data.ObsoleteText}}{{data.Accessibility}} static Binding<{{data.ClassName}}> Default{{closedTypeParameters}}(this Binding<{{data.ClassName}}> binding)
+                    {
             
-            AddDefault(generationContext, accessibility);
+            """);
+
+            if (data.IsSealed)
+            {
+                AppendDefaultImplBody(stringBuilder, data);
+                stringBuilder.AppendLine("""
+                        }
+                """);
+            }
+            else
+            {
+                var defaultImplTypeParameters = data.TypeParameters is not null
+                    ? $"<TDefaultImpl, {data.TypeParameters}>"
+                    : "<TDefaultImpl>";
+
+                stringBuilder.Append($$"""
+                            return DefaultImpl{{(data.TypeParameters is not null ? $"<{data.ClassName}, {data.TypeParameters}>" : "")}}(binding);
+                        }
+                        
+                        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                        {{data.ObsoleteText}}{{data.Accessibility}} static Binding<TDefaultImpl> DefaultImpl{{defaultImplTypeParameters}}(Binding<TDefaultImpl> binding) where TDefaultImpl : {{data.ClassName}}
+                        {
+
+                """);
+
+                AppendDefaultImplBody(stringBuilder, data);
+
+                stringBuilder.AppendLine("""
+                        }
+                """);
+            }
 
             stringBuilder.AppendLine("""
                 }
             }
             """);
-            
-            context.AddSource($"ManualDiGeneratedExtensions.{className}.g.cs", SourceText.From(stringBuilder.ToString(), Encoding.UTF8));
+
+            context.AddSource($"{data.FileName}.g.cs", SourceText.From(stringBuilder.ToString(), Encoding.UTF8));
         }
 
-        private static void ReportTypeNotFound(string typeName, SourceProductionContext context)
+        private static void AppendDefaultImplBody(StringBuilder stringBuilder, ClassData data)
         {
-            var descriptor = new DiagnosticDescriptor(
-                id: "MDI001",
-                title: "Type Not Found",
-                messageFormat: "The type '{0}' could not be found. Ensure the necessary assemblies are referenced.",
-                category: "ManualDiGenerator",
-                DiagnosticSeverity.Error,
-                isEnabledByDefault: true);
+            if (data.BaseTypeCall is not null)
+            {
+                var typeArguments = data.IsSealed
+                    ? $"{data.ClassName}"
+                    : "TDefaultImpl";
 
-            var diagnostic = Diagnostic.Create(descriptor, Location.None, typeName);
-            context.ReportDiagnostic(diagnostic);
+                if (!string.IsNullOrEmpty(data.BaseTypeCall.TypeArguments))
+                {
+                    typeArguments += $", {data.BaseTypeCall.TypeArguments}";
+                }
+
+                stringBuilder.AppendLine($"            {data.BaseTypeCall.BaseExtensionsClassName}.DefaultImpl<{typeArguments}>(binding);");
+            }
+
+            stringBuilder.Append("            return binding");
+
+            if (data.HasInitializeMethod)
+            {
+                stringBuilder.Append("""
+
+                                .Initialize(static o => ((
+                """);
+                stringBuilder.Append(data.ClassName);
+                stringBuilder.Append(")o).Initialize())");
+            }
+
+            if (data.HasInitializeAsyncMethod)
+            {
+                stringBuilder.Append("""
+
+                                .InitializeAsync(static (o, ct) => ((
+                """);
+                stringBuilder.Append(data.ClassName);
+                stringBuilder.Append(")o).InitializeAsync(ct))");
+            }
+
+            if (data.InjectMethodParameters is not null)
+            {
+                stringBuilder.Append("""
+
+                                .Inject(static (o, c) =>
+                                {
+                                    var to = (
+                """);
+                stringBuilder.Append(data.ClassName);
+                stringBuilder.Append("""
+                )o;
+                                    to.Inject(
+                """);
+
+                bool isFirst = true;
+                foreach (var param in data.InjectMethodParameters)
+                {
+                    if (!isFirst) stringBuilder.AppendLine(",");
+                    else { stringBuilder.AppendLine(); isFirst = false; }
+                    stringBuilder.Append("                        ");
+                    AppendResolution(stringBuilder, param);
+                }
+
+                stringBuilder.Append("""
+                );
+                                })
+                """);
+
+                // Inject Dependencies (DependsOn)
+                AppendMethodDependencies(stringBuilder, data.InjectMethodParameters, "                ");
+            }
+
+            if (!data.IsDisposable)
+            {
+                stringBuilder.Append("""
+
+                                .SkipDisposable()
+                """);
+            }
+
+            stringBuilder.AppendLine(";");
         }
-        
-        private static string? GetInjectId(AttributeData attributeData)
+
+        private static void AppendResolution(StringBuilder sb, Resolution resolution)
         {
-            if (attributeData.ConstructorArguments.Length != 1)
+            switch (resolution)
             {
-                return null;
+                case OutResolution:
+                    sb.Append("out _");
+                    return;
+                case CancellationTokenResolution:
+                    sb.Append("c.CancellationToken");
+                    return;
+                case ContainerResolution:
+                    sb.Append("c");
+                    return;
+                case EnumerableResolution enumRes:
+                    var idCode = enumRes.InjectId is null ? "" : $"static x => x.Id({enumRes.InjectId})";
+                    var info = enumRes.EnumerableInfo;
+                    if (info.IsListNullable)
+                    {
+                        sb.Append("c.WouldResolve<");
+                        sb.Append(enumRes.TypeName);
+                        sb.Append(">(");
+                        sb.Append(idCode);
+                        sb.Append(") ? ");
+                    }
+
+                    sb.Append("c.ResolveAll<");
+                    sb.Append(enumRes.TypeName);
+                    sb.Append(">(");
+                    sb.Append(idCode);
+                    sb.Append(")");
+
+                    if (info.IsElementNullable)
+                    {
+                        sb.Append(".ConvertAll<");
+                        sb.Append(info.ElementTypeWithNullability);
+                        sb.Append(">(x => x)");
+                    }
+
+                    if (info.IsArray)
+                    {
+                        sb.Append(".ToArray()");
+                    }
+
+                    if (info.IsListNullable)
+                    {
+                        sb.Append(" : null");
+                    }
+                    return;
+                case ServiceResolution serviceRes:
+                    var idCodeSvc = serviceRes.InjectId is null ? "" : $"static x => x.Id({serviceRes.InjectId})";
+                    sb.Append("c.");
+                    sb.Append(serviceRes.ResolutionMethod); // e.g. ResolveNullable
+                    sb.Append("<");
+                    sb.Append(serviceRes.TypeName);
+                    sb.Append(">(");
+                    sb.Append(idCodeSvc);
+                    sb.Append(")");
+                    return;
+            }
+        }
+
+        private static void AppendMethodDependencies(StringBuilder sb, List<Resolution> parameters, string tabs)
+        {
+            if (parameters.Count == 0) return;
+
+            sb.AppendLine();
+            sb.Append(tabs);
+            sb.AppendLine(".DependsOn(static d => {");
+
+            foreach (var parameter in parameters)
+            {
+                switch (parameter)
+                {
+                    case OutResolution:
+                        sb.Append(tabs);
+                        sb.AppendLine("    // Injected Out");
+                        break;
+                    case ContainerResolution:
+                        sb.Append(tabs);
+                        sb.AppendLine("    // Injected DiContainer");
+                        break;
+                    case CancellationTokenResolution:
+                        sb.Append(tabs);
+                        sb.AppendLine("    // Injected CancellationToken");
+                        break;
+                    case EnumerableResolution enumRes:
+                        sb.Append(tabs);
+                        // Logic from original: 
+                        // if (isConstructor) d.NullableConstructorDependency<T>
+                        // else d.NullableInjectionDependency<T>
+                        // Enumerable is always resolving Enumerable<T>, so it seems it treated as NullableDependency?
+                        // Checking original...
+                        // "var listGenericType = typeReferences.TryGetEnumerableType(typeSymbol); if (listGenericType is not null) ... NullableConstructorDependency"
+                        // Yes, lists are always Nullable...Dependency in the generated code
+                        // Note: We need to know if it's Constructor or Injection. 
+                        // BUT, the context passed to AppendMethodDependencies doesn't know. 
+                        // Wait, FromConstructor calls it, Inject calls it. I can pass a flag or separate methods.
+                        // Actually, I can check IsCyclic to know if it's ConstructorDependency or InjectionDependency? No, IsCyclic determines IF we can use the "Dependency" call at all?
+                        // No, IsCyclic determines if we use ConstructorDependency vs something else?
+                        // Original: var isConstructor = !typeReferences.HasCyclicDependencyAttribute(parameterSymbol);
+                        // Wait, "isConstructor" variable name in original is confusing. It means "is strict dependency" (cannot be cyclic)?
+                        // If it has CyclicDependencyAttribute, it is NOT a "Constructor" dependency (which blocks resolution), it's likely delayed or handled differently?
+                        // Ah, d.ConstructorDependency means "This dependency is required for construction, so check for cycles".
+                        // If CyclicDependencyAttribute is present, we skip the cycle check?
+
+                        var method = DetermineDependencyMethod(enumRes.IsCyclic, true); // Enumerable treated as nullable/optional for cycle check purposes maybe? 
+                                                                                        // Original code:
+                                                                                        // if (listGenericType is not null) ... Nullable{Constructor|Injection}Dependency
+
+                        sb.Append($"    d.{method}<");
+                        sb.Append(enumRes.TypeName);
+                        sb.Append(">(");
+                        if (enumRes.InjectId is not null) sb.Append($"static x => x.Id({enumRes.InjectId})");
+                        sb.AppendLine(");");
+                        break;
+
+                    case ServiceResolution svcRes:
+                        sb.Append(tabs);
+                        // Original logic:
+                        // if (IsNullableTypeSymbol) -> Nullable...
+                        // else -> ...
+
+                        bool isNullable = svcRes.ResolutionMethod.Contains("Nullable");
+                        // HACK: infer nullable from resolution method name which we computed earlier
+
+                        var methodSvc = DetermineDependencyMethod(svcRes.IsCyclic, isNullable);
+                        sb.Append($"    d.{methodSvc}<");
+                        sb.Append(svcRes.TypeName);
+                        sb.Append(">(");
+                        if (svcRes.InjectId is not null) sb.Append($"static x => x.Id({svcRes.InjectId})");
+                        sb.AppendLine(");");
+                        break;
+                }
             }
 
-            var idArgument = attributeData.ConstructorArguments[0];
-            if (idArgument.Value is null)
+            sb.Append(tabs);
+            sb.Append("})");
+        }
+
+        private static string DetermineDependencyMethod(bool isCyclic, bool isNullable)
+        {
+            if (isNullable)
             {
-                return null;
+                return !isCyclic ? "NullableConstructorDependency" : "NullableInjectionDependency";
             }
-                
-            return $"\"{idArgument.Value}\"";
+            else
+            {
+                return !isCyclic ? "ConstructorDependency" : "InjectionDependency";
+            }
+        }
+
+        private static string FullyQualifyTypeWithoutNullable(ITypeSymbol typeSymbol)
+        {
+            var nonNullableType = GetNonNullableType(typeSymbol);
+            if (nonNullableType is not null)
+            {
+                return nonNullableType.ToDisplayString();
+            }
+
+            return typeSymbol.ToDisplayString();
+        }
+
+        private static bool IsNullableTypeSymbol(ITypeSymbol typeSymbol)
+        {
+            return typeSymbol.NullableAnnotation is NullableAnnotation.Annotated ||
+                   typeSymbol.OriginalDefinition.SpecialType is SpecialType.System_Nullable_T;
+        }
+
+        private static ITypeSymbol? GetNonNullableType(ITypeSymbol typeSymbol)
+        {
+            if (typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T &&
+                typeSymbol is INamedTypeSymbol namedTypeSymbol)
+            {
+                return namedTypeSymbol.TypeArguments[0];
+            }
+
+            if (typeSymbol.NullableAnnotation == NullableAnnotation.Annotated)
+            {
+                return typeSymbol.WithNullableAnnotation(NullableAnnotation.NotAnnotated);
+            }
+
+            return null;
+        }
+
+        private static string FullyQualifyTypeWithNullable(ITypeSymbol typeSymbol)
+        {
+            return typeSymbol.ToDisplayString();
         }
 
         private static string GetAccessibilityString(Accessibility accessibility)
@@ -169,10 +663,9 @@ namespace ManualDi.Async.Generators
                 _ => throw new ArgumentOutOfRangeException(nameof(accessibility), accessibility, null),
             };
         }
-        
+
         private static Accessibility GetSymbolAccessibility(ISymbol symbol)
         {
-            // Recursively determine the effective accessibility of the type
             var visibility = symbol.DeclaredAccessibility;
             var currentSymbol = symbol.ContainingType;
 
@@ -189,433 +682,120 @@ namespace ManualDi.Async.Generators
             return visibility;
         }
 
-        private static void AddFromConstructor(GenerationClassContext context)
-        {
-            var constructors = context.ClassSymbol
-                .Constructors
-                .Where(c => c.DeclaredAccessibility is Accessibility.Public or Accessibility.Internal)
-                .OrderByDescending(x => x.DeclaredAccessibility)
-                .ToArray();
-                
-            if (constructors.Length == 0)
-            {
-                return;
-            }
-            var constructor = constructors[0];
+        internal record ClassData(
+            string FileName,
+            string ClassName,
+            string? Namespace,
+            string Accessibility,
+            string? TypeParameters,
+            string ObsoleteText,
+            List<Resolution>? ConstructorParameters,
+            List<Resolution>? InjectMethodParameters,
+            bool HasInitializeMethod,
+            bool HasInitializeAsyncMethod,
+            bool IsDisposable,
+            BaseTypeCall? BaseTypeCall,
+            bool IsSealed
+        );
 
-            var accessibility = GetSymbolAccessibility(constructor);
-            var accessibilityString = GetAccessibilityString(accessibility);
-            
-            context.StringBuilder.Append($$"""
-                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    {{context.ObsoleteText}}{{accessibilityString}} static Binding<{{context.ClassName}}> FromConstructor(this Binding<{{context.ClassName}}> binding)
+        internal record BaseTypeCall(string BaseExtensionsClassName, string TypeArguments);
+
+        internal abstract record Resolution;
+
+        internal sealed record ServiceResolution(string TypeName, string? InjectId, string ResolutionMethod, bool IsCyclic) : Resolution;
+
+        internal sealed record EnumerableResolution(string TypeName, string? InjectId, EnumerableInfo EnumerableInfo, bool IsCyclic) : Resolution;
+
+        internal sealed record OutResolution : Resolution
+        {
+            public static readonly OutResolution Instance = new();
+        }
+
+        internal sealed record CancellationTokenResolution : Resolution
+        {
+            public static readonly CancellationTokenResolution Instance = new();
+        }
+
+        internal sealed record ContainerResolution : Resolution
+        {
+            public static readonly ContainerResolution Instance = new();
+        }
+
+        internal record EnumerableInfo(bool IsListNullable, bool IsElementNullable, string ElementTypeWithNullability, bool IsArray);
+
+        private readonly struct WellKnownTypes(Compilation compilation)
+        {
+            public readonly INamedTypeSymbol? List = compilation.GetTypeByMetadataName("System.Collections.Generic.List`1");
+            public readonly INamedTypeSymbol? IList = compilation.GetTypeByMetadataName("System.Collections.Generic.IList`1");
+            public readonly INamedTypeSymbol? IReadOnlyList = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyList`1");
+            public readonly INamedTypeSymbol? IEnumerable = compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1");
+            public readonly INamedTypeSymbol? IReadOnlyCollection = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyCollection`1");
+            public readonly INamedTypeSymbol? ICollection = compilation.GetTypeByMetadataName("System.Collections.Generic.ICollection`1");
+            public readonly INamedTypeSymbol? IdAttribute = compilation.GetTypeByMetadataName("ManualDi.Async.IdAttribute");
+            public readonly INamedTypeSymbol? ObsoleteAttribute = compilation.GetTypeByMetadataName("System.ObsoleteAttribute");
+            public readonly INamedTypeSymbol? IDisposable = compilation.GetTypeByMetadataName("System.IDisposable");
+            public readonly INamedTypeSymbol? DiContainer = compilation.GetTypeByMetadataName("ManualDi.Async.IDiContainer");
+            public readonly INamedTypeSymbol? CancellationToken = compilation.GetTypeByMetadataName("System.Threading.CancellationToken");
+            public readonly INamedTypeSymbol? Task = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task");
+            public readonly INamedTypeSymbol? CyclicDependencyAttribute = compilation.GetTypeByMetadataName("ManualDi.Async.CyclicDependencyAttribute");
+
+            public ITypeSymbol? TryGetEnumerableType(ITypeSymbol typeSymbol)
+            {
+                if (typeSymbol is INamedTypeSymbol namedTypeSymbol)
+                {
+                    if (SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, List) ||
+                        SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, IReadOnlyList) ||
+                        SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, IList) ||
+                        SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, ICollection) ||
+                        SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, IReadOnlyCollection) ||
+                        SymbolEqualityComparer.Default.Equals(namedTypeSymbol.OriginalDefinition, IEnumerable))
                     {
-                        return binding
-                            .FromMethod(static c => new {{context.ClassName}}(
-            """);
-            
-            CreateMethodResolution(constructor, "                    ", context.TypeReferences, context.StringBuilder);
-
-            context.StringBuilder.Append("))");
-            
-            CreateMethodDependencies(constructor, "                ", context.TypeReferences, context.StringBuilder);
-                
-            context.StringBuilder.Append("""
-            ;
+                        return namedTypeSymbol.TypeArguments[0];
                     }
-            
-            
-            """);
-        }
-        
-        private static void CreateMethodResolution(IMethodSymbol constructor, string tabs, TypeReferences typeReferences, StringBuilder stringBuilder)
-        {
-            bool isFirst = true;
-            foreach (var parameter in constructor.Parameters)
-            {
-                if (!isFirst)
-                {
-                    stringBuilder.AppendLine(",");    
                 }
-                else
+                return null;
+            }
+
+            public bool IsSymbolObsolete(ISymbol typeSymbol)
+            {
+                foreach (var attribute in typeSymbol.GetAttributes())
                 {
-                    stringBuilder.AppendLine();
-                    isFirst = false;
-                }
-                
-                stringBuilder.Append(tabs);
-                CreteTypeResolution(parameter, typeReferences, stringBuilder);
-            }
-        }
-        
-        private static void CreateMethodDependencies(IMethodSymbol methodSymbol, string tabs, TypeReferences typeReferences, StringBuilder stringBuilder)
-        {
-            if (methodSymbol.Parameters.Length == 0)
-            {
-                return;
-            }
-
-            stringBuilder.AppendLine();
-            stringBuilder.Append(tabs);
-            stringBuilder.AppendLine(".DependsOn(static d => {");
-            foreach (var parameter in methodSymbol.Parameters)
-            {
-                var isOutParam = parameter.RefKind == RefKind.Out;
-                if (isOutParam)
-                {
-                    continue;
-                }
-                stringBuilder.Append(tabs);
-                CreteTypeDependency(parameter, typeReferences, stringBuilder);
-            }
-            stringBuilder.Append(tabs);
-            stringBuilder.Append("})");
-        }
-
-        private static void CreateIdResolution(string? id, StringBuilder stringBuilder)
-        {
-            if (id is not null)
-            {
-                stringBuilder.Append("static x => x.Id(");
-                stringBuilder.Append(id);
-                stringBuilder.Append(")");
-            }
-        }
-        
-        private static void CreteTypeResolution(IParameterSymbol parameterSymbol, TypeReferences typeReferences, StringBuilder stringBuilder)
-        {
-            var attribute = typeReferences.GetIdAttribute(parameterSymbol);
-            var id = attribute is null ? null : GetInjectId(attribute);
-            var isOutParam = parameterSymbol.RefKind == RefKind.Out;
-            var typeSymbol = parameterSymbol.Type;
-            
-            if (isOutParam)
-            {
-                stringBuilder.Append("out _");
-                return;
-            }
-            
-            if (typeReferences.IsCancellationToken(typeSymbol))
-            {
-                stringBuilder.Append("c.CancellationToken");
-                return;
-            }
-            
-            if (typeReferences.IsSymbolDiContainer(typeSymbol))
-            {
-                stringBuilder.Append("c");
-                return;
-            }
-
-            // Updated code below
-            var arraySymbol = (typeSymbol as IArrayTypeSymbol)?.ElementType;
-            var listGenericType = arraySymbol ?? typeReferences.TryGetEnumerableType(typeSymbol);
-            if (listGenericType is not null)
-            {
-                var isListNullable = IsNullableTypeSymbol(typeSymbol);
-                if (isListNullable)
-                {
-                    stringBuilder.Append("c.WouldResolve<");
-                    stringBuilder.Append(FullyQualifyTypeWithoutNullable(listGenericType));
-                    stringBuilder.Append(">(");
-                    CreateIdResolution(id, stringBuilder);
-                    stringBuilder.Append(") ? ");
-                }
-
-                stringBuilder.Append("c.ResolveAll<");
-                stringBuilder.Append(FullyQualifyTypeWithoutNullable(listGenericType));
-                stringBuilder.Append(">(");
-                CreateIdResolution(id, stringBuilder);
-                stringBuilder.Append(")");
-
-                if (IsNullableTypeSymbol(listGenericType))
-                {
-                    stringBuilder.Append(".ConvertAll<");
-                    stringBuilder.Append(FullyQualifyTypeWithNullable(listGenericType));
-                    stringBuilder.Append(">(x => x)");
-                }
-                
-                if (arraySymbol is not null)
-                {
-                    stringBuilder.Append(".ToArray()");
-                }
-
-                if (isListNullable)
-                {
-                    stringBuilder.Append(" : null");
-                }
-
-                return;
-            }
-            
-            stringBuilder.Append("c.");
-            stringBuilder.Append(CreateContainerResolutionMethod(typeSymbol));
-            stringBuilder.Append("<");
-            stringBuilder.Append(FullyQualifyTypeWithoutNullable(typeSymbol));
-            stringBuilder.Append(">(");
-            CreateIdResolution(id, stringBuilder);
-            stringBuilder.Append(")");
-        }
-        
-        private static void CreteTypeDependency(IParameterSymbol parameterSymbol, TypeReferences typeReferences, StringBuilder stringBuilder)
-        {
-            var attribute = typeReferences.GetIdAttribute(parameterSymbol);
-            var id = attribute is null ? null : GetInjectId(attribute);
-            var isConstructor = !typeReferences.HasCyclicDependencyAttribute(parameterSymbol);
-            var typeSymbol = parameterSymbol.Type;
-            
-            if (typeReferences.IsSymbolDiContainer(typeSymbol))
-            {
-                stringBuilder.AppendLine("    // Injected DiContainer");
-                return;
-            }
-
-            if (typeReferences.IsCancellationToken(typeSymbol))
-            {
-                stringBuilder.AppendLine("    // Injected CancellationToken");
-                return;
-            }
-
-            // Updated code below
-            var listGenericType = typeReferences.TryGetEnumerableType(typeSymbol);
-            if (listGenericType is not null)
-            {
-                if (isConstructor)
-                {
-                    stringBuilder.Append("    d.NullableConstructorDependency<");
-                }
-                else
-                {
-                    stringBuilder.Append("    d.NullableInjectionDependency<");
-                }
-                stringBuilder.Append(FullyQualifyTypeWithoutNullable(listGenericType));
-                stringBuilder.Append(">(");
-                CreateIdResolution(id, stringBuilder);
-                stringBuilder.AppendLine(");");
-                return;
-            }
-
-            if (IsNullableTypeSymbol(typeSymbol))
-            {
-                if (isConstructor)
-                {
-                    stringBuilder.Append("    d.NullableConstructorDependency<");
-                }
-                else
-                {
-                    stringBuilder.Append("    d.NullableInjectionDependency<");
-                }
-                stringBuilder.Append(FullyQualifyTypeWithoutNullable(typeSymbol));
-                stringBuilder.Append(">(");
-                CreateIdResolution(id, stringBuilder);
-                stringBuilder.AppendLine(");");
-                return;
-            }
-            
-            if (isConstructor)
-            {
-                stringBuilder.Append("    d.ConstructorDependency<");
-            }
-            else
-            {
-                stringBuilder.Append("    d.InjectionDependency<");
-            }
-            stringBuilder.Append(FullyQualifyTypeWithoutNullable(typeSymbol));
-            stringBuilder.Append(">(");
-            CreateIdResolution(id, stringBuilder);
-            stringBuilder.AppendLine(");");
-        }
-
-        private static string CreateContainerResolutionMethod(ITypeSymbol typeSymbol)
-        {
-            if (!IsNullableTypeSymbol(typeSymbol))
-            {
-                return "Resolve";
-            }
-
-            if (typeSymbol.IsValueType)
-            {
-                return "ResolveNullableValue";
-            }
-
-            return "ResolveNullable";
-        }
-
-        private static bool AddInitialize(GenerationClassContext context, bool isOnNewLine)
-        {
-            var initializeMethod = context.ClassSymbol
-                .GetMembers()
-                .OfType<IMethodSymbol>()
-                .FirstOrDefault(x => x is
-                {
-                    Name: "Initialize", 
-                    DeclaredAccessibility: Accessibility.Public or Accessibility.Internal,
-                    IsStatic: false,
-                    ReturnsVoid: true,
-                    Parameters.Length: 0
-                });
-                
-            if (initializeMethod is null)
-            {
-                return isOnNewLine;
-            }
-            
-            if (isOnNewLine)
-            {
-                context.StringBuilder.AppendLine();
-                context.StringBuilder.Append("                    ");
-            }
-
-            context.StringBuilder.Append(".Initialize(static o => ((");
-            context.StringBuilder.Append(context.ClassName);
-            context.StringBuilder.Append(")o).Initialize())");
-            return true;
-        }
-        
-        private static bool AddInitializeAsync(GenerationClassContext context, bool isOnNewLine)
-        {
-            var initializeMethod = context.ClassSymbol
-                .GetMembers()
-                .OfType<IMethodSymbol>()
-                .FirstOrDefault(x => x is
-                {
-                    Name: "InitializeAsync", 
-                    DeclaredAccessibility: Accessibility.Public or Accessibility.Internal,
-                    IsStatic: false,
-                    Parameters.Length: 1
-                } && context.TypeReferences.IsCancellationToken(x.Parameters[0].Type) && context.TypeReferences.IsTask(x.ReturnType));
-                
-            if (initializeMethod is null)
-            {
-                return isOnNewLine;
-            }
-            
-            if (isOnNewLine)
-            {
-                context.StringBuilder.AppendLine();
-                context.StringBuilder.Append("                    ");
-            }
-
-            context.StringBuilder.Append(".InitializeAsync(static (o, ct) => ((");
-            context.StringBuilder.Append(context.ClassName);
-            context.StringBuilder.Append(")o).InitializeAsync(ct))");
-            return true;
-        }
-
-        private static bool AddInject(GenerationClassContext context, bool isOnNewLine)
-        {
-            var injectMethod = context.ClassSymbol
-                .GetMembers()
-                .OfType<IMethodSymbol>()
-                .Where(x => x is { Name: "Inject", DeclaredAccessibility: Accessibility.Public or Accessibility.Internal, IsStatic: false })
-                .OrderByDescending(x => x.DeclaredAccessibility)
-                .FirstOrDefault();
-            
-            if (injectMethod is null)
-            {
-                return isOnNewLine;
-            }
-            
-            if (isOnNewLine)
-            {
-                context.StringBuilder.AppendLine();
-                context.StringBuilder.Append("                ");
-            }
-            
-            context.StringBuilder.Append($$"""
-            .Inject(static (o, c) => 
-                            {
-                                var to = (
-            """);
-            context.StringBuilder.Append(context.ClassName);
-            context.StringBuilder.AppendLine(")o;");
-            context.StringBuilder.Append("                    to.Inject(");
-            CreateMethodResolution(injectMethod, "                        ", context.TypeReferences, context.StringBuilder);
-            context.StringBuilder.AppendLine(");");
-            context.StringBuilder.Append("                })");
-            CreateMethodDependencies(injectMethod, "                ", context.TypeReferences, context.StringBuilder);
-            return true;
-        }
-
-        private static void AddDefault(GenerationClassContext generationClassContext, Accessibility typeAccessibility)
-        {
-            var accessibility = typeAccessibility;
-            var accessibilityString = GetAccessibilityString(accessibility);
-            
-            generationClassContext.StringBuilder.Append($$"""
-                    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    {{generationClassContext.ObsoleteText}}{{accessibilityString}} static Binding<{{generationClassContext.ClassName}}> Default(this Binding<{{generationClassContext.ClassName}}> binding)
+                    if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, ObsoleteAttribute))
                     {
-                        return binding
-            """);
-
-            var isOnNewLine = AddInitialize(generationClassContext, false);
-            isOnNewLine = AddInitializeAsync(generationClassContext, isOnNewLine);
-            isOnNewLine = AddInject(generationClassContext, isOnNewLine);
-            _ = AddSkipDisposable(generationClassContext, isOnNewLine);
-
-            generationClassContext.StringBuilder.AppendLine("""
-            ;
+                        return true;
                     }
-            """);
-        }
-
-        private static bool AddSkipDisposable(GenerationClassContext context, bool isOnNewLine)
-        {
-            if (context.TypeReferences.IsIDisposable(context.ClassSymbol))
-            {
-                return isOnNewLine;
-            }
-                    
-            if (isOnNewLine)
-            {
-                context.StringBuilder.AppendLine();
-                context.StringBuilder.Append("                ");
-            }
-            context.StringBuilder.Append(".SkipDisposable()");
-            return true;
-        }
-
-        private static string FullyQualifyTypeWithoutNullable(ITypeSymbol typeSymbol)
-        {
-            var nonNullableType = GetNonNullableType(typeSymbol);
-            if (nonNullableType is not null)
-            {
-                return nonNullableType.ToDisplayString();
-            }
-            
-            return typeSymbol.ToDisplayString();
-        }
-        
-        private static bool IsNullableTypeSymbol(ITypeSymbol typeSymbol)
-        {
-            if (typeSymbol.NullableAnnotation == NullableAnnotation.Annotated || typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
-            {
-                return true;
-            }
-            
-            return false;
-        }
-        
-        private static ITypeSymbol? GetNonNullableType(ITypeSymbol typeSymbol)
-        {
-            if (typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T && 
-                typeSymbol is INamedTypeSymbol namedTypeSymbol)
-            {
-                return namedTypeSymbol.TypeArguments[0];
-            }
-            
-            if (typeSymbol.NullableAnnotation == NullableAnnotation.Annotated)
-            {
-                return typeSymbol.WithNullableAnnotation(NullableAnnotation.NotAnnotated);
+                }
+                return false;
             }
 
-            return null;
-        }
+            public bool IsIDisposable(INamedTypeSymbol namedTypeSymbol)
+            {
+                foreach (var implementedInterface in namedTypeSymbol.AllInterfaces)
+                {
+                    if (SymbolEqualityComparer.Default.Equals(implementedInterface, IDisposable))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
 
-        private static string FullyQualifyTypeWithNullable(ITypeSymbol typeSymbol)
-        {
-            return typeSymbol.ToDisplayString();
+            public bool IsTask(ITypeSymbol typeSymbol)
+            {
+                return SymbolEqualityComparer.Default.Equals(typeSymbol, Task);
+            }
+
+            public bool HasCyclicDependencyAttribute(ISymbol parameter)
+            {
+                foreach (var attribute in parameter.GetAttributes())
+                {
+                    if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, CyclicDependencyAttribute))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
         }
     }
 }

@@ -33,11 +33,6 @@ namespace ManualDi.Sync.Generators
             {
                 return false;
             }
-            
-            if (classDeclarationSyntax.TypeParameterList is not null) //TODO: Patch out for now
-            {
-                return false;
-            }
 
             // this searches for any property with using SyntaxKind.RequiredKeyword, the keyword is not available in CodeAnalysis 4.1.0
             if (classDeclarationSyntax.Members
@@ -79,6 +74,7 @@ namespace ManualDi.Sync.Generators
             var hasInitializeMethod = HasInitializeMethod(symbol);
             var isDisposable = wellKnownTypes.IsIDisposable(symbol);
             var baseTypeCall = GetBaseTypeCall(symbol, wellKnownTypes, context.SemanticModel.Compilation, ct);
+            var typeParameterConstraints = GetTypeParameterConstraints(symbol);
 
             return new ClassData(
                 FileName: fileName,
@@ -86,6 +82,7 @@ namespace ManualDi.Sync.Generators
                 Namespace: symbol.ContainingNamespace.IsGlobalNamespace ? null : symbol.ContainingNamespace.ToDisplayString(),
                 Accessibility: GetAccessibilityString(accessibility),
                 TypeParameters: typeParameters,
+                TypeParameterConstraints: typeParameterConstraints,
                 ObsoleteText: obsoleteText,
                 ConstructorParameters: constructorParameters,
                 InjectMethodParameters: injectParameters,
@@ -217,6 +214,53 @@ namespace ManualDi.Sync.Generators
             return new BaseTypeCall(baseExtensionsClassName, string.Join(", ", typeArguments));
         }
 
+        private static string? GetTypeParameterConstraints(INamedTypeSymbol symbol)
+        {
+            if (symbol.TypeParameters.Length is 0)
+            {
+                return null;
+            }
+
+            var sb = new StringBuilder();
+            foreach (var typeParameter in symbol.TypeParameters)
+            {
+                var constraints = new List<string>();
+                if (typeParameter.HasReferenceTypeConstraint)
+                {
+                    constraints.Add("class");
+                }
+                if (typeParameter.HasValueTypeConstraint)
+                {
+                    constraints.Add("struct");
+                }
+                if (typeParameter.HasNotNullConstraint)
+                {
+                    constraints.Add("notnull");
+                }
+                if (typeParameter.HasUnmanagedTypeConstraint)
+                {
+                    constraints.Add("unmanaged");
+                }
+
+                foreach (var constraintType in typeParameter.ConstraintTypes)
+                {
+                    constraints.Add(constraintType.ToDisplayString());
+                }
+
+                if (typeParameter.HasConstructorConstraint)
+                {
+                    constraints.Add("new()");
+                }
+
+                if (constraints.Count > 0)
+                {
+                    sb.Append($" where {typeParameter.Name} : {string.Join(", ", constraints)}");
+                }
+            }
+
+            return sb.ToString();
+        }
+
         private static Resolution CreateResolution(IParameterSymbol parameter, WellKnownTypes types)
         {
             var typeSymbol = parameter.Type;
@@ -295,7 +339,7 @@ namespace ManualDi.Sync.Generators
             {
                 stringBuilder.Append($$"""
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    {{data.ObsoleteText}}{{data.Accessibility}} static Binding<{{data.ClassName}}> FromConstructor{{closedTypeParameters}}(this Binding<{{data.ClassName}}> binding)
+                    {{data.ObsoleteText}}{{data.Accessibility}} static Binding<{{data.ClassName}}> FromConstructor{{closedTypeParameters}}(this Binding<{{data.ClassName}}> binding){{data.TypeParameterConstraints}}
                     {
                         return binding.FromMethod(static c => new {{data.ClassName}}(
             """);
@@ -319,7 +363,7 @@ namespace ManualDi.Sync.Generators
             // Default
             stringBuilder.Append($$"""
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                    {{data.ObsoleteText}}{{data.Accessibility}} static Binding<{{data.ClassName}}> Default{{closedTypeParameters}}(this Binding<{{data.ClassName}}> binding)
+                    {{data.ObsoleteText}}{{data.Accessibility}} static Binding<{{data.ClassName}}> Default{{closedTypeParameters}}(this Binding<{{data.ClassName}}> binding){{data.TypeParameterConstraints}}
                     {
             
             """);
@@ -342,7 +386,7 @@ namespace ManualDi.Sync.Generators
                         }
 
                         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                        {{data.ObsoleteText}}{{data.Accessibility}} static Binding<TDefaultImpl> DefaultImpl{{defaultImplTypeParameters}}(Binding<TDefaultImpl> binding) where TDefaultImpl : {{data.ClassName}}
+                        {{data.ObsoleteText}}{{data.Accessibility}} static Binding<TDefaultImpl> DefaultImpl{{defaultImplTypeParameters}}(Binding<TDefaultImpl> binding) where TDefaultImpl : {{data.ClassName}}{{data.TypeParameterConstraints}}
                         {
 
                 """);
@@ -565,6 +609,7 @@ namespace ManualDi.Sync.Generators
             string? Namespace,
             string Accessibility,
             string? TypeParameters,
+            string? TypeParameterConstraints,
             string ObsoleteText,
             List<Resolution>? ConstructorParameters,
             List<Resolution>? InjectMethodParameters,

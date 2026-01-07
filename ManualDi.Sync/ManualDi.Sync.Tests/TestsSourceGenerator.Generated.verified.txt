@@ -144,6 +144,65 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Sync
 {
+    public static class ManualDi_SomeNamespace_Subnamespace_Generic_T_Extensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<SomeNamespace.Subnamespace.Generic<T>> FromConstructor<T>(this Binding<SomeNamespace.Subnamespace.Generic<T>> binding)
+        {
+            return binding.FromMethod(static c => new SomeNamespace.Subnamespace.Generic<T>(
+                c.Resolve<int>()));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<SomeNamespace.Subnamespace.Generic<T>> Default<T>(this Binding<SomeNamespace.Subnamespace.Generic<T>> binding)
+        {
+            return DefaultImpl<SomeNamespace.Subnamespace.Generic<T>, T>(binding);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl, T>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.Generic<T>
+        {
+            return binding
+                .Inject(static (o, c) =>
+                {
+                    var to = (SomeNamespace.Subnamespace.Generic<T>)o;
+                    to.Inject(
+                        c.Resolve<int>());
+                })
+                .SkipDisposable();
+        }
+    }
+}
+
+  
+#nullable enable
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Sync
+{
+    public static class ManualDi_SomeNamespace_Subnamespace_SealedGeneric_T_Extensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<SomeNamespace.Subnamespace.SealedGeneric<T>> FromConstructor<T>(this Binding<SomeNamespace.Subnamespace.SealedGeneric<T>> binding)
+        {
+            return binding.FromMethod(static c => new SomeNamespace.Subnamespace.SealedGeneric<T>());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<SomeNamespace.Subnamespace.SealedGeneric<T>> Default<T>(this Binding<SomeNamespace.Subnamespace.SealedGeneric<T>> binding)
+        {
+            return binding
+                .SkipDisposable();
+        }
+    }
+}
+
+  
+#nullable enable
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Sync
+{
     public static class ManualDi_SomeNamespace_Subnamespace_Base_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -160,6 +219,83 @@ namespace ManualDi.Sync
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.Base
+        {
+            return binding
+                .SkipDisposable();
+        }
+    }
+}
+
+  
+#nullable enable
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Sync
+{
+    public static class ManualDi_SomeNamespace_Subnamespace_SelaledChildGeneric_T_Extensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<SomeNamespace.Subnamespace.SelaledChildGeneric<T>> FromConstructor<T>(this Binding<SomeNamespace.Subnamespace.SelaledChildGeneric<T>> binding)
+        {
+            return binding.FromMethod(static c => new SomeNamespace.Subnamespace.SelaledChildGeneric<T>());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<SomeNamespace.Subnamespace.SelaledChildGeneric<T>> Default<T>(this Binding<SomeNamespace.Subnamespace.SelaledChildGeneric<T>> binding)
+        {
+            ManualDi_SomeNamespace_Subnamespace_Base_Extensions.DefaultImpl<SomeNamespace.Subnamespace.SelaledChildGeneric<T>>(binding);
+            return binding
+                .SkipDisposable();
+        }
+    }
+}
+
+  
+#nullable enable
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Sync
+{
+    public static class ManualDi_SomeNamespace_Subnamespace_SealedChildGeneric_T_Y_Extensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<SomeNamespace.Subnamespace.SealedChildGeneric<T, Y>> FromConstructor<T, Y>(this Binding<SomeNamespace.Subnamespace.SealedChildGeneric<T, Y>> binding)
+        {
+            return binding.FromMethod(static c => new SomeNamespace.Subnamespace.SealedChildGeneric<T, Y>());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<SomeNamespace.Subnamespace.SealedChildGeneric<T, Y>> Default<T, Y>(this Binding<SomeNamespace.Subnamespace.SealedChildGeneric<T, Y>> binding)
+        {
+            ManualDi_SomeNamespace_Subnamespace_Base_Extensions.DefaultImpl<SomeNamespace.Subnamespace.SealedChildGeneric<T, Y>>(binding);
+            return binding
+                .SkipDisposable();
+        }
+    }
+}
+
+  
+#nullable enable
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Sync
+{
+    public static class ManualDi_SomeNamespace_Subnamespace_GenericWithRequirement_T_Y_Extensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<SomeNamespace.Subnamespace.GenericWithRequirement<T, Y>> FromConstructor<T, Y>(this Binding<SomeNamespace.Subnamespace.GenericWithRequirement<T, Y>> binding) where T : SomeNamespace.Subnamespace.IPotato where Y : SomeNamespace.Subnamespace.IBanana
+        {
+            return binding.FromMethod(static c => new SomeNamespace.Subnamespace.GenericWithRequirement<T, Y>());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<SomeNamespace.Subnamespace.GenericWithRequirement<T, Y>> Default<T, Y>(this Binding<SomeNamespace.Subnamespace.GenericWithRequirement<T, Y>> binding) where T : SomeNamespace.Subnamespace.IPotato where Y : SomeNamespace.Subnamespace.IBanana
+        {
+            return DefaultImpl<SomeNamespace.Subnamespace.GenericWithRequirement<T, Y>, T, Y>(binding);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl, T, Y>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.GenericWithRequirement<T, Y> where T : SomeNamespace.Subnamespace.IPotato where Y : SomeNamespace.Subnamespace.IBanana
         {
             return binding
                 .SkipDisposable();
@@ -191,6 +327,7 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.ParentGeneric
         {
+            ManualDi_SomeNamespace_Subnamespace_Generic_T_Extensions.DefaultImpl<TDefaultImpl, int>(binding);
             return binding
                 .SkipDisposable();
         }

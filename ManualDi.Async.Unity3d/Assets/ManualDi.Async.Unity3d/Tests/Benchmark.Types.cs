@@ -3,21 +3,26 @@
 namespace ManualDi.Async.Unity3d.Tests
 {
     public interface IFirstService { }
+    [ManualDi]
     public class FirstService : IFirstService { }
     
     public interface ISecondService { }
+    [ManualDi]
     public class SecondService : ISecondService { }
     
     public interface IThirdService { }
+    [ManualDi]
     public class ThirdService : IThirdService { }
     
     public interface IServiceA { }
+    [ManualDi]
     public class ServiceA : IServiceA
     {
         public ServiceA() { }
     }
     
     public interface ISubObjectA { }
+    [ManualDi]
     public class SubObjectA : ISubObjectA
     {
         [Zenject.Inject]
@@ -31,12 +36,14 @@ namespace ManualDi.Async.Unity3d.Tests
     }
     
     public interface IServiceB { }
+    [ManualDi]
     public class ServiceB : IServiceB
     {
         public ServiceB() { }
     }
     
     public interface ISubObjectB { }
+    [ManualDi]
     public class SubObjectB : ISubObjectB
     {
         [Zenject.Inject]
@@ -50,12 +57,14 @@ namespace ManualDi.Async.Unity3d.Tests
     }
     
     public interface IServiceC { }
+    [ManualDi]
     public class ServiceC : IServiceC
     {
         public ServiceC() { }
     }
     
     public interface ISubObjectC { }
+    [ManualDi]
     public class SubObjectC : ISubObjectC
     {
         [Zenject.Inject]
@@ -69,6 +78,7 @@ namespace ManualDi.Async.Unity3d.Tests
     }
     
     public interface IComplex1 { }
+    [ManualDi]
     public class Complex1 : IComplex1
     {
         public Complex1(
@@ -89,6 +99,7 @@ namespace ManualDi.Async.Unity3d.Tests
     }
 
     public interface IComplex2 { }
+    [ManualDi]
     public class Complex2 : IComplex2
     {
         public Complex2(
@@ -109,6 +120,7 @@ namespace ManualDi.Async.Unity3d.Tests
     }
 
     public interface IComplex3 { }
+    [ManualDi]
     public class Complex3 : IComplex3
     {
         public Complex3(
@@ -129,6 +141,7 @@ namespace ManualDi.Async.Unity3d.Tests
     }
     
     public interface ISubObjectOne { }
+    [ManualDi]
     public class SubObjectOne : ISubObjectOne
     {
         public SubObjectOne(IFirstService firstService)
@@ -138,6 +151,7 @@ namespace ManualDi.Async.Unity3d.Tests
     }
     
     public interface ISubObjectTwo { }
+    [ManualDi]
     public class SubObjectTwo : ISubObjectTwo
     {
         public SubObjectTwo(ISecondService secondService)
@@ -147,6 +161,7 @@ namespace ManualDi.Async.Unity3d.Tests
     }
     
     public interface ISubObjectThree { }
+    [ManualDi]
     public class SubObjectThree : ISubObjectThree
     {
         public SubObjectThree(IThirdService thirdService)

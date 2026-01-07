@@ -2,6 +2,7 @@
 
 namespace ManualDi.Async.Unity3d.Samples.Ticking
 {
+    [ManualDi]
     public class IncreaseValueOnEachUpdate : ITickable
     {
         private readonly Text _text;

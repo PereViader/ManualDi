@@ -2,6 +2,7 @@
 
 namespace ManualDi.Async.Unity3d.Examples.Example1
 {
+    [ManualDi]
     internal class Example1Context : MonoBehaviour
     {
         private int number;

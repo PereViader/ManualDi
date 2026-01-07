@@ -2,6 +2,7 @@
 
 namespace ManualDi.Sync.Unity3d.Samples.Ticking
 {
+    [ManualDi]
     public sealed class TickableService : MonoBehaviour, ITickableService
     {
         readonly TickableContainerTickable preUpdateTickable = new();

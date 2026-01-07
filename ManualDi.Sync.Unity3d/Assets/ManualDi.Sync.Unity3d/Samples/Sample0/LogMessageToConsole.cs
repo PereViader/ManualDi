@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace ManualDi.Sync.Unity3d.Samples.Sample0
 {
+    [ManualDi]
     internal class LogMessageToConsole : MonoBehaviour
     {
         public string Message { get; set; }

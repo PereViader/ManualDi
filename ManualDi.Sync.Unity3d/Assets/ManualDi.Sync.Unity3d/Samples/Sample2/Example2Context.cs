@@ -2,6 +2,7 @@
 
 namespace ManualDi.Sync.Unity3d.Examples.Example2
 {
+    [ManualDi]
     internal class Example2Context : MonoBehaviour
     {
         private PrimitiveType _primitiveType;

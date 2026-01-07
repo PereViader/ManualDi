@@ -35,11 +35,18 @@ namespace ManualDi.Async.Generators
             }
 
             // this searches for any property with using SyntaxKind.RequiredKeyword, the keyword is not available in CodeAnalysis 4.1.0
-            if (classDeclarationSyntax.Members
-                .OfType<PropertyDeclarationSyntax>()
-                .Any(p => p.Modifiers.Any(m => m.IsKind((SyntaxKind)8447))))
+            foreach (var member in classDeclarationSyntax.Members)
             {
-                return false;
+                if (member is PropertyDeclarationSyntax propertyDeclaration)
+                {
+                    foreach (var modifier in propertyDeclaration.Modifiers)
+                    {
+                        if (modifier.IsKind((SyntaxKind)8447))
+                        {
+                            return false;
+                        }
+                    }
+                }
             }
 
             return true;
@@ -97,21 +104,33 @@ namespace ManualDi.Async.Generators
 
         private static string ExtensionFileName(string className)
         {
-            var name = className
-                .Replace(".", "_")
-                .Replace("<", "_")
-                .Replace(">", "")
-                .Replace(",", "_")
-                .Replace(" ", "");
-
-            return $"ManualDi_{name}_Extensions";
+            var sb = new StringBuilder("ManualDi_", className.Length + 20);
+            foreach (var c in className)
+            {
+                switch (c)
+                {
+                    case '.':
+                    case '<':
+                    case ',':
+                        sb.Append('_');
+                        break;
+                    case '>':
+                    case ' ':
+                        break;
+                    default:
+                        sb.Append(c);
+                        break;
+                }
+            }
+            sb.Append("_Extensions");
+            return sb.ToString();
         }
 
-        private static List<Resolution>? GetConstructorParameters(INamedTypeSymbol classSymbol, WellKnownTypes types)
+        private static EquatableArray<Resolution> GetConstructorParameters(INamedTypeSymbol classSymbol, WellKnownTypes types)
         {
             if (classSymbol.IsAbstract)
             {
-                return null;
+                return default;
             }
 
             var constructors = classSymbol
@@ -122,7 +141,7 @@ namespace ManualDi.Async.Generators
 
             if (constructors.Length is 0)
             {
-                return null;
+                return default;
             }
 
             var constructor = constructors[0];
@@ -136,7 +155,7 @@ namespace ManualDi.Async.Generators
             return parameters;
         }
 
-        private static List<Resolution>? GetInjectMethodParameters(INamedTypeSymbol classSymbol, WellKnownTypes types)
+        private static EquatableArray<Resolution> GetInjectMethodParameters(INamedTypeSymbol classSymbol, WellKnownTypes types)
         {
             var injectMethod = classSymbol
                 .GetMembers()
@@ -147,7 +166,7 @@ namespace ManualDi.Async.Generators
 
             if (injectMethod is null)
             {
-                return null;
+                return default;
             }
 
             var parameters = new List<Resolution>(injectMethod.Parameters.Length);
@@ -355,7 +374,7 @@ namespace ManualDi.Async.Generators
             var closedTypeParameters = (data.TypeParameters is not null ? "<" + data.TypeParameters + ">" : "");
 
             // FromConstructor
-            if (data.ConstructorParameters is not null)
+            if (data.ConstructorParameters.HasValue)
             {
                 stringBuilder.Append($$"""
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -469,7 +488,7 @@ namespace ManualDi.Async.Generators
                 stringBuilder.Append(")o).InitializeAsync(ct))");
             }
 
-            if (data.InjectMethodParameters is not null)
+            if (data.InjectMethodParameters.HasValue)
             {
                 stringBuilder.Append("""
 
@@ -573,7 +592,7 @@ namespace ManualDi.Async.Generators
             }
         }
 
-        private static void AppendMethodDependencies(StringBuilder sb, List<Resolution> parameters, string tabs)
+        private static void AppendMethodDependencies(StringBuilder sb, EquatableArray<Resolution> parameters, string tabs)
         {
             if (parameters.Count == 0) return;
 
@@ -599,28 +618,7 @@ namespace ManualDi.Async.Generators
                         break;
                     case EnumerableResolution enumRes:
                         sb.Append(tabs);
-                        // Logic from original: 
-                        // if (isConstructor) d.NullableConstructorDependency<T>
-                        // else d.NullableInjectionDependency<T>
-                        // Enumerable is always resolving Enumerable<T>, so it seems it treated as NullableDependency?
-                        // Checking original...
-                        // "var listGenericType = typeReferences.TryGetEnumerableType(typeSymbol); if (listGenericType is not null) ... NullableConstructorDependency"
-                        // Yes, lists are always Nullable...Dependency in the generated code
-                        // Note: We need to know if it's Constructor or Injection. 
-                        // BUT, the context passed to AppendMethodDependencies doesn't know. 
-                        // Wait, FromConstructor calls it, Inject calls it. I can pass a flag or separate methods.
-                        // Actually, I can check IsCyclic to know if it's ConstructorDependency or InjectionDependency? No, IsCyclic determines IF we can use the "Dependency" call at all?
-                        // No, IsCyclic determines if we use ConstructorDependency vs something else?
-                        // Original: var isConstructor = !typeReferences.HasCyclicDependencyAttribute(parameterSymbol);
-                        // Wait, "isConstructor" variable name in original is confusing. It means "is strict dependency" (cannot be cyclic)?
-                        // If it has CyclicDependencyAttribute, it is NOT a "Constructor" dependency (which blocks resolution), it's likely delayed or handled differently?
-                        // Ah, d.ConstructorDependency means "This dependency is required for construction, so check for cycles".
-                        // If CyclicDependencyAttribute is present, we skip the cycle check?
-
-                        var method = DetermineDependencyMethod(enumRes.IsCyclic, true); // Enumerable treated as nullable/optional for cycle check purposes maybe? 
-                                                                                        // Original code:
-                                                                                        // if (listGenericType is not null) ... Nullable{Constructor|Injection}Dependency
-
+                        var method = DetermineDependencyMethod(enumRes.IsCyclic, true);
                         sb.Append($"    d.{method}<");
                         sb.Append(enumRes.TypeName);
                         sb.Append(">(");
@@ -630,13 +628,7 @@ namespace ManualDi.Async.Generators
 
                     case ServiceResolution svcRes:
                         sb.Append(tabs);
-                        // Original logic:
-                        // if (IsNullableTypeSymbol) -> Nullable...
-                        // else -> ...
-
                         bool isNullable = svcRes.ResolutionMethod.Contains("Nullable");
-                        // HACK: infer nullable from resolution method name which we computed earlier
-
                         var methodSvc = DetermineDependencyMethod(svcRes.IsCyclic, isNullable);
                         sb.Append($"    d.{methodSvc}<");
                         sb.Append(svcRes.TypeName);
@@ -739,8 +731,8 @@ namespace ManualDi.Async.Generators
             string? TypeParameters,
             string? TypeParameterConstraints,
             string ObsoleteText,
-            List<Resolution>? ConstructorParameters,
-            List<Resolution>? InjectMethodParameters,
+            EquatableArray<Resolution> ConstructorParameters,
+            EquatableArray<Resolution> InjectMethodParameters,
             bool HasInitializeMethod,
             bool HasInitializeAsyncMethod,
             bool IsDisposable,
@@ -830,12 +822,7 @@ namespace ManualDi.Async.Generators
                 return false;
             }
 
-            public bool IsTask(ITypeSymbol typeSymbol)
-            {
-                return SymbolEqualityComparer.Default.Equals(typeSymbol, Task);
-            }
-
-            public bool HasCyclicDependencyAttribute(ISymbol parameter)
+            public bool HasCyclicDependencyAttribute(IParameterSymbol parameter)
             {
                 foreach (var attribute in parameter.GetAttributes())
                 {
@@ -845,6 +832,12 @@ namespace ManualDi.Async.Generators
                     }
                 }
                 return false;
+            }
+
+            public bool IsTask(ITypeSymbol type)
+            {
+                return SymbolEqualityComparer.Default.Equals(type, Task) ||
+                       (type is INamedTypeSymbol named && SymbolEqualityComparer.Default.Equals(named.ConstructedFrom, Task));
             }
         }
     }

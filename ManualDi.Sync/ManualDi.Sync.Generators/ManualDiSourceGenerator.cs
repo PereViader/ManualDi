@@ -35,11 +35,18 @@ namespace ManualDi.Sync.Generators
             }
 
             // this searches for any property with using SyntaxKind.RequiredKeyword, the keyword is not available in CodeAnalysis 4.1.0
-            if (classDeclarationSyntax.Members
-                .OfType<PropertyDeclarationSyntax>()
-                .Any(p => p.Modifiers.Any(m => m.IsKind((SyntaxKind)8447))))
+            foreach (var member in classDeclarationSyntax.Members)
             {
-                return false;
+                if (member is PropertyDeclarationSyntax propertyDeclaration)
+                {
+                    foreach (var modifier in propertyDeclaration.Modifiers)
+                    {
+                        if (modifier.IsKind((SyntaxKind)8447))
+                        {
+                            return false;
+                        }
+                    }
+                }
             }
 
             return true;
@@ -95,21 +102,33 @@ namespace ManualDi.Sync.Generators
 
         private static string ExtensionFileName(string className)
         {
-            var name = className
-                .Replace(".", "_")
-                .Replace("<", "_")
-                .Replace(">", "")
-                .Replace(",", "_")
-                .Replace(" ", "");
-
-            return $"ManualDi_{name}_Extensions";
+            var sb = new StringBuilder("ManualDi_", className.Length + 20);
+            foreach (var c in className)
+            {
+                switch (c)
+                {
+                    case '.':
+                    case '<':
+                    case ',':
+                        sb.Append('_');
+                        break;
+                    case '>':
+                    case ' ':
+                        break;
+                    default:
+                        sb.Append(c);
+                        break;
+                }
+            }
+            sb.Append("_Extensions");
+            return sb.ToString();
         }
 
-        private static List<Resolution>? GetConstructorParameters(INamedTypeSymbol classSymbol, WellKnownTypes types)
+        private static EquatableArray<Resolution> GetConstructorParameters(INamedTypeSymbol classSymbol, WellKnownTypes types)
         {
             if (classSymbol.IsAbstract)
             {
-                return null;
+                return default;
             }
 
             var constructors = classSymbol
@@ -120,7 +139,7 @@ namespace ManualDi.Sync.Generators
 
             if (constructors.Length == 0)
             {
-                return null;
+                return default;
             }
 
             var constructor = constructors[0];
@@ -134,7 +153,7 @@ namespace ManualDi.Sync.Generators
             return parameters;
         }
 
-        private static List<Resolution>? GetInjectMethodParameters(INamedTypeSymbol classSymbol, WellKnownTypes types)
+        private static EquatableArray<Resolution> GetInjectMethodParameters(INamedTypeSymbol classSymbol, WellKnownTypes types)
         {
             var injectMethod = classSymbol
                 .GetMembers()
@@ -145,7 +164,7 @@ namespace ManualDi.Sync.Generators
 
             if (injectMethod is null)
             {
-                return null;
+                return default;
             }
 
             var parameters = new List<Resolution>(injectMethod.Parameters.Length);
@@ -335,7 +354,7 @@ namespace ManualDi.Sync.Generators
             var closedTypeParameters = (data.TypeParameters is not null ? "<" + data.TypeParameters + ">" : "");
 
             // FromConstructor
-            if (data.ConstructorParameters is not null)
+            if (data.ConstructorParameters.HasValue)
             {
                 stringBuilder.Append($$"""
                     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -434,7 +453,7 @@ namespace ManualDi.Sync.Generators
                 stringBuilder.Append(")o).Initialize())");
             }
 
-            if (data.InjectMethodParameters is not null)
+            if (data.InjectMethodParameters.HasValue)
             {
                 stringBuilder.Append("""
 
@@ -611,8 +630,8 @@ namespace ManualDi.Sync.Generators
             string? TypeParameters,
             string? TypeParameterConstraints,
             string ObsoleteText,
-            List<Resolution>? ConstructorParameters,
-            List<Resolution>? InjectMethodParameters,
+            EquatableArray<Resolution> ConstructorParameters,
+            EquatableArray<Resolution> InjectMethodParameters,
             bool HasInitializeMethod,
             bool IsDisposable,
             BaseTypeCall? BaseTypeCall,

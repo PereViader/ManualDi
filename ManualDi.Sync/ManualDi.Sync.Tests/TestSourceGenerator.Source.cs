@@ -59,6 +59,20 @@ namespace SomeNamespace.Subnamespace
     {
     }
 
+    interface IPotato
+    {
+    }
+
+    interface IBanana
+    {
+    }
+
+    class GenericWithRequirement<T, Y>
+        where T : IPotato
+        where Y : IBanana
+    {
+    }
+
     class ParentGeneric : Generic<int>
     {
         public ParentGeneric(int x) : base(x) { }

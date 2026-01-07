@@ -33,6 +33,11 @@ namespace ManualDi.Async.Generators
             {
                 return false;
             }
+            
+            if (classDeclarationSyntax.TypeParameterList is not null)
+            {
+                return false;
+            }
 
             // this searches for any property with using SyntaxKind.RequiredKeyword, the keyword is not available in CodeAnalysis 4.1.0
             if (classDeclarationSyntax.Members

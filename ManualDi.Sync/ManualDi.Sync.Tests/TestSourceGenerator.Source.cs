@@ -6,15 +6,18 @@ using ManualDi.Sync;
 
 namespace SomeNamespace.Subnamespace
 {
+    [ManualDi]
     public class Public
     {
     }
 
+    [ManualDi]
     internal class Internal
     {
     }
 
 
+    [ManualDi]
     internal class InternalPrivateConstructor
     {
         private InternalPrivateConstructor()
@@ -22,6 +25,7 @@ namespace SomeNamespace.Subnamespace
         }
     }
 
+    [ManualDi]
     public class PublicAndPrivateConstructor
     {
         public PublicAndPrivateConstructor(int x) : this()
@@ -33,28 +37,34 @@ namespace SomeNamespace.Subnamespace
         }
     }
 
+    [ManualDi]
     class Internal2
     {
     }
 
+    [ManualDi]
     class Generic<T>
     {
         public Generic(int x) { }
         public void Inject(int x) { }
     }
 
+    [ManualDi]
     sealed class SealedGeneric<T>
     {
     }
 
+    [ManualDi]
     class Base
     {
     }
 
+    [ManualDi]
     sealed class SelaledChildGeneric<T> : Base
     {
     }
 
+    [ManualDi]
     sealed class SealedChildGeneric<T, Y> : Base
     {
     }
@@ -67,17 +77,20 @@ namespace SomeNamespace.Subnamespace
     {
     }
 
+    [ManualDi]
     class GenericWithRequirement<T, Y>
         where T : IPotato
         where Y : IBanana
     {
     }
 
+    [ManualDi]
     class ParentGeneric : Generic<int>
     {
         public ParentGeneric(int x) : base(x) { }
     }
 
+    [ManualDi]
     public class InternalInitialize
     {
         internal void Initialize()
@@ -85,6 +98,7 @@ namespace SomeNamespace.Subnamespace
         }
     }
 
+    [ManualDi]
     public class TaskInitialize
     {
         internal Task Initialize()
@@ -93,11 +107,13 @@ namespace SomeNamespace.Subnamespace
         }
     }
 
+    [ManualDi]
     public abstract class Abstract
     {
         public Abstract() { }
     }
 
+    [ManualDi]
     public class SomeDisposable : IDisposable
     {
         public void Dispose()
@@ -105,6 +121,7 @@ namespace SomeNamespace.Subnamespace
         }
     }
 
+    [ManualDi]
     public class PublicInitialize
     {
         public Task InitailizeAsync(CancellationToken cancellationToken)
@@ -117,6 +134,7 @@ namespace SomeNamespace.Subnamespace
         }
     }
 
+    [ManualDi]
     class StaticInitialize
     {
         public static void Initialize()
@@ -124,6 +142,7 @@ namespace SomeNamespace.Subnamespace
         }
     }
 
+    [ManualDi]
     class InternalInject
     {
         internal void Inject()
@@ -131,6 +150,7 @@ namespace SomeNamespace.Subnamespace
         }
     }
 
+    [ManualDi]
     class PublicInject
     {
         public void Inject()
@@ -138,6 +158,7 @@ namespace SomeNamespace.Subnamespace
         }
     }
 
+    [ManualDi]
     class StaticInject
     {
         public static void Inject()
@@ -145,6 +166,7 @@ namespace SomeNamespace.Subnamespace
         }
     }
 
+    [ManualDi]
     class ConstructorWithGenericArgument
     {
         public ConstructorWithGenericArgument(Func<int> func)
@@ -152,6 +174,7 @@ namespace SomeNamespace.Subnamespace
         }
     }
 
+    [ManualDi]
     public class InjectReferencePropertyClass
     {
         public InjectReferencePropertyClass(
@@ -162,6 +185,7 @@ namespace SomeNamespace.Subnamespace
     }
 
 
+    [ManualDi]
     public class InjectValueNullablePropertyClass
     {
         public InjectValueNullablePropertyClass(
@@ -173,6 +197,7 @@ namespace SomeNamespace.Subnamespace
     }
 
     [Obsolete]
+    [ManualDi]
     class Obsolete
     {
         public void Inject()
@@ -184,6 +209,7 @@ namespace SomeNamespace.Subnamespace
         }
     }
 
+    [ManualDi]
     public class NullableDependency
     {
         public NullableDependency(object? obj, Nullable<int> value)
@@ -199,6 +225,7 @@ namespace SomeNamespace.Subnamespace
         }
     }
 
+    [ManualDi]
     public class ArrayOfNullablesDependency
     {
         public ArrayOfNullablesDependency(object?[] objects, int?[] values)
@@ -216,23 +243,28 @@ namespace SomeNamespace.Subnamespace
 
     static class Static
     {
+        [ManualDi]
         public class PublicNested
         {
         }
 
+        [ManualDi]
         internal class InternalNested
         {
         }
 
+        [ManualDi]
         private class PrivateNested
         {
         }
 
+        [ManualDi]
         static class StaticNested
         {
         }
     }
 
+    [ManualDi]
     class ListInject
     {
         public ListInject(
@@ -324,6 +356,7 @@ namespace SomeNamespace.Subnamespace
         }
     }
 
+    [ManualDi]
     class InjectIdAttribute
     {
         private const string Something = "A";
@@ -340,12 +373,14 @@ namespace SomeNamespace.Subnamespace
         }
     }
 
+    [ManualDi]
     public sealed class SealedClass
     {
         public void Inject() { }
     }
 }
 
+[ManualDi]
 class MultipleOfEach
 {
     internal MultipleOfEach(object o) { }
@@ -357,11 +392,13 @@ class MultipleOfEach
     internal void Initialize() { } // <- it should use this one
 }
 
+[ManualDi]
 class InjectContainer
 {
     public InjectContainer(IDiContainer c, CancellationToken ct) { } // The container should be provided as is
 }
 
+[ManualDi]
 partial class Partial
 {
     public Partial(object o) { }
@@ -373,6 +410,7 @@ partial class Partial
     public void Initialize() { }
 }
 
+[ManualDi]
 class InitializeAsyncCheck
 {
     public Task InitializeAsync(CancellationToken ct) { return Task.CompletedTask; }
@@ -380,14 +418,17 @@ class InitializeAsyncCheck
 
 namespace UnityEngine
 {
+    [ManualDi]
     public class Object
     {
     }
 
+    [ManualDi]
     public class MonoBeheviour : Object
     {
     }
 
+    [ManualDi]
     public class SomeMonoBehaviour : MonoBeheviour
     {
         public void Construct(int x) { }
@@ -398,16 +439,20 @@ namespace UnityEngine
     }
 }
 
+[ManualDi]
 public class MapNavMesh
 {
+    [ManualDi]
     public class BakeData
     {
     }
 }
 
 [Obsolete("Use MapNavMesh.BakeData")]
+[ManualDi]
 public class MapNavMeshBakeData : MapNavMesh.BakeData { }
 
+[ManualDi]
 public class TestOutParam
 {
     public TestOutParam(out string test)
@@ -422,10 +467,13 @@ public class TestOutParam
 }
 
 //This checks that that the source generated Default method does not call the DefaultImpl method on a non source generated class
+[ManualDi]
 public class DependsOnSystemClass : TaskCompletionSource
 {
 }
 
 //This checks that the source generated Default method calls the DefaultImpl method for the Base on the Child
+[ManualDi]
 public abstract class Base { }
+[ManualDi]
 public class Child : Base { }

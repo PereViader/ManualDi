@@ -6,6 +6,7 @@ namespace ManualDi.Sync.Tests;
 
 public class TestDiContainerBindingsDefaultInheritance
 {
+    [ManualDi]
     public abstract class Base
     {
         public readonly List<string> Order = new();
@@ -21,6 +22,7 @@ public class TestDiContainerBindingsDefaultInheritance
         }
     }
 
+    [ManualDi]
     public class Child : Base
     {
         public void Inject(int instance)

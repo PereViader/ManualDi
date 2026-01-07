@@ -61,6 +61,12 @@ namespace ManualDi.Sync.Generators
                 return null;
             }
 
+            var wellKnownTypes = new WellKnownTypes(context.SemanticModel.Compilation);
+            if (!HasManualDiAttribute(symbol, wellKnownTypes))
+            {
+                return null;
+            }
+
             var accessibility = GetSymbolAccessibility(symbol);
             if (accessibility is not (Accessibility.Public or Accessibility.Internal))
             {
@@ -74,7 +80,6 @@ namespace ManualDi.Sync.Generators
                 ? string.Join(", ", symbol.TypeParameters.Select(x => x.Name))
                 : null;
 
-            var wellKnownTypes = new WellKnownTypes(context.SemanticModel.Compilation);
             var obsoleteText = wellKnownTypes.IsSymbolObsolete(symbol) ? "[System.Obsolete]\r\n" : "";
             var constructorParameters = GetConstructorParameters(symbol, wellKnownTypes);
             var injectParameters = GetInjectMethodParameters(symbol, wellKnownTypes);
@@ -672,6 +677,7 @@ namespace ManualDi.Sync.Generators
             public readonly INamedTypeSymbol? IReadOnlyCollection = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyCollection`1");
             public readonly INamedTypeSymbol? ICollection = compilation.GetTypeByMetadataName("System.Collections.Generic.ICollection`1");
             public readonly INamedTypeSymbol? IdAttribute = compilation.GetTypeByMetadataName("ManualDi.Sync.IdAttribute");
+            public readonly INamedTypeSymbol? ManualDiAttribute = compilation.GetTypeByMetadataName("ManualDi.Sync.ManualDiAttribute");
             public readonly INamedTypeSymbol? ObsoleteAttribute = compilation.GetTypeByMetadataName("System.ObsoleteAttribute");
             public readonly INamedTypeSymbol? IDisposable = compilation.GetTypeByMetadataName("System.IDisposable");
             public readonly INamedTypeSymbol? DiContainer = compilation.GetTypeByMetadataName("ManualDi.Sync.IDiContainer");
@@ -717,6 +723,23 @@ namespace ManualDi.Sync.Generators
                 }
                 return false;
             }
+
+            public bool HasManualDiAttribute(INamedTypeSymbol symbol)
+            {
+                foreach (var attribute in symbol.GetAttributes())
+                {
+                    if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, ManualDiAttribute))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+
+        private static bool HasManualDiAttribute(INamedTypeSymbol symbol, WellKnownTypes wellKnownTypes)
+        {
+            return wellKnownTypes.HasManualDiAttribute(symbol);
         }
     }
 }

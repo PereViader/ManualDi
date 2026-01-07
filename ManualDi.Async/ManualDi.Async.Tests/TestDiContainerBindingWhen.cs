@@ -6,8 +6,11 @@ namespace ManualDi.Async.Tests;
 
 public class TestDiContainerBindingWhen
 {
+    [ManualDi]
     internal class Special;
+    [ManualDi]
     internal class Child;
+    [ManualDi]
     internal class Root(Child child, Special special)
     {
         private readonly Child Child = child;
@@ -17,11 +20,12 @@ public class TestDiContainerBindingWhen
     private interface IInterface2;
     private interface IInterface1;
 
+    [ManualDi]
     public class NestedInt(int value) : IInterface1, IInterface2
     {
         public int Value { get; } = value;
     }
-    
+
     [Test]
     public async Task TestWhenInjectedIntoNested()
     {
@@ -51,7 +55,7 @@ public class TestDiContainerBindingWhen
         var nestedInt = container.Resolve<NestedInt>();
         Assert.That(nestedInt.Value, Is.EqualTo(2));
     }
-    
+
     [Test]
     public async Task TestWhenInjectedIntoId()
     {
@@ -65,7 +69,7 @@ public class TestDiContainerBindingWhen
         var nestedInt = container.Resolve<NestedInt>();
         Assert.That(nestedInt.Value, Is.EqualTo(2));
     }
-    
+
     [Test]
     public async Task TestId()
     {
@@ -84,7 +88,7 @@ public class TestDiContainerBindingWhen
         Assert.That(resolution1, Is.EqualTo(instance1));
         Assert.That(resolution2, Is.EqualTo(instance2));
     }
-    
+
     [Test]
     [TestCase(true)]
     [TestCase(false)]
@@ -97,7 +101,7 @@ public class TestDiContainerBindingWhen
             b.Bind<int>().FromInstance(2).When(x => x.InjectedIntoId("2"));
         }).Build(CancellationToken.None);
 
-        var nestedInt = isFirst ?  (NestedInt)container.Resolve<IInterface1>() :  (NestedInt)container.Resolve<IInterface2>();
+        var nestedInt = isFirst ? (NestedInt)container.Resolve<IInterface1>() : (NestedInt)container.Resolve<IInterface2>();
         Assert.That(nestedInt.Value, Is.EqualTo(2));
     }
 }

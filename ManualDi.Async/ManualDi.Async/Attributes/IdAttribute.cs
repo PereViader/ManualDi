@@ -3,7 +3,7 @@
 namespace ManualDi.Async
 {
     [AttributeUsage(AttributeTargets.Parameter)]
-    public class IdAttribute : Attribute
+    public sealed class IdAttribute : Attribute
     {
         public string Id { get; }
 

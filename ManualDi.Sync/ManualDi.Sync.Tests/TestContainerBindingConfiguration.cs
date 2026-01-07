@@ -4,6 +4,7 @@ namespace ManualDi.Sync.Tests;
 
 public class TestContainerBindingConfiguration
 {
+    [ManualDi]
     public class TestConfig;
     
     [Test]

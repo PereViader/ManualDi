@@ -61,6 +61,12 @@ namespace ManualDi.Async.Generators
                 return null;
             }
 
+            var wellKnownTypes = new WellKnownTypes(context.SemanticModel.Compilation);
+            if (!HasManualDiAttribute(symbol, wellKnownTypes))
+            {
+                return null;
+            }
+
             var accessibility = GetSymbolAccessibility(symbol);
             if (accessibility is not (Accessibility.Public or Accessibility.Internal))
             {
@@ -74,7 +80,6 @@ namespace ManualDi.Async.Generators
                 ? string.Join(", ", symbol.TypeParameters.Select(x => x.Name))
                 : null;
 
-            var wellKnownTypes = new WellKnownTypes(context.SemanticModel.Compilation);
             var obsoleteText = wellKnownTypes.IsSymbolObsolete(symbol) ? "[System.Obsolete]\r\n" : "";
             var constructorParameters = GetConstructorParameters(symbol, wellKnownTypes);
             var injectParameters = GetInjectMethodParameters(symbol, wellKnownTypes);
@@ -723,6 +728,11 @@ namespace ManualDi.Async.Generators
             return visibility;
         }
 
+        private static bool HasManualDiAttribute(INamedTypeSymbol symbol, WellKnownTypes wellKnownTypes)
+        {
+            return wellKnownTypes.HasManualDiAttribute(symbol);
+        }
+
         internal record ClassData(
             string FileName,
             string ClassName,
@@ -774,6 +784,7 @@ namespace ManualDi.Async.Generators
             public readonly INamedTypeSymbol? IReadOnlyCollection = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyCollection`1");
             public readonly INamedTypeSymbol? ICollection = compilation.GetTypeByMetadataName("System.Collections.Generic.ICollection`1");
             public readonly INamedTypeSymbol? IdAttribute = compilation.GetTypeByMetadataName("ManualDi.Async.IdAttribute");
+            public readonly INamedTypeSymbol? ManualDiAttribute = compilation.GetTypeByMetadataName("ManualDi.Async.ManualDiAttribute");
             public readonly INamedTypeSymbol? ObsoleteAttribute = compilation.GetTypeByMetadataName("System.ObsoleteAttribute");
             public readonly INamedTypeSymbol? IDisposable = compilation.GetTypeByMetadataName("System.IDisposable");
             public readonly INamedTypeSymbol? DiContainer = compilation.GetTypeByMetadataName("ManualDi.Async.IDiContainer");
@@ -796,6 +807,18 @@ namespace ManualDi.Async.Generators
                     }
                 }
                 return null;
+            }
+
+            public bool HasManualDiAttribute(INamedTypeSymbol symbol)
+            {
+                foreach (var attribute in symbol.GetAttributes())
+                {
+                    if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, ManualDiAttribute))
+                    {
+                        return true;
+                    }
+                }
+                return false;
             }
 
             public bool IsSymbolObsolete(ISymbol typeSymbol)

@@ -81,6 +81,8 @@ Note: Source generation will only happen in csproj that are linked both with the
 
 Note: Source generator will never run on 3rd party libraries and System classes because they won't reference the generator.
 
+Note: Source generation is opt-in. You must decorate your classes with `[ManualDi]` attribute for the generator to process them. This ensures better performance and avoids generating code for unrelated classes.
+
 Limitation of the source generator:
 - Does not run for partial classes defined across multiple declarations. It will only operate on partial classes that are declared once.
 - Does not run for classes that use the `required` keyword
@@ -120,6 +122,7 @@ using DiContainer diContainer = new DiContainerBindings()
 
 public interface IOtherClass { }
 
+[ManualDi]
 public class OtherClass : IOtherClass, IDisposable
 {
     // Runs first because the class does not depend on anything else
@@ -129,6 +132,7 @@ public class OtherClass : IOtherClass, IDisposable
     public void Dispose() => Console.WriteLine("SomeClass.Dispose");
 }
 
+[ManualDi]
 public class SomeClass(IOtherClass otherClass) : IDisposable
 {
     // SomeClass.Initialize runs after OtherClass.Initialize
@@ -138,6 +142,7 @@ public class SomeClass(IOtherClass otherClass) : IDisposable
     public void Dispose() => Console.WriteLine("SomeClass.Dispose");
 }
 
+[ManualDi]
 public class Startup(SomeClass someClass)
 {
     private IOtherClass otherClass;
@@ -179,6 +184,7 @@ await using DiContainer diContainer = await new DiContainerBindings()
 
 public interface IOtherClass { }
 
+[ManualDi]
 public class OtherClass : IOtherClass, IAsyncDisposable
 {
     // Runs first because the class does not depend on anything else
@@ -188,6 +194,7 @@ public class OtherClass : IOtherClass, IAsyncDisposable
     public async ValueTask DisposeAsync() => Console.WriteLine("OtherClass.DisposeAsync");
 }
 
+[ManualDi]
 public class SomeClass(IOtherClass otherClass) : IDisposable
 {
     // SomeClass.Initialize runs after OtherClass.InitializeAsync
@@ -197,6 +204,7 @@ public class SomeClass(IOtherClass otherClass) : IDisposable
     public void Dispose() => Console.WriteLine("SomeClass.Dispose");
 }
 
+[ManualDi]
 public class Startup(SomeClass someClass)
 {
     private IOtherClass otherClass;
@@ -323,8 +331,11 @@ Bindings that use `Transient` will not be created if no one resolves them. This 
 In the example below, both `A` and `B` will be injected with a brand new instance of `SomeTransient`.
 
 ```cssharp
+[ManualDi]
 class SomeTransient;
+[ManualDi]
 class A(SomeTransient someTransient);
+[ManualDi]
 class B(SomeTransient someTransient);
 
 b.Bind<SomeTransient>().Transient().Default().FromConstructor();
@@ -348,13 +359,17 @@ When there are multiple candidates for a given method:
 - in case multiple methods with the same visibility exist, the first one found top-to-bottom is selected.
 
 ```csharp
+[ManualDi]
 public class A;
+[ManualDi]
 public class B {
     public void Inject(A a) { } //Sample only, prefer using the constructor
 }
+[ManualDi]
 public class C {
     public void Initialize() { }
 }
+[ManualDi]
 public class D(A a) {
     public void Inject(C c, A a) { } //Sample only, prefer using the constructor
     public Task InitializeAsync(CancellationToken ct) { ... }
@@ -432,6 +447,7 @@ In the example below, there is `SomeClass` that is bound individually and then t
 ```csharp
 interface IFirst;
 interface ISecond;
+[ManualDi]
 class SomeClass : IFirst, ISecond;
 
 b.Bind<SomeClass>().Default().FromConstructor();
@@ -467,7 +483,9 @@ The inject method has two usecases
 This snippet below is an example of a cyclic dependency. It is not possible to implement this with ManualDi nor manually.
 
 ```csharp
+[ManualDi]
 public class A(B b);
+[ManualDi]
 public class B(A a);
 ```
 
@@ -476,7 +494,9 @@ In order to fix this, while keeping the same design, even if not recommended, th
 When using `ManualDi.Async` adding the `CyclicDependency`** attribute is also necessary in order to break down cyclic dependencies. Without the attribute it might work, but just due to chance. Using it, will update the creation order of dependencies to avoid issues.
 
 ```csharp
+[ManualDi]
 public class A(B b);
+[ManualDi]
 public class B
 {
     public void Inject(A a) { } //ManualDi.Sync this will work
@@ -515,11 +535,13 @@ In the example below, `A.Initialize` will be invoked first and then `B.Initializ
 
 
 ```csharp
+[ManualDi]
 class A
 {
     void Initialize() { }
 }
 
+[ManualDi]
 class B(A a)
 {    
     void Initialize() { }
@@ -539,6 +561,7 @@ Creating custom extension methods that call Initialize is the recommended way to
 ### Example: Interconnect some features
 
 ```csharp
+[ManualDi]
 class SomeFeature : IFeature;
 
 b.Bind<SomeFeature>()
@@ -566,11 +589,13 @@ Using the `Dispose` is fine when readability is preferred, however notice that t
 The delegates registered on `Dispose`/`QueueDispose` methods will always be run regardless of `SkipDisposable` being used.
 
 ```csharp
+[ManualDi]
 class A : IDisposable 
 { 
     public void Dispose() { }    
 }
 
+[ManualDi]
 class B(A a)
 {
     public void DoCleanup() { }
@@ -623,6 +648,7 @@ int value2 = c.Resolve<GetBananaInt>()(); // 2
 The id functionality can be used on method and property dependencies by using the Inject attribute and providing a string id to it
 
 ```csharp
+[ManualDi]
 class A(int a, [Id("Other")] object b);
 
 b.Bind<A>().Default().FromConstructor();
@@ -643,8 +669,11 @@ The `When` extension method allows defining filtering conditions as part of the 
 Allows filtering bindings by the `TConcrete` type of the Binding where it is being injected to.
 
 ```csharp
+[ManualDi]
 class SomeValue(int Value);
+[ManualDi]
 class OtherValue(int Value);
+[ManualDi]
 class FailValue(int Value);
 
 b.Bind<int>().FromInstance(1).When(x => x.InjectedIntoType<SomeValue>());
@@ -660,6 +689,7 @@ b.Bind<FailValue>().Default().FromConstructor(); // will fail at runtime when re
 Allows filtering bindings by the id of the Binding where it is being injected to.
 
 ```csharp
+[ManualDi]
 class SomeValue(int Value);
 
 b.Bind<int>().FromInstance(1).When(x => x.InjectedIntoId("1"));
@@ -681,8 +711,11 @@ Question: When/Why would I do this?
 Answer: For instance, think of a Unity3d game that has many enemies on a scene and you want to bind all enemies to the container so that their dependencies are setup and it is properly initialized. By doing this, each enemy can have its own independent container scope and object graph. 
 
 ```csharp
+[ManualDi]
 class ParentDependency;
+[ManualDi]
 class SubDependency;
+[ManualDi]
 class Enemy : MonoBehaviour
 { 
     public void Inject(ParentDependency parentDependency, SubDependency subDependency) { }
@@ -705,10 +738,12 @@ Works just like `BindSubContainer` but the subcontainer will not inherit from th
 Thus nothing from the main container will be resolvable. 
 
 ```csharp
+[ManualDi]
 class Enemy : MonoBehaviour
 { 
     public void Inject(SubDependency subDependency) { }
 }
+[ManualDi]
 class SubDependency {}
 
 foreach(var enemy in enemiesInScene)
@@ -727,9 +762,12 @@ These classes may be implemented either as object instances that implement `IIns
 Unless you explicitly need to use actual instances, this library recommends using extension methods, given they can be used without creating garbage.
 
 ```csharp
+[ManualDi]
 class A;
+[ManualDi]
 class B;
 interface IC;
+[ManualDi]
 class C : IC;
 
 //Extension method installer (recommended)
@@ -887,6 +925,7 @@ If a dependency is nullable, the resolution will not fail if it is missing.
 If a dependency is not nullable, the resolution will fail if it is missing.
 
 ```csharp
+[ManualDi]
 public class A
 {
     //object MUST be registered on the container
@@ -910,6 +949,7 @@ If the generic type argument `T` is nullable (e.g., `List<T?>`), the source gene
 
 
 ```csharp
+[ManualDi]
 public class A
 {
     public A(
@@ -981,11 +1021,13 @@ The container provides functionality that queues work to be done once the contai
 By using this you can define the entry points of your application declaratively during the installation of the container.
 
 ```csharp
+[ManualDi]
 class Startup(SomeService someService)
 {
     public void Start() { ... }
 }
 
+[ManualDi]
 class SomeService
 {
     public void Initialize() { ... }

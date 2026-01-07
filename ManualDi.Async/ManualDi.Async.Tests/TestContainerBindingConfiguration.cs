@@ -6,8 +6,9 @@ namespace ManualDi.Async.Tests;
 
 public class TestContainerBindingConfiguration
 {
+    [ManualDi]
     public class TestConfig;
-    
+
     [Test]
     public async Task ResolveInstance_ProperlyResolveAfterInstanceIsAvailable()
     {
@@ -21,7 +22,7 @@ public class TestContainerBindingConfiguration
                 var isNotFound = b.TryResolveInstance<TestConfig>(out _);
                 Assert.That(notFound, Is.Null);
                 Assert.That(isNotFound, Is.False);
-                
+
                 //Bind the config to the container
                 b.Bind<TestConfig>().Default().FromInstance(instance);
 
@@ -33,7 +34,7 @@ public class TestContainerBindingConfiguration
         var resolvedInstance = container.Resolve<TestConfig>();
         Assert.That(resolvedInstance, Is.SameAs(instance));
     }
-    
+
     [Test]
     public async Task ResolveInstance_UsingWithParentContainer_CanResolveInstanceOnSubContainer()
     {
@@ -55,7 +56,7 @@ public class TestContainerBindingConfiguration
                 Assert.That(found, Is.SameAs(instance));
             }).Build(CancellationToken.None);
     }
-    
+
     [Test]
     public async Task ResolveInstance_UsingFromSubContainer_CanResolveInstanceOnSubContainer()
     {
@@ -71,14 +72,14 @@ public class TestContainerBindingConfiguration
                 b.BindSubContainer<int>(b =>
                 {
                     b.Bind<int>().FromInstance(3);
-                    
+
                     //Assert that we can resolve the instance from the parent container
                     var resolved = b.ResolveInstanceNullable<TestConfig>();
                     Assert.That(resolved, Is.SameAs(instance));
                 });
             }).Build(CancellationToken.None);
     }
-    
+
     [Test]
     public async Task ResolveInstance_OnASubSubContainer_CanResolveInstance()
     {
@@ -90,7 +91,7 @@ public class TestContainerBindingConfiguration
                 //Bind the config to the container
                 b.Bind<TestConfig>().Default().FromInstance(instance);
             }).Build(CancellationToken.None);
-        
+
         await using var subContainer = await new DiContainerBindings()
             .WithParentContainer(container)
             .Install(b =>
@@ -99,7 +100,7 @@ public class TestContainerBindingConfiguration
                 b.BindSubContainer<int>(b =>
                 {
                     b.Bind<int>().FromInstance(3);
-                    
+
                     //Assert that we can resolve the instance from the parent container
                     var resolved = b.ResolveInstanceNullable<TestConfig>();
                     Assert.That(resolved, Is.SameAs(instance));

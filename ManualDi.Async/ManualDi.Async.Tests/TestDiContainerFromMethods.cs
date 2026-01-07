@@ -28,7 +28,7 @@ public class TestDiContainerFromMethods
         var instance = new object();
         var fromDelegate = Substitute.For<FromDelegate>();
         fromDelegate.Invoke(Arg.Any<IDiContainer>()).Returns(instance);
-        
+
         await using var container = await new DiContainerBindings().Install(b =>
         {
             b.Bind<object>().FromMethod(fromDelegate);
@@ -54,14 +54,17 @@ public class TestDiContainerFromMethods
     }
 
 #pragma warning disable CS9113 // Parameter is unread.
+    [ManualDi]
     public class ChildTestInject;
+    [ManualDi]
     public class ParentPureTestInject(ChildTestInject childTestInjecta);
+    [ManualDi]
     public class ParentMonoBehaviourTestInject
     {
         public void Inject(ChildTestInject childTestInject, [CyclicDependency] ParentPureTestInject parentPureTestInject) { }
     }
 #pragma warning restore CS9113 // Parameter is unread.
-    
+
     [Test]
     public async Task TestSubContainerCreatesInReverseOrder()
     {
@@ -70,39 +73,56 @@ public class TestDiContainerFromMethods
             //Added in the reverse order they will need to be created in
             b.BindSubContainer<ParentMonoBehaviourTestInject>(b =>
             {
-                b.Bind<ParentMonoBehaviourTestInject>().Default().FromInstance(new ());
+                b.Bind<ParentMonoBehaviourTestInject>().Default().FromInstance(new());
             });
-            
+
             b.BindSubContainer<ParentPureTestInject>(b =>
             {
                 b.Bind<ParentPureTestInject>().Default().FromConstructor();
             });
-            
+
             b.Bind<ChildTestInject>().Default().FromConstructor();
         }).Build(CancellationToken.None);
     }
 
+    [ManualDi]
     public class ParentConstructorDependency;
+    [ManualDi]
     public class ParentConstructorFilterDependency;
+    [ManualDi]
     public class ParentNullableConstructorFilterDependency;
+    [ManualDi]
     public class ParentNullableConstructorDependency;
-    
+
+    [ManualDi]
     public class ParentInjectionDependency;
+    [ManualDi]
     public class ParentInjectionFilterDependency;
+    [ManualDi]
     public class ParentNullableInjectionFilterDependency;
+    [ManualDi]
     public class ParentNullableInjectionDependency;
-    
+
+    [ManualDi]
     public class ChildConstructorDependency;
+    [ManualDi]
     public class ChildConstructorFilterDependency;
+    [ManualDi]
     public class ChildNullableConstructorFilterDependency;
+    [ManualDi]
     public class ChildNullableConstructorDependency;
 
-    
+
+    [ManualDi]
     public class ChildInjectionDependency;
+    [ManualDi]
     public class ChildInjectionFilterDependency;
+    [ManualDi]
     public class ChildNullableInjectionFilterDependency;
+    [ManualDi]
     public class ChildNullableInjectionDependency;
 
+    [ManualDi]
     public class ChildResolveAll
     {
         public ChildResolveAll(
@@ -111,8 +131,8 @@ public class TestDiContainerFromMethods
             [Id("id")] ParentNullableConstructorFilterDependency? parentNullableConstructorFilterDependency,
             ParentNullableConstructorDependency? parentNullableConstructorDependency,
             ChildConstructorDependency childConstructorDependency,
-            [Id("id")]ChildConstructorFilterDependency childConstructorFilterDependency,
-            [Id("id")]ChildNullableConstructorFilterDependency? childNullableConstructorFilterDependency,
+            [Id("id")] ChildConstructorFilterDependency childConstructorFilterDependency,
+            [Id("id")] ChildNullableConstructorFilterDependency? childNullableConstructorFilterDependency,
             ChildNullableConstructorDependency? childNullableConstructorDependency)
         {
         }
@@ -137,19 +157,19 @@ public class TestDiContainerFromMethods
         var dependencies = new DiContainerBindings()
             .Install(InstallSubContainerDependencies)
             .GatherDependencies();
-        
+
         var dependencyResolver = Substitute.For<IDependencyResolver>();
         dependencies.Invoke(dependencyResolver);
-        
+
         Received.InOrder(() =>
         {
             // Injection first then constructor because that's how the Default then FromConstructor will add them in
-            
+
             dependencyResolver.InjectionDependency<ParentInjectionDependency>();
             dependencyResolver.InjectionDependency<ParentInjectionFilterDependency>(Arg.Any<FilterBindingDelegate>());
             dependencyResolver.NullableInjectionDependency<ParentNullableInjectionFilterDependency>(Arg.Any<FilterBindingDelegate>());
             dependencyResolver.NullableInjectionDependency<ParentNullableInjectionDependency>();
-            
+
             dependencyResolver.ConstructorDependency<ParentConstructorDependency>();
             dependencyResolver.ConstructorDependency<ParentConstructorFilterDependency>(Arg.Any<FilterBindingDelegate>());
             dependencyResolver.NullableConstructorDependency<ParentNullableConstructorFilterDependency>(Arg.Any<FilterBindingDelegate>());
@@ -164,7 +184,7 @@ public class TestDiContainerFromMethods
         await using var container = await new DiContainerBindings().Install(b =>
         {
             InstallSubContainerDependencies(b);
-            
+
             b.Bind<ParentConstructorDependency>().Default().FromConstructor();
             b.Bind<ParentConstructorFilterDependency>().Default().FromConstructor().WithId("id");
             b.Bind<ParentNullableConstructorFilterDependency>().Default().FromConstructor().WithId("id");
@@ -188,7 +208,7 @@ public class TestDiContainerFromMethods
             b.Bind<ChildInjectionFilterDependency>().Default().FromConstructor().WithId("id");
             b.Bind<ChildNullableInjectionFilterDependency>().Default().FromConstructor().WithId("id");
             b.Bind<ChildNullableInjectionDependency>().Default().FromConstructor();
-                
+
             b.Bind<ChildResolveAll>().Default().FromConstructor(); // This will trigger the resolution of everything else
         });
     }

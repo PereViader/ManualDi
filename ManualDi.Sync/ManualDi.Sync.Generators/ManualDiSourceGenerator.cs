@@ -212,20 +212,10 @@ namespace ManualDi.Sync.Generators
                 return null;
             }
 
-            bool shouldCallBase = false;
-            if (baseType.Locations.Any(static x => x.IsInSource))
+            if (!types.HasManualDiAttribute(baseType))
             {
-                shouldCallBase = baseType.DeclaringSyntaxReferences
-                    .Any(x => IsSyntaxNodeValid(x.GetSyntax(), ct));
+                return null;
             }
-            else
-            {
-                var className = FullyQualifyTypeWithoutNullable(baseType.OriginalDefinition);
-                var expectedTypeName = ExtensionFileName(className);
-                shouldCallBase = compilation.GetTypeByMetadataName(expectedTypeName) is not null;
-            }
-
-            if (!shouldCallBase) return null;
 
             var baseClassName = FullyQualifyTypeWithoutNullable(baseType.OriginalDefinition);
             var baseExtensionsClassName = ExtensionFileName(baseClassName);

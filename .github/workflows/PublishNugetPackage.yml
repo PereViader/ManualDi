@@ -16,7 +16,7 @@ jobs:
 
       - id: get-version
         run: |
-          source .env
+          source .env.shared
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Publish Sync Nuget and Tag Commit

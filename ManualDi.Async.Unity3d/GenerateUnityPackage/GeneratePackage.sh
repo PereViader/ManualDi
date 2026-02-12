@@ -17,12 +17,12 @@ while [[ "$#" -gt 0 ]]; do
   shift
 done
 
-# Extract version from the .env file
-version=$(source .env && echo $VERSION)
+# Extract version from the .env.shared file
+version=$(source .env.shared && echo $VERSION)
 
 # Check if we extracted a version
 if [ -z "$version" ]; then
-    echo "Version not found in .env"
+    echo "Version not found in .env.shared"
     exit 1
 fi
 

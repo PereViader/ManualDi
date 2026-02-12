@@ -16,7 +16,7 @@ jobs:
 
       - id: get-version
         run: |
-          source .env
+          source .env.shared
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           if [[ "$VERSION" == *preview* ]]; then
             echo "isPrerelease=true" >> "$GITHUB_OUTPUT"
@@ -62,14 +62,22 @@ jobs:
             ManualDi.Sync.Unity3d.Package/com.pereviader.manualdi.sync.unity3d-${{ steps.get-version.outputs.version }}.tgz
             ManualDi.Async.Unity3d.Package/com.pereviader.manualdi.async.unity3d-${{ steps.get-version.outputs.version }}.tgz
 
-      - name: Trigger Unity3d Repo Workflow
+      - name: Trigger Sync OpenUPM Publish
         if: ${{ steps.release-exists.outputs.exists == 'false' }}
         env:
-          GITHUB_TOKEN: ${{ secrets.WORKFLOW_UNITY3D }}
+          GITHUB_TOKEN: ${{ secrets.OPENUPM_GITHUB_TOKEN }}
         run: |
-          gh workflow run PublishUnity3dPackage.yml \
-            --repo PereViader/ManualDi.Unity3d \
+          gh workflow run Publish.yml \
+            --repo PereViader/OpenUPM \
             --ref main \
-            -f release-tag=v${{ steps.get-version.outputs.version }} \
-            -f sync-file-name=com.pereviader.manualdi.sync.unity3d-${{ steps.get-version.outputs.version }}.tgz \
-            -f async-file-name=com.pereviader.manualdi.async.unity3d-${{ steps.get-version.outputs.version }}.tgz
+            -f ingest_url=https://github.com/PereViader/ManualDi/releases/download/v${{ steps.get-version.outputs.version }}/com.pereviader.manualdi.sync.unity3d-${{ steps.get-version.outputs.version }}.tgz
+
+      - name: Trigger Async OpenUPM Publish
+        if: ${{ steps.release-exists.outputs.exists == 'false' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.OPENUPM_GITHUB_TOKEN }}
+        run: |
+          gh workflow run Publish.yml \
+            --repo PereViader/OpenUPM \
+            --ref main \
+            -f ingest_url=https://github.com/PereViader/ManualDi/releases/download/v${{ steps.get-version.outputs.version }}/com.pereviader.manualdi.async.unity3d-${{ steps.get-version.outputs.version }}.tgz

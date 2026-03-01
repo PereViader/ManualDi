@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace ManualDi.Sync
 {
@@ -95,12 +96,6 @@ namespace ManualDi.Sync
             return binding;
         }
         
-        [Obsolete("Use QueueStartup instead.")]
-        public static DiContainerBindings WithStartup<T>(this DiContainerBindings diContainerBindings, Action<T> startup)
-        {
-            return QueueStartup<T>(diContainerBindings, startup);
-        }
-        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DiContainerBindings QueueStartup<T>(this DiContainerBindings diContainerBindings, Action<T> startup)
         {
@@ -108,6 +103,17 @@ namespace ManualDi.Sync
             {
                 var resolved = c.Resolve<T>();
                 startup.Invoke(resolved);
+            });
+            return diContainerBindings;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static DiContainerBindings QueueStartupAsync<T>(this DiContainerBindings diContainerBindings, Action<T, CancellationToken> startup)
+        {
+            diContainerBindings.QueueStartup(c =>
+            {
+                var resolved = c.Resolve<T>();
+                startup.Invoke(resolved, c.CancellationToken);
             });
             return diContainerBindings;
         }

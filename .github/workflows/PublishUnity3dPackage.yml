@@ -67,17 +67,55 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.OPENUPM_GITHUB_TOKEN }}
         run: |
+          old_run_id=$(gh run list --repo PereViader/OpenUPM --workflow Publish.yml --limit 1 --json databaseId -q '.[0].databaseId')
+
           gh workflow run Publish.yml \
             --repo PereViader/OpenUPM \
             --ref main \
             -f ingest_url=https://github.com/PereViader/ManualDi/releases/download/v${{ steps.get-version.outputs.version }}/com.pereviader.manualdi.sync.unity3d-${{ steps.get-version.outputs.version }}.tgz
+
+          echo "Waiting for workflow to start..."
+          for i in {1..60}; do
+            sleep 2
+            new_run_id=$(gh run list --repo PereViader/OpenUPM --workflow Publish.yml --limit 1 --json databaseId -q '.[0].databaseId')
+            if [ "$new_run_id" != "$old_run_id" ] && [ -n "$new_run_id" ]; then
+              break
+            fi
+          done
+
+          if [ "$new_run_id" == "$old_run_id" ] || [ -z "$new_run_id" ]; then
+            echo "Failed to start workflow or find run id"
+            exit 1
+          fi
+
+          echo "Watching workflow run $new_run_id"
+          gh run watch $new_run_id --repo PereViader/OpenUPM --exit-status
 
       - name: Trigger Async OpenUPM Publish
         if: ${{ steps.release-exists.outputs.exists == 'false' }}
         env:
           GITHUB_TOKEN: ${{ secrets.OPENUPM_GITHUB_TOKEN }}
         run: |
+          old_run_id=$(gh run list --repo PereViader/OpenUPM --workflow Publish.yml --limit 1 --json databaseId -q '.[0].databaseId')
+
           gh workflow run Publish.yml \
             --repo PereViader/OpenUPM \
             --ref main \
             -f ingest_url=https://github.com/PereViader/ManualDi/releases/download/v${{ steps.get-version.outputs.version }}/com.pereviader.manualdi.async.unity3d-${{ steps.get-version.outputs.version }}.tgz
+
+          echo "Waiting for workflow to start..."
+          for i in {1..60}; do
+            sleep 2
+            new_run_id=$(gh run list --repo PereViader/OpenUPM --workflow Publish.yml --limit 1 --json databaseId -q '.[0].databaseId')
+            if [ "$new_run_id" != "$old_run_id" ] && [ -n "$new_run_id" ]; then
+              break
+            fi
+          done
+
+          if [ "$new_run_id" == "$old_run_id" ] || [ -z "$new_run_id" ]; then
+            echo "Failed to start workflow or find run id"
+            exit 1
+          fi
+
+          echo "Watching workflow run $new_run_id"
+          gh run watch $new_run_id --repo PereViader/OpenUPM --exit-status

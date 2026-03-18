@@ -111,5 +111,55 @@ namespace ManualDi.Async.Unity3d.Tests.PlayMode
                 Assert.That(SceneManager.sceneCount, Is.EqualTo(1));
             });
         }
+
+        [UnityTest]
+        public IEnumerator FromLoadSceneAsyncGetComponentInChildren_Resolves_WhenNotCancelled()
+        {
+            yield return TestExtensions.Async(async ct =>
+            {
+                await using var container = await new DiContainerBindings().Install(b =>
+                {
+                    b.Bind<Image>().FromLoadSceneAsyncGetComponentInChildren(TestAssetReferences.Instance.SceneName);
+                }).Build(ct);
+
+                var image = container.Resolve<Image>();
+                Assert.IsNotNull(image);
+            });
+        }
+
+        [UnityTest]
+        public IEnumerator FromLoadSceneAsyncGetComponentInChildren_Cancelled_DisposesProperly()
+        {
+            yield return TestExtensions.Async(async ct =>
+            {
+                try
+                {
+                    using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+
+                    await using var container = await new DiContainerBindings().Install(b =>
+                    {
+                        var binding = b.Bind<Image>()
+                            .FromLoadSceneAsyncGetComponentInChildren(TestAssetReferences.Instance.SceneName);
+
+                        //Intercept delegate and use it to cancel the token on the same frame after starting the load
+                        FromAsyncDelegate fromDelegate = binding.GetFromAsyncDelegateNullable()!;
+                        binding.FromMethodAsync((c, ct) =>
+                        {
+                            var task = fromDelegate(c, ct);
+                            cts.Cancel();
+                            return task;
+                        });
+
+                    }).Build(cts.Token);
+
+                    Assert.Fail("Because it is cancelled during loading, this should never happen");
+                }
+                catch (OperationCanceledException)
+                {
+                }
+
+                Assert.That(SceneManager.sceneCount, Is.EqualTo(1));
+            });
+        }
     }
 }

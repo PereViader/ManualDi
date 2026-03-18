@@ -177,8 +177,16 @@ namespace ManualDi.Async.Unity3d
                 
                 c.QueueAsyncDispose(async () =>
                 {
-                    //TODO: Validate if we can unload this in the case of a cancellation where the scene is unloading before it has finished loading
-                    var operation = SceneManager.UnloadSceneAsync(scene)!;
+                    if (!asyncOperation.isDone)
+                    {
+                        await WaitAsyncOperation(asyncOperation, CancellationToken.None);
+                    }
+
+                    var operation = SceneManager.UnloadSceneAsync(scene);
+                    if (operation is null)
+                    {
+                        return;
+                    }
                     await WaitAsyncOperation(operation, CancellationToken.None);
                 });
 

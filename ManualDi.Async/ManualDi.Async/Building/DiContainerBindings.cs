@@ -44,12 +44,12 @@ namespace ManualDi.Async
             bindingCount++;
             
             var apparentType = type.TypeHandle.Value;
-            if (!bindingsByType.TryGetValue(apparentType, out var innerbinding)) //TODO: Maybe this is more efficient if we do a TryAdd instead (common case)
+            if (bindingsByType.TryAdd(apparentType, binding))
             {
-                bindingsByType.Add(apparentType, binding);
                 return;
             }
 
+            var innerbinding = bindingsByType[apparentType];
             while (innerbinding.NextBinding is not null)
             {
                 innerbinding = innerbinding.NextBinding;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -56,13 +56,13 @@ namespace ManualDi.Async.Generators
         {
             var classDeclaration = (ClassDeclarationSyntax)context.Node;
             var symbol = context.SemanticModel.GetDeclaredSymbol(classDeclaration, ct);
-            if (symbol is null || symbol.Locations.Length > 1)
+            if (symbol is null)
             {
                 return null;
             }
 
             var wellKnownTypes = new WellKnownTypes(context.SemanticModel.Compilation);
-            if (!HasManualDiAttribute(symbol, wellKnownTypes))
+            if (!HasManualDiAttributeOnDeclaration(symbol, classDeclaration, wellKnownTypes, ct))
             {
                 return null;
             }
@@ -718,9 +718,28 @@ namespace ManualDi.Async.Generators
             return visibility;
         }
 
-        private static bool HasManualDiAttribute(INamedTypeSymbol symbol, WellKnownTypes wellKnownTypes)
+        private static bool HasManualDiAttributeOnDeclaration(
+            INamedTypeSymbol symbol,
+            ClassDeclarationSyntax classDeclaration,
+            WellKnownTypes wellKnownTypes,
+            CancellationToken ct)
         {
-            return wellKnownTypes.HasManualDiAttribute(symbol);
+            foreach (var attribute in symbol.GetAttributes())
+            {
+                if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, wellKnownTypes.ManualDiAttribute))
+                {
+                    var syntaxRef = attribute.ApplicationSyntaxReference;
+                    if (syntaxRef != null)
+                    {
+                        var syntaxNode = syntaxRef.GetSyntax(ct);
+                        if (syntaxNode.SyntaxTree == classDeclaration.SyntaxTree && classDeclaration.Span.Contains(syntaxNode.Span))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
         }
 
         internal record ClassData(

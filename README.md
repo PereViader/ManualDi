@@ -83,8 +83,7 @@ Note: Source generator will never run on 3rd party libraries and System classes 
 
 Note: Source generation is opt-in. You must decorate your classes with `[ManualDi]` attribute for the generator to process them. This ensures better performance and avoids generating code for unrelated classes.
 
-Limitation of the source generator:
-- Does not run for partial classes defined across multiple declarations. It will only operate on partial classes that are declared once.
+Limitations of the source generator:
 - Does not run for classes that use the `required` keyword
 
 # Container Lifecycle

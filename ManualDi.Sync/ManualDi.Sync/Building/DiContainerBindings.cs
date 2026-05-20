@@ -42,12 +42,12 @@ namespace ManualDi.Sync
         internal void AddBinding(Binding binding, Type type)
         {
             var typeIntPtr = type.TypeHandle.Value;
-            if (!bindingsByType.TryGetValue(typeIntPtr, out var innerBinding))
+            if (bindingsByType.TryAdd(typeIntPtr, binding))
             {
-                bindingsByType.Add(typeIntPtr, binding);
                 return;
             }
 
+            var innerBinding = bindingsByType[typeIntPtr];
             while (innerBinding.NextBinding is not null)
             {
                 innerBinding = innerBinding.NextBinding;

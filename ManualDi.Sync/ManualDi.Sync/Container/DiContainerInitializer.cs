@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Sync
@@ -45,7 +45,14 @@ namespace ManualDi.Sync
                 initializeDelegate.Invoke(instance, container);
             }
             
-            o.Initializations.RemoveRange(initializationStartIndex, initializationCount);
+            if (initializationStartIndex is 0)
+            {
+                o.Initializations.Clear();
+            }
+            else
+            {
+                o.Initializations.RemoveRange(initializationStartIndex, initializationCount);
+            }
         }   
     }
 }

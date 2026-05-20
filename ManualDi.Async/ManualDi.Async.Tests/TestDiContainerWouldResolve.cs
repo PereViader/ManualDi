@@ -30,4 +30,32 @@ public class TestDiContainerWouldResolve
         Assert.That(container.WouldResolve<int>(), Is.False);
         Assert.That(container.WouldResolve<int, object>(), Is.True);
     }
+
+    [Test]
+    public async Task TestWouldResolveAsyncWithoutCondition()
+    {
+        await using var container = await new DiContainerBindings().Install(b =>
+        {
+            b.Bind<Task<int>>().FromInstance(Task.FromResult(1));
+        }).Build(CancellationToken.None);
+
+        Assert.That(container.WouldResolveAsync<int>(), Is.True);
+        Assert.That(container.WouldResolveAsync<object>(), Is.False);
+        Assert.That(container.WouldResolveAsync(typeof(int)), Is.True);
+        Assert.That(container.WouldResolveAsync(typeof(object)), Is.False);
+    }
+
+    [Test]
+    public async Task TestWouldResolveAsyncWithCondition()
+    {
+        await using var container = await new DiContainerBindings().Install(b =>
+        {
+            b.Bind<object>().FromInstance(new object()).WithId("3");
+            b.Bind<Task<int>>().FromInstance(Task.FromResult(1)).When(x => x.InjectedIntoId("3"));
+        }).Build(CancellationToken.None);
+
+        Assert.That(container.WouldResolveAsync<int>(), Is.False);
+        Assert.That(container.WouldResolveAsync<int, object>(), Is.True);
+        Assert.That(container.WouldResolveAsync(typeof(int), null, typeof(object), null), Is.True);
+    }
 }

@@ -42,12 +42,19 @@ namespace ManualDi.Sync
         internal void AddBinding(Binding binding, Type type)
         {
             var typeIntPtr = type.TypeHandle.Value;
+#if NETSTANDARD2_1 //TryAdd is not available on netstandard2.0
             if (bindingsByType.TryAdd(typeIntPtr, binding))
             {
                 return;
             }
-
             var innerBinding = bindingsByType[typeIntPtr];
+#elif NETSTANDARD2_0
+            if (!bindingsByType.TryGetValue(typeIntPtr, out var innerBinding))
+            {
+                bindingsByType.Add(typeIntPtr, binding);
+                return;
+            }
+#endif
             while (innerBinding.NextBinding is not null)
             {
                 innerBinding = innerBinding.NextBinding;

@@ -95,12 +95,6 @@ namespace ManualDi.Async
             initializeDelegates.Add(asyncContainerDelegate);
         }
         
-        [Obsolete("Use QueueInitialize instead")]
-        public void QueueInitialization(ContainerDelegate containerDelegate)
-        {
-            QueueInitialize(containerDelegate);
-        }
-        
         public void QueueStartup(ContainerDelegate containerDelegate)
         {
             startupDelegates.Add(containerDelegate);

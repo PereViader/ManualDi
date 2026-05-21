@@ -35,14 +35,16 @@ public static class SyncUtilsCommonDll
 
     static ProcessStartInfo GetProcessStartInfo()
     {
-        if (!File.Exists("C:/Program Files/Git/git-bash.exe"))
+        var gitBashPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Git", "git-bash.exe");
+
+        if (!File.Exists(gitBashPath))
         {
-            throw new InvalidOperationException("Could not find git bash at C:/Program Files/Git/git-bash.exe");
+            throw new InvalidOperationException($"Could not find git bash at {gitBashPath}");
         }
 
         return new ProcessStartInfo
         {
-            FileName = "C:/Program Files/Git/git-bash.exe",
+            FileName = gitBashPath,
             Arguments = Script + " --skip-unity3d",
             WorkingDirectory = RepositoryRootPath,
             UseShellExecute = false,

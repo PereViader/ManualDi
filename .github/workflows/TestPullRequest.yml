@@ -1,0 +1,16 @@
+name: Test Pull Request
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+    TestCommon:
+      uses: ./.github/workflows/TestCommon.yml
+      secrets: inherit
+
+    TestUnity:
+      uses: ./.github/workflows/TestUnity.yml
+      secrets: inherit

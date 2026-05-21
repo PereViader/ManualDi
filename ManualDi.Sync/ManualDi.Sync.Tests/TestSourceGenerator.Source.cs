@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -406,6 +406,18 @@ partial class Partial
 }
 
 partial class Partial
+{
+    public void Initialize() { }
+}
+
+partial class PartialAttributeOnSecond
+{
+    public PartialAttributeOnSecond(object o) { }
+    void Inject(object o) { }
+}
+
+[ManualDi]
+partial class PartialAttributeOnSecond
 {
     public void Initialize() { }
 }

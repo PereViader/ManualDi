@@ -1230,6 +1230,41 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
+    public static class ManualDi_PartialAttributeOnSecond_Extensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<PartialAttributeOnSecond> FromConstructor(this Binding<PartialAttributeOnSecond> binding)
+        {
+            return binding
+                .FromMethod(static c => new PartialAttributeOnSecond(
+                    c.Resolve<object>()))
+                .DependsOn(static d => {
+                    d.ConstructorDependency<object>();
+                });
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<PartialAttributeOnSecond> Default(this Binding<PartialAttributeOnSecond> binding)
+        {
+            return DefaultImpl(binding);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : PartialAttributeOnSecond
+        {
+            return binding
+                .Initialize(static o => ((PartialAttributeOnSecond)o).Initialize())
+                .SkipDisposable();
+        }
+    }
+}
+
+  
+#nullable enable
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Async
+{
     public static class ManualDi_InitializeAsyncCheck_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

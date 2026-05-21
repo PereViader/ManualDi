@@ -62,9 +62,24 @@ namespace ManualDi.Async.Generators
             }
 
             var wellKnownTypes = new WellKnownTypes(context.SemanticModel.Compilation);
-            if (!HasManualDiAttributeOnDeclaration(symbol, classDeclaration, wellKnownTypes, ct))
+            if (!wellKnownTypes.HasManualDiAttribute(symbol))
             {
                 return null;
+            }
+
+            if (classDeclaration.Modifiers.Any(SyntaxKind.PartialKeyword))
+            {
+                var firstDeclarationRef = symbol.DeclaringSyntaxReferences.FirstOrDefault();
+                if (firstDeclarationRef is null)
+                {
+                    return null;
+                }
+
+                var firstDeclarationNode = firstDeclarationRef.GetSyntax(ct);
+                if (firstDeclarationNode != classDeclaration)
+                {
+                    return null;
+                }
             }
 
             var accessibility = GetSymbolAccessibility(symbol);
@@ -716,30 +731,6 @@ namespace ManualDi.Async.Generators
             }
 
             return visibility;
-        }
-
-        private static bool HasManualDiAttributeOnDeclaration(
-            INamedTypeSymbol symbol,
-            ClassDeclarationSyntax classDeclaration,
-            WellKnownTypes wellKnownTypes,
-            CancellationToken ct)
-        {
-            foreach (var attribute in symbol.GetAttributes())
-            {
-                if (SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, wellKnownTypes.ManualDiAttribute))
-                {
-                    var syntaxRef = attribute.ApplicationSyntaxReference;
-                    if (syntaxRef != null)
-                    {
-                        var syntaxNode = syntaxRef.GetSyntax(ct);
-                        if (syntaxNode.SyntaxTree == classDeclaration.SyntaxTree && classDeclaration.Span.Contains(syntaxNode.Span))
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-            return false;
         }
 
         internal record ClassData(

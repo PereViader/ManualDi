@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+  checks: write
+
 jobs:
     TestCommon:
       uses: ./.github/workflows/TestCommon.yml

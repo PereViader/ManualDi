@@ -34,9 +34,9 @@ namespace ManualDi.Sync
 
         public void Initialize()
         {
-            foreach (var firstBinding in allBindings)
+            foreach (var firstBinding in allBindings.Values)
             {
-                Binding? binding = firstBinding.Value;
+                Binding? binding = firstBinding;
                 while (binding is not null)
                 {
                     if (!binding.IsTransient)

@@ -94,9 +94,9 @@ namespace ManualDi.Async
         {
             parentResolver = resolver;
             
-            foreach (var rootBinding in bindingsByType)
+            foreach (var rootBinding in bindingsByType.Values)
             {
-                injectedBinding = rootBinding.Value;
+                injectedBinding = rootBinding;
                 while (injectedBinding is not null)
                 {
                     injectedBinding.Dependencies?.Invoke(this);

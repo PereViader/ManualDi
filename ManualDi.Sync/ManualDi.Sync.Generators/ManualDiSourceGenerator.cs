@@ -16,7 +16,10 @@ namespace ManualDi.Sync.Generators
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             var classData = context.SyntaxProvider
-                .CreateSyntaxProvider(IsSyntaxNodeValid, GetClassData)
+                .ForAttributeWithMetadataName(
+                    "ManualDi.Sync.ManualDiAttribute",
+                    IsSyntaxNodeValid,
+                    GetClassData)
                 .Where(x => x is not null);
 
             context.RegisterSourceOutput(classData, Generate!);
@@ -34,14 +37,13 @@ namespace ManualDi.Sync.Generators
                 return false;
             }
 
-            // this searches for any property with using SyntaxKind.RequiredKeyword, the keyword is not available in CodeAnalysis 4.1.0
             foreach (var member in classDeclarationSyntax.Members)
             {
                 if (member is PropertyDeclarationSyntax propertyDeclaration)
                 {
                     foreach (var modifier in propertyDeclaration.Modifiers)
                     {
-                        if (modifier.IsKind((SyntaxKind)8447))
+                        if (modifier.IsKind(SyntaxKind.RequiredKeyword))
                         {
                             return false;
                         }
@@ -52,35 +54,14 @@ namespace ManualDi.Sync.Generators
             return true;
         }
 
-        private static ClassData? GetClassData(GeneratorSyntaxContext context, CancellationToken ct)
+        private static ClassData? GetClassData(GeneratorAttributeSyntaxContext context, CancellationToken ct)
         {
-            var classDeclaration = (ClassDeclarationSyntax)context.Node;
-            var symbol = context.SemanticModel.GetDeclaredSymbol(classDeclaration, ct);
-            if (symbol is null)
+            if (context.TargetSymbol is not INamedTypeSymbol symbol)
             {
                 return null;
             }
 
             var wellKnownTypes = new WellKnownTypes(context.SemanticModel.Compilation);
-            if (!wellKnownTypes.HasManualDiAttribute(symbol))
-            {
-                return null;
-            }
-
-            if (classDeclaration.Modifiers.Any(SyntaxKind.PartialKeyword))
-            {
-                var firstDeclarationRef = symbol.DeclaringSyntaxReferences.FirstOrDefault();
-                if (firstDeclarationRef is null)
-                {
-                    return null;
-                }
-
-                var firstDeclarationNode = firstDeclarationRef.GetSyntax(ct);
-                if (firstDeclarationNode != classDeclaration)
-                {
-                    return null;
-                }
-            }
 
             var accessibility = GetSymbolAccessibility(symbol);
             if (accessibility is not (Accessibility.Public or Accessibility.Internal))

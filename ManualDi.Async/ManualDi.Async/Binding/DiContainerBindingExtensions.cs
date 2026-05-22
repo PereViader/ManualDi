@@ -216,28 +216,34 @@ namespace ManualDi.Async
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Binding? GetBinding(this DiContainerBindings diContainerBindings, Type type)
         {
-            if (!diContainerBindings.bindingsByType.TryGetValue(type.TypeHandle.Value, out Binding? binding))
+            if (!diContainerBindings.bindingsByType.TryGetValue(type.TypeHandle.Value, out var node))
             {
                 return null;
             }
 
-            if (binding.FilterBindingDelegate is null)
+            if (node.Binding.FilterBindingDelegate is null)
             {
-                return binding;
+                return node.Binding;
             }
 
             //bindingContext.InjectedIntoBinding = injectedBinding;
-            do
+            
+            diContainerBindings.bindingContext.Binding = node.Binding;
+            if (node.Binding.FilterBindingDelegate?.Invoke(diContainerBindings.bindingContext) ?? true)
             {
-                diContainerBindings.bindingContext.Binding = binding;
+                return node.Binding;
+            }
 
-                if (binding.FilterBindingDelegate?.Invoke(diContainerBindings.bindingContext) ?? true)
+            var current = node.Next;
+            while (current is not null)
+            {
+                diContainerBindings.bindingContext.Binding = current.Binding;
+                if (current.Binding.FilterBindingDelegate?.Invoke(diContainerBindings.bindingContext) ?? true)
                 {
-                    return binding;
+                    return current.Binding;
                 }
-
-                binding = binding.NextBinding;
-            } while (binding is not null);
+                current = current.Next;
+            }
             
             return null;
         }

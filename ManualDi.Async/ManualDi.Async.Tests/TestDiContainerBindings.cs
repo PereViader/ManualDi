@@ -141,4 +141,26 @@ public class TestDiContainerBindings
             disposeDelegate.Invoke();
         });
     }
+
+    private class Other : IInterface2;
+
+    [Test]
+    public async Task TestMultipleApparentTypesDoesNotCrossWireBindings()
+    {
+        var container = await new DiContainerBindings().Install(b =>
+        {
+            b.Bind<IInterface1, IInterface2, Type>().FromMethod(_ => new Type());
+            b.Bind<IInterface2, Other>().FromMethod(_ => new Other());
+        }).Build(CancellationToken.None);
+
+        var resolutions1 = container.ResolveAll<IInterface1>();
+        var resolutions2 = container.ResolveAll<IInterface2>();
+
+        Assert.That(resolutions1.Count, Is.EqualTo(1));
+        Assert.That(resolutions1[0], Is.TypeOf<Type>());
+        
+        Assert.That(resolutions2.Count, Is.EqualTo(2));
+        Assert.That(resolutions2[0], Is.TypeOf<Type>());
+        Assert.That(resolutions2[1], Is.TypeOf<Other>());
+    }
 }

@@ -58,7 +58,6 @@ namespace ManualDi.Async
         internal object? InitializationDelegate;
         
         internal BindingWiredState BindingWiredState; // TODO: Check if it can be updated to bool
-        internal Binding? NextBinding;
         internal object? Instance;
     }
 

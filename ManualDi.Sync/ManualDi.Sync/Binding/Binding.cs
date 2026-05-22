@@ -24,7 +24,6 @@ namespace ManualDi.Sync
         public InstanceContainerDelegate? InitializationDelegate;
 
         public bool IsTransient; // Binding is either transient or single
-        internal Binding? NextBinding;
         internal object? Instance;
     }
     

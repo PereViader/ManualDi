@@ -10,7 +10,7 @@ namespace ManualDi.Async
 
     public sealed class DiContainerBindings
     {
-        internal readonly Dictionary<IntPtr, Binding> bindingsByType;
+        internal readonly Dictionary<IntPtr, BindingNode> bindingsByType;
         private readonly List<ContainerDelegate> injectDelegates;
         private readonly List<object> initializeDelegates;
         private readonly List<object> startupDelegates;
@@ -45,34 +45,42 @@ namespace ManualDi.Async
             
             var apparentType = type.TypeHandle.Value;
 #if NETSTANDARD2_1 //TryAdd is not available on netstandard2.0
-            if (bindingsByType.TryAdd(apparentType, binding))
+            if (bindingsByType.TryAdd(apparentType, new BindingNode(binding)))
             {
                 return;
             }
-            var innerbinding = bindingsByType[apparentType];
+            var node = bindingsByType[apparentType];
 #elif NETSTANDARD2_0
-            if (!bindingsByType.TryGetValue(apparentType, out var innerbinding))
+            if (!bindingsByType.TryGetValue(apparentType, out var node))
             {
-                bindingsByType.Add(apparentType, binding);
+                bindingsByType.Add(apparentType, new BindingNode(binding));
                 return;
             }
 #endif
-            while (innerbinding.NextBinding is not null)
+            if (node.Next is null)
             {
-                innerbinding = innerbinding.NextBinding;
+                var nextChainNode = new BindingChainNode(binding);
+                bindingsByType[apparentType] = new BindingNode(node.Binding, nextChainNode);
             }
-            
-            innerbinding.NextBinding = binding;
+            else
+            {
+                var current = node.Next;
+                while (current.Next is not null)
+                {
+                    current = current.Next;
+                }
+                current.Next = new BindingChainNode(binding);
+            }
         }
         
         internal Binding? GetBinding(Type type)
         {
             var typeIntPtr = type.TypeHandle.Value;
-            if (!bindingsByType.TryGetValue(typeIntPtr, out var binding))
+            if (!bindingsByType.TryGetValue(typeIntPtr, out var node))
             {
                 return null;
             }
-            return binding;
+            return node.Binding;
         }
         
         internal bool RemoveBinding(Type type)

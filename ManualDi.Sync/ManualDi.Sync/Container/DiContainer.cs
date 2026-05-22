@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -8,7 +8,7 @@ namespace ManualDi.Sync
 {
     public sealed class DiContainer : IDiContainer
     {
-        private readonly Dictionary<IntPtr, Binding> allBindings;
+        private readonly Dictionary<IntPtr, BindingNode> allBindings;
         private readonly IDiContainer? parentDiContainer;
         private readonly BindingContext bindingContext = new();
         private readonly CancellationTokenSource cancellationTokenSource = new();
@@ -19,8 +19,8 @@ namespace ManualDi.Sync
         
         public CancellationToken CancellationToken => cancellationTokenSource.Token;
         
-        public DiContainer(
-            Dictionary<IntPtr, Binding> allBindings, 
+        internal DiContainer(
+            Dictionary<IntPtr, BindingNode> allBindings, 
             IDiContainer? parentDiContainer,
             int? initializationsCount = null, 
             int? disposablesCount = null)
@@ -36,14 +36,20 @@ namespace ManualDi.Sync
         {
             foreach (var firstBinding in allBindings)
             {
-                Binding? binding = firstBinding.Value;
-                while (binding is not null)
+                var node = firstBinding.Value;
+                if (!node.Binding.IsTransient)
                 {
-                    if (!binding.IsTransient)
+                    ResolveBinding(node.Binding);
+                }
+
+                var current = node.Next;
+                while (current is not null)
+                {
+                    if (!current.Binding.IsTransient)
                     {
-                        ResolveBinding(binding);
+                        ResolveBinding(current.Binding);
                     }
-                    binding = binding.NextBinding;
+                    current = current.Next;
                 }
             }
         }
@@ -116,28 +122,34 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Binding? GetBinding(Type type)
         {
-            if (!allBindings.TryGetValue(type.TypeHandle.Value, out Binding? binding))
+            if (!allBindings.TryGetValue(type.TypeHandle.Value, out var node))
             {
                 return null;
             }
 
-            if (binding.FilterBindingDelegate is null)
+            if (node.Binding.FilterBindingDelegate is null)
             {
-                return binding;
+                return node.Binding;
             }
 
             bindingContext.InjectedIntoBinding = injectedBinding;
-            do
+            
+            bindingContext.Binding = node.Binding;
+            if (node.Binding.FilterBindingDelegate?.Invoke(bindingContext) ?? true)
             {
-                bindingContext.Binding = binding;
+                return node.Binding;
+            }
 
-                if (binding.FilterBindingDelegate?.Invoke(bindingContext) ?? true)
+            var current = node.Next;
+            while (current is not null)
+            {
+                bindingContext.Binding = current.Binding;
+                if (current.Binding.FilterBindingDelegate?.Invoke(bindingContext) ?? true)
                 {
-                    return binding;
+                    return current.Binding;
                 }
-
-                binding = binding.NextBinding;
-            } while (binding is not null);
+                current = current.Next;
+            }
             
             return null;
         }
@@ -145,45 +157,59 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Binding? GetBinding(Type type, FilterBindingDelegate filterBindingDelegate)
         {
-            if (!allBindings.TryGetValue(type.TypeHandle.Value, out Binding? binding))
+            if (!allBindings.TryGetValue(type.TypeHandle.Value, out var node))
             {
                 return null;
             }
 
             bindingContext.InjectedIntoBinding = injectedBinding;
-            do
+            
+            bindingContext.Binding = node.Binding;
+            if (filterBindingDelegate.Invoke(bindingContext) &&
+                (node.Binding.FilterBindingDelegate?.Invoke(bindingContext) ?? true))
             {
-                bindingContext.Binding = binding;
+                return node.Binding;
+            }
 
+            var current = node.Next;
+            while (current is not null)
+            {
+                bindingContext.Binding = current.Binding;
                 if (filterBindingDelegate.Invoke(bindingContext) &&
-                    (binding.FilterBindingDelegate?.Invoke(bindingContext) ?? true))
+                    (current.Binding.FilterBindingDelegate?.Invoke(bindingContext) ?? true))
                 {
-                    return binding;
+                    return current.Binding;
                 }
-
-                binding = binding.NextBinding;
-            } while (binding is not null);
+                current = current.Next;
+            }
             
             return null;
         }
 
         public void ResolveAllContainer(Type type, FilterBindingDelegate? filterBindingDelegate, IList resolutions)
         {
-            if (allBindings.TryGetValue(type.TypeHandle.Value, out Binding? binding))
+            if (allBindings.TryGetValue(type.TypeHandle.Value, out var node))
             {
                 bindingContext.InjectedIntoBinding = injectedBinding;
-                do
+                
+                bindingContext.Binding = node.Binding;
+                if ((filterBindingDelegate?.Invoke(bindingContext) ?? true) &&
+                    (node.Binding.FilterBindingDelegate?.Invoke(bindingContext) ?? true))
                 {
-                    bindingContext.Binding = binding;
+                    resolutions.Add(ResolveBinding(node.Binding));
+                }
 
+                var current = node.Next;
+                while (current is not null)
+                {
+                    bindingContext.Binding = current.Binding;
                     if ((filterBindingDelegate?.Invoke(bindingContext) ?? true) &&
-                        (binding.FilterBindingDelegate?.Invoke(bindingContext) ?? true))
+                        (current.Binding.FilterBindingDelegate?.Invoke(bindingContext) ?? true))
                     {
-                        resolutions.Add(ResolveBinding(binding));
+                        resolutions.Add(ResolveBinding(current.Binding));
                     }
-
-                    binding = binding.NextBinding;
-                } while (binding is not null);
+                    current = current.Next;
+                }
             }
 
             parentDiContainer?.ResolveAllContainer(type, filterBindingDelegate, resolutions);

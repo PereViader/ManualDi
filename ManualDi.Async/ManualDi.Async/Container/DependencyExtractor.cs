@@ -6,13 +6,13 @@ namespace ManualDi.Async
 {
     internal class DependencyExtractor : IDependencyResolver
     {
-        private readonly Dictionary<IntPtr, Binding> bindingsByType;
+        private readonly Dictionary<IntPtr, BindingNode> bindingsByType;
         private readonly BindingContext bindingContext = new();
         
         private Binding? injectedBinding;
         private IDependencyResolver? parentResolver;
 
-        public DependencyExtractor(Dictionary<IntPtr, Binding> bindingsByType)
+        public DependencyExtractor(Dictionary<IntPtr, BindingNode> bindingsByType)
         {
             this.bindingsByType = bindingsByType;
         }
@@ -96,11 +96,16 @@ namespace ManualDi.Async
             
             foreach (var rootBinding in bindingsByType)
             {
-                injectedBinding = rootBinding.Value;
-                while (injectedBinding is not null)
+                var node = rootBinding.Value;
+                injectedBinding = node.Binding;
+                injectedBinding.Dependencies?.Invoke(this);
+
+                var current = node.Next;
+                while (current is not null)
                 {
+                    injectedBinding = current.Binding;
                     injectedBinding.Dependencies?.Invoke(this);
-                    injectedBinding = injectedBinding.NextBinding;
+                    current = current.Next;
                 }
             }
         }
@@ -108,28 +113,34 @@ namespace ManualDi.Async
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Binding? GetBinding(Type type)
         {
-            if (!bindingsByType.TryGetValue(type.TypeHandle.Value, out Binding? binding))
+            if (!bindingsByType.TryGetValue(type.TypeHandle.Value, out var node))
             {
                 return null;
             }
 
-            if (binding.FilterBindingDelegate is null)
+            if (node.Binding.FilterBindingDelegate is null)
             {
-                return binding;
+                return node.Binding;
             }
 
             bindingContext.InjectedIntoBinding = injectedBinding;
-            do
+            
+            bindingContext.Binding = node.Binding;
+            if (node.Binding.FilterBindingDelegate?.Invoke(bindingContext) ?? true)
             {
-                bindingContext.Binding = binding;
+                return node.Binding;
+            }
 
-                if (binding.FilterBindingDelegate?.Invoke(bindingContext) ?? true)
+            var current = node.Next;
+            while (current is not null)
+            {
+                bindingContext.Binding = current.Binding;
+                if (current.Binding.FilterBindingDelegate?.Invoke(bindingContext) ?? true)
                 {
-                    return binding;
+                    return current.Binding;
                 }
-
-                binding = binding.NextBinding;
-            } while (binding is not null);
+                current = current.Next;
+            }
             
             return null;
         }
@@ -137,24 +148,31 @@ namespace ManualDi.Async
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Binding? GetBinding(Type type, FilterBindingDelegate filterBindingDelegate)
         {
-            if (!bindingsByType.TryGetValue(type.TypeHandle.Value, out Binding? binding))
+            if (!bindingsByType.TryGetValue(type.TypeHandle.Value, out var node))
             {
                 return null;
             }
 
             bindingContext.InjectedIntoBinding = injectedBinding;
-            do
+            
+            bindingContext.Binding = node.Binding;
+            if (filterBindingDelegate.Invoke(bindingContext) &&
+                (node.Binding.FilterBindingDelegate?.Invoke(bindingContext) ?? true))
             {
-                bindingContext.Binding = binding;
+                return node.Binding;
+            }
 
+            var current = node.Next;
+            while (current is not null)
+            {
+                bindingContext.Binding = current.Binding;
                 if (filterBindingDelegate.Invoke(bindingContext) &&
-                    (binding.FilterBindingDelegate?.Invoke(bindingContext) ?? true))
+                    (current.Binding.FilterBindingDelegate?.Invoke(bindingContext) ?? true))
                 {
-                    return binding;
+                    return current.Binding;
                 }
-
-                binding = binding.NextBinding;
-            } while (binding is not null);
+                current = current.Next;
+            }
             
             return null;
         }

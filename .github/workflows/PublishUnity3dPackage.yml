@@ -8,6 +8,12 @@ jobs:
       contents: write
 
     runs-on: ubuntu-latest
+
+    env:
+      UPM_SERVICE_ACCOUNT_KEY_ID: ${{ secrets.UPM_SERVICE_ACCOUNT_KEY_ID }}
+      UPM_SERVICE_ACCOUNT_KEY_SECRET: ${{ secrets.UPM_SERVICE_ACCOUNT_KEY_SECRET }}
+      UPM_ORG_ID: ${{ secrets.UPM_ORG_ID }}
+      DIST_DIR: /tmp/signed-upm-dist
     
     steps:
       - uses: actions/checkout@v4.1.4
@@ -50,6 +56,41 @@ jobs:
         run: |
           bash ./ManualDi.Async.Unity3d/GenerateUnityPackage/GeneratePackage.sh
 
+      - name: Install Unity UPM CLI
+        if: ${{ steps.release-exists.outputs.exists == 'false' }}
+        run: |
+          curl -fsSL https://cdn.packages.unity.com/upm-cli/install.sh -o install.sh
+          bash install.sh
+          echo "$HOME/.upm/bin" >> "$GITHUB_PATH"
+
+      - name: Verify Unity UPM CLI
+        if: ${{ steps.release-exists.outputs.exists == 'false' }}
+        run: upm --help
+
+      - name: Sign and Pack Packages
+        if: ${{ steps.release-exists.outputs.exists == 'false' }}
+        run: |
+          mkdir -p "$DIST_DIR"
+          upm pack ./ManualDi.Sync.Unity3d.Package --organization-id "$UPM_ORG_ID" --destination "$DIST_DIR"
+          upm pack ./ManualDi.Async.Unity3d.Package --organization-id "$UPM_ORG_ID" --destination "$DIST_DIR"
+
+      - name: Print signed package info
+        if: ${{ steps.release-exists.outputs.exists == 'false' }}
+        run: |
+          shopt -s nullglob
+          archives=("$DIST_DIR"/*.tgz "$DIST_DIR"/*.tar.gz)
+          if [ "${#archives[@]}" -ne 2 ]; then
+            printf 'Expected exactly two signed package archives, found %s\n' "${#archives[@]}" >&2
+            exit 1
+          fi
+
+          for archive in "${archives[@]}"; do
+            printf 'Checking Archive: %s\n' "$(basename "$archive")"
+            tar -tzf "$archive" | grep -qx 'package/package.json'
+            tar -tzf "$archive" | grep -qx 'package/.attestation.p7m'
+            tar -xOzf "$archive" package/package.json | jq '{name, version}'
+          done
+
       - name: Create github release
         if: ${{ steps.release-exists.outputs.exists == 'false' }}
         uses: softprops/action-gh-release@v2
@@ -59,63 +100,5 @@ jobs:
           body: ${{ steps.get-changelog.outputs.changelog }}
           prerelease: ${{ steps.get-version.outputs.isPrerelease }}
           files: |
-            ManualDi.Sync.Unity3d.Package/com.pereviader.manualdi.sync.unity3d-${{ steps.get-version.outputs.version }}.tgz
-            ManualDi.Async.Unity3d.Package/com.pereviader.manualdi.async.unity3d-${{ steps.get-version.outputs.version }}.tgz
-
-      - name: Trigger Sync OpenUPM Publish
-        if: ${{ steps.release-exists.outputs.exists == 'false' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.OPENUPM_GITHUB_TOKEN }}
-        run: |
-          old_run_id=$(gh run list --repo PereViader/OpenUPM --workflow Publish.yml --limit 1 --json databaseId -q '.[0].databaseId')
-
-          gh workflow run Publish.yml \
-            --repo PereViader/OpenUPM \
-            --ref main \
-            -f ingest_url=https://github.com/PereViader/ManualDi/releases/download/v${{ steps.get-version.outputs.version }}/com.pereviader.manualdi.sync.unity3d-${{ steps.get-version.outputs.version }}.tgz
-
-          echo "Waiting for workflow to start..."
-          for i in {1..60}; do
-            sleep 2
-            new_run_id=$(gh run list --repo PereViader/OpenUPM --workflow Publish.yml --limit 1 --json databaseId -q '.[0].databaseId')
-            if [ "$new_run_id" != "$old_run_id" ] && [ -n "$new_run_id" ]; then
-              break
-            fi
-          done
-
-          if [ "$new_run_id" == "$old_run_id" ] || [ -z "$new_run_id" ]; then
-            echo "Failed to start workflow or find run id"
-            exit 1
-          fi
-
-          echo "Watching workflow run $new_run_id"
-          gh run watch $new_run_id --repo PereViader/OpenUPM --exit-status
-
-      - name: Trigger Async OpenUPM Publish
-        if: ${{ steps.release-exists.outputs.exists == 'false' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.OPENUPM_GITHUB_TOKEN }}
-        run: |
-          old_run_id=$(gh run list --repo PereViader/OpenUPM --workflow Publish.yml --limit 1 --json databaseId -q '.[0].databaseId')
-
-          gh workflow run Publish.yml \
-            --repo PereViader/OpenUPM \
-            --ref main \
-            -f ingest_url=https://github.com/PereViader/ManualDi/releases/download/v${{ steps.get-version.outputs.version }}/com.pereviader.manualdi.async.unity3d-${{ steps.get-version.outputs.version }}.tgz
-
-          echo "Waiting for workflow to start..."
-          for i in {1..60}; do
-            sleep 2
-            new_run_id=$(gh run list --repo PereViader/OpenUPM --workflow Publish.yml --limit 1 --json databaseId -q '.[0].databaseId')
-            if [ "$new_run_id" != "$old_run_id" ] && [ -n "$new_run_id" ]; then
-              break
-            fi
-          done
-
-          if [ "$new_run_id" == "$old_run_id" ] || [ -z "$new_run_id" ]; then
-            echo "Failed to start workflow or find run id"
-            exit 1
-          fi
-
-          echo "Watching workflow run $new_run_id"
-          gh run watch $new_run_id --repo PereViader/OpenUPM --exit-status
+            /tmp/signed-upm-dist/*.tgz
+            /tmp/signed-upm-dist/*.tar.gz

@@ -55,5 +55,3 @@ else
     sh ./ManualDi.Sync.Unity3d/GenerateUnityPackage/GenerateUnity3dPackage.sh
 fi
 sh ./ManualDi.Sync.Unity3d/GenerateUnityPackage/GenerateUnity3dMetas.sh
-cd ManualDi.Sync.Unity3d.Package
-npm pack

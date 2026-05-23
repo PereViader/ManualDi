@@ -145,9 +145,8 @@ namespace ManualDi.Async
         {
             injectBindings = new();
             
-            foreach (var rootBinding in bindingsByType)
+            foreach (var node in bindingsByType.Values)
             {
-                var node = rootBinding.Value;
                 var binding = node.Binding;
                 if (binding.BindingWiredState < BindingWiredState.Wired)
                 {

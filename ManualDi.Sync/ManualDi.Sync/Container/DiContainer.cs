@@ -34,9 +34,8 @@ namespace ManualDi.Sync
 
         public void Initialize()
         {
-            foreach (var firstBinding in allBindings)
+            foreach (var node in allBindings.Values)
             {
-                var node = firstBinding.Value;
                 if (!node.Binding.IsTransient)
                 {
                     ResolveBinding(node.Binding);

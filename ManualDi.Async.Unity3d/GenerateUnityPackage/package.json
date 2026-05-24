@@ -3,7 +3,7 @@
     "version": "$version",
     "displayName": "ManualDi.Async",
     "description": "Fast C# dependency injection library that uses no reflexion",
-    "unity": "2022.3",
+    "unity": "6000.0",
     "license": "MIT",
     "documentationUrl": "https://github.com/PereViader/ManualDi",
     "changelogUrl": "https://github.com/PereViader/ManualDi/commits/main/",

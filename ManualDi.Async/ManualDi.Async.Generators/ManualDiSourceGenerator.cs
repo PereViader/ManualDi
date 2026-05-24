@@ -22,7 +22,108 @@ namespace ManualDi.Async.Generators
                     GetClassData)
                 .Where(x => x is not null);
 
-            context.RegisterSourceOutput(classData, Generate!);
+            var extensionMethods = context.SyntaxProvider
+                .ForAttributeWithMetadataName(
+                    "ManualDi.Async.ManualDiGeneratorExtensionAttribute",
+                    IsExtensionMethodSyntaxNodeValid,
+                    GetExtensionMethodData)
+                .Where(x => x is not null)
+                .Collect()
+                .Select((methods, ct) => new EquatableArray<ExtensionMethodData>(methods.Select(x => x!).ToArray()));
+
+            var combined = classData.Combine(extensionMethods);
+
+            context.RegisterSourceOutput(combined, Generate!);
+        }
+
+        private static bool IsExtensionMethodSyntaxNodeValid(SyntaxNode node, CancellationToken ct)
+        {
+            if (node is not MethodDeclarationSyntax methodDeclarationSyntax)
+            {
+                return false;
+            }
+
+            if (!methodDeclarationSyntax.Modifiers.Any(SyntaxKind.StaticKeyword))
+            {
+                return false;
+            }
+
+            var firstParameter = methodDeclarationSyntax.ParameterList.Parameters.FirstOrDefault();
+            if (firstParameter == null || !firstParameter.Modifiers.Any(SyntaxKind.ThisKeyword))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private static ExtensionMethodData? GetExtensionMethodData(GeneratorAttributeSyntaxContext context, CancellationToken ct)
+        {
+            if (context.TargetSymbol is not IMethodSymbol methodSymbol)
+            {
+                return null;
+            }
+
+            if (!methodSymbol.IsStatic || !methodSymbol.IsExtensionMethod)
+            {
+                return null;
+            }
+
+            var accessibility = GetSymbolAccessibility(methodSymbol);
+            if (accessibility is not (Accessibility.Public or Accessibility.Internal))
+            {
+                return null;
+            }
+
+            if (methodSymbol.Parameters.Length == 0)
+            {
+                return null;
+            }
+
+            var firstParam = methodSymbol.Parameters[0];
+            if (firstParam.Type is not INamedTypeSymbol firstParamType)
+            {
+                return null;
+            }
+
+            if (firstParamType.Name != "Binding" || 
+                firstParamType.ContainingNamespace?.ToDisplayString() != "ManualDi.Async" ||
+                firstParamType.TypeArguments.Length != 1)
+            {
+                return null;
+            }
+
+            var bindingArg = firstParamType.TypeArguments[0];
+            bool hasStructConstraint = false;
+            var constraintTypes = new List<string>();
+
+            if (bindingArg.TypeKind == TypeKind.TypeParameter && 
+                SymbolEqualityComparer.Default.Equals(bindingArg.ContainingSymbol, methodSymbol) &&
+                bindingArg is ITypeParameterSymbol typeParamSymbol)
+            {
+                hasStructConstraint = typeParamSymbol.HasValueTypeConstraint || typeParamSymbol.HasUnmanagedTypeConstraint;
+                foreach (var constraintType in typeParamSymbol.ConstraintTypes)
+                {
+                    constraintTypes.Add(constraintType.ToDisplayString());
+                }
+            }
+            else
+            {
+                constraintTypes.Add(bindingArg.ToDisplayString());
+            }
+
+            var containingType = methodSymbol.ContainingType;
+            if (containingType == null)
+            {
+                return null;
+            }
+
+            return new ExtensionMethodData(
+                FullyQualifiedClassName: containingType.ToDisplayString(),
+                MethodName: methodSymbol.Name,
+                HasStructConstraint: hasStructConstraint,
+                ConstraintTypes: new EquatableArray<string>(constraintTypes.ToArray())
+            );
         }
 
         private static bool IsSyntaxNodeValid(SyntaxNode node, CancellationToken ct)
@@ -85,6 +186,48 @@ namespace ManualDi.Async.Generators
             var baseTypeCall = GetBaseTypeCall(symbol, wellKnownTypes, context.SemanticModel.Compilation, ct);
             var typeParameterConstraints = GetTypeParameterConstraints(symbol);
 
+            var baseTypesAndInterfaces = new List<string>();
+            baseTypesAndInterfaces.Add(symbol.ToDisplayString());
+            foreach (var i in symbol.AllInterfaces)
+            {
+                baseTypesAndInterfaces.Add(i.ToDisplayString());
+            }
+            var tempBase = symbol.BaseType;
+            while (tempBase != null)
+            {
+                baseTypesAndInterfaces.Add(tempBase.ToDisplayString());
+                tempBase = tempBase.BaseType;
+            }
+
+            INamedTypeSymbol? baseDiSymbol = null;
+            var currentBase = symbol.BaseType;
+            while (currentBase != null)
+            {
+                if (wellKnownTypes.HasManualDiAttribute(currentBase))
+                {
+                    baseDiSymbol = currentBase;
+                    break;
+                }
+                currentBase = currentBase.BaseType;
+            }
+
+            var baseDiTypesAndInterfaces = new List<string>();
+            bool hasBaseDi = baseDiSymbol != null;
+            if (baseDiSymbol != null)
+            {
+                baseDiTypesAndInterfaces.Add(baseDiSymbol.ToDisplayString());
+                foreach (var i in baseDiSymbol.AllInterfaces)
+                {
+                    baseDiTypesAndInterfaces.Add(i.ToDisplayString());
+                }
+                var tempBaseDi = baseDiSymbol.BaseType;
+                while (tempBaseDi != null)
+                {
+                    baseDiTypesAndInterfaces.Add(tempBaseDi.ToDisplayString());
+                    tempBaseDi = tempBaseDi.BaseType;
+                }
+            }
+
             return new ClassData(
                 FileName: fileName,
                 ClassName: className,
@@ -99,7 +242,10 @@ namespace ManualDi.Async.Generators
                 HasInitializeAsyncMethod: hasInitializeAsyncMethod,
                 IsDisposable: isDisposable,
                 BaseTypeCall: baseTypeCall,
-                IsSealed: symbol.IsSealed
+                IsSealed: symbol.IsSealed,
+                BaseTypesAndInterfaces: baseTypesAndInterfaces,
+                BaseDiTypesAndInterfaces: baseDiTypesAndInterfaces,
+                HasBaseDi: hasBaseDi
             );
         }
 
@@ -348,8 +494,10 @@ namespace ManualDi.Async.Generators
             return new ServiceResolution(typeName, injectId, method, isCyclic);
         }
 
-        private void Generate(SourceProductionContext context, ClassData data)
+        private void Generate(SourceProductionContext context, (ClassData ClassData, EquatableArray<ExtensionMethodData> ExtensionMethods) tuple)
         {
+            var data = tuple.ClassData;
+            var extensionMethods = tuple.ExtensionMethods;
             var stringBuilder = new StringBuilder();
 
             stringBuilder.AppendLine($$"""
@@ -405,7 +553,7 @@ namespace ManualDi.Async.Generators
 
             if (data.IsSealed)
             {
-                AppendDefaultImplBody(stringBuilder, data);
+                AppendDefaultImplBody(stringBuilder, data, extensionMethods);
                 stringBuilder.AppendLine("""
                         }
                 """);
@@ -426,7 +574,7 @@ namespace ManualDi.Async.Generators
 
                 """);
 
-                AppendDefaultImplBody(stringBuilder, data);
+                AppendDefaultImplBody(stringBuilder, data, extensionMethods);
 
                 stringBuilder.AppendLine("""
                         }
@@ -441,7 +589,7 @@ namespace ManualDi.Async.Generators
             context.AddSource($"{data.FileName}.g.cs", SourceText.From(stringBuilder.ToString(), Encoding.UTF8));
         }
 
-        private static void AppendDefaultImplBody(StringBuilder stringBuilder, ClassData data)
+        private static void AppendDefaultImplBody(StringBuilder stringBuilder, ClassData data, EquatableArray<ExtensionMethodData> extensionMethods)
         {
             if (data.BaseTypeCall is not null)
             {
@@ -455,6 +603,47 @@ namespace ManualDi.Async.Generators
                 }
 
                 stringBuilder.AppendLine($"            {data.BaseTypeCall.BaseExtensionsClassName}.DefaultImpl<{typeArguments}>(binding);");
+            }
+
+            if (extensionMethods.HasValue && extensionMethods.Count > 0)
+            {
+                foreach (var ext in extensionMethods)
+                {
+                    if (ext == null) continue;
+                    if (ext.HasStructConstraint) continue;
+
+                    bool allConstraintsSatisfied = true;
+                    foreach (var constraintType in ext.ConstraintTypes)
+                    {
+                        if (!data.BaseTypesAndInterfaces.Contains(constraintType))
+                        {
+                            allConstraintsSatisfied = false;
+                            break;
+                        }
+                    }
+
+                    if (!allConstraintsSatisfied) continue;
+
+                    if (data.HasBaseDi)
+                    {
+                        bool baseSatisfiesAll = true;
+                        foreach (var constraintType in ext.ConstraintTypes)
+                        {
+                            if (!data.BaseDiTypesAndInterfaces.Contains(constraintType))
+                            {
+                                baseSatisfiesAll = false;
+                                break;
+                            }
+                        }
+
+                        if (baseSatisfiesAll)
+                        {
+                            continue;
+                        }
+                    }
+
+                    stringBuilder.AppendLine($"            {ext.FullyQualifiedClassName}.{ext.MethodName}(binding);");
+                }
             }
 
             stringBuilder.Append("            return binding");
@@ -728,10 +917,20 @@ namespace ManualDi.Async.Generators
             bool HasInitializeAsyncMethod,
             bool IsDisposable,
             BaseTypeCall? BaseTypeCall,
-            bool IsSealed
+            bool IsSealed,
+            EquatableArray<string> BaseTypesAndInterfaces,
+            EquatableArray<string> BaseDiTypesAndInterfaces,
+            bool HasBaseDi
         );
 
         internal record BaseTypeCall(string BaseExtensionsClassName, string TypeArguments);
+
+        internal record ExtensionMethodData(
+            string FullyQualifiedClassName,
+            string MethodName,
+            bool HasStructConstraint,
+            EquatableArray<string> ConstraintTypes
+        );
 
         internal abstract record Resolution;
 

@@ -453,3 +453,47 @@ public class TestOutParam
         test = "test";
     }
 }
+
+//This checks that that the source generated Default method does not call the DefaultImpl method on a non source generated class
+[ManualDi]
+public class DependsOnSystemClass : TaskCompletionSource
+{
+}
+
+//This checks that the source generated Default method calls the DefaultImpl method for the Base on the Child
+[ManualDi]
+public abstract class Base { }
+[ManualDi]
+public class Child : Base { }
+
+public interface ISimpleExtension
+{
+    void DoSomething();
+}
+
+public static class SimpleExtensionManualDiExtensions
+{
+    [ManualDiGeneratorExtension]
+    public static Binding<TConcrete> LinkSimpleExtension<TConcrete>(this Binding<TConcrete> binding)
+        where TConcrete : ISimpleExtension
+    {
+        return binding.Initialize(o => ((ISimpleExtension)o).DoSomething());
+    }
+}
+
+[ManualDi]
+public class SomeExtensionTarget : ISimpleExtension
+{
+    public void DoSomething() {}
+}
+
+[ManualDi]
+public class BaseExtensionTarget : ISimpleExtension
+{
+    public void DoSomething() {}
+}
+
+[ManualDi]
+public class ChildExtensionTarget : BaseExtensionTarget
+{
+}

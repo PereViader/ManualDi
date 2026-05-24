@@ -963,7 +963,51 @@ public class A
     }
 }
 
-b.Bind<A>().Default().FromConstructor();
+## Generator Extensions
+
+The `[ManualDiGeneratorExtension]` attribute allows you to write static extension methods on `Binding<T>` that are automatically invoked during the source-generated `Default` configuration of any type that satisfies the extension method's generic constraints.
+
+This is extremely useful for implementing aspect-oriented features or automatic cross-cutting concerns (e.g. automatically calling `.LinkFeature()` or subscribing components to a system if they implement a specific interface).
+
+### Example
+
+1. **Define an interface and your extension method:**
+   Mark the extension method with `[ManualDiGeneratorExtension]`. 
+   
+```csharp
+   public interface ICustomExtension
+   {
+       void DoSomething();
+   }
+
+   public static class CustomExtensionManualDiExtensions
+   {
+       [ManualDiGeneratorExtension]
+       public static Binding<TConcrete> LinkCustomExtension<TConcrete>(this Binding<TConcrete> binding)
+           where TConcrete : ICustomExtension
+       {
+           return binding.Initialize((o, c) => ((ICustomExtension)o).DoSomething());
+       }
+   }
+```
+
+2. **Define a class that implements the interface:**
+```csharp
+   [ManualDi]
+   public class CustomExtensionTarget : ICustomExtension
+   {
+       public void DoSomething()
+       {
+           // Will be called automatically when initialized by the container
+       }
+   }
+```
+
+3. **Bind the target class:**
+   Simply call `.Default()` on your binding. The source generator automatically detects that `CustomExtensionTarget` implements `ICustomExtension` and generates a call to `LinkCustomExtension(binding)` inside `DefaultImpl`:
+   
+```csharp
+b.Bind<CustomExtensionTarget>().Default().FromConstructor();
 ```
 
 # Resolving

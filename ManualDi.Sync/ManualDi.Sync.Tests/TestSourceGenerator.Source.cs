@@ -489,3 +489,35 @@ public class DependsOnSystemClass : TaskCompletionSource
 public abstract class Base { }
 [ManualDi]
 public class Child : Base { }
+
+public interface ISimpleExtension
+{
+    void DoSomething();
+}
+
+public static class SimpleExtensionManualDiExtensions
+{
+    [ManualDiGeneratorExtension]
+    public static Binding<TConcrete> LinkSimpleExtension<TConcrete>(this Binding<TConcrete> binding)
+        where TConcrete : ISimpleExtension
+    {
+        return binding.Initialize((o, c) => ((ISimpleExtension)o).DoSomething());
+    }
+}
+
+[ManualDi]
+public class SomeExtensionTarget : ISimpleExtension
+{
+    public void DoSomething() {}
+}
+
+[ManualDi]
+public class BaseExtensionTarget : ISimpleExtension
+{
+    public void DoSomething() {}
+}
+
+[ManualDi]
+public class ChildExtensionTarget : BaseExtensionTarget
+{
+}

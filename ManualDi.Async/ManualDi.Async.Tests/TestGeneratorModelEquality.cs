@@ -33,6 +33,7 @@ public class TestGeneratorModelEquality
         Assert.That(baseClassData, Is.Not.EqualTo(baseClassData with { HasInitializeAsyncMethod = !baseClassData.HasInitializeAsyncMethod }));
         Assert.That(baseClassData, Is.Not.EqualTo(baseClassData with { IsDisposable = !baseClassData.IsDisposable }));
         Assert.That(baseClassData, Is.Not.EqualTo(baseClassData with { IsSealed = !baseClassData.IsSealed }));
+        Assert.That(baseClassData, Is.Not.EqualTo(baseClassData with { HasBaseDi = !baseClassData.HasBaseDi }));
         
         // BaseTypeCall modification
         Assert.That(baseClassData, Is.Not.EqualTo(baseClassData with { BaseTypeCall = new ManualDiSourceGenerator.BaseTypeCall("Base2", "T") }));
@@ -151,7 +152,10 @@ public class TestGeneratorModelEquality
             HasInitializeAsyncMethod: false,
             IsDisposable: false,
             BaseTypeCall: new ManualDiSourceGenerator.BaseTypeCall("BaseExtensions", "T"),
-            IsSealed: true
+            IsSealed: true,
+            BaseTypesAndInterfaces: default,
+            BaseDiTypesAndInterfaces: default,
+            HasBaseDi: false
         );
     }
 }

@@ -32,42 +32,50 @@ namespace ManualDi.Async
 
         private static object?[] ResolveParameters(IDiContainer diContainer, Delegate @delegate)
         {
-            return @delegate.Method.GetParameters()
-                .Select(parameter =>
+            var parameters = @delegate.Method.GetParameters();
+            var resolvedParameters = new object?[parameters.Length];
+
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                var parameter = parameters[i];
+                var type = parameter.ParameterType;
+                var underlyingType = Nullable.GetUnderlyingType(type);
+                var resolutionType = underlyingType ?? type;
+
+                if (resolutionType == typeof(IDiContainer))
                 {
-                    var type = parameter.ParameterType;
-                    var underlyingType = Nullable.GetUnderlyingType(type);
-                    var resolutionType = underlyingType ?? type;
-                    
-                    if (resolutionType == typeof(IDiContainer))
-                    {
-                        return diContainer;
-                    }
+                    resolvedParameters[i] = diContainer;
+                    continue;
+                }
 
-                    if (resolutionType == typeof(CancellationToken))
-                    {
-                        return diContainer.CancellationToken;
-                    }
-                    
-                    var filter = CreateFilterForParameter(parameter);
+                if (resolutionType == typeof(CancellationToken))
+                {
+                    resolvedParameters[i] = diContainer.CancellationToken;
+                    continue;
+                }
 
-                    var resolution = filter is null
-                        ? diContainer.ResolveContainer(resolutionType)
-                        : diContainer.ResolveContainer(resolutionType, filter);
+                var filter = CreateFilterForParameter(parameter);
 
-                    if (resolution is not null)
-                    {
-                        return resolution;
-                    }
+                var resolution = filter is null
+                    ? diContainer.ResolveContainer(resolutionType)
+                    : diContainer.ResolveContainer(resolutionType, filter);
 
-                    if (IsNullable(parameter))
-                    {
-                        return null;
-                    }
+                if (resolution is not null)
+                {
+                    resolvedParameters[i] = resolution;
+                    continue;
+                }
 
-                    throw new InvalidOperationException($"Could not resolve element of type {type.FullName} for parameter {parameter.Name}");
-                })
-                .ToArray();
+                if (IsNullable(parameter))
+                {
+                    resolvedParameters[i] = null;
+                    continue;
+                }
+
+                throw new InvalidOperationException($"Could not resolve element of type {type.FullName} for parameter {parameter.Name}");
+            }
+
+            return resolvedParameters;
         }
 
         private static FilterBindingDelegate? CreateFilterForParameter(ParameterInfo parameter)

@@ -19,7 +19,6 @@ namespace ManualDi.Async
         private Binding? injectedBinding;
         private readonly CancellationTokenSource cancellationTokenSource;
         private readonly List<object> disposables;
-        private HashSet<Binding>? injectBindings;
         private bool disposedValue;
         
         public CancellationToken CancellationToken => cancellationTokenSource.Token;
@@ -143,14 +142,12 @@ namespace ManualDi.Async
 
         private void SetupBindings()
         {
-            injectBindings = new();
-            
             foreach (var node in bindingsByType.Values)
             {
                 var binding = node.Binding;
-                if (binding.BindingWiredState < BindingWiredState.Wired)
+                if (!binding.IsWired)
                 {
-                    binding.BindingWiredState = BindingWiredState.Wired;
+                    binding.IsWired = true;
                     injectedBinding = binding;
                     binding.Dependencies?.Invoke(this);
                     bindings.Add(binding);
@@ -160,9 +157,9 @@ namespace ManualDi.Async
                 while (current is not null)
                 {
                     binding = current.Binding;
-                    if (binding.BindingWiredState < BindingWiredState.Wired)
+                    if (!binding.IsWired)
                     {
-                        binding.BindingWiredState = BindingWiredState.Wired;
+                        binding.IsWired = true;
                         injectedBinding = binding;
                         binding.Dependencies?.Invoke(this);
                         bindings.Add(binding);
@@ -170,18 +167,6 @@ namespace ManualDi.Async
                     current = current.Next;
                 }
             }
-
-            foreach (var binding in injectBindings)
-            {
-                if (binding.BindingWiredState is BindingWiredState.Wired)
-                {
-                    continue;
-                }
-                
-                bindings.Add(binding);
-            }
-
-            injectBindings = null;
         }
         
         public void ConstructorDependency<T>()
@@ -197,9 +182,9 @@ namespace ManualDi.Async
                 return;
             }
             
-            if (binding.BindingWiredState < BindingWiredState.Wired)
+            if (!binding.IsWired)
             {
-                binding.BindingWiredState = BindingWiredState.Wired;
+                binding.IsWired = true;
                 var previousInjectedBinding = injectedBinding;
                 injectedBinding = binding;
                 binding.Dependencies?.Invoke(this);
@@ -221,9 +206,9 @@ namespace ManualDi.Async
                 return;
             }
             
-            if (binding.BindingWiredState < BindingWiredState.Wired)
+            if (!binding.IsWired)
             {
-                binding.BindingWiredState = BindingWiredState.Wired;
+                binding.IsWired = true;
                 var previousInjectedBinding = injectedBinding;
                 injectedBinding = binding;
                 binding.Dependencies?.Invoke(this);
@@ -241,9 +226,9 @@ namespace ManualDi.Async
                 return;
             }
             
-            if (binding.BindingWiredState < BindingWiredState.Wired)
+            if (!binding.IsWired)
             {
-                binding.BindingWiredState = BindingWiredState.Wired;
+                binding.IsWired = true;
                 var previousInjectedBinding = injectedBinding;
                 injectedBinding = binding;
                 binding.Dependencies?.Invoke(this);
@@ -261,9 +246,9 @@ namespace ManualDi.Async
                 return;
             }
             
-            if (binding.BindingWiredState < BindingWiredState.Wired)
+            if (!binding.IsWired)
             {
-                binding.BindingWiredState = BindingWiredState.Wired;
+                binding.IsWired = true;
                 var previousInjectedBinding = injectedBinding;
                 injectedBinding = binding;
                 binding.Dependencies?.Invoke(this);
@@ -284,14 +269,6 @@ namespace ManualDi.Async
                 parentDiContainer.InjectionDependency<T>();
                 return;
             }
-            
-            if (binding.BindingWiredState is BindingWiredState.Wired)
-            {
-                return;
-            }
-            
-            binding.BindingWiredState = BindingWiredState.Injected;
-            injectBindings!.Add(binding);
         }
 
         public void InjectionDependency<T>(FilterBindingDelegate filter)
@@ -306,14 +283,6 @@ namespace ManualDi.Async
                 parentDiContainer.InjectionDependency<T>(filter);
                 return;
             }
-            
-            if (binding.BindingWiredState is BindingWiredState.Wired)
-            {
-                return;
-            }
-            
-            binding.BindingWiredState = BindingWiredState.Injected;
-            injectBindings!.Add(binding);
         }
         
         public void NullableInjectionDependency<T>()
@@ -324,14 +293,6 @@ namespace ManualDi.Async
                 parentDiContainer?.NullableInjectionDependency<T>();
                 return;
             }
-            
-            if (binding.BindingWiredState is BindingWiredState.Wired)
-            {
-                return;
-            }
-            
-            binding.BindingWiredState = BindingWiredState.Injected;
-            injectBindings!.Add(binding);
         }
 
         public void NullableInjectionDependency<T>(FilterBindingDelegate filter)
@@ -342,14 +303,6 @@ namespace ManualDi.Async
                 parentDiContainer?.NullableInjectionDependency<T>(filter);
                 return;
             }
-            
-            if (binding.BindingWiredState is BindingWiredState.Wired)
-            {
-                return;
-            }
-            
-            binding.BindingWiredState = BindingWiredState.Injected;
-            injectBindings!.Add(binding);
         }
 
         public object? ResolveContainer(Type type)

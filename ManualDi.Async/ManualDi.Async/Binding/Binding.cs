@@ -38,13 +38,6 @@ namespace ManualDi.Async
         void NullableInjectionDependency<T>(FilterBindingDelegate filter);
     }
 
-    internal enum BindingWiredState
-    {
-        None,
-        Injected,
-        Wired
-    }
-    
     public abstract class Binding
     {
         public abstract Type ConcreteType { get; }
@@ -57,7 +50,7 @@ namespace ManualDi.Async
         internal object? InjectionDelegate;
         internal object? InitializationDelegate;
         
-        internal BindingWiredState BindingWiredState; // TODO: Check if it can be updated to bool
+        internal bool IsWired;
         internal object? Instance;
     }
 

@@ -1,0 +1,3 @@
+## 2024-03-24 - Task.Result Property Reflection Caching
+**Learning:** During delegate resolution in `DiContainerInvokeExtensions`, fetching the "Result" property using `task.GetType().GetProperty("Result")` on hot paths introduces significant runtime reflection overhead, particularly in asynchronous flows.
+**Action:** Always employ static caches like `ConcurrentDictionary<Type, PropertyInfo?>` for type-level reflection queries (e.g., `GetProperty`) executed within loops or high-frequency invocations, ensuring thread safety and minimized allocations.

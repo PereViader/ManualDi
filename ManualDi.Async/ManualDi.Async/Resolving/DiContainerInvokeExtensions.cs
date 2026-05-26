@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -8,6 +9,8 @@ namespace ManualDi.Async
 {
     public static class DiContainerInvokeExtensions
     {
+        private static readonly ConcurrentDictionary<Type, PropertyInfo?> TaskResultProperties = new();
+
         public static object? InvokeDelegateUsingReflexion(this IDiContainer diContainer, Delegate @delegate)
         {
             var arguments = ResolveParameters(diContainer, @delegate);
@@ -22,7 +25,13 @@ namespace ManualDi.Async
                 return result;
             }
             await task;
-            var resultProperty = task.GetType().GetProperty("Result");
+            var type = task.GetType();
+            if (!TaskResultProperties.TryGetValue(type, out var resultProperty))
+            {
+                resultProperty = type.GetProperty("Result");
+                TaskResultProperties.TryAdd(type, resultProperty);
+            }
+
             if (resultProperty is null)
             {
                 return null;

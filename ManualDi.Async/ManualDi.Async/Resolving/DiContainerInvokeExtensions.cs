@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -8,6 +9,11 @@ namespace ManualDi.Async
 {
     public static class DiContainerInvokeExtensions
     {
+        // Cache reflection lookups to avoid runtime overhead during delegate invocation
+        private static readonly ConcurrentDictionary<Type, PropertyInfo?> TaskResultPropertyCache = new();
+        private static readonly ConcurrentDictionary<Type, FieldInfo?> NullableFlagsFieldCache = new();
+        private static readonly ConcurrentDictionary<Type, FieldInfo?> NullableContextFlagFieldCache = new();
+
         public static object? InvokeDelegateUsingReflexion(this IDiContainer diContainer, Delegate @delegate)
         {
             var arguments = ResolveParameters(diContainer, @delegate);
@@ -22,7 +28,10 @@ namespace ManualDi.Async
                 return result;
             }
             await task;
-            var resultProperty = task.GetType().GetProperty("Result");
+
+            var taskType = task.GetType();
+            var resultProperty = TaskResultPropertyCache.GetOrAdd(taskType, t => t.GetProperty("Result"));
+
             if (resultProperty is null)
             {
                 return null;
@@ -133,9 +142,9 @@ namespace ManualDi.Async
             foreach (var attribute in attributes)
             {
                 var type = attribute.GetType();
-                if (type.FullName is "System.Runtime.CompilerServices.NullableAttribute")
+                if (type.Name is "NullableAttribute" && type.FullName is "System.Runtime.CompilerServices.NullableAttribute")
                 {
-                    var field = type.GetField("NullableFlags");
+                    var field = NullableFlagsFieldCache.GetOrAdd(type, t => t.GetField("NullableFlags"));
                     if (field != null)
                     {
                         flags = field.GetValue(attribute) as byte[];
@@ -152,9 +161,9 @@ namespace ManualDi.Async
             foreach (var attribute in attributes)
             {
                 var type = attribute.GetType();
-                if (type.FullName is "System.Runtime.CompilerServices.NullableContextAttribute")
+                if (type.Name is "NullableContextAttribute" && type.FullName is "System.Runtime.CompilerServices.NullableContextAttribute")
                 {
-                    var field = type.GetField("Flag");
+                    var field = NullableContextFlagFieldCache.GetOrAdd(type, t => t.GetField("Flag"));
                     if (field != null)
                     {
                         context = (byte)field.GetValue(attribute);

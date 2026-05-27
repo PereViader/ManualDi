@@ -1,0 +1,3 @@
+## 2024-05-24 - FieldInfo Caching for Nullable Attribute Check
+**Learning:** Checking for nullable attributes in parameters relies heavily on reflection. `GetField("NullableFlags")` and `GetField("Flag")` are invoked repeatedly during parameter resolution, leading to overhead. Caching the `FieldInfo` based on the attribute `Type` via a `ConcurrentDictionary` and fast-pathing `type.Name` string comparisons slightly reduces this overhead without changing the results. Let's look for other reflection optimizations that are mentioned in the memory context.
+**Action:** Let's review the reflection-based "Task.Result" property lookup in `DiContainerInvokeExtensions.cs` to ensure it is cached, as mentioned in memory.

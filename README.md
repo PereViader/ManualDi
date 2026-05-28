@@ -962,6 +962,7 @@ public class A
     {
     }
 }
+```
 
 ## Generator Extensions
 

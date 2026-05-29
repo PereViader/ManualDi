@@ -10,7 +10,7 @@ namespace ManualDi.Sync
     {
         private readonly Dictionary<IntPtr, BindingNode> allBindings;
         private readonly IDiContainer? parentDiContainer;
-        private readonly BindingContext bindingContext = new();
+        private readonly BindingContext bindingContext;
         private readonly CancellationTokenSource cancellationTokenSource = new();
         
         private DiContainerInitializer diContainerInitializer;
@@ -22,14 +22,16 @@ namespace ManualDi.Sync
         internal DiContainer(
             Dictionary<IntPtr, BindingNode> allBindings, 
             IDiContainer? parentDiContainer,
+            BindingContext bindingContext,
             int? initializationsCount = null, 
             int? disposablesCount = null)
         {
             diContainerInitializer = new(initializationsCount);
             diContainerDisposer = new(disposablesCount);
-            
+
             this.allBindings = allBindings;
             this.parentDiContainer = parentDiContainer;
+            this.bindingContext = bindingContext;
         }
 
         public void Initialize()

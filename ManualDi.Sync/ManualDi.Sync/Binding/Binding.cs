@@ -11,7 +11,7 @@ namespace ManualDi.Sync
         public Binding Binding = null!;
         public Binding? InjectedIntoBinding;
     }
-    
+
     public abstract class Binding
     {
         public abstract Type ConcreteType { get; }
@@ -26,7 +26,7 @@ namespace ManualDi.Sync
         public bool IsTransient; // Binding is either transient or single
         internal object? Instance;
     }
-    
+
     public sealed class Binding<TConcrete> : Binding
     {
         public override Type ConcreteType => typeof(TConcrete);

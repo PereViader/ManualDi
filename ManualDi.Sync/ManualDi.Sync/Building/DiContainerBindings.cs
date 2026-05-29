@@ -132,18 +132,22 @@ namespace ManualDi.Sync
             var diContainer = new DiContainer(
                 bindingsByType,
                 parentDiContainer,
+                bindingContext,
                 containerInitializationsCount,
                 containerDisposablesCount);
 
             try
             {
-                diContainer.QueueDispose(new ActionDisposableWrapper(() =>
+                if (disposeActions.Count > 0)
                 {
-                    foreach (var action in disposeActions)
+                    diContainer.QueueDispose(new ActionDisposableWrapper(() =>
                     {
-                        action.Invoke();
-                    }
-                }));
+                        foreach (var action in disposeActions)
+                        {
+                            action.Invoke();
+                        }
+                    }));
+                }
 
                 diContainer.Initialize();
 

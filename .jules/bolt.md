@@ -1,0 +1,3 @@
+## 2024-05-29 - Caching Reflection in DiContainerInvokeExtensions
+**Learning:** In the hot path of DI parameter resolution, repeatedly looking up `PropertyInfo` for `Task<T>.Result` and `FieldInfo` for nullable annotations causes measurable reflection overhead. Checking string equality like `type.FullName` is also slower than checking `type.Name` first.
+**Action:** When working on generic dependency injection frameworks or deep reflection code, always cache `PropertyInfo` and `FieldInfo` resolutions in a static `ConcurrentDictionary<Type, ...>`. Prefer checking `type.Name` before `type.FullName` for specific attribute lookups.

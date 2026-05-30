@@ -188,6 +188,7 @@ namespace ManualDi.Async
                         bindingsByType,
                         bindingCount,
                         c,
+                        bindingContext,
                         disposables,
                         ct);
 
@@ -244,6 +245,7 @@ namespace ManualDi.Async
                 bindingsByType,
                 bindingCount,
                 parentDiContainer,
+                bindingContext,
                 disposables,
                 ct);
 

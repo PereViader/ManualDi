@@ -15,7 +15,7 @@ namespace ManualDi.Async
         private readonly Dictionary<IntPtr, BindingNode> bindingsByType;
         private readonly List<Binding> bindings;
         private readonly IDiContainer? parentDiContainer;
-        private readonly BindingContext bindingContext = new();
+        private readonly BindingContext bindingContext;
         private Binding? injectedBinding;
         private readonly CancellationTokenSource cancellationTokenSource;
         private readonly List<object> disposables;
@@ -27,6 +27,7 @@ namespace ManualDi.Async
             Dictionary<IntPtr, BindingNode> bindingsByType,
             int count,
             IDiContainer? parentDiContainer,
+            BindingContext bindingContext,
             List<object> disposables,
             CancellationToken cancellationToken)
         {
@@ -38,6 +39,7 @@ namespace ManualDi.Async
             
             this.bindingsByType = bindingsByType;
             this.parentDiContainer = parentDiContainer;
+            this.bindingContext = bindingContext;
             SetupBindings();
         }
         

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
@@ -28,8 +29,7 @@ namespace ManualDi.Sync.Generators
                     IsExtensionMethodSyntaxNodeValid,
                     GetExtensionMethodData)
                 .Where(x => x is not null)
-                .Collect()
-                .Select((methods, ct) => new EquatableArray<ExtensionMethodData>(methods.Select(x => x!).ToArray()));
+                .Collect();
 
             var combined = classData.Combine(extensionMethods);
 
@@ -474,7 +474,7 @@ namespace ManualDi.Sync.Generators
             return new ServiceResolution(typeName, injectId, method);
         }
 
-        private void Generate(SourceProductionContext context, (ClassData ClassData, EquatableArray<ExtensionMethodData> ExtensionMethods) tuple)
+        private void Generate(SourceProductionContext context, (ClassData ClassData, ImmutableArray<ExtensionMethodData?> ExtensionMethods) tuple)
         {
             var data = tuple.ClassData;
             var extensionMethods = tuple.ExtensionMethods;
@@ -564,7 +564,7 @@ namespace ManualDi.Sync.Generators
             context.AddSource($"{data.FileName}.g.cs", SourceText.From(stringBuilder.ToString(), Encoding.UTF8));
         }
 
-        private static void AppendDefaultImplBody(StringBuilder stringBuilder, ClassData data, EquatableArray<ExtensionMethodData> extensionMethods)
+        private static void AppendDefaultImplBody(StringBuilder stringBuilder, ClassData data, ImmutableArray<ExtensionMethodData?> extensionMethods)
         {
             if (data.BaseTypeCall is not null)
             {
@@ -580,7 +580,7 @@ namespace ManualDi.Sync.Generators
                 stringBuilder.AppendLine($"            {data.BaseTypeCall.BaseExtensionsClassName}.DefaultImpl<{typeArguments}>(binding);");
             }
 
-            if (extensionMethods.HasValue && extensionMethods.Count > 0)
+            if (!extensionMethods.IsDefaultOrEmpty)
             {
                 foreach (var ext in extensionMethods)
                 {

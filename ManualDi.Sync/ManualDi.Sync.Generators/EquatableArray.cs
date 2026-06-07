@@ -21,9 +21,18 @@ namespace ManualDi.Sync.Generators
 
         public bool Equals(EquatableArray<T> other)
         {
+            if (Count != other.Count)
+            {
+                return false;
+            }
+
+            if (Count == 0)
+            {
+                return true;
+            }
+
             return ReferenceEquals(_array, other._array) ||
-                   ((_array is not null && other._array is not null) &&
-                    _array.SequenceEqual(other._array));
+                   (_array is not null && other._array is not null && _array.SequenceEqual(other._array));
         }
 
         public override bool Equals(object? obj)
@@ -33,7 +42,7 @@ namespace ManualDi.Sync.Generators
 
         public override int GetHashCode()
         {
-            if (_array is null)
+            if (_array is null || _array.Length == 0)
             {
                 return 0;
             }
@@ -48,6 +57,9 @@ namespace ManualDi.Sync.Generators
 
         public IEnumerator<T> GetEnumerator() => ((IEnumerable<T>)(_array ?? Array.Empty<T>())).GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public static bool operator ==(EquatableArray<T> left, EquatableArray<T> right) => left.Equals(right);
+        public static bool operator !=(EquatableArray<T> left, EquatableArray<T> right) => !left.Equals(right);
 
         public static implicit operator EquatableArray<T>(T[] array) => new EquatableArray<T>(array);
         public static implicit operator EquatableArray<T>(List<T> list) => new EquatableArray<T>(list.ToArray());

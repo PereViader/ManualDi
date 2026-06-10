@@ -87,13 +87,24 @@ namespace ManualDi.Sync
             var previousInjectedBinding = injectedBinding;
             injectedBinding = binding;
 
-            var instance = injectedBinding.FromDelegate switch
+            if (injectedBinding.FromDelegate is null)
             {
-                FromDelegate fromDelegate => fromDelegate.Invoke(this) ??
-                    throw new InvalidOperationException($"Could not create object for Binding with Concrete type {injectedBinding.ConcreteType}"),
-                not null => injectedBinding.FromDelegate,
-                null => throw new InvalidOperationException($"The from delegate for Binding with Concrete type {injectedBinding.ConcreteType} is null"),
-            };
+                ThrowHelper.ThrowFromDelegateIsNull(injectedBinding.ConcreteType);
+            }
+
+            object? instance;
+            if (injectedBinding.FromDelegate is FromDelegate fromDelegate)
+            {
+                instance = fromDelegate.Invoke(this);
+                if (instance is null)
+                {
+                    ThrowHelper.ThrowCouldNotCreateObject(injectedBinding.ConcreteType);
+                }
+            }
+            else
+            {
+                instance = injectedBinding.FromDelegate;
+            }
 
             if (!binding.IsTransient)
             {

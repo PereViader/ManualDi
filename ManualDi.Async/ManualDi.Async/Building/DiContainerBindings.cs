@@ -218,7 +218,8 @@ namespace ManualDi.Async
                                 syncInitializationDelegate.Invoke(subContainer);
                                 break;
                             default:
-                                throw new InvalidOperationException($"Unexpected initialization delegate type: {initializationDelegate.GetType()}");
+                                ThrowHelper.ThrowUnexpectedInitializationDelegateType(initializationDelegate.GetType());
+                                break;
                         }
                     }
 
@@ -233,7 +234,8 @@ namespace ManualDi.Async
                                 syncStartupDelegate.Invoke(subContainer);
                                 break;
                             default:
-                                throw new InvalidOperationException($"Unexpected startup delegate type: {startupDelegate.GetType()}");
+                                ThrowHelper.ThrowUnexpectedStartupDelegateType(startupDelegate.GetType());
+                                break;
                         }
                     }
                 });
@@ -271,7 +273,8 @@ namespace ManualDi.Async
                             syncInitializationDelegate.Invoke(diContainer);
                             break;
                         default:
-                            throw new InvalidOperationException($"Unexpected initialization delegate type: {initializationDelegate.GetType()}");
+                            ThrowHelper.ThrowUnexpectedInitializationDelegateType(initializationDelegate.GetType());
+                            break;
                     }
                 }
 
@@ -286,7 +289,8 @@ namespace ManualDi.Async
                             syncStartupDelegate.Invoke(diContainer);
                             break;
                         default:
-                            throw new InvalidOperationException($"Unexpected startup delegate type: {startupDelegate.GetType()}");
+                            ThrowHelper.ThrowUnexpectedStartupDelegateType(startupDelegate.GetType());
+                            break;
                     }
                 }
 

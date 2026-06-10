@@ -143,7 +143,7 @@ namespace ManualDi.Async
         {
             if (!bindings.TryResolveInstance<TConfig>(out var config))
             {
-                throw new InvalidOperationException($"Could not resolve instance for binding of type {typeof(TConfig).FullName}");
+                ThrowHelper.ThrowCouldNotResolveInstance(typeof(TConfig));
             }
             
             return config;

@@ -63,17 +63,34 @@ namespace ManualDi.Async
             {
                 injectedBinding = bindings[i];
                 
-                injectedBinding.Instance = injectedBinding.FromDelegate switch
+                if (injectedBinding.FromDelegate is null)
                 {
-                    FromAsyncDelegate fromAsyncDelegate => await fromAsyncDelegate.Invoke(this, ct) ??
-                                                           throw new InvalidOperationException(
-                                                               $"Could not create object for Binding with Concrete type {injectedBinding.ConcreteType}"),
-                    FromDelegate fromDelegate => fromDelegate.Invoke(this) ??
-                                                 throw new InvalidOperationException(
-                                                     $"Could not create object for Binding with Concrete type {injectedBinding.ConcreteType}"),
-                    not null => injectedBinding.FromDelegate,
-                    null => throw new InvalidOperationException($"The from delegate for Binding with Concrete type {injectedBinding.ConcreteType} is null"),
-                };
+                    ThrowHelper.ThrowFromDelegateIsNull(injectedBinding.ConcreteType);
+                }
+
+                object? instance;
+                if (injectedBinding.FromDelegate is FromAsyncDelegate fromAsyncDelegate)
+                {
+                    instance = await fromAsyncDelegate.Invoke(this, ct);
+                    if (instance is null)
+                    {
+                        ThrowHelper.ThrowCouldNotCreateObject(injectedBinding.ConcreteType);
+                    }
+                }
+                else if (injectedBinding.FromDelegate is FromDelegate fromDelegate)
+                {
+                    instance = fromDelegate.Invoke(this);
+                    if (instance is null)
+                    {
+                        ThrowHelper.ThrowCouldNotCreateObject(injectedBinding.ConcreteType);
+                    }
+                }
+                else
+                {
+                    instance = injectedBinding.FromDelegate;
+                }
+
+                injectedBinding.Instance = instance;
                 
                 if (injectedBinding.TryToDispose)
                 {
@@ -178,7 +195,7 @@ namespace ManualDi.Async
             {
                 if (parentDiContainer is null)
                 {
-                    throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedBinding?.ConcreteType.FullName ?? "null"} is not registered.");
+                    ThrowHelper.ThrowTypeNotRegistered(typeof(T), injectedBinding?.ConcreteType);
                 }
                 parentDiContainer.ConstructorDependency<T>();
                 return;
@@ -202,7 +219,7 @@ namespace ManualDi.Async
             {
                 if (parentDiContainer is null)
                 {
-                    throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedBinding?.ConcreteType.FullName ?? "null"} with some filter is not registered.");
+                    ThrowHelper.ThrowTypeWithFilterNotRegistered(typeof(T), injectedBinding?.ConcreteType);
                 }
                 parentDiContainer.ConstructorDependency<T>(filter);
                 return;
@@ -266,7 +283,7 @@ namespace ManualDi.Async
             {
                 if (parentDiContainer is null)
                 {
-                    throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedBinding?.ConcreteType.FullName ?? "null"} is not registered.");
+                    ThrowHelper.ThrowTypeNotRegistered(typeof(T), injectedBinding?.ConcreteType);
                 }
                 parentDiContainer.InjectionDependency<T>();
                 return;
@@ -280,7 +297,7 @@ namespace ManualDi.Async
             {
                 if (parentDiContainer is null)
                 {
-                    throw new InvalidOperationException($"Type {typeof(T).FullName} injected into {injectedBinding?.ConcreteType.FullName ?? "null"} is not registered.");
+                    ThrowHelper.ThrowTypeNotRegistered(typeof(T), injectedBinding?.ConcreteType);
                 }
                 parentDiContainer.InjectionDependency<T>(filter);
                 return;

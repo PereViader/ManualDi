@@ -72,7 +72,7 @@ namespace ManualDi.Sync
                     continue;
                 }
 
-                throw new InvalidOperationException($"Could not resolve element of type {type.FullName} for parameter {parameter.Name}");
+                ThrowHelper.ThrowCouldNotResolveParameter(type, parameter.Name);
             }
 
             return resolvedParameters;

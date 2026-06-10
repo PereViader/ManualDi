@@ -12,7 +12,7 @@ namespace ManualDi.Async
             var resolution = diContainer.ResolveContainer(typeof(T));
             if (resolution is null)
             {
-                throw new InvalidOperationException($"Could not resolve element of type {typeof(T).FullName}");
+                ThrowHelper.ThrowCouldNotResolveElement(typeof(T));
             }
             return (T)resolution;
         }
@@ -23,7 +23,7 @@ namespace ManualDi.Async
             var resolution = diContainer.ResolveContainer(typeof(T), filterBindingDelegate);
             if (resolution is null)
             {
-                throw new InvalidOperationException($"Could not resolve element of type {typeof(T).FullName}");
+                ThrowHelper.ThrowCouldNotResolveElement(typeof(T));
             }
             return (T)resolution;
         }
@@ -34,7 +34,7 @@ namespace ManualDi.Async
             var resolution = diContainer.ResolveContainer(type);
             if (resolution is null)
             {
-                throw new InvalidOperationException($"Could not resolve element of type {type.FullName}");
+                ThrowHelper.ThrowCouldNotResolveElement(type);
             }
             return resolution;
         }
@@ -45,7 +45,7 @@ namespace ManualDi.Async
             var resolution = diContainer.ResolveContainer(type, filterBindingDelegate);
             if (resolution is null)
             {
-                throw new InvalidOperationException($"Could not resolve element of type {type.FullName}");
+                ThrowHelper.ThrowCouldNotResolveElement(type);
             }
             return resolution;
         }

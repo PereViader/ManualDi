@@ -23,7 +23,7 @@ namespace ManualDi.Async.Generators
                     GetClassData)
                 .Where(x => x is not null);
 
-            context.RegisterSourceOutput(classData, Generate!);
+            context.RegisterSourceOutput(classData, static (spc, data) => Generate(spc, data!));
         }
 
         private static bool IsSyntaxNodeValid(SyntaxNode node, CancellationToken ct)
@@ -93,7 +93,8 @@ namespace ManualDi.Async.Generators
                 baseTypesAndInterfaces.Add(i.ToDisplayString());
             }
             var tempBase = symbol.BaseType;
-            while (tempBase != null)
+            int tempBaseDepth = 0;
+            while (tempBase != null && tempBaseDepth++ < 100)
             {
                 baseTypesAndInterfaces.Add(tempBase.ToDisplayString());
                 tempBase = tempBase.BaseType;
@@ -101,7 +102,8 @@ namespace ManualDi.Async.Generators
 
             INamedTypeSymbol? baseDiSymbol = null;
             var currentBase = symbol.BaseType;
-            while (currentBase != null)
+            int currentBaseDepth = 0;
+            while (currentBase != null && currentBaseDepth++ < 100)
             {
                 if (wellKnownTypes.HasManualDiAttribute(currentBase))
                 {
@@ -121,7 +123,8 @@ namespace ManualDi.Async.Generators
                     baseDiTypesAndInterfaces.Add(i.ToDisplayString());
                 }
                 var tempBaseDi = baseDiSymbol.BaseType;
-                while (tempBaseDi != null)
+                int tempBaseDiDepth = 0;
+                while (tempBaseDi != null && tempBaseDiDepth++ < 100)
                 {
                     baseDiTypesAndInterfaces.Add(tempBaseDi.ToDisplayString());
                     tempBaseDi = tempBaseDi.BaseType;
@@ -394,7 +397,7 @@ namespace ManualDi.Async.Generators
             return new ServiceResolution(typeName, injectId, method, isCyclic);
         }
 
-        private void Generate(SourceProductionContext context, ClassData data)
+        private static void Generate(SourceProductionContext context, ClassData data)
         {
             var stringBuilder = new StringBuilder();
 
@@ -692,8 +695,13 @@ namespace ManualDi.Async.Generators
             }
         }
 
-        private static string FullyQualifyTypeWithoutNullable(ITypeSymbol typeSymbol)
+        private static string FullyQualifyTypeWithoutNullable(ITypeSymbol? typeSymbol)
         {
+            if (typeSymbol is null)
+            {
+                return string.Empty;
+            }
+
             var nonNullableType = GetNonNullableType(typeSymbol);
             if (nonNullableType is not null)
             {
@@ -703,14 +711,24 @@ namespace ManualDi.Async.Generators
             return typeSymbol.ToDisplayString();
         }
 
-        private static bool IsNullableTypeSymbol(ITypeSymbol typeSymbol)
+        private static bool IsNullableTypeSymbol(ITypeSymbol? typeSymbol)
         {
+            if (typeSymbol is null)
+            {
+                return false;
+            }
+
             return typeSymbol.NullableAnnotation is NullableAnnotation.Annotated ||
                    typeSymbol.OriginalDefinition.SpecialType is SpecialType.System_Nullable_T;
         }
 
-        private static ITypeSymbol? GetNonNullableType(ITypeSymbol typeSymbol)
+        private static ITypeSymbol? GetNonNullableType(ITypeSymbol? typeSymbol)
         {
+            if (typeSymbol is null)
+            {
+                return null;
+            }
+
             if (typeSymbol.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T &&
                 typeSymbol is INamedTypeSymbol namedTypeSymbol)
             {

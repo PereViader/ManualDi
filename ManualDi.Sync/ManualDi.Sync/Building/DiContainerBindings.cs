@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace ManualDi.Sync
 {
@@ -19,6 +20,7 @@ namespace ManualDi.Sync
 
         internal IDiContainer? parentDiContainer;
         internal DiContainerBindings? parentDiContainerBindings;
+        private CancellationTokenSource? cancellationTokenSource;
 
         public DiContainerBindings(
             int? bindingsCapacity = null, 
@@ -126,6 +128,12 @@ namespace ManualDi.Sync
             parentDiContainerBindings = diContainerBindings;
             return this;
         }
+
+        public DiContainerBindings WithCancellationTokenSource(CancellationTokenSource cancellationTokenSource)
+        {
+            this.cancellationTokenSource = cancellationTokenSource;
+            return this;
+        }
         
         public IDiContainer Build()
         {
@@ -133,6 +141,7 @@ namespace ManualDi.Sync
                 bindingsByType,
                 parentDiContainer,
                 bindingContext,
+                cancellationTokenSource ?? new CancellationTokenSource(),
                 containerInitializationsCount,
                 containerDisposablesCount);
 

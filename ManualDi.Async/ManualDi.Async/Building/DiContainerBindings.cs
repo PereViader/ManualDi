@@ -21,6 +21,7 @@ namespace ManualDi.Async
 
         internal IDiContainer? parentDiContainer;
         internal DiContainerBindings? parentDiContainerBindings;
+        private CancellationTokenSource? cancellationTokenSource;
         
         internal BindingContext bindingContext = new();
 
@@ -166,6 +167,12 @@ namespace ManualDi.Async
             return this;
         }
 
+        public DiContainerBindings WithCancellationTokenSource(CancellationTokenSource cancellationTokenSource)
+        {
+            this.cancellationTokenSource = cancellationTokenSource;
+            return this;
+        }
+
         public Action<IDependencyResolver> GatherDependencies()
         {
             var dependencyExtractor = new DependencyExtractor(bindingsByType);
@@ -184,13 +191,20 @@ namespace ManualDi.Async
             return binding
                 .FromMethodAsync(async (c, ct) =>
                 {
+                    var cts = cancellationTokenSource ?? new CancellationTokenSource();
                     subContainer = new DiContainer(
                         bindingsByType,
                         bindingCount,
                         c,
                         bindingContext,
                         disposables,
-                        ct);
+                        cts);
+
+                    if (ct.CanBeCanceled)
+                    {
+                        var registration = ct.Register(() => cts.Cancel());
+                        subContainer.QueueDispose(registration);
+                    }
 
                     await subContainer.InitializeCreate();
 
@@ -212,7 +226,7 @@ namespace ManualDi.Async
                         switch (initializationDelegate)
                         {
                             case AsyncContainerDelegate asyncInitializationDelegate:
-                                await asyncInitializationDelegate.Invoke(subContainer, ct);
+                                await asyncInitializationDelegate.Invoke(subContainer, subContainer.CancellationToken);
                                 break;
                             case ContainerDelegate syncInitializationDelegate:
                                 syncInitializationDelegate.Invoke(subContainer);
@@ -228,7 +242,7 @@ namespace ManualDi.Async
                         switch (startupDelegate)
                         {
                             case AsyncContainerDelegate asyncStartupDelegate:
-                                await asyncStartupDelegate.Invoke(subContainer, ct);
+                                await asyncStartupDelegate.Invoke(subContainer, subContainer.CancellationToken);
                                 break;
                             case ContainerDelegate syncStartupDelegate:
                                 syncStartupDelegate.Invoke(subContainer);
@@ -243,13 +257,20 @@ namespace ManualDi.Async
         
         public async ValueTask<DiContainer> Build(CancellationToken ct)
         {
+            var cts = cancellationTokenSource ?? new CancellationTokenSource();
             var diContainer = new DiContainer(
                 bindingsByType,
                 bindingCount,
                 parentDiContainer,
                 bindingContext,
                 disposables,
-                ct);
+                cts);
+
+            if (ct.CanBeCanceled)
+            {
+                var registration = ct.Register(() => cts.Cancel());
+                diContainer.QueueDispose(registration);
+            }
 
             try
             {
@@ -267,7 +288,7 @@ namespace ManualDi.Async
                     switch (initializationDelegate)
                     {
                         case AsyncContainerDelegate asyncInitializationDelegate:
-                            await asyncInitializationDelegate.Invoke(diContainer, ct);
+                            await asyncInitializationDelegate.Invoke(diContainer, diContainer.CancellationToken);
                             break;
                         case ContainerDelegate syncInitializationDelegate:
                             syncInitializationDelegate.Invoke(diContainer);
@@ -283,7 +304,7 @@ namespace ManualDi.Async
                     switch (startupDelegate)
                     {
                         case AsyncContainerDelegate asyncStartupDelegate:
-                            await asyncStartupDelegate.Invoke(diContainer, ct);
+                            await asyncStartupDelegate.Invoke(diContainer, diContainer.CancellationToken);
                             break;
                         case ContainerDelegate syncStartupDelegate:
                             syncStartupDelegate.Invoke(diContainer);

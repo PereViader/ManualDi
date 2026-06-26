@@ -29,13 +29,13 @@ namespace ManualDi.Async
             IDiContainer? parentDiContainer,
             BindingContext bindingContext,
             List<object> disposables,
-            CancellationToken cancellationToken)
+            CancellationTokenSource cancellationTokenSource)
         {
             bindings = new (count);
             this.disposables = disposables;
             disposedValue = false;
             
-            cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            this.cancellationTokenSource = cancellationTokenSource;
             
             this.bindingsByType = bindingsByType;
             this.parentDiContainer = parentDiContainer;

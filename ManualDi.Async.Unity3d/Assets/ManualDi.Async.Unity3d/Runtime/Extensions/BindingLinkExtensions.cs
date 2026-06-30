@@ -1,7 +1,3 @@
-using System;
-using UnityEngine.Events;
-using UnityEngine.UI;
-
 namespace ManualDi.Async.Unity3d
 {
     public static class BindingLinkExtensions
@@ -42,64 +38,6 @@ namespace ManualDi.Async.Unity3d
                         to.transform.parent = previousParent;
                     });
                 }
-            });
-            return binding;
-        }
-        
-        public static Binding<TConcrete> LinkButtonOnClick<TConcrete>(
-            this Binding<TConcrete> binding,
-            Button button,
-            Action<TConcrete, IDiContainer> onClick
-            )
-        {
-            binding.Inject((o, c) =>
-            {
-                var to = (TConcrete)o;
-                UnityAction action = () => onClick.Invoke(to, c);
-                (button.onClick ??= new Button.ButtonClickedEvent()).AddListener(action);
-                
-                c.QueueDispose(() => {
-                    button.onClick.RemoveListener(action);
-                });
-            });
-            return binding;
-        }
-        
-        public static Binding<TConcrete> LinkToggleOnValueChanged<TConcrete>(
-            this Binding<TConcrete> binding,
-            Toggle toggle,
-            Action<TConcrete, IDiContainer, bool> onValueChanged
-        )
-        {
-            binding.Inject((o, c) =>
-            {
-                var to = (TConcrete)o;
-                UnityAction<bool> action = v => onValueChanged.Invoke(to, c, v);
-                (toggle.onValueChanged ??= new Toggle.ToggleEvent()).AddListener(action);
-                
-                c.QueueDispose(() => {
-                    toggle.onValueChanged.RemoveListener(action);
-                });
-            });
-            return binding;
-        }
-        
-        public static Binding<TConcrete> LinkSliderOnValueChanged<TConcrete>(
-            this Binding<TConcrete> binding,
-            Slider slider,
-            Action<TConcrete, IDiContainer, float> onValueChanged
-        )
-        {
-            UnityAction<float>? action = null;
-            binding.Inject((o, c) =>
-            {
-                var to = (TConcrete)o;
-                action = v => onValueChanged.Invoke(to, c, v);
-                (slider.onValueChanged ??= new Slider.SliderEvent()).AddListener(action);
-                
-                c.QueueDispose(() => {
-                    slider.onValueChanged.RemoveListener(action);
-                });
             });
             return binding;
         }

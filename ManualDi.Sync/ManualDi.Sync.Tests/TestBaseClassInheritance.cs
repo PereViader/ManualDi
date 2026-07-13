@@ -41,5 +41,260 @@ namespace ManualDi.Sync.Tests
             // Check that it does NOT contain a call to the base extension
             Assert.That(generated, Does.Not.Contain("ManualDi_ManualDi_Sync_Tests_AbstractViewLoader"));
         }
+
+        [Test]
+        public void TestBaseClassWithGenericRequirements()
+        {
+            var code = @"
+using ManualDi.Sync;
+
+namespace ManualDi.Sync.Tests
+{
+    public interface ISomething {}
+    public class Other : ISomething {}
+
+    [ManualDi]
+    public class Base<T> where T : ISomething
+    {
+    }
+
+    [ManualDi]
+    public class Something : Base<Other>
+    {
+    }
+}
+";
+            var (generatedCode, diagnostics) = GeneratorTestHelper.Generate(code);
+
+            var errors = diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error).ToList();
+            foreach (var error in errors)
+            {
+                Console.WriteLine(error);
+            }
+            Assert.That(errors, Is.Empty);
+        }
+
+        [Test]
+        public void TestBaseClassWithMultipleGenericRequirements()
+        {
+            var code = @"
+using ManualDi.Sync;
+
+namespace ManualDi.Sync.Tests
+{
+    public interface ISomething {}
+    public class Other : ISomething {}
+
+    [ManualDi]
+    public class Base<TKey, TValue> where TValue : ISomething
+    {
+    }
+
+    [ManualDi]
+    public class Something : Base<string, Other>
+    {
+    }
+}
+";
+            var (generatedCode, diagnostics) = GeneratorTestHelper.Generate(code);
+
+            var errors = diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error).ToList();
+            foreach (var error in errors)
+            {
+                Console.WriteLine(error);
+            }
+            Assert.That(errors, Is.Empty);
+
+            foreach (var generated in generatedCode)
+            {
+                Console.WriteLine("--- GENERATED FILE ---");
+                Console.WriteLine(generated);
+            }
+        }
+
+        [Test]
+        public void TestBaseClassWithGenericSubclass()
+        {
+            var code = @"
+using ManualDi.Sync;
+
+namespace ManualDi.Sync.Tests
+{
+    public interface ISomething {}
+
+    [ManualDi]
+    public class Base<T> where T : ISomething
+    {
+    }
+
+    [ManualDi]
+    public class Something<T> : Base<T> where T : ISomething
+    {
+    }
+}
+";
+            var (generatedCode, diagnostics) = GeneratorTestHelper.Generate(code);
+
+            var errors = diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error).ToList();
+            foreach (var error in errors)
+            {
+                Console.WriteLine(error);
+            }
+            Assert.That(errors, Is.Empty);
+
+            foreach (var generated in generatedCode)
+            {
+                Console.WriteLine("--- GENERATED FILE ---");
+                Console.WriteLine(generated);
+            }
+        }
+
+        [Test]
+        public void TestBaseClassWithGenericInject()
+        {
+            var code = @"
+using ManualDi.Sync;
+
+namespace ManualDi.Sync.Tests
+{
+    public interface ISomething {}
+    public class Other : ISomething {}
+
+    [ManualDi]
+    public class Base<T> where T : ISomething
+    {
+        public void Inject(T dependency) {}
+    }
+
+    [ManualDi]
+    public class Something : Base<Other>
+    {
+    }
+}
+";
+            var (generatedCode, diagnostics) = GeneratorTestHelper.Generate(code);
+
+            var errors = diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error).ToList();
+            foreach (var error in errors)
+            {
+                Console.WriteLine(error);
+            }
+            Assert.That(errors, Is.Empty);
+
+            foreach (var generated in generatedCode)
+            {
+                Console.WriteLine("--- GENERATED FILE ---");
+                Console.WriteLine(generated);
+            }
+        }
+
+        [Test]
+        public void TestBaseClassInDifferentAssembly()
+        {
+            var baseCode = @"
+using ManualDi.Sync;
+
+namespace AssemblyA
+{
+    public interface ISomething {}
+    public class Other : ISomething {}
+
+    [ManualDi]
+    public class Base<T> where T : ISomething
+    {
+    }
+}
+";
+            var references = AppDomain.CurrentDomain
+                .GetAssemblies()
+                .Where(a => !a.IsDynamic && !string.IsNullOrEmpty(a.Location) && !a.Location.Contains("ManualDi.Sync.Tests.dll"))
+                .Select(a => MetadataReference.CreateFromFile(a.Location))
+                .ToList();
+            references.Add(MetadataReference.CreateFromFile(typeof(IDiContainer).Assembly.Location));
+
+            var compA = CSharpCompilation.Create("AssemblyA",
+                [CSharpSyntaxTree.ParseText(baseCode)],
+                references,
+                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+            var driverA = CSharpGeneratorDriver.Create(new ManualDiSourceGenerator());
+            driverA.RunGeneratorsAndUpdateCompilation(compA, out var outputCompA, out _);
+
+            using var ms = new System.IO.MemoryStream();
+            var emitResult = outputCompA.Emit(ms);
+            Assert.That(emitResult.Success, Is.True);
+            ms.Position = 0;
+            var refA = MetadataReference.CreateFromStream(ms);
+
+            var subclassCode = @"
+using AssemblyA;
+using ManualDi.Sync;
+
+namespace AssemblyB
+{
+    [ManualDi]
+    public class Something : Base<Other>
+    {
+    }
+}
+";
+            var referencesB = new List<MetadataReference>(references) { refA };
+            var compB = CSharpCompilation.Create("AssemblyB",
+                [CSharpSyntaxTree.ParseText(subclassCode)],
+                referencesB,
+                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+            var driver = CSharpGeneratorDriver.Create(new ManualDiSourceGenerator());
+            driver.RunGeneratorsAndUpdateCompilation(compB, out var outputComp, out _);
+
+            var errors = outputComp.GetDiagnostics().Where(x => x.Severity == DiagnosticSeverity.Error).ToList();
+            foreach (var error in errors)
+            {
+                Console.WriteLine("ERROR: " + error);
+            }
+            Assert.That(errors, Is.Empty);
+
+            var generated = outputComp.SyntaxTrees.Skip(1).Select(x => x.ToString()).ToList();
+            foreach (var gen in generated)
+            {
+                Console.WriteLine("--- GENERATED ---");
+                Console.WriteLine(gen);
+            }
+        }
+
+        [Test]
+        public void TestBaseClassWithNullableClassConstraint()
+        {
+            var code = @"
+using ManualDi.Sync;
+
+namespace ManualDi.Sync.Tests
+{
+    [ManualDi]
+    public class Base<T> where T : class?
+    {
+    }
+
+    [ManualDi]
+    public class Something : Base<string>
+    {
+    }
+}
+";
+            var (generatedCode, diagnostics) = GeneratorTestHelper.Generate(code);
+
+            var errors = diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error || x.Severity == DiagnosticSeverity.Warning).ToList();
+            foreach (var error in errors)
+            {
+                Console.WriteLine("DIAGNOSTIC: " + error);
+            }
+            Assert.That(errors, Is.Empty);
+
+            foreach (var generated in generatedCode)
+            {
+                Console.WriteLine("--- GENERATED FILE ---");
+                Console.WriteLine(generated);
+            }
+        }
     }
 }

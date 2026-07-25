@@ -35,7 +35,7 @@ jobs:
           projectPath: ${{ matrix.projectPath }}
           artifactsPath: artifacts
           githubToken: ${{ secrets.GITHUB_TOKEN }}
-          coverageOptions: 'generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;assemblyFilters:+my.assembly.*'
+          coverageOptions: 'generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;assemblyFilters:+ManualDi*'
       - uses: actions/upload-artifact@v7
         if: always()
         with:

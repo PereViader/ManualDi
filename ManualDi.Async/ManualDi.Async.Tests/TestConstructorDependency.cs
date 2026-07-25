@@ -45,4 +45,26 @@ public class TestConstructorDependency
 
         Assert.That(exception!.Message, Does.Contain("with some filter is not registered"));
     }
+
+    [Test]
+    public async Task TestRootResolutionFailureMessageIncludesNullInjectedInto()
+    {
+        var container = await new DiContainerBindings().Build(CancellationToken.None);
+        var ex = Assert.Throws<InvalidOperationException>(() => container.Resolve<UnregisteredClass>());
+        Assert.That(ex!.Message, Is.EqualTo($"Could not resolve element of type {typeof(UnregisteredClass).FullName} injected into null"));
+    }
+
+    [Test]
+    public void TestNestedResolutionFailureMessageIncludesParentType()
+    {
+        var ex = Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await new DiContainerBindings().Install(b =>
+            {
+                b.Bind<ClassWithDependency>().FromMethod(c => new ClassWithDependency(c.Resolve<UnregisteredClass>()));
+            }).Build(CancellationToken.None);
+        });
+
+        Assert.That(ex!.Message, Is.EqualTo($"Could not resolve element of type {typeof(UnregisteredClass).FullName} injected into {typeof(ClassWithDependency).FullName}"));
+    }
 }

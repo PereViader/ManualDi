@@ -22,6 +22,7 @@ namespace ManualDi.Async
         private bool disposedValue;
         
         public CancellationToken CancellationToken => cancellationTokenSource.Token;
+        public Binding? InjectedBinding => injectedBinding;
 
         internal DiContainer(
             Dictionary<IntPtr, BindingNode> bindingsByType,

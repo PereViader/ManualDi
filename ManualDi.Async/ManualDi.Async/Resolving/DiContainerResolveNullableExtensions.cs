@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -26,7 +26,7 @@ namespace ManualDi.Async
             var resolution = diContainer.ResolveContainer(typeof(Task<T>));
             if (resolution is null)
             {
-                ThrowHelper.ThrowCouldNotResolveAsyncElement(typeof(T));
+                ThrowHelper.ThrowCouldNotResolveAsyncElement(typeof(T), diContainer);
             }
             var result = await (Task<object?>)resolution;
             if (result is null)
@@ -56,7 +56,7 @@ namespace ManualDi.Async
             var resolution = diContainer.ResolveContainer(typeof(Task<T>));
             if (resolution is null)
             {
-                ThrowHelper.ThrowCouldNotResolveAsyncElement(typeof(T));
+                ThrowHelper.ThrowCouldNotResolveAsyncElement(typeof(T), diContainer);
             }
             var result = await (Task<object?>)resolution;
             if (result is null)
@@ -86,7 +86,7 @@ namespace ManualDi.Async
             var resolution = diContainer.ResolveContainer(typeof(Task<T>), filterBindingDelegate);
             if (resolution is null)
             {
-                ThrowHelper.ThrowCouldNotResolveAsyncElement(typeof(T));
+                ThrowHelper.ThrowCouldNotResolveAsyncElement(typeof(T), diContainer);
             }
             var result = await (Task<object?>)resolution;
             if (result is null)
@@ -116,7 +116,7 @@ namespace ManualDi.Async
             var resolution = diContainer.ResolveContainer(typeof(Task<T>), filterBindingDelegate);
             if (resolution is null)
             {
-                ThrowHelper.ThrowCouldNotResolveAsyncElement(typeof(T));
+                ThrowHelper.ThrowCouldNotResolveAsyncElement(typeof(T), diContainer);
             }
             var result = await (Task<object?>)resolution;
             if (result is null)
@@ -138,7 +138,7 @@ namespace ManualDi.Async
             var resolution = diContainer.ResolveContainer(typeof(Task<>).MakeGenericType(type));
             if (resolution is null)
             {
-                ThrowHelper.ThrowCouldNotResolveAsyncElement(type);
+                ThrowHelper.ThrowCouldNotResolveAsyncElement(type, diContainer);
             }
             return (Task<object?>)resolution;
         }
@@ -155,7 +155,7 @@ namespace ManualDi.Async
             var resolution = diContainer.ResolveContainer(typeof(Task<>).MakeGenericType(type), filterBindingDelegate);
             if (resolution is null)
             {
-                ThrowHelper.ThrowCouldNotResolveAsyncElement(type);
+                ThrowHelper.ThrowCouldNotResolveAsyncElement(type, diContainer);
             }
             return (Task<object?>)resolution;
         }

@@ -142,7 +142,7 @@ namespace ManualDi.Sync
         {
             if (!bindings.TryResolveInstance<TConfig>(out var config))
             {
-                ThrowHelper.ThrowCouldNotResolveInstance(typeof(TConfig));
+                ThrowHelper.ThrowCouldNotResolveInstance(typeof(TConfig), null);
             }
             
             return config;

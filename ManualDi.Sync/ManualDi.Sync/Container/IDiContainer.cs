@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Threading;
 
@@ -7,6 +7,10 @@ namespace ManualDi.Sync
     public interface IDiContainer : IDisposable
     {
         CancellationToken CancellationToken { get; }
+        /// <summary>
+        /// The binding currently being injected into during resolution, or null if resolving at root level.
+        /// </summary>
+        Binding? InjectedBinding { get; }
         
         /// <summary>
         /// Non-generic resolution of a binding for its registered instance

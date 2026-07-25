@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -143,7 +143,7 @@ namespace ManualDi.Async
         {
             if (!bindings.TryResolveInstance<TConfig>(out var config))
             {
-                ThrowHelper.ThrowCouldNotResolveInstance(typeof(TConfig));
+                ThrowHelper.ThrowCouldNotResolveInstance(typeof(TConfig), null);
             }
             
             return config;

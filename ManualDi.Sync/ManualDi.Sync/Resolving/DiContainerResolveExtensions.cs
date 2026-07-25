@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Sync
@@ -11,7 +11,7 @@ namespace ManualDi.Sync
             var resolution = diContainer.ResolveContainer(typeof(T));
             if (resolution is null)
             {
-                ThrowHelper.ThrowCouldNotResolveElement(typeof(T));
+                ThrowHelper.ThrowCouldNotResolveElement(typeof(T), diContainer);
             }
             return (T)resolution;
         }
@@ -22,7 +22,7 @@ namespace ManualDi.Sync
             var resolution = diContainer.ResolveContainer(typeof(T), filterBindingDelegate);
             if (resolution is null)
             {
-                ThrowHelper.ThrowCouldNotResolveElement(typeof(T));
+                ThrowHelper.ThrowCouldNotResolveElement(typeof(T), diContainer);
             }
             return (T)resolution;
         }
@@ -33,7 +33,7 @@ namespace ManualDi.Sync
             var resolution = diContainer.ResolveContainer(type);
             if (resolution is null)
             {
-                ThrowHelper.ThrowCouldNotResolveElement(type);
+                ThrowHelper.ThrowCouldNotResolveElement(type, diContainer);
             }
             return resolution;
         }
@@ -44,7 +44,7 @@ namespace ManualDi.Sync
             var resolution = diContainer.ResolveContainer(type, filterBindingDelegate: filterBindingDelegate);
             if (resolution is null)
             {
-                ThrowHelper.ThrowCouldNotResolveElement(type);
+                ThrowHelper.ThrowCouldNotResolveElement(type, diContainer);
             }
             return resolution;
         }

@@ -8,9 +8,10 @@ namespace ManualDi.Sync
     {
         [DoesNotReturn]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void ThrowCouldNotResolveInstance(Type type)
+        public static void ThrowCouldNotResolveInstance(Type type, IDiContainer? diContainer)
         {
-            throw new InvalidOperationException($"Could not resolve instance for binding of type {type.FullName}");
+            var injectedIntoType = diContainer?.InjectedBinding?.ConcreteType;
+            throw new InvalidOperationException($"Could not resolve instance for binding of type {type.FullName} injected into {injectedIntoType?.FullName ?? "null"}");
         }
 
         [DoesNotReturn]
@@ -29,16 +30,18 @@ namespace ManualDi.Sync
 
         [DoesNotReturn]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void ThrowCouldNotResolveParameter(Type type, string parameterName)
+        public static void ThrowCouldNotResolveParameter(Type type, string parameterName, IDiContainer? diContainer)
         {
-            throw new InvalidOperationException($"Could not resolve element of type {type.FullName} for parameter {parameterName}");
+            var injectedIntoType = diContainer?.InjectedBinding?.ConcreteType;
+            throw new InvalidOperationException($"Could not resolve element of type {type.FullName} for parameter {parameterName} injected into {injectedIntoType?.FullName ?? "null"}");
         }
 
         [DoesNotReturn]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void ThrowCouldNotResolveElement(Type type)
+        public static void ThrowCouldNotResolveElement(Type type, IDiContainer? diContainer)
         {
-            throw new InvalidOperationException($"Could not resolve element of type {type.FullName}");
+            var injectedIntoType = diContainer?.InjectedBinding?.ConcreteType;
+            throw new InvalidOperationException($"Could not resolve element of type {type.FullName} injected into {injectedIntoType?.FullName ?? "null"}");
         }
     }
 }

@@ -18,6 +18,7 @@ namespace ManualDi.Sync
         private Binding? injectedBinding;
         
         public CancellationToken CancellationToken => cancellationTokenSource.Token;
+        public Binding? InjectedBinding => injectedBinding;
         
         internal DiContainer(
             Dictionary<IntPtr, BindingNode> allBindings, 

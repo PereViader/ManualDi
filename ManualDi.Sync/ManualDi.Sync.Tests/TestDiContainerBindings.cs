@@ -1,4 +1,4 @@
-﻿using NSubstitute;
+using NSubstitute;
 using NUnit.Framework;
 using System;
 
@@ -148,5 +148,34 @@ public class TestDiContainerBindings
         Assert.That(resolutions2.Count, Is.EqualTo(2));
         Assert.That(resolutions2[0], Is.TypeOf<Type>());
         Assert.That(resolutions2[1], Is.TypeOf<Other>());
+    }
+
+    private class ParentType
+    {
+        public ParentType(UnregisteredDependency dependency) {}
+    }
+
+    private class UnregisteredDependency {}
+
+    [Test]
+    public void TestRootResolutionFailureMessageIncludesNullInjectedInto()
+    {
+        var container = new DiContainerBindings().Build();
+        var ex = Assert.Throws<InvalidOperationException>(() => container.Resolve<UnregisteredDependency>());
+        Assert.That(ex!.Message, Is.EqualTo($"Could not resolve element of type {typeof(UnregisteredDependency).FullName} injected into null"));
+    }
+
+    [Test]
+    public void TestNestedResolutionFailureMessageIncludesParentType()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            new DiContainerBindings().Install(b =>
+            {
+                b.Bind<ParentType>().FromMethod(c => new ParentType(c.Resolve<UnregisteredDependency>()));
+            }).Build();
+        });
+
+        Assert.That(ex!.Message, Is.EqualTo($"Could not resolve element of type {typeof(UnregisteredDependency).FullName} injected into {typeof(ParentType).FullName}"));
     }
 }

@@ -66,7 +66,7 @@ namespace ManualDi.Async
                 
                 if (injectedBinding.FromDelegate is null)
                 {
-                    ThrowHelper.ThrowFromDelegateIsNull(injectedBinding.ConcreteType);
+                    ThrowHelper.ThrowFromDelegateIsNull(injectedBinding);
                 }
 
                 object? instance;
@@ -75,7 +75,7 @@ namespace ManualDi.Async
                     instance = await fromAsyncDelegate.Invoke(this, ct);
                     if (instance is null)
                     {
-                        ThrowHelper.ThrowCouldNotCreateObject(injectedBinding.ConcreteType);
+                        ThrowHelper.ThrowCouldNotCreateObject(injectedBinding);
                     }
                 }
                 else if (injectedBinding.FromDelegate is FromDelegate fromDelegate)
@@ -83,7 +83,7 @@ namespace ManualDi.Async
                     instance = fromDelegate.Invoke(this);
                     if (instance is null)
                     {
-                        ThrowHelper.ThrowCouldNotCreateObject(injectedBinding.ConcreteType);
+                        ThrowHelper.ThrowCouldNotCreateObject(injectedBinding);
                     }
                 }
                 else
@@ -196,7 +196,7 @@ namespace ManualDi.Async
             {
                 if (parentDiContainer is null)
                 {
-                    ThrowHelper.ThrowTypeNotRegistered(typeof(T), injectedBinding?.ConcreteType);
+                    ThrowHelper.ThrowTypeNotRegistered(typeof(T), injectedBinding);
                 }
                 parentDiContainer.ConstructorDependency<T>();
                 return;
@@ -220,7 +220,7 @@ namespace ManualDi.Async
             {
                 if (parentDiContainer is null)
                 {
-                    ThrowHelper.ThrowTypeWithFilterNotRegistered(typeof(T), injectedBinding?.ConcreteType);
+                    ThrowHelper.ThrowTypeWithFilterNotRegistered(typeof(T), injectedBinding);
                 }
                 parentDiContainer.ConstructorDependency<T>(filter);
                 return;
@@ -284,7 +284,7 @@ namespace ManualDi.Async
             {
                 if (parentDiContainer is null)
                 {
-                    ThrowHelper.ThrowTypeNotRegistered(typeof(T), injectedBinding?.ConcreteType);
+                    ThrowHelper.ThrowTypeNotRegistered(typeof(T), injectedBinding);
                 }
                 parentDiContainer.InjectionDependency<T>();
                 return;
@@ -298,7 +298,7 @@ namespace ManualDi.Async
             {
                 if (parentDiContainer is null)
                 {
-                    ThrowHelper.ThrowTypeNotRegistered(typeof(T), injectedBinding?.ConcreteType);
+                    ThrowHelper.ThrowTypeNotRegistered(typeof(T), injectedBinding);
                 }
                 parentDiContainer.InjectionDependency<T>(filter);
                 return;

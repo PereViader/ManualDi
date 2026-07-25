@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
@@ -16,52 +17,52 @@ namespace ManualDi.Async
 
         [DoesNotReturn]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void ThrowUnexpectedInitializationDelegateType(Type delegateType)
+        public static void ThrowUnexpectedInitializationDelegateType(object delegateObject)
         {
-            throw new InvalidOperationException($"Unexpected initialization delegate type: {delegateType}");
+            throw new InvalidOperationException($"Unexpected initialization delegate type: {delegateObject.GetType()}");
         }
 
         [DoesNotReturn]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void ThrowUnexpectedStartupDelegateType(Type delegateType)
+        public static void ThrowUnexpectedStartupDelegateType(object delegateObject)
         {
-            throw new InvalidOperationException($"Unexpected startup delegate type: {delegateType}");
+            throw new InvalidOperationException($"Unexpected startup delegate type: {delegateObject.GetType()}");
         }
 
         [DoesNotReturn]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void ThrowCouldNotCreateObject(Type concreteType)
+        public static void ThrowCouldNotCreateObject(Binding binding)
         {
-            throw new InvalidOperationException($"Could not create object for Binding with Concrete type {concreteType}");
+            throw new InvalidOperationException($"Could not create object for Binding with Concrete type {binding.ConcreteType}");
         }
 
         [DoesNotReturn]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void ThrowFromDelegateIsNull(Type concreteType)
+        public static void ThrowFromDelegateIsNull(Binding binding)
         {
-            throw new InvalidOperationException($"The from delegate for Binding with Concrete type {concreteType} is null");
+            throw new InvalidOperationException($"The from delegate for Binding with Concrete type {binding.ConcreteType} is null");
         }
 
         [DoesNotReturn]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void ThrowTypeNotRegistered(Type injectedType, Type? concreteType)
+        public static void ThrowTypeNotRegistered(Type injectedType, Binding? injectedBinding)
         {
-            throw new InvalidOperationException($"Type {injectedType.FullName} injected into {concreteType?.FullName ?? "null"} is not registered.");
+            throw new InvalidOperationException($"Type {injectedType.FullName} injected into {injectedBinding?.ConcreteType.FullName ?? "null"} is not registered.");
         }
 
         [DoesNotReturn]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void ThrowTypeWithFilterNotRegistered(Type injectedType, Type? concreteType)
+        public static void ThrowTypeWithFilterNotRegistered(Type injectedType, Binding? injectedBinding)
         {
-            throw new InvalidOperationException($"Type {injectedType.FullName} injected into {concreteType?.FullName ?? "null"} with some filter is not registered.");
+            throw new InvalidOperationException($"Type {injectedType.FullName} injected into {injectedBinding?.ConcreteType.FullName ?? "null"} with some filter is not registered.");
         }
 
         [DoesNotReturn]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void ThrowCouldNotResolveParameter(Type type, string parameterName, IDiContainer? diContainer)
+        public static void ThrowCouldNotResolveParameter(ParameterInfo parameter, IDiContainer? diContainer)
         {
             var injectedIntoType = diContainer?.InjectedBinding?.ConcreteType;
-            throw new InvalidOperationException($"Could not resolve element of type {type.FullName} for parameter {parameterName} injected into {injectedIntoType?.FullName ?? "null"}");
+            throw new InvalidOperationException($"Could not resolve element of type {parameter.ParameterType.FullName} for parameter {parameter.Name} injected into {injectedIntoType?.FullName ?? "null"}");
         }
 
         [DoesNotReturn]

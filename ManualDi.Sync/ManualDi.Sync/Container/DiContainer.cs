@@ -92,7 +92,7 @@ namespace ManualDi.Sync
 
             if (injectedBinding.FromDelegate is null)
             {
-                ThrowHelper.ThrowFromDelegateIsNull(injectedBinding.ConcreteType);
+                ThrowHelper.ThrowFromDelegateIsNull(injectedBinding);
             }
 
             object? instance;
@@ -101,7 +101,7 @@ namespace ManualDi.Sync
                 instance = fromDelegate.Invoke(this);
                 if (instance is null)
                 {
-                    ThrowHelper.ThrowCouldNotCreateObject(injectedBinding.ConcreteType);
+                    ThrowHelper.ThrowCouldNotCreateObject(injectedBinding);
                 }
             }
             else

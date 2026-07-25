@@ -232,7 +232,7 @@ namespace ManualDi.Async
                                 syncInitializationDelegate.Invoke(subContainer);
                                 break;
                             default:
-                                ThrowHelper.ThrowUnexpectedInitializationDelegateType(initializationDelegate.GetType());
+                                ThrowHelper.ThrowUnexpectedInitializationDelegateType(initializationDelegate);
                                 break;
                         }
                     }
@@ -248,7 +248,7 @@ namespace ManualDi.Async
                                 syncStartupDelegate.Invoke(subContainer);
                                 break;
                             default:
-                                ThrowHelper.ThrowUnexpectedStartupDelegateType(startupDelegate.GetType());
+                                ThrowHelper.ThrowUnexpectedStartupDelegateType(startupDelegate);
                                 break;
                         }
                     }
@@ -294,7 +294,7 @@ namespace ManualDi.Async
                             syncInitializationDelegate.Invoke(diContainer);
                             break;
                         default:
-                            ThrowHelper.ThrowUnexpectedInitializationDelegateType(initializationDelegate.GetType());
+                            ThrowHelper.ThrowUnexpectedInitializationDelegateType(initializationDelegate);
                             break;
                     }
                 }
@@ -310,7 +310,7 @@ namespace ManualDi.Async
                             syncStartupDelegate.Invoke(diContainer);
                             break;
                         default:
-                            ThrowHelper.ThrowUnexpectedStartupDelegateType(startupDelegate.GetType());
+                            ThrowHelper.ThrowUnexpectedStartupDelegateType(startupDelegate);
                             break;
                     }
                 }

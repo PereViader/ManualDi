@@ -72,7 +72,7 @@ namespace ManualDi.Async
                     continue;
                 }
 
-                ThrowHelper.ThrowCouldNotResolveParameter(type, parameter.Name, diContainer);
+                ThrowHelper.ThrowCouldNotResolveParameter(parameter, diContainer);
             }
 
             return resolvedParameters;

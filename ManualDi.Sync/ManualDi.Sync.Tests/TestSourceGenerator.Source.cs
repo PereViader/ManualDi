@@ -339,6 +339,23 @@ class InjectContainer
     public InjectContainer(IDiContainer c, CancellationToken ct) { } // The container should be provided as is
 }
 
+    public struct TestKeyA { }
+    public struct TestKeyB { }
+
+    [ManualDi]
+    class InjectKeyedAttribute
+    {
+        public void Inject(
+            [Keyed(typeof(TestKeyA))] object primaryValue,
+            [Keyed(typeof(TestKeyB))] object? secondaryValue)
+        {
+        }
+
+        public void Initialize()
+        {
+        }
+    }
+
 [ManualDi]
 partial class Partial
 {

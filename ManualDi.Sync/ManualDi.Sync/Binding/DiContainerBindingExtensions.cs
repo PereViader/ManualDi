@@ -97,6 +97,39 @@ namespace ManualDi.Sync
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TConcrete> BindKeyed<TConcrete, TKey>(this DiContainerBindings diContainerBindings)
+            where TKey : struct
+        {
+            var concreteBinding = diContainerBindings.Bind<TConcrete>();
+
+            var keyedBinding = new Binding<TConcrete>();
+            keyedBinding.IsTransient = true;
+            keyedBinding.TryToDispose = false;
+            keyedBinding.FromDelegate = (FromDelegate)(static c => c.Resolve<TConcrete>());
+
+            diContainerBindings.AddBinding(keyedBinding, typeof(Keyed<TConcrete, TKey>));
+
+            return concreteBinding;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TConcrete> BindKeyed<TApparent, TConcrete, TKey>(this DiContainerBindings diContainerBindings)
+            where TConcrete : TApparent
+            where TKey : struct
+        {
+            var concreteBinding = diContainerBindings.BindAll<TApparent, TConcrete>();
+
+            var keyedBinding = new Binding<TConcrete>();
+            keyedBinding.IsTransient = true;
+            keyedBinding.TryToDispose = false;
+            keyedBinding.FromDelegate = (FromDelegate)(static c => c.Resolve<TConcrete>());
+
+            diContainerBindings.AddBinding(keyedBinding, typeof(Keyed<TApparent, TKey>));
+
+            return concreteBinding;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DiContainerBindings QueueStartup<T>(this DiContainerBindings diContainerBindings, Action<T> startup)
         {
             diContainerBindings.QueueStartup(c =>

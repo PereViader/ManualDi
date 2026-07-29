@@ -1040,6 +1040,43 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Sync
 {
+    public static class ManualDi_InjectKeyedAttribute_Extensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<InjectKeyedAttribute> FromConstructor(this Binding<InjectKeyedAttribute> binding)
+        {
+            return binding.FromMethod(static c => new InjectKeyedAttribute());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<InjectKeyedAttribute> Default(this Binding<InjectKeyedAttribute> binding)
+        {
+            return DefaultImpl(binding);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : InjectKeyedAttribute
+        {
+            return binding
+                .Initialize(static (o, c) => ((InjectKeyedAttribute)o).Initialize())
+                .Inject(static (o, c) =>
+                {
+                    var to = (InjectKeyedAttribute)o;
+                    to.Inject(
+                        c.ResolveKeyed<object, TestKeyA>(),
+                        c.ResolveKeyedNullable<object, TestKeyB>());
+                })
+                .SkipDisposable();
+        }
+    }
+}
+
+  
+#nullable enable
+using System.Runtime.CompilerServices;
+
+namespace ManualDi.Sync
+{
     public static class ManualDi_Partial_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

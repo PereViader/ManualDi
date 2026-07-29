@@ -339,6 +339,15 @@ namespace ManualDi.Sync.Generators
                 return ContainerResolution.Instance;
             }
 
+            var keyedAttribute = parameter.GetAttributes()
+                .FirstOrDefault(x => SymbolEqualityComparer.Default.Equals(x.AttributeClass, types.KeyedAttribute));
+
+            string? keyTypeName = null;
+            if (keyedAttribute is not null && keyedAttribute.ConstructorArguments.Length > 0 && keyedAttribute.ConstructorArguments[0].Value is ITypeSymbol keyTypeSymbol)
+            {
+                keyTypeName = FullyQualifyTypeWithoutNullable(keyTypeSymbol);
+            }
+
             // Enumerable check
             var arraySymbol = (typeSymbol as IArrayTypeSymbol)?.ElementType;
             var listGenericType = arraySymbol ?? types.TryGetEnumerableType(typeSymbol);
@@ -359,12 +368,16 @@ namespace ManualDi.Sync.Generators
             // Standard resolution
             var typeName = FullyQualifyTypeWithoutNullable(typeSymbol);
             var method = "Resolve";
-            if (IsNullableTypeSymbol(typeSymbol))
+            if (keyTypeName is not null)
+            {
+                method = IsNullableTypeSymbol(typeSymbol) ? "ResolveKeyedNullable" : "ResolveKeyed";
+            }
+            else if (IsNullableTypeSymbol(typeSymbol))
             {
                 method = typeSymbol.IsValueType ? "ResolveNullableValue" : "ResolveNullable";
             }
 
-            return new ServiceResolution(typeName, method);
+            return new ServiceResolution(typeName, method, keyTypeName);
         }
 
         private static void Generate(SourceProductionContext context, ClassData data)
@@ -568,9 +581,14 @@ namespace ManualDi.Sync.Generators
                     return;
                 case ServiceResolution serviceRes:
                     sb.Append("c.");
-                    sb.Append(serviceRes.ResolutionMethod); // e.g. ResolveNullable
+                    sb.Append(serviceRes.ResolutionMethod); // e.g. ResolveNullable or ResolveKeyed
                     sb.Append("<");
                     sb.Append(serviceRes.TypeName);
+                    if (serviceRes.KeyTypeName is not null)
+                    {
+                        sb.Append(", ");
+                        sb.Append(serviceRes.KeyTypeName);
+                    }
                     sb.Append(">()");
                     return;
             }
@@ -682,7 +700,7 @@ namespace ManualDi.Sync.Generators
 
         internal abstract record Resolution;
 
-        internal sealed record ServiceResolution(string TypeName, string ResolutionMethod) : Resolution;
+        internal sealed record ServiceResolution(string TypeName, string ResolutionMethod, string? KeyTypeName = null) : Resolution;
 
         internal sealed record EnumerableResolution(string TypeName, EnumerableInfo EnumerableInfo) : Resolution;
 
@@ -712,6 +730,7 @@ namespace ManualDi.Sync.Generators
             public readonly INamedTypeSymbol? IReadOnlyCollection = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyCollection`1");
             public readonly INamedTypeSymbol? ICollection = compilation.GetTypeByMetadataName("System.Collections.Generic.ICollection`1");
             public readonly INamedTypeSymbol? ManualDiAttribute = compilation.GetTypeByMetadataName("ManualDi.Sync.ManualDiAttribute");
+            public readonly INamedTypeSymbol? KeyedAttribute = compilation.GetTypeByMetadataName("ManualDi.Sync.KeyedAttribute");
             public readonly INamedTypeSymbol? ObsoleteAttribute = compilation.GetTypeByMetadataName("System.ObsoleteAttribute");
             public readonly INamedTypeSymbol? IDisposable = compilation.GetTypeByMetadataName("System.IDisposable");
             public readonly INamedTypeSymbol? DiContainer = compilation.GetTypeByMetadataName("ManualDi.Sync.IDiContainer");

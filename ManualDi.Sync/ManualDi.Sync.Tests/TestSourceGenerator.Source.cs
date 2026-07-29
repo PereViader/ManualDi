@@ -289,19 +289,6 @@ namespace SomeNamespace.Subnamespace
             ICollection<object> ICollectionObject,
             ICollection<int> ICollectionInt,
 
-            [Id("A")] IEnumerable<object> IEnumerableObjectId,
-            [Id("A")] IEnumerable<int> IEnumerableIntId,
-            [Id("A")] IReadOnlyList<object> IReadOnlyListObjectId,
-            [Id("A")] IReadOnlyList<int> IReadOnlyListIntId,
-            [Id("A")] IList<object> IListObjectId,
-            [Id("A")] IList<int> IListIntId,
-            [Id("A")] List<object> ListObjectId,
-            [Id("A")] List<int> ListIntId,
-            [Id("A")] IReadOnlyCollection<object> IReadOnlyCollectionObjectId,
-            [Id("A")] IReadOnlyCollection<int> IReadOnlyCollectionIntId,
-            [Id("A")] ICollection<object> ICollectionObjectId,
-            [Id("A")] ICollection<int> ICollectionIntId,
-
             IEnumerable<object>? IEnumerableObjectNullable,
             IEnumerable<int>? IEnumerableIntNullable,
             IReadOnlyList<object>? IReadOnlyListObjectNullable,
@@ -313,58 +300,12 @@ namespace SomeNamespace.Subnamespace
             IReadOnlyCollection<object>? IReadOnlyCollectionObjectNullable,
             IReadOnlyCollection<int>? IReadOnlyCollectionIntNullable,
             ICollection<object>? ICollectionObjectNullable,
-            ICollection<int>? ICollectionIntNullable,
-
-
-            [Id("A")] IEnumerable<object>? IEnumerableObjectNullableId,
-            [Id("A")] IEnumerable<int>? IEnumerableIntNullableId,
-            [Id("A")] IReadOnlyList<object>? IReadOnlyListObjectNullableId,
-            [Id("A")] IReadOnlyList<int>? IReadOnlyListIntNullableId,
-            [Id("A")] IList<object>? IListObjectNullableId,
-            [Id("A")] IList<int>? IListIntNullableId,
-            [Id("A")] List<object>? ListObjectNullableId,
-            [Id("A")] List<int>? ListIntNullableId,
-            [Id("A")] IReadOnlyCollection<object>? IReadOnlyCollectionObjectNullableId,
-            [Id("A")] IReadOnlyCollection<int>? IReadOnlyCollectionIntNullableId,
-            [Id("A")] ICollection<object>? ICollectionObjectNullableId,
-            [Id("A")] ICollection<int>? ICollectionIntNullableId,
-
-            [Id("A")] IEnumerable<object?>? IEnumerableObjectNullableNullableId,
-            [Id("A")] IEnumerable<int?>? IEnumerableIntNullableNullableId,
-            [Id("A")] IReadOnlyList<object?>? IReadOnlyListObjectNullableNullableId,
-            [Id("A")] IReadOnlyList<int?>? IReadOnlyListIntNullableNullableId,
-            [Id("A")] IList<object?>? IListObjectNullableNullableId,
-            [Id("A")] IList<int?>? IListIntNullableNullableId,
-            [Id("A")] List<object?>? ListObjectNullableNullableId,
-            [Id("A")] List<int?>? ListIntNullableNullableId,
-            [Id("A")] IReadOnlyCollection<object?>? IReadOnlyCollectionObjectNullableNullableId,
-            [Id("A")] IReadOnlyCollection<int?>? IReadOnlyCollectionIntNullableNullableId,
-            [Id("A")] ICollection<object?>? ICollectionObjectNullableNullableId,
-            [Id("A")] ICollection<int?>? ICollectionIntNullableNullableId
+            ICollection<int>? ICollectionIntNullable
             )
         {
         }
 
-
-
         public void Inject(List<object> objects)
-        {
-        }
-
-        public void Initialize()
-        {
-        }
-    }
-
-    [ManualDi]
-    class InjectIdAttribute
-    {
-        private const string Something = "A";
-
-        public void Inject(
-            [Id("Potato")] object potatoValue,
-            [Id("Banana")] float bananaValue,
-            object value)
         {
         }
 

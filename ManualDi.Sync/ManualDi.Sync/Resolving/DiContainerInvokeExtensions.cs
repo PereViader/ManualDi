@@ -54,11 +54,7 @@ namespace ManualDi.Sync
                     continue;
                 }
 
-                var filter = CreateFilterForParameter(parameter);
-
-                var resolution = filter is null
-                    ? diContainer.ResolveContainer(resolutionType)
-                    : diContainer.ResolveContainer(resolutionType, filter);
+                var resolution = diContainer.ResolveContainer(resolutionType);
 
                 if (resolution is not null)
                 {
@@ -76,17 +72,6 @@ namespace ManualDi.Sync
             }
 
             return resolvedParameters;
-        }
-
-        private static FilterBindingDelegate? CreateFilterForParameter(ParameterInfo parameter)
-        {
-            var idAttribute = parameter.GetCustomAttribute<IdAttribute>();
-            if (idAttribute is null)
-            {
-                return null;
-            }
-
-            return c => c.Id(idAttribute.Id);
         }
 
         private static bool IsNullable(ParameterInfo parameter)

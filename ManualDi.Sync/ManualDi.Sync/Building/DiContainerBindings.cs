@@ -15,8 +15,6 @@ namespace ManualDi.Sync
         private readonly List<Action> disposeActions;
         private readonly int? containerInitializationsCount;
         private readonly int? containerDisposablesCount;
-        
-        internal readonly BindingContext bindingContext = new();
 
         internal IDiContainer? parentDiContainer;
         internal DiContainerBindings? parentDiContainerBindings;
@@ -140,7 +138,6 @@ namespace ManualDi.Sync
             var diContainer = new DiContainer(
                 bindingsByType,
                 parentDiContainer,
-                bindingContext,
                 cancellationTokenSource ?? new CancellationTokenSource(),
                 containerInitializationsCount,
                 containerDisposablesCount);

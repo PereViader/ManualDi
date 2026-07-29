@@ -901,18 +901,6 @@ namespace ManualDi.Sync
                 c.ResolveAll<int>(),
                 c.ResolveAll<object>(),
                 c.ResolveAll<int>(),
-                c.ResolveAll<object>(static x => x.Id("A")),
-                c.ResolveAll<int>(static x => x.Id("A")),
-                c.ResolveAll<object>(static x => x.Id("A")),
-                c.ResolveAll<int>(static x => x.Id("A")),
-                c.ResolveAll<object>(static x => x.Id("A")),
-                c.ResolveAll<int>(static x => x.Id("A")),
-                c.ResolveAll<object>(static x => x.Id("A")),
-                c.ResolveAll<int>(static x => x.Id("A")),
-                c.ResolveAll<object>(static x => x.Id("A")),
-                c.ResolveAll<int>(static x => x.Id("A")),
-                c.ResolveAll<object>(static x => x.Id("A")),
-                c.ResolveAll<int>(static x => x.Id("A")),
                 c.WouldResolve<object>() ? c.ResolveAll<object>() : null,
                 c.WouldResolve<int>() ? c.ResolveAll<int>() : null,
                 c.WouldResolve<object>() ? c.ResolveAll<object>() : null,
@@ -924,31 +912,7 @@ namespace ManualDi.Sync
                 c.WouldResolve<object>() ? c.ResolveAll<object>() : null,
                 c.WouldResolve<int>() ? c.ResolveAll<int>() : null,
                 c.WouldResolve<object>() ? c.ResolveAll<object>() : null,
-                c.WouldResolve<int>() ? c.ResolveAll<int>() : null,
-                c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")) : null,
-                c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")) : null,
-                c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")) : null,
-                c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")) : null,
-                c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")) : null,
-                c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")) : null,
-                c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")) : null,
-                c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")) : null,
-                c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")) : null,
-                c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")) : null,
-                c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")) : null,
-                c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")) : null,
-                c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")).ConvertAll<object?>(x => x) : null,
-                c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")).ConvertAll<int?>(x => x) : null,
-                c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")).ConvertAll<object?>(x => x) : null,
-                c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")).ConvertAll<int?>(x => x) : null,
-                c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")).ConvertAll<object?>(x => x) : null,
-                c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")).ConvertAll<int?>(x => x) : null,
-                c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")).ConvertAll<object?>(x => x) : null,
-                c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")).ConvertAll<int?>(x => x) : null,
-                c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")).ConvertAll<object?>(x => x) : null,
-                c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")).ConvertAll<int?>(x => x) : null,
-                c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")).ConvertAll<object?>(x => x) : null,
-                c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")).ConvertAll<int?>(x => x) : null));
+                c.WouldResolve<int>() ? c.ResolveAll<int>() : null));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -967,44 +931,6 @@ namespace ManualDi.Sync
                     var to = (SomeNamespace.Subnamespace.ListInject)o;
                     to.Inject(
                         c.ResolveAll<object>());
-                })
-                .SkipDisposable();
-        }
-    }
-}
-
-  
-#nullable enable
-using System.Runtime.CompilerServices;
-
-namespace ManualDi.Sync
-{
-    public static class ManualDi_SomeNamespace_Subnamespace_InjectIdAttribute_Extensions
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Binding<SomeNamespace.Subnamespace.InjectIdAttribute> FromConstructor(this Binding<SomeNamespace.Subnamespace.InjectIdAttribute> binding)
-        {
-            return binding.FromMethod(static c => new SomeNamespace.Subnamespace.InjectIdAttribute());
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Binding<SomeNamespace.Subnamespace.InjectIdAttribute> Default(this Binding<SomeNamespace.Subnamespace.InjectIdAttribute> binding)
-        {
-            return DefaultImpl(binding);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.InjectIdAttribute
-        {
-            return binding
-                .Initialize(static (o, c) => ((SomeNamespace.Subnamespace.InjectIdAttribute)o).Initialize())
-                .Inject(static (o, c) =>
-                {
-                    var to = (SomeNamespace.Subnamespace.InjectIdAttribute)o;
-                    to.Inject(
-                        c.Resolve<object>(static x => x.Id("Potato")),
-                        c.Resolve<float>(static x => x.Id("Banana")),
-                        c.Resolve<object>());
                 })
                 .SkipDisposable();
         }

@@ -339,15 +339,6 @@ namespace ManualDi.Sync.Generators
                 return ContainerResolution.Instance;
             }
 
-            var injectAttribute = parameter.GetAttributes()
-                .FirstOrDefault(x => SymbolEqualityComparer.Default.Equals(x.AttributeClass, types.IdAttribute));
-
-            string? injectId = null;
-            if (injectAttribute is not null && injectAttribute.ConstructorArguments.Length > 0 && injectAttribute.ConstructorArguments[0].Value is object val)
-            {
-                injectId = $"\"{val}\"";
-            }
-
             // Enumerable check
             var arraySymbol = (typeSymbol as IArrayTypeSymbol)?.ElementType;
             var listGenericType = arraySymbol ?? types.TryGetEnumerableType(typeSymbol);
@@ -361,7 +352,6 @@ namespace ManualDi.Sync.Generators
 
                 return new EnumerableResolution(
                     elementTypeNoNullable,
-                    injectId,
                     new EnumerableInfo(isListNullable, isElementNullable, elementTypeWithNullability, arraySymbol is not null)
                 );
             }
@@ -374,7 +364,7 @@ namespace ManualDi.Sync.Generators
                 method = typeSymbol.IsValueType ? "ResolveNullableValue" : "ResolveNullable";
             }
 
-            return new ServiceResolution(typeName, injectId, method);
+            return new ServiceResolution(typeName, method);
         }
 
         private static void Generate(SourceProductionContext context, ClassData data)
@@ -547,22 +537,17 @@ namespace ManualDi.Sync.Generators
                     sb.Append("c");
                     return;
                 case EnumerableResolution enumRes:
-                    var idCode = enumRes.InjectId is null ? "" : $"static x => x.Id({enumRes.InjectId})";
                     var info = enumRes.EnumerableInfo;
                     if (info.IsListNullable)
                     {
                         sb.Append("c.WouldResolve<");
                         sb.Append(enumRes.TypeName);
-                        sb.Append(">(");
-                        sb.Append(idCode);
-                        sb.Append(") ? ");
+                        sb.Append(">() ? ");
                     }
 
                     sb.Append("c.ResolveAll<");
                     sb.Append(enumRes.TypeName);
-                    sb.Append(">(");
-                    sb.Append(idCode);
-                    sb.Append(")");
+                    sb.Append(">()");
 
                     if (info.IsElementNullable)
                     {
@@ -582,14 +567,11 @@ namespace ManualDi.Sync.Generators
                     }
                     return;
                 case ServiceResolution serviceRes:
-                    var idCodeSvc = serviceRes.InjectId is null ? "" : $"static x => x.Id({serviceRes.InjectId})";
                     sb.Append("c.");
                     sb.Append(serviceRes.ResolutionMethod); // e.g. ResolveNullable
                     sb.Append("<");
                     sb.Append(serviceRes.TypeName);
-                    sb.Append(">(");
-                    sb.Append(idCodeSvc);
-                    sb.Append(")");
+                    sb.Append(">()");
                     return;
             }
         }
@@ -700,9 +682,9 @@ namespace ManualDi.Sync.Generators
 
         internal abstract record Resolution;
 
-        internal sealed record ServiceResolution(string TypeName, string? InjectId, string ResolutionMethod) : Resolution;
+        internal sealed record ServiceResolution(string TypeName, string ResolutionMethod) : Resolution;
 
-        internal sealed record EnumerableResolution(string TypeName, string? InjectId, EnumerableInfo EnumerableInfo) : Resolution;
+        internal sealed record EnumerableResolution(string TypeName, EnumerableInfo EnumerableInfo) : Resolution;
 
         internal sealed record OutResolution : Resolution
         {
@@ -729,7 +711,6 @@ namespace ManualDi.Sync.Generators
             public readonly INamedTypeSymbol? IEnumerable = compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1");
             public readonly INamedTypeSymbol? IReadOnlyCollection = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyCollection`1");
             public readonly INamedTypeSymbol? ICollection = compilation.GetTypeByMetadataName("System.Collections.Generic.ICollection`1");
-            public readonly INamedTypeSymbol? IdAttribute = compilation.GetTypeByMetadataName("ManualDi.Sync.IdAttribute");
             public readonly INamedTypeSymbol? ManualDiAttribute = compilation.GetTypeByMetadataName("ManualDi.Sync.ManualDiAttribute");
             public readonly INamedTypeSymbol? ObsoleteAttribute = compilation.GetTypeByMetadataName("System.ObsoleteAttribute");
             public readonly INamedTypeSymbol? IDisposable = compilation.GetTypeByMetadataName("System.IDisposable");

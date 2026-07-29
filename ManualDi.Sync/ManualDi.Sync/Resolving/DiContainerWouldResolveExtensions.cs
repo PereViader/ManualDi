@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Sync
@@ -8,39 +8,25 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool WouldResolve<T>(this IDiContainer diContainer)
         {
-            return diContainer.WouldResolveContainer(typeof(T), null, null, null);
+            return diContainer.WouldResolveContainer(typeof(T), null);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool WouldResolve<T>(this IDiContainer diContainer, FilterBindingDelegate filterBindingDelegate)
+        public static bool WouldResolve<TResolve, TInjectedInto>(this IDiContainer diContainer)
         {
-            return diContainer.WouldResolveContainer(typeof(T), filterBindingDelegate, null, null);
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool WouldResolve<TResolve, TInjectedInto>(this IDiContainer diContainer, FilterBindingDelegate? filterBindingDelegate = null,
-            FilterBindingDelegate? injectedIntoFilterBindingDelegate = null)
-        {
-            return diContainer.WouldResolveContainer(typeof(TResolve), filterBindingDelegate, typeof(TInjectedInto), injectedIntoFilterBindingDelegate);
+            return diContainer.WouldResolveContainer(typeof(TResolve), typeof(TInjectedInto));
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool WouldResolve(this IDiContainer diContainer, Type type)
         {
-            return diContainer.WouldResolveContainer(type, null, null, null);
+            return diContainer.WouldResolveContainer(type, null);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool WouldResolve(this IDiContainer diContainer, Type type, FilterBindingDelegate filterBindingDelegate)
+        public static bool WouldResolve(this IDiContainer diContainer, Type type, Type overrideInjectedIntoType)
         {
-            return diContainer.WouldResolveContainer(type, filterBindingDelegate, null, null);
-        }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool WouldResolve(this IDiContainer diContainer, Type type, FilterBindingDelegate? filterBindingDelegate,
-            Type overrideInjectedIntoType, FilterBindingDelegate? overrideFilterBindingDelegate)
-        {
-            return diContainer.WouldResolveContainer(type, filterBindingDelegate, overrideInjectedIntoType, overrideFilterBindingDelegate);
+            return diContainer.WouldResolveContainer(type, overrideInjectedIntoType);
         }
     }
 }

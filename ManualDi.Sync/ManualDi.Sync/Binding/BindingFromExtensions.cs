@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Sync
@@ -11,17 +11,6 @@ namespace ManualDi.Sync
             )
         {
             FromDelegate fromDelegate = static c => c.Resolve<TConcrete>();
-            binding.FromDelegate = fromDelegate;
-            return binding;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TConcrete> FromContainerResolve<TConcrete>(
-            this Binding<TConcrete> binding,
-            FilterBindingDelegate filterBindingDelegate
-            )
-        {
-            FromDelegate fromDelegate = c => c.Resolve<TConcrete>(filterBindingDelegate);
             binding.FromDelegate = fromDelegate;
             return binding;
         }

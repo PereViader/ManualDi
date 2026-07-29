@@ -220,31 +220,7 @@ namespace ManualDi.Sync
                 return null;
             }
 
-            if (node.Binding.FilterBindingDelegate is null)
-            {
-                return node.Binding;
-            }
-
-            //bindingContext.InjectedIntoBinding = injectedBinding;
-            
-            diContainerBindings.bindingContext.Binding = node.Binding;
-            if (diContainerBindings.bindingContext.Binding.FilterBindingDelegate?.Invoke(diContainerBindings.bindingContext) ?? true)
-            {
-                return node.Binding;
-            }
-
-            var current = node.Next;
-            while (current is not null)
-            {
-                diContainerBindings.bindingContext.Binding = current.Binding;
-                if (diContainerBindings.bindingContext.Binding.FilterBindingDelegate?.Invoke(diContainerBindings.bindingContext) ?? true)
-                {
-                    return current.Binding;
-                }
-                current = current.Next;
-            }
-            
-            return null;
+            return node.Binding;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

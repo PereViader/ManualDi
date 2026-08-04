@@ -613,6 +613,31 @@ When this extension method is used, the container skips the runtime check for `I
 Delegates registered using the `Dispose`/`QueueDispose` methods will still be invoked.
 
 
+## BindKeyed
+
+`BindKeyed` (available in `ManualDi.Sync`) allows registering services associated with strongly-typed marker `struct` keys. This enables registering and resolving multiple implementations of the same service type without relying on string keys or runtime filters, keeping resolution fast and allocation-free.
+
+```csharp
+public struct PrimaryKey { }
+public struct SecondaryKey { }
+
+b.BindKeyed<IStorage, SqlStorage, PrimaryKey>().Default().FromConstructor();
+b.BindKeyed<IStorage, CloudStorage, SecondaryKey>().Default().FromConstructor();
+```
+
+### Source generator
+
+You can inject keyed dependencies into constructor or method parameters using the `[Keyed]` attribute:
+
+```csharp
+[ManualDi]
+public class StorageConsumer(
+    [Keyed(typeof(PrimaryKey))] IStorage primaryStorage,
+    [Keyed(typeof(SecondaryKey))] IStorage? secondaryStorage)
+{
+}
+```
+
 ## WithId
 
 These extension methods allow defining an id, enabling the filtering of elements during resolution.
@@ -1012,6 +1037,22 @@ Resolve all the registered instance from the container. If no instances are avai
 
 ```csharp
 List<SomeService> services = container.ResolveAll<SomeService>();
+```
+
+## ResolveKeyed
+
+Resolve a keyed instance from the container bound with `BindKeyed`. An exception is thrown if it can't be resolved.
+
+```csharp
+IStorage primaryStorage = container.ResolveKeyed<IStorage, PrimaryKey>();
+```
+
+## ResolveKeyedNullable
+
+Resolve a keyed reference type instance from the container bound with `BindKeyed`. Returns null if it can't be resolved.
+
+```csharp
+IStorage? secondaryStorage = container.ResolveKeyedNullable<IStorage, SecondaryKey>();
 ```
 
 # Startups

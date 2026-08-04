@@ -148,19 +148,9 @@ namespace ManualDi.Sync
             parentDiContainer?.ResolveAllContainer(type, resolutions);
         }
 
-        public bool WouldResolveContainer(
-            Type type, 
-            Type? overrideInjectedIntoType)
+        public bool WouldResolveContainer(Type type)
         {
-            var previousInjectedBinding = injectedBinding;
-            if (overrideInjectedIntoType is not null)
-            {
-                injectedBinding = GetBinding(overrideInjectedIntoType);
-            }
-            
             var binding = GetBinding(type);
-            
-            injectedBinding = previousInjectedBinding;
             if (binding is not null)
             {
                 return true;
@@ -171,7 +161,7 @@ namespace ManualDi.Sync
                 return false;
             }
 
-            return parentDiContainer.WouldResolveContainer(type, overrideInjectedIntoType);
+            return parentDiContainer.WouldResolveContainer(type);
         }
         
         public void QueueDispose(IDisposable disposable)

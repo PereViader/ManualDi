@@ -35,9 +35,7 @@ namespace ManualDi.Sync
         /// </summary>
         /// <param name="type">The type of the binding to resolve</param>
         /// <returns>True when resolving would succeed or throw, false when resolving returns null or empty list</returns>
-        bool WouldResolveContainer(
-            Type type, 
-            Type? overrideInjectedIntoType);
+        bool WouldResolveContainer(Type type);
         
         /// <summary>
         /// Queues for disposal a disposable. They will be called in order when disposing the container.

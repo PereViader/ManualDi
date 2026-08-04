@@ -288,7 +288,7 @@ c.Resolve<Implementation>() // Runtime error
 ```
 
 Use the flunt API available on the returned value of the `Bind` method, to configure the container how it should create, inject, initialize and dispose the instance.
-The specific binding configuration is done through 9 categories of methods that, by convention, should be done in the order specified below.
+The specific binding configuration is done through 7 categories of methods that, by convention, should be done in the order specified below.
 
 ```csharp
 // * means source generated
@@ -303,8 +303,6 @@ Bind<(TApparent,)* TConcrete>()
     .Inject
     .Initialize
     .Dispose
-    .WithId
-    .When([InjectedIntoId|InjectedIntoType])
     .[Any other custom extension method your project implements]
 ```
 
@@ -314,7 +312,7 @@ When you define one or more `TApparent` on a single binding, the underlying `TCo
 
 Keep in mind that you can have more than one binding to the same `TApparent` type. 
 
-Resolving a type on the container will return the first one that satisfies the resolution rules. (Read more below on `When` binding constraints)
+Resolving a type on the container will return the first registered binding for that type.
 
 ```csharp
 b.Bind<SomeClass>().Default().FromConstructor(); // When calling c.Resolve<SomeClass>() this one is returned
@@ -615,7 +613,7 @@ Delegates registered using the `Dispose`/`QueueDispose` methods will still be in
 
 ## BindKeyed
 
-`BindKeyed` (available in `ManualDi.Sync`) allows registering services associated with strongly-typed marker `struct` keys. This enables registering and resolving multiple implementations of the same service type without relying on string keys or runtime filters, keeping resolution fast and allocation-free.
+`BindKeyed` allows registering services associated with strongly-typed marker `struct` keys. This enables registering and resolving multiple implementations of the same service type without relying on string keys or runtime filters, keeping resolution fast and allocation-free.
 
 ```csharp
 public struct PrimaryKey { }
@@ -636,92 +634,6 @@ public class StorageConsumer(
     [Keyed(typeof(SecondaryKey))] IStorage? secondaryStorage)
 {
 }
-```
-
-## WithId
-
-These extension methods allow defining an id, enabling the filtering of elements during resolution.
-
-```csharp
-b.Bind<int>().FromInstance(1).WithId("Potato");
-b.Bind<int>().FromInstance(5).WithId("Banana");
-
-// ...
-
-c.Resolve<int>(x => x.Id("Potato")); // returns 1
-c.Resolve<int>(x => x.Id("Banana")); // returns 5
-```
-
-Note: This feature can be nice to use, prefer using it sparingly. This is because it introduces the need for the provider and consumer to share two points of information (Type and Id) instead of just one (Type)
-
-An alternative to it is to register delegates instead. Delegates used this way encode the two concepts into one.
-
-```csharp
-delegate int GetPotatoInt();
-delegate int GetBananaInt();
-
-b.Bind<GetPotatoInt>().FromInstance(() => 1);
-b.Bind<GetPotatoInt>().FromInstance(() => 2);
-
-int value1 = c.Resolve<GetPotatoInt>()(); // 1
-int value2 = c.Resolve<GetBananaInt>()(); // 2
-```
-
-### Source generator
-
-The id functionality can be used on method and property dependencies by using the Inject attribute and providing a string id to it
-
-```csharp
-[ManualDi]
-class A(int a, [Id("Other")] object b);
-
-b.Bind<A>().Default().FromConstructor();
-
-//Within FromConstructor the snippet below will run
-new A(
-    c.Resolve<int>(),
-    c.Resolve<object>(x => x.Id("Other"))
-)
-```
-
-## When
-
-The `When` extension method allows defining filtering conditions as part of the bindings.
-
-### InjectedIntoType
-
-Allows filtering bindings by the `TConcrete` type of the Binding where it is being injected to.
-
-```csharp
-[ManualDi]
-class SomeValue(int Value);
-[ManualDi]
-class OtherValue(int Value);
-[ManualDi]
-class FailValue(int Value);
-
-b.Bind<int>().FromInstance(1).When(x => x.InjectedIntoType<SomeValue>());
-b.Bind<int>().FromInstance(2).When(x => x.InjectedIntoType<OtherValue>());
-
-b.Bind<SomeValue>().Default().FromConstructor(); // will be provided 1
-b.Bind<OtherValue>().Default().FromConstructor(); // will be provided 2
-b.Bind<FailValue>().Default().FromConstructor(); // will fail at runtime when resolved
-```
-
-### InjectedIntoId
-
-Allows filtering bindings by the id of the Binding where it is being injected to.
-
-```csharp
-[ManualDi]
-class SomeValue(int Value);
-
-b.Bind<int>().FromInstance(1).When(x => x.InjectedIntoId("1"));
-b.Bind<int>().FromInstance(2).When(x => x.InjectedIntoId("2"));
-
-b.Bind<SomeValue>().Default().FromConstructor().WithId("1"); // will be provided 1
-b.Bind<SomeValue>().Default().FromConstructor().WithId("2"); // will be provided 2
-b.Bind<FailValue>().Default().FromConstructor(); // will fail at runtime when resolved
 ```
 
 # BindSubContainer
@@ -933,8 +845,8 @@ catch (Exception e)
 The report will return the order of creation, injection and initialization. The example above returns 
 
 ```csharp
-Apparent: System.Int32, Concrete: System.Int32, Id: 
-Apparent: System.Object, Concrete: System.Object, Id: 
+Apparent: System.Int32, Concrete: System.Int32
+Apparent: System.Object, Concrete: System.Object
 ```
 
 Note: If you think there is some other piece of data that should be added open a discussion with the suggestion.

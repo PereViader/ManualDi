@@ -356,13 +356,13 @@ namespace ManualDi.Async.Generators
                 return ContainerResolution.Instance;
             }
 
-            var injectAttribute = parameter.GetAttributes()
-                .FirstOrDefault(x => SymbolEqualityComparer.Default.Equals(x.AttributeClass, types.IdAttribute));
+            var keyedAttribute = parameter.GetAttributes()
+                .FirstOrDefault(x => SymbolEqualityComparer.Default.Equals(x.AttributeClass, types.KeyedAttribute));
 
-            string? injectId = null;
-            if (injectAttribute is not null && injectAttribute.ConstructorArguments.Length > 0 && injectAttribute.ConstructorArguments[0].Value is object val)
+            string? keyTypeName = null;
+            if (keyedAttribute is not null && keyedAttribute.ConstructorArguments.Length > 0 && keyedAttribute.ConstructorArguments[0].Value is ITypeSymbol keyTypeSymbol)
             {
-                injectId = $"\"{val}\"";
+                keyTypeName = FullyQualifyTypeWithoutNullable(keyTypeSymbol);
             }
 
             bool isCyclic = types.HasCyclicDependencyAttribute(parameter);
@@ -380,7 +380,6 @@ namespace ManualDi.Async.Generators
 
                 return new EnumerableResolution(
                     elementTypeNoNullable,
-                    injectId,
                     new EnumerableInfo(isListNullable, isElementNullable, elementTypeWithNullability, arraySymbol is not null),
                     isCyclic
                 );
@@ -389,12 +388,16 @@ namespace ManualDi.Async.Generators
             // Standard resolution
             var typeName = FullyQualifyTypeWithoutNullable(typeSymbol);
             var method = "Resolve";
-            if (IsNullableTypeSymbol(typeSymbol))
+            if (keyTypeName is not null)
+            {
+                method = IsNullableTypeSymbol(typeSymbol) ? "ResolveKeyedNullable" : "ResolveKeyed";
+            }
+            else if (IsNullableTypeSymbol(typeSymbol))
             {
                 method = typeSymbol.IsValueType ? "ResolveNullableValue" : "ResolveNullable";
             }
 
-            return new ServiceResolution(typeName, injectId, method, isCyclic);
+            return new ServiceResolution(typeName, method, isCyclic, keyTypeName);
         }
 
         private static void Generate(SourceProductionContext context, ClassData data)
@@ -585,22 +588,17 @@ namespace ManualDi.Async.Generators
                     sb.Append("c");
                     return;
                 case EnumerableResolution enumRes:
-                    var idCode = enumRes.InjectId is null ? "" : $"static x => x.Id({enumRes.InjectId})";
                     var info = enumRes.EnumerableInfo;
                     if (info.IsListNullable)
                     {
                         sb.Append("c.WouldResolve<");
                         sb.Append(enumRes.TypeName);
-                        sb.Append(">(");
-                        sb.Append(idCode);
-                        sb.Append(") ? ");
+                        sb.Append(">() ? ");
                     }
 
                     sb.Append("c.ResolveAll<");
                     sb.Append(enumRes.TypeName);
-                    sb.Append(">(");
-                    sb.Append(idCode);
-                    sb.Append(")");
+                    sb.Append(">()");
 
                     if (info.IsElementNullable)
                     {
@@ -620,14 +618,16 @@ namespace ManualDi.Async.Generators
                     }
                     return;
                 case ServiceResolution serviceRes:
-                    var idCodeSvc = serviceRes.InjectId is null ? "" : $"static x => x.Id({serviceRes.InjectId})";
                     sb.Append("c.");
                     sb.Append(serviceRes.ResolutionMethod); // e.g. ResolveNullable
                     sb.Append("<");
                     sb.Append(serviceRes.TypeName);
-                    sb.Append(">(");
-                    sb.Append(idCodeSvc);
-                    sb.Append(")");
+                    if (serviceRes.KeyTypeName is not null)
+                    {
+                        sb.Append(", ");
+                        sb.Append(serviceRes.KeyTypeName);
+                    }
+                    sb.Append(">()");
                     return;
             }
         }
@@ -661,9 +661,7 @@ namespace ManualDi.Async.Generators
                         var method = DetermineDependencyMethod(enumRes.IsCyclic, true);
                         sb.Append($"    d.{method}<");
                         sb.Append(enumRes.TypeName);
-                        sb.Append(">(");
-                        if (enumRes.InjectId is not null) sb.Append($"static x => x.Id({enumRes.InjectId})");
-                        sb.AppendLine(");");
+                        sb.AppendLine(">();");
                         break;
 
                     case ServiceResolution svcRes:
@@ -672,9 +670,7 @@ namespace ManualDi.Async.Generators
                         var methodSvc = DetermineDependencyMethod(svcRes.IsCyclic, isNullable);
                         sb.Append($"    d.{methodSvc}<");
                         sb.Append(svcRes.TypeName);
-                        sb.Append(">(");
-                        if (svcRes.InjectId is not null) sb.Append($"static x => x.Id({svcRes.InjectId})");
-                        sb.AppendLine(");");
+                        sb.AppendLine(">();");
                         break;
                 }
             }
@@ -802,9 +798,9 @@ namespace ManualDi.Async.Generators
 
         internal abstract record Resolution;
 
-        internal sealed record ServiceResolution(string TypeName, string? InjectId, string ResolutionMethod, bool IsCyclic) : Resolution;
+        internal sealed record ServiceResolution(string TypeName, string ResolutionMethod, bool IsCyclic, string? KeyTypeName = null) : Resolution;
 
-        internal sealed record EnumerableResolution(string TypeName, string? InjectId, EnumerableInfo EnumerableInfo, bool IsCyclic) : Resolution;
+        internal sealed record EnumerableResolution(string TypeName, EnumerableInfo EnumerableInfo, bool IsCyclic) : Resolution;
 
         internal sealed record OutResolution : Resolution
         {
@@ -831,8 +827,8 @@ namespace ManualDi.Async.Generators
             public readonly INamedTypeSymbol? IEnumerable = compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1");
             public readonly INamedTypeSymbol? IReadOnlyCollection = compilation.GetTypeByMetadataName("System.Collections.Generic.IReadOnlyCollection`1");
             public readonly INamedTypeSymbol? ICollection = compilation.GetTypeByMetadataName("System.Collections.Generic.ICollection`1");
-            public readonly INamedTypeSymbol? IdAttribute = compilation.GetTypeByMetadataName("ManualDi.Async.IdAttribute");
             public readonly INamedTypeSymbol? ManualDiAttribute = compilation.GetTypeByMetadataName("ManualDi.Async.ManualDiAttribute");
+            public readonly INamedTypeSymbol? KeyedAttribute = compilation.GetTypeByMetadataName("ManualDi.Async.KeyedAttribute");
             public readonly INamedTypeSymbol? ObsoleteAttribute = compilation.GetTypeByMetadataName("System.ObsoleteAttribute");
             public readonly INamedTypeSymbol? IDisposable = compilation.GetTypeByMetadataName("System.IDisposable");
             public readonly INamedTypeSymbol? DiContainer = compilation.GetTypeByMetadataName("ManualDi.Async.IDiContainer");

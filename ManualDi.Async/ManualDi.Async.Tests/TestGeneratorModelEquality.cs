@@ -41,14 +41,14 @@ public class TestGeneratorModelEquality
         // ConstructorParameters modification
         var diffConstructorParams = new EquatableArray<ManualDiSourceGenerator.Resolution>(new ManualDiSourceGenerator.Resolution[]
         {
-            new ManualDiSourceGenerator.ServiceResolution("Int32", null, "Resolve", false)
+            new ManualDiSourceGenerator.ServiceResolution("Int32", "Resolve", false)
         });
         Assert.That(baseClassData, Is.Not.EqualTo(baseClassData with { ConstructorParameters = diffConstructorParams }));
 
         // InjectMethodParameters modification
         var diffInjectParams = new EquatableArray<ManualDiSourceGenerator.Resolution>(new ManualDiSourceGenerator.Resolution[]
         {
-            new ManualDiSourceGenerator.ServiceResolution("Int32", null, "Resolve", false)
+            new ManualDiSourceGenerator.ServiceResolution("Int32", "Resolve", false)
         });
         Assert.That(baseClassData, Is.Not.EqualTo(baseClassData with { InjectMethodParameters = diffInjectParams }));
     }
@@ -68,10 +68,10 @@ public class TestGeneratorModelEquality
     [Test]
     public void Test_Resolution_ServiceResolution_Equality()
     {
-        var res1 = new ManualDiSourceGenerator.ServiceResolution("Int32", "Id", "Resolve", false);
-        var res2 = new ManualDiSourceGenerator.ServiceResolution("Int32", "Id", "Resolve", false);
-        var res3 = new ManualDiSourceGenerator.ServiceResolution("Int32", null, "Resolve", false);
-        var res4 = new ManualDiSourceGenerator.ServiceResolution("Int32", "Id", "Resolve", true);
+        var res1 = new ManualDiSourceGenerator.ServiceResolution("Int32", "Resolve", false);
+        var res2 = new ManualDiSourceGenerator.ServiceResolution("Int32", "Resolve", false);
+        var res3 = new ManualDiSourceGenerator.ServiceResolution("String", "Resolve", false);
+        var res4 = new ManualDiSourceGenerator.ServiceResolution("Int32", "Resolve", true);
 
         Assert.That(res1, Is.EqualTo(res2));
         Assert.That(res1.GetHashCode(), Is.EqualTo(res2.GetHashCode()));
@@ -86,10 +86,10 @@ public class TestGeneratorModelEquality
         var info2 = new ManualDiSourceGenerator.EnumerableInfo(true, false, "Int32?", false);
         var info3 = new ManualDiSourceGenerator.EnumerableInfo(false, false, "Int32", false);
 
-        var res1 = new ManualDiSourceGenerator.EnumerableResolution("List", "Id", info1, false);
-        var res2 = new ManualDiSourceGenerator.EnumerableResolution("List", "Id", info2, false);
-        var res3 = new ManualDiSourceGenerator.EnumerableResolution("List", "Id", info3, false);
-        var res4 = new ManualDiSourceGenerator.EnumerableResolution("List", "Id", info1, true);
+        var res1 = new ManualDiSourceGenerator.EnumerableResolution("List", info1, false);
+        var res2 = new ManualDiSourceGenerator.EnumerableResolution("List", info2, false);
+        var res3 = new ManualDiSourceGenerator.EnumerableResolution("List", info3, false);
+        var res4 = new ManualDiSourceGenerator.EnumerableResolution("List", info1, true);
 
         Assert.That(res1, Is.EqualTo(res2));
         Assert.That(res1.GetHashCode(), Is.EqualTo(res2.GetHashCode()));
@@ -111,8 +111,8 @@ public class TestGeneratorModelEquality
     [Test]
     public void Test_EquatableArray_Equality()
     {
-        var res1 = new ManualDiSourceGenerator.ServiceResolution("Int32", null, "Resolve", false);
-        var res2 = new ManualDiSourceGenerator.ServiceResolution("String", null, "Resolve", false);
+        var res1 = new ManualDiSourceGenerator.ServiceResolution("Int32", "Resolve", false);
+        var res2 = new ManualDiSourceGenerator.ServiceResolution("String", "Resolve", false);
 
         var arr1 = new EquatableArray<ManualDiSourceGenerator.Resolution>(new ManualDiSourceGenerator.Resolution[] { res1, res2 });
         var arr2 = new EquatableArray<ManualDiSourceGenerator.Resolution>(new ManualDiSourceGenerator.Resolution[] { res1, res2 });
@@ -129,7 +129,7 @@ public class TestGeneratorModelEquality
     {
         var constructorParams = new EquatableArray<ManualDiSourceGenerator.Resolution>(new ManualDiSourceGenerator.Resolution[]
         {
-            new ManualDiSourceGenerator.ServiceResolution("String", "\"test\"", "Resolve", false),
+            new ManualDiSourceGenerator.ServiceResolution("String", "Resolve", false),
             ManualDiSourceGenerator.ContainerResolution.Instance
         });
 

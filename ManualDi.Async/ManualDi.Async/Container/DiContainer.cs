@@ -15,7 +15,6 @@ namespace ManualDi.Async
         private readonly Dictionary<IntPtr, BindingNode> bindingsByType;
         private readonly List<Binding> bindings;
         private readonly IDiContainer? parentDiContainer;
-        private readonly BindingContext bindingContext;
         private Binding? injectedBinding;
         private readonly CancellationTokenSource cancellationTokenSource;
         private readonly List<object> disposables;
@@ -28,7 +27,6 @@ namespace ManualDi.Async
             Dictionary<IntPtr, BindingNode> bindingsByType,
             int count,
             IDiContainer? parentDiContainer,
-            BindingContext bindingContext,
             List<object> disposables,
             CancellationTokenSource cancellationTokenSource)
         {
@@ -40,7 +38,6 @@ namespace ManualDi.Async
             
             this.bindingsByType = bindingsByType;
             this.parentDiContainer = parentDiContainer;
-            this.bindingContext = bindingContext;
             SetupBindings();
         }
         
@@ -49,7 +46,7 @@ namespace ManualDi.Async
             var stringBuilder = new StringBuilder();
             foreach (var binding in bindings)
             {
-                stringBuilder.AppendLine($"Concrete: {binding.ConcreteType}, Id: {binding.Id}");
+                stringBuilder.AppendLine($"Concrete: {binding.ConcreteType}");
             }
             
             return stringBuilder.ToString();
@@ -212,30 +209,6 @@ namespace ManualDi.Async
                 bindings.Add(binding);
             }
         }
-
-        public void ConstructorDependency<T>(FilterBindingDelegate filter)
-        {
-            var binding = GetBinding(typeof(T), filter);
-            if (binding is null)
-            {
-                if (parentDiContainer is null)
-                {
-                    ThrowHelper.ThrowTypeWithFilterNotRegistered(typeof(T), injectedBinding);
-                }
-                parentDiContainer.ConstructorDependency<T>(filter);
-                return;
-            }
-            
-            if (!binding.IsWired)
-            {
-                binding.IsWired = true;
-                var previousInjectedBinding = injectedBinding;
-                injectedBinding = binding;
-                binding.Dependencies?.Invoke(this);
-                injectedBinding = previousInjectedBinding;
-                bindings.Add(binding);
-            }
-        }
         
         public void NullableConstructorDependency<T>()
         {
@@ -257,26 +230,6 @@ namespace ManualDi.Async
             }
         }
 
-        public void NullableConstructorDependency<T>(FilterBindingDelegate filter)
-        {
-            var binding = GetBinding(typeof(T), filter);
-            if (binding is null)
-            {
-                parentDiContainer?.NullableConstructorDependency<T>(filter);
-                return;
-            }
-            
-            if (!binding.IsWired)
-            {
-                binding.IsWired = true;
-                var previousInjectedBinding = injectedBinding;
-                injectedBinding = binding;
-                binding.Dependencies?.Invoke(this);
-                injectedBinding = previousInjectedBinding;
-                bindings.Add(binding);
-            }
-        }   
-
         public void InjectionDependency<T>()
         {
             var binding = GetBinding(typeof(T));
@@ -287,20 +240,6 @@ namespace ManualDi.Async
                     ThrowHelper.ThrowTypeNotRegistered(typeof(T), injectedBinding);
                 }
                 parentDiContainer.InjectionDependency<T>();
-                return;
-            }
-        }
-
-        public void InjectionDependency<T>(FilterBindingDelegate filter)
-        {
-            var binding = GetBinding(typeof(T), filter);
-            if (binding is null)
-            {
-                if (parentDiContainer is null)
-                {
-                    ThrowHelper.ThrowTypeNotRegistered(typeof(T), injectedBinding);
-                }
-                parentDiContainer.InjectionDependency<T>(filter);
                 return;
             }
         }
@@ -315,16 +254,6 @@ namespace ManualDi.Async
             }
         }
 
-        public void NullableInjectionDependency<T>(FilterBindingDelegate filter)
-        {
-            var binding = GetBinding(typeof(T), filter);
-            if (binding is null)
-            {
-                parentDiContainer?.NullableInjectionDependency<T>(filter);
-                return;
-            }
-        }
-
         public object? ResolveContainer(Type type)
         {
             var binding = GetBinding(type);
@@ -335,17 +264,6 @@ namespace ManualDi.Async
 
             return parentDiContainer?.ResolveContainer(type);
         }
-        
-        public object? ResolveContainer(Type type, FilterBindingDelegate filterBindingDelegate)
-        {
-            var binding = GetBinding(type, filterBindingDelegate);
-            if (binding is not null)
-            {
-                return binding.Instance;
-            }
-
-            return parentDiContainer?.ResolveContainer(type, filterBindingDelegate);
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Binding? GetBinding(Type type)
@@ -355,114 +273,29 @@ namespace ManualDi.Async
                 return null;
             }
 
-            if (node.Binding.FilterBindingDelegate is null)
-            {
-                return node.Binding;
-            }
-
-            bindingContext.InjectedIntoBinding = injectedBinding;
-            
-            bindingContext.Binding = node.Binding;
-            if (node.Binding.FilterBindingDelegate?.Invoke(bindingContext) ?? true)
-            {
-                return node.Binding;
-            }
-
-            var current = node.Next;
-            while (current is not null)
-            {
-                bindingContext.Binding = current.Binding;
-                if (current.Binding.FilterBindingDelegate?.Invoke(bindingContext) ?? true)
-                {
-                    return current.Binding;
-                }
-                current = current.Next;
-            }
-            
-            return null;
+            return node.Binding;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Binding? GetBinding(Type type, FilterBindingDelegate filterBindingDelegate)
-        {
-            if (!bindingsByType.TryGetValue(type.TypeHandle.Value, out var node))
-            {
-                return null;
-            }
-
-            bindingContext.InjectedIntoBinding = injectedBinding;
-            
-            bindingContext.Binding = node.Binding;
-            if (filterBindingDelegate.Invoke(bindingContext) &&
-                (node.Binding.FilterBindingDelegate?.Invoke(bindingContext) ?? true))
-            {
-                return node.Binding;
-            }
-
-            var current = node.Next;
-            while (current is not null)
-            {
-                bindingContext.Binding = current.Binding;
-                if (filterBindingDelegate.Invoke(bindingContext) &&
-                    (current.Binding.FilterBindingDelegate?.Invoke(bindingContext) ?? true))
-                {
-                    return current.Binding;
-                }
-                current = current.Next;
-            }
-            
-            return null;
-        }
-
-        public void ResolveAllContainer(Type type, FilterBindingDelegate? filterBindingDelegate, IList resolutions)
+        public void ResolveAllContainer(Type type, IList resolutions)
         {
             if (bindingsByType.TryGetValue(type.TypeHandle.Value, out var node))
             {
-                bindingContext.InjectedIntoBinding = injectedBinding;
-                
-                bindingContext.Binding = node.Binding;
-                if ((filterBindingDelegate?.Invoke(bindingContext) ?? true) &&
-                    (node.Binding.FilterBindingDelegate?.Invoke(bindingContext) ?? true))
-                {
-                    resolutions.Add(node.Binding.Instance);
-                }
+                resolutions.Add(node.Binding.Instance);
 
                 var current = node.Next;
                 while (current is not null)
                 {
-                    bindingContext.Binding = current.Binding;
-                    if ((filterBindingDelegate?.Invoke(bindingContext) ?? true) &&
-                        (current.Binding.FilterBindingDelegate?.Invoke(bindingContext) ?? true))
-                    {
-                        resolutions.Add(current.Binding.Instance);
-                    }
+                    resolutions.Add(current.Binding.Instance);
                     current = current.Next;
                 }
             }
 
-            parentDiContainer?.ResolveAllContainer(type, filterBindingDelegate, resolutions);
+            parentDiContainer?.ResolveAllContainer(type, resolutions);
         }
 
-        public bool WouldResolveContainer(
-            Type type, 
-            FilterBindingDelegate? filterBindingDelegate,
-            Type? overrideInjectedIntoType, 
-            FilterBindingDelegate? overrideFilterBindingDelegate)
+        public bool WouldResolveContainer(Type type)
         {
-            var previousInjectedBinding = injectedBinding;
-            if (overrideInjectedIntoType is not null)
-            {
-                injectedBinding = null;
-                injectedBinding = overrideFilterBindingDelegate is null 
-                    ? GetBinding(overrideInjectedIntoType) 
-                    : GetBinding(overrideInjectedIntoType, overrideFilterBindingDelegate);
-            }
-            
-            var binding = filterBindingDelegate is null 
-                ? GetBinding(type)
-                : GetBinding(type, filterBindingDelegate);
-            
-            injectedBinding = previousInjectedBinding;
+            var binding = GetBinding(type);
             if (binding is not null)
             {
                 return true;
@@ -473,8 +306,7 @@ namespace ManualDi.Async
                 return false;
             }
 
-            return parentDiContainer.WouldResolveContainer(type, filterBindingDelegate, overrideInjectedIntoType, 
-                overrideFilterBindingDelegate);
+            return parentDiContainer.WouldResolveContainer(type);
         }
         
         public void QueueDispose(IDisposable disposable)

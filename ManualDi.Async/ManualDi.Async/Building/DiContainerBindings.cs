@@ -23,7 +23,6 @@ namespace ManualDi.Async
         internal DiContainerBindings? parentDiContainerBindings;
         private CancellationTokenSource? cancellationTokenSource;
         
-        internal BindingContext bindingContext = new();
 
         public DiContainerBindings(
             int? bindingsCapacity = null, 
@@ -196,7 +195,6 @@ namespace ManualDi.Async
                         bindingsByType,
                         bindingCount,
                         c,
-                        bindingContext,
                         disposables,
                         cts);
 
@@ -262,7 +260,6 @@ namespace ManualDi.Async
                 bindingsByType,
                 bindingCount,
                 parentDiContainer,
-                bindingContext,
                 disposables,
                 cts);
 

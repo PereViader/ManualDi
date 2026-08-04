@@ -31,22 +31,6 @@ public class TestConstructorDependency
     }
 
     [Test]
-    public void TestMissingConstructorDependencyWithFilterThrowsException()
-    {
-        var exception = Assert.ThrowsAsync<InvalidOperationException>(async () =>
-        {
-            await new DiContainerBindings().Install(b =>
-            {
-                b.Bind<ClassWithDependency>()
-                    .FromMethod(c => new ClassWithDependency(c.Resolve<UnregisteredClass>()))
-                    .DependsOn(d => d.ConstructorDependency<UnregisteredClass>(c => true));
-            }).Build(CancellationToken.None);
-        });
-
-        Assert.That(exception!.Message, Does.Contain("with some filter is not registered"));
-    }
-
-    [Test]
     public async Task TestRootResolutionFailureMessageIncludesNullInjectedInto()
     {
         var container = await new DiContainerBindings().Build(CancellationToken.None);

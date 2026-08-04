@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -121,26 +121,6 @@ namespace ManualDi.Async.Tests
             Assert.That(resString, Is.Null);
         }
         
-        [Test]
-        public async Task TestInvoke_WithIdAttribute_ResolvesCorrectInstance()
-        {
-            await using var container = await new DiContainerBindings().Install(b =>
-            {
-                b.Bind<int>().FromInstance(1).WithId("A");
-                b.Bind<int>().FromInstance(2).WithId("B");
-            }).Build(CancellationToken.None);
-
-            int resA = 0;
-            int resB = 0;
-            container.InvokeDelegateUsingReflexion(([Id("A")] int a, [Id("B")] int b) => 
-            {
-                resA = a;
-                resB = b;
-            });
-            
-            Assert.That(resA, Is.EqualTo(1));
-            Assert.That(resB, Is.EqualTo(2));
-        }
 
         [Test]
         public async Task TestInvokeAsync_VoidReturn()

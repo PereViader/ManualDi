@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
@@ -67,17 +67,6 @@ namespace ManualDi.Async
             return binding
                 .FromMethod(static c => c.Resolve<TConcrete>())
                 .DependsOn(static d => d.ConstructorDependency<TConcrete>());
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Binding<TConcrete> FromContainerResolve<TConcrete>(
-            this Binding<TConcrete> binding,
-            FilterBindingDelegate filterBindingDelegate
-        )
-        {
-            return binding
-                .FromMethod(c => c.Resolve<TConcrete>(filterBindingDelegate))
-                .DependsOn(d => d.ConstructorDependency<TConcrete>(filterBindingDelegate));
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -52,13 +52,6 @@ namespace ManualDi.Async
 
         [DoesNotReturn]
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void ThrowTypeWithFilterNotRegistered(Type injectedType, Binding? injectedBinding)
-        {
-            throw new InvalidOperationException($"Type {injectedType.FullName} injected into {injectedBinding?.ConcreteType.FullName ?? "null"} with some filter is not registered.");
-        }
-
-        [DoesNotReturn]
-        [MethodImpl(MethodImplOptions.NoInlining)]
         public static void ThrowCouldNotResolveParameter(ParameterInfo parameter, IDiContainer? diContainer)
         {
             var injectedIntoType = diContainer?.InjectedBinding?.ConcreteType;

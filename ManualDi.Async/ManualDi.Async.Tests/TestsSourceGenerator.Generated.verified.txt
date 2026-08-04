@@ -889,18 +889,6 @@ namespace ManualDi.Async
                     c.ResolveAll<int>(),
                     c.ResolveAll<object>(),
                     c.ResolveAll<int>(),
-                    c.ResolveAll<object>(static x => x.Id("A")),
-                    c.ResolveAll<int>(static x => x.Id("A")),
-                    c.ResolveAll<object>(static x => x.Id("A")),
-                    c.ResolveAll<int>(static x => x.Id("A")),
-                    c.ResolveAll<object>(static x => x.Id("A")),
-                    c.ResolveAll<int>(static x => x.Id("A")),
-                    c.ResolveAll<object>(static x => x.Id("A")),
-                    c.ResolveAll<int>(static x => x.Id("A")),
-                    c.ResolveAll<object>(static x => x.Id("A")),
-                    c.ResolveAll<int>(static x => x.Id("A")),
-                    c.ResolveAll<object>(static x => x.Id("A")),
-                    c.ResolveAll<int>(static x => x.Id("A")),
                     c.WouldResolve<object>() ? c.ResolveAll<object>() : null,
                     c.WouldResolve<int>() ? c.ResolveAll<int>() : null,
                     c.WouldResolve<object>() ? c.ResolveAll<object>() : null,
@@ -912,31 +900,7 @@ namespace ManualDi.Async
                     c.WouldResolve<object>() ? c.ResolveAll<object>() : null,
                     c.WouldResolve<int>() ? c.ResolveAll<int>() : null,
                     c.WouldResolve<object>() ? c.ResolveAll<object>() : null,
-                    c.WouldResolve<int>() ? c.ResolveAll<int>() : null,
-                    c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")) : null,
-                    c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")) : null,
-                    c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")) : null,
-                    c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")) : null,
-                    c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")) : null,
-                    c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")) : null,
-                    c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")) : null,
-                    c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")) : null,
-                    c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")) : null,
-                    c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")) : null,
-                    c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")) : null,
-                    c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")) : null,
-                    c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")).ConvertAll<object?>(x => x) : null,
-                    c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")).ConvertAll<int?>(x => x) : null,
-                    c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")).ConvertAll<object?>(x => x) : null,
-                    c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")).ConvertAll<int?>(x => x) : null,
-                    c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")).ConvertAll<object?>(x => x) : null,
-                    c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")).ConvertAll<int?>(x => x) : null,
-                    c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")).ConvertAll<object?>(x => x) : null,
-                    c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")).ConvertAll<int?>(x => x) : null,
-                    c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")).ConvertAll<object?>(x => x) : null,
-                    c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")).ConvertAll<int?>(x => x) : null,
-                    c.WouldResolve<object>(static x => x.Id("A")) ? c.ResolveAll<object>(static x => x.Id("A")).ConvertAll<object?>(x => x) : null,
-                    c.WouldResolve<int>(static x => x.Id("A")) ? c.ResolveAll<int>(static x => x.Id("A")).ConvertAll<int?>(x => x) : null))
+                    c.WouldResolve<int>() ? c.ResolveAll<int>() : null))
                 .DependsOn(static d => {
                     d.NullableConstructorDependency<object>();
                     d.NullableConstructorDependency<int>();
@@ -958,18 +922,6 @@ namespace ManualDi.Async
                     d.NullableConstructorDependency<int>();
                     d.NullableConstructorDependency<object>();
                     d.NullableConstructorDependency<int>();
-                    d.NullableConstructorDependency<object>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<int>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<object>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<int>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<object>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<int>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<object>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<int>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<object>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<int>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<object>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<int>(static x => x.Id("A"));
                     d.NullableConstructorDependency<object>();
                     d.NullableConstructorDependency<int>();
                     d.NullableConstructorDependency<object>();
@@ -982,30 +934,6 @@ namespace ManualDi.Async
                     d.NullableConstructorDependency<int>();
                     d.NullableConstructorDependency<object>();
                     d.NullableConstructorDependency<int>();
-                    d.NullableConstructorDependency<object>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<int>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<object>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<int>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<object>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<int>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<object>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<int>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<object>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<int>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<object>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<int>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<object>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<int>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<object>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<int>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<object>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<int>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<object>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<int>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<object>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<int>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<object>(static x => x.Id("A"));
-                    d.NullableConstructorDependency<int>(static x => x.Id("A"));
                 });
         }
 
@@ -1040,38 +968,36 @@ using System.Runtime.CompilerServices;
 
 namespace ManualDi.Async
 {
-    public static class ManualDi_SomeNamespace_Subnamespace_InjectIdAttribute_Extensions
+    public static class ManualDi_SomeNamespace_Subnamespace_InjectKeyedAttribute_Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Binding<SomeNamespace.Subnamespace.InjectIdAttribute> FromConstructor(this Binding<SomeNamespace.Subnamespace.InjectIdAttribute> binding)
+        internal static Binding<SomeNamespace.Subnamespace.InjectKeyedAttribute> FromConstructor(this Binding<SomeNamespace.Subnamespace.InjectKeyedAttribute> binding)
         {
             return binding
-                .FromMethod(static c => new SomeNamespace.Subnamespace.InjectIdAttribute());
+                .FromMethod(static c => new SomeNamespace.Subnamespace.InjectKeyedAttribute());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Binding<SomeNamespace.Subnamespace.InjectIdAttribute> Default(this Binding<SomeNamespace.Subnamespace.InjectIdAttribute> binding)
+        internal static Binding<SomeNamespace.Subnamespace.InjectKeyedAttribute> Default(this Binding<SomeNamespace.Subnamespace.InjectKeyedAttribute> binding)
         {
             return DefaultImpl(binding);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.InjectIdAttribute
+        internal static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.InjectKeyedAttribute
         {
             return binding
-                .Initialize(static o => ((SomeNamespace.Subnamespace.InjectIdAttribute)o).Initialize())
+                .Initialize(static o => ((SomeNamespace.Subnamespace.InjectKeyedAttribute)o).Initialize())
                 .Inject(static (o, c) =>
                 {
-                    var to = (SomeNamespace.Subnamespace.InjectIdAttribute)o;
+                    var to = (SomeNamespace.Subnamespace.InjectKeyedAttribute)o;
                     to.Inject(
-                        c.Resolve<object>(static x => x.Id("Potato")),
-                        c.Resolve<float>(static x => x.Id("Banana")),
-                        c.Resolve<object>());
+                        c.ResolveKeyed<object, SomeNamespace.Subnamespace.TestKeyA>(),
+                        c.ResolveKeyedNullable<object, SomeNamespace.Subnamespace.TestKeyB>());
                 })
                 .DependsOn(static d => {
-                    d.ConstructorDependency<object>(static x => x.Id("Potato"));
-                    d.ConstructorDependency<float>(static x => x.Id("Banana"));
                     d.ConstructorDependency<object>();
+                    d.NullableConstructorDependency<object>();
                 })
                 .SkipDisposable();
         }

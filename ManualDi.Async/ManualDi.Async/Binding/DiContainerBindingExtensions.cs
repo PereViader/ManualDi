@@ -98,6 +98,37 @@ namespace ManualDi.Async
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TConcrete> BindKeyed<TConcrete, TKey>(this DiContainerBindings diContainerBindings)
+            where TKey : struct
+        {
+            var concreteBinding = diContainerBindings.Bind<TConcrete>();
+
+            var keyedBinding = new Binding<TConcrete>();
+            keyedBinding.TryToDispose = false;
+            keyedBinding.FromDelegate = (FromDelegate)(static c => c.Resolve<TConcrete>());
+
+            diContainerBindings.AddBinding(keyedBinding, typeof(Keyed<TConcrete, TKey>));
+
+            return concreteBinding;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Binding<TConcrete> BindKeyed<TApparent, TConcrete, TKey>(this DiContainerBindings diContainerBindings)
+            where TConcrete : TApparent
+            where TKey : struct
+        {
+            var concreteBinding = diContainerBindings.BindAll<TApparent, TConcrete>();
+
+            var keyedBinding = new Binding<TConcrete>();
+            keyedBinding.TryToDispose = false;
+            keyedBinding.FromDelegate = (FromDelegate)(static c => c.Resolve<TConcrete>());
+
+            diContainerBindings.AddBinding(keyedBinding, typeof(Keyed<TApparent, TKey>));
+
+            return concreteBinding;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static DiContainerBindings QueueStartup<T>(this DiContainerBindings diContainerBindings, Action<T> startup)
         {
             diContainerBindings.QueueStartup(c =>
@@ -221,31 +252,7 @@ namespace ManualDi.Async
                 return null;
             }
 
-            if (node.Binding.FilterBindingDelegate is null)
-            {
-                return node.Binding;
-            }
-
-            //bindingContext.InjectedIntoBinding = injectedBinding;
-            
-            diContainerBindings.bindingContext.Binding = node.Binding;
-            if (node.Binding.FilterBindingDelegate?.Invoke(diContainerBindings.bindingContext) ?? true)
-            {
-                return node.Binding;
-            }
-
-            var current = node.Next;
-            while (current is not null)
-            {
-                diContainerBindings.bindingContext.Binding = current.Binding;
-                if (current.Binding.FilterBindingDelegate?.Invoke(diContainerBindings.bindingContext) ?? true)
-                {
-                    return current.Binding;
-                }
-                current = current.Next;
-            }
-            
-            return null;
+            return node.Binding;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

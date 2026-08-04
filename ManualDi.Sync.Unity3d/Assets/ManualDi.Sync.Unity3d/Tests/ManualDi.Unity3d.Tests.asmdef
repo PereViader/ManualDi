@@ -9,7 +9,7 @@
         "Reflex",
         "Zenject",
         "Zenject-TestFramework",
-        "ManualDi.Main"
+        "ManualDi.Sync"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

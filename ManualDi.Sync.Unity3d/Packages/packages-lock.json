@@ -13,6 +13,13 @@
       "source": "local",
       "dependencies": {}
     },
+    "com.pereviader.unityclirunner": {
+      "version": "0.7.0",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {},
+      "url": "https://package.openupm.com"
+    },
     "com.svermeulen.extenject": {
       "version": "9.2.0-stcf3",
       "depth": 0,

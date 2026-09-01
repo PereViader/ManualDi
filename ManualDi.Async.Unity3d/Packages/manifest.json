@@ -2,6 +2,7 @@
   "dependencies": {
     "com.gustavopsantos.reflex": "https://github.com/gustavopsantos/reflex.git?path=/Reflex/Assets/Reflex/#1.0.3",
     "com.pereviader.manualdi.async.unity3d": "file:../../ManualDi.Async.Unity3d.Package",
+    "com.pereviader.unityclirunner": "0.7.0",
     "com.svermeulen.extenject": "9.2.0-stcf3",
     "com.unity.addressables": "1.22.3",
     "com.unity.ai.navigation": "1.1.6",
@@ -50,6 +51,7 @@
       "url": "https://package.openupm.com",
       "scopes": [
         "com.openupm",
+        "com.pereviader.unityclirunner",
         "com.svermeulen.extenject"
       ]
     }

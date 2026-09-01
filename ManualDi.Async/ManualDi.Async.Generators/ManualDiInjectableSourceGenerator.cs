@@ -25,11 +25,17 @@ namespace ManualDi.Async.Generators
 
             context.RegisterSourceOutput(classData, static (spc, data) => GenerateInjector(spc, data!));
 
-            var assemblyFlags = context.CompilationProvider.Select(static (compilation, _) => new AssemblyFlags(
-                HasModuleInitializer: compilation.GetTypeByMetadataName("System.Runtime.CompilerServices.ModuleInitializerAttribute") is not null,
-                HasUnityPreserve: compilation.GetTypeByMetadataName("UnityEngine.Scripting.PreserveAttribute") is not null,
-                HasUnityRuntimeInitialize: compilation.GetTypeByMetadataName("UnityEngine.RuntimeInitializeOnLoadMethodAttribute") is not null
-            ));
+            var assemblyFlags = context.CompilationProvider.Select(static (compilation, _) =>
+            {
+                var moduleInitializerSymbol = compilation.GetTypeByMetadataName("System.Runtime.CompilerServices.ModuleInitializerAttribute");
+                var hasModuleInitializer = moduleInitializerSymbol is not null && compilation.IsSymbolAccessibleWithin(moduleInitializerSymbol, compilation.Assembly);
+
+                return new AssemblyFlags(
+                    HasModuleInitializer: hasModuleInitializer,
+                    HasUnityPreserve: compilation.GetTypeByMetadataName("UnityEngine.Scripting.PreserveAttribute") is not null,
+                    HasUnityRuntimeInitialize: compilation.GetTypeByMetadataName("UnityEngine.RuntimeInitializeOnLoadMethodAttribute") is not null
+                );
+            });
 
             var registrationData = assemblyFlags.Combine(classData.Collect());
             context.RegisterSourceOutput(registrationData, static (spc, tuple) => GenerateRegistration(spc, tuple.Left, tuple.Right!));

@@ -73,5 +73,12 @@ namespace ManualDi.Async
             var injectedIntoType = diContainer?.InjectedBinding?.ConcreteType;
             throw new InvalidOperationException($"Could not resolve async element of type {type.FullName} injected into {injectedIntoType?.FullName ?? "null"}");
         }
+
+        [DoesNotReturn]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static void ThrowTypeNotRegisteredForInjection(Type type)
+        {
+            throw new InvalidOperationException($"Type {type.FullName} is not registered for injection in ManualDiInjector.");
+        }
     }
 }

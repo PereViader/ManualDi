@@ -49,7 +49,7 @@ namespace ManualDi.Sync
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static void ThrowTypeNotRegisteredForInjection(Type type)
         {
-            throw new InvalidOperationException($"Type {type.FullName} is not registered for injection");
+            throw new InvalidOperationException($"Type {type.FullName} is not registered for injection in ManualDiInjector.");
         }
     }
 }

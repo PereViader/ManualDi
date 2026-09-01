@@ -16,6 +16,7 @@
 /ManualDi.*.Unity3d.Package/
 /ManualDi.*.Unity3d/Library/
 /ManualDi.*.Unity3d/Temp/
+/ManualDi.*.Unity3d/unity_background_log.txt
 /ManualDi.*.Nuget/
 /Benchmark/Compilation/Project/Generated/
 

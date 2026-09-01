@@ -967,6 +967,69 @@ Resolve a keyed reference type instance from the container bound with `BindKeyed
 IStorage? secondaryStorage = container.ResolveKeyedNullable<IStorage, SecondaryKey>();
 ```
 
+# On-Demand Injection (ManualDiInjector)
+
+In addition to container-managed bindings, ManualDi provides **`ManualDiInjector`** for fast, reflection-free on-demand injection into existing instances (such as objects created outside the container, game entities, or factory-produced instances).
+
+## [ManualDiInjectable]
+
+Decorate any class with the `[ManualDiInjectable]` attribute and define an `Inject(...)` method. The source generator automatically produces a specialized static injector and registers the type for `O(1)` runtime lookup:
+
+```csharp
+[ManualDiInjectable]
+public class CharacterMovement
+{
+    public IInputService InputService { get; private set; }
+    public IAudioService? AudioService { get; private set; }
+
+    public void Inject(IInputService inputService, IAudioService? audioService)
+    {
+        InputService = inputService;
+        AudioService = audioService;
+    }
+}
+```
+
+The `Inject` method parameters support:
+- Standard container dependencies (`container.Resolve<T>()`)
+- Keyed bindings (`[Keyed(typeof(TKey))]`)
+- Nullable dependencies (`ResolveNullable<T>()` / `ResolveNullableValue<T>()`)
+- Collections & Arrays (`List<T>`, `T[]`, `IEnumerable<T>`, etc. via `ResolveAll<T>()`)
+- Container reference (`IDiContainer`)
+- Cancellation tokens (`CancellationToken`)
+- Inherited base class `[ManualDiInjectable]` chains (base injection runs before derived injection)
+
+## Injecting at Runtime
+
+Use `ManualDiInjector.Inject(target, container)` to inject dependencies into the instance:
+
+```csharp
+var character = new CharacterMovement();
+
+// Inject dependencies on-demand
+ManualDiInjector.Inject(character, diContainer);
+```
+
+You can also check if a type or object has a registered injector:
+
+```csharp
+if (ManualDiInjector.CanInject(character))
+{
+    ManualDiInjector.Inject(character, diContainer);
+}
+```
+
+## Manual Registration
+
+If you need to inject into external types without source generation, you can manually register an injector delegate:
+
+```csharp
+ManualDiInjector.Register(typeof(ExternalService), (target, container) =>
+{
+    ((ExternalService)target).Configure(container.Resolve<ILogger>());
+});
+```
+
 # Startups
 
 The container provides functionality that queues work to be done once the container is built and ready.
@@ -1305,6 +1368,56 @@ class Example : MonoBehaviour
 
 The container provides you with the puzzle pieces necessary. The actual composition of these pieces is up to you to decide.
 Feel free to ignore the container classes and implement your custom entry points if you have any special need.
+
+## Hierarchy & GameObject Injection (ManualDiUnityEngineObjectInjector)
+
+For GameObjects and prefabs that contain multiple injectable `MonoBehaviour`s or `ScriptableObject`s, ManualDi provides **`ManualDiUnityEngineObjectInjector`**. It pre-bakes references in the Editor, eliminating runtime reflection and expensive runtime hierarchy traversal (`GetComponentsInChildren`).
+
+### Setting up in the Editor
+
+1. Attach `ManualDiUnityEngineObjectInjector` to a root or sub-root GameObject in your scene or prefab (*Add Component > ManualDi > ManualDi UnityEngine Object Injector*).
+2. Ensure components in the hierarchy you want to inject are decorated with `[ManualDiInjectable]` and define an `Inject(...)` method.
+3. Click **"Populate Injectables"** in the Inspector.
+   - The editor scans child components and populates the `Objects` array.
+   - You can also manually drag and drop `ScriptableObject` assets or external references into the `Objects` array.
+
+### Nested Injectors & Hierarchy Segmentation
+
+If your prefab or scene contains nested `ManualDiUnityEngineObjectInjector` components on child GameObjects:
+- The parent injector will include the child injector in its `Objects` array.
+- The child injector's descendants are excluded from the parent and managed solely by the child injector.
+- When re-populating, components that moved under a child injector or had `[ManualDiInjectable]` removed are pruned automatically.
+
+```
+Root GameObject (ManualDiUnityEngineObjectInjector) -> Objects: [PlayerController, WeaponSubRoot (Child Injector)]
+└── WeaponSubRoot (ManualDiUnityEngineObjectInjector) -> Objects: [Gun, MeleeWeapon]
+```
+
+### Injecting at Runtime
+
+Call `injector.Inject(container)` (or `ManualDiInjector.Inject(injector, container)` since the injector is itself `[ManualDiInjectable]`):
+
+```csharp
+public class LevelEntryPoint : MonoBehaviourRootEntryPoint
+{
+    public ManualDiUnityEngineObjectInjector RootInjector;
+
+    public override void Install(DiContainerBindings b)
+    {
+        // Bind your services...
+        b.Bind<IInputService>().Default().FromConstructor();
+        b.Bind<IAudioService>().Default().FromConstructor();
+        
+        // Inject the hierarchy after building the container
+        b.QueueStartup(() => RootInjector.Inject(Container!));
+    }
+}
+```
+
+When `RootInjector.Inject(container)` is called:
+- All direct injectable components in `Objects` are injected.
+- Any nested child injectors are invoked recursively, injecting their child components.
+- Null, destroyed, or missing references are safely skipped.
 
 ## Link
 

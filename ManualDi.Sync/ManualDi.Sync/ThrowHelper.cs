@@ -44,5 +44,12 @@ namespace ManualDi.Sync
             var injectedIntoType = diContainer?.InjectedBinding?.ConcreteType;
             throw new InvalidOperationException($"Could not resolve element of type {type.FullName} injected into {injectedIntoType?.FullName ?? "null"}");
         }
+
+        [DoesNotReturn]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static void ThrowTypeNotRegisteredForInjection(Type type)
+        {
+            throw new InvalidOperationException($"Type {type.FullName} is not registered for injection");
+        }
     }
 }

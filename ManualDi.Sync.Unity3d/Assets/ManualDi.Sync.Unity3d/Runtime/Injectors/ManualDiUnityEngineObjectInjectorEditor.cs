@@ -21,6 +21,7 @@ namespace ManualDi.Sync.Unity3d
                         Undo.RecordObject(injector, "Populate Injectables");
                         injector.PopulateInjectables();
                         EditorUtility.SetDirty(injector);
+                        PrefabUtility.RecordPrefabInstancePropertyModifications(injector);
                     }
                 }
             }

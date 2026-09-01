@@ -5,6 +5,8 @@ using UnityEngine;
 
 namespace ManualDi.Sync.Unity3d
 {
+    [DisallowMultipleComponent]
+    [AddComponentMenu("ManualDi/ManualDi UnityEngine Object Injector")]
     [ManualDiInjectable]
     public sealed class ManualDiUnityEngineObjectInjector : MonoBehaviour
     {
@@ -21,6 +23,11 @@ namespace ManualDi.Sync.Unity3d
         {
             foreach (var o in objects)
             {
+                if (o == null)
+                {
+                    continue;
+                }
+
                 ManualDiInjector.Inject(o, diContainer);
             }
         }
@@ -37,12 +44,28 @@ namespace ManualDi.Sync.Unity3d
                 for (var i = 0; i < objects.Length; i++)
                 {
                     var o = objects[i];
-                    if (o != null)
+                    if (o == null)
                     {
-                        if (existingObjects.Add(o))
+                        continue;
+                    }
+
+                    if (o is Component component && component.transform.IsChildOf(transform))
+                    {
+                        if (component == this || !IsDirectParentInjector(component))
                         {
-                            newObjects.Add(o);
+                            continue;
                         }
+
+                        var componentType = component.GetType();
+                        if (!ManualDiInjector.CanInject(componentType) && !componentType.IsDefined(typeof(ManualDiInjectableAttribute), true))
+                        {
+                            continue;
+                        }
+                    }
+
+                    if (existingObjects.Add(o))
+                    {
+                        newObjects.Add(o);
                     }
                 }
             }

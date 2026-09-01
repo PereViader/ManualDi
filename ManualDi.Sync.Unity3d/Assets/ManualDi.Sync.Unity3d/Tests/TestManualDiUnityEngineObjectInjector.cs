@@ -303,6 +303,98 @@ namespace ManualDi.Sync.Unity3d.Tests
             Assert.That(comp3.InjectionCount, Is.EqualTo(1));
         }
 
+        [Test]
+        public void Inject_WithNullAndDestroyedObjects_SkipsSafelyWithoutException()
+        {
+            var injector = rootGameObject.AddComponent<ManualDiUnityEngineObjectInjector>();
+            var compA = rootGameObject.AddComponent<InjectableMonoBehaviourA>();
+            var compB = rootGameObject.AddComponent<InjectableMonoBehaviourB>();
+
+            UnityEngine.Object.DestroyImmediate(compB);
+
+            injector.Objects = new UnityEngine.Object[] { null!, compA, compB, null! };
+            Assert.DoesNotThrow(() => injector.Inject(diContainer));
+
+            Assert.That(compA.Text, Is.EqualTo("injected_string"));
+            Assert.That(compA.Number, Is.EqualTo(99));
+        }
+
+        [Test]
+        public void PopulateInjectables_WhenHierarchyRestructured_RemovesStaleChildComponentFromParentAndAvoidsDuplicateInjection()
+        {
+            var rootInjector = rootGameObject.AddComponent<ManualDiUnityEngineObjectInjector>();
+            var compRoot = rootGameObject.AddComponent<CountingMonoBehaviour>();
+
+            var childGo = new GameObject("Child");
+            childGo.transform.SetParent(rootGameObject.transform);
+            var compChild = childGo.AddComponent<CountingMonoBehaviour>();
+
+            // First population: root has compRoot and compChild
+            rootInjector.PopulateInjectables();
+            CollectionAssert.AreEqual(new UnityEngine.Object[] { compRoot, compChild }, rootInjector.Objects);
+
+            // Now restructure: add childInjector on childGo
+            var childInjector = childGo.AddComponent<ManualDiUnityEngineObjectInjector>();
+            childInjector.PopulateInjectables();
+            CollectionAssert.AreEqual(new UnityEngine.Object[] { compChild }, childInjector.Objects);
+
+            // Re-populate root injector: compChild should be pruned from root because it belongs to childInjector
+            rootInjector.PopulateInjectables();
+            CollectionAssert.AreEqual(new UnityEngine.Object[] { compRoot, childInjector }, rootInjector.Objects);
+
+            // Inject should only inject compChild once
+            rootInjector.Inject(diContainer);
+            Assert.That(compRoot.InjectionCount, Is.EqualTo(1));
+            Assert.That(compChild.InjectionCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void PopulateInjectables_WhenNonInjectableInHierarchy_PrunesNonInjectableComponent()
+        {
+            var injector = rootGameObject.AddComponent<ManualDiUnityEngineObjectInjector>();
+            var nonInjectable = rootGameObject.AddComponent<NonInjectableMonoBehaviour>();
+
+            injector.Objects = new UnityEngine.Object[] { nonInjectable };
+            injector.PopulateInjectables();
+
+            Assert.That(injector.Objects, Is.Empty);
+        }
+
+        [Test]
+        public void PopulateInjectables_PreservesExternalObjectsWhilePruningHierarchyStaleComponents()
+        {
+            var injector = rootGameObject.AddComponent<ManualDiUnityEngineObjectInjector>();
+            var compRoot = rootGameObject.AddComponent<InjectableMonoBehaviourA>();
+
+            var externalGo = new GameObject("External");
+            var compExternal = externalGo.AddComponent<InjectableMonoBehaviourA>();
+
+            var so = ScriptableObject.CreateInstance<InjectableScriptableObject>();
+
+            try
+            {
+                injector.Objects = new UnityEngine.Object[] { so, compExternal, compRoot };
+                injector.PopulateInjectables();
+
+                Assert.That(injector.Objects.Length, Is.EqualTo(3));
+                Assert.That(injector.Objects[0], Is.SameAs(so));
+                Assert.That(injector.Objects[1], Is.SameAs(compExternal));
+                Assert.That(injector.Objects[2], Is.SameAs(compRoot));
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(externalGo);
+                UnityEngine.Object.DestroyImmediate(so);
+            }
+        }
+
+        [Test]
+        public void Component_HasExpectedAttributes()
+        {
+            Assert.That(typeof(ManualDiUnityEngineObjectInjector).IsDefined(typeof(DisallowMultipleComponent), inherit: true), Is.True);
+            Assert.That(typeof(ManualDiUnityEngineObjectInjector).IsDefined(typeof(AddComponentMenu), inherit: true), Is.True);
+        }
+
 #if UNITY_EDITOR
         [Test]
         public void CustomEditor_CanBeCreated()

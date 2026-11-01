@@ -38,18 +38,12 @@ namespace ManualDi.Sync
         {
             foreach (var node in allBindings.Values)
             {
-                if (!node.Binding.IsTransient)
-                {
-                    ResolveBinding(node.Binding);
-                }
+                ResolveBinding(node.Binding);
 
                 var current = node.Next;
                 while (current is not null)
                 {
-                    if (!current.Binding.IsTransient)
-                    {
-                        ResolveBinding(current.Binding);
-                    }
+                    ResolveBinding(current.Binding);
                     current = current.Next;
                 }
             }
@@ -68,7 +62,7 @@ namespace ManualDi.Sync
         
         internal object ResolveBinding(Binding binding)
         {
-            if (binding.Instance is not null) //Optimization: We don't check if Scope is Single
+            if (binding.Instance is not null)
             {
                 return binding.Instance;
             }
@@ -95,10 +89,7 @@ namespace ManualDi.Sync
                 instance = injectedBinding.FromDelegate;
             }
 
-            if (!binding.IsTransient)
-            {
-                binding.Instance = instance;
-            }
+            binding.Instance = instance;
             
             binding.InjectionDelegate?.Invoke(instance, this);
             if (binding.InitializationDelegate is not null)

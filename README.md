@@ -31,7 +31,7 @@ Unity3d [Sync](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Sync.Un
 
 |                                 |ManualDi.Sync|ManualDi.Async|Reflex|VContainer|Zenject|
 |---------------------------------|:-------------------------:|:--------------:|:--------------------:|:-------------------------------:|:-------------------------------:|
-| Lifetimes                       |Single<br/>Transient *(1)|Single *(2)|Single<br/>Transient|Single<br/>Transient<br/>Scoped|Single<br/>Transient<br/>Scoped|
+| Lifetimes                       |Single *(1)|Single *(1)|Single<br/>Transient|Single<br/>Transient<br/>Scoped|Single<br/>Transient<br/>Scoped|
 | Runtime (lower is better)       |0.11|0.16|0.15|0.36|1|
 | Memory (lower is better)        |0.12|0.14|0.21|0.59|1|
 | Object Injection                |✅|✅|✅|✅|✅|
@@ -40,22 +40,19 @@ Unity3d [Sync](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Sync.Un
 | Object Initialization           |✅|✅|❌|❌|❌|
 | Object Lifecycle Hooks          |✅|✅|❌|❌|❌|
 | Startup Hooks                   |✅|✅|❌|❌|❌|
-| Lazy                            |❌ *(3)|❌ *(3)|✅|❌|✅|
-| Avoids Reflection               |✅|✅|❌ *(4)|❌ *(4)|❌ *(4)|
+| Lazy                            |❌ *(2)|❌ *(2)|✅|❌|✅|
+| Avoids Reflection               |✅|✅|❌ *(3)|❌ *(3)|❌ *(3)|
 
 *This table is still WIP, please open a discussion if you have any suggestion.
 
-- (1) ManualDi.Sync does not have Scoped scope.
-  - Scoped can be achived by setting up the binding on the child container. That child container is effectively another scope.
-
-- (2) ManualDi.Async only works with Single scope.
+- (1) ManualDi only works with Single scope.
   - Transient can be achived by setting up a factory class. The factory class can be used to create the instance at runtime.
   - Scoped can be achived by setting up the binding on the child container. That child container is effectively another scope.
 
-- (3) ManualDi does not support lazy binding. All bound instances will get created and injected.
+- (2) ManualDi does not support lazy binding. All bound instances will get created and injected.
   - Lazy bindings are usually a source of bugs and confusion.
 
-- (4) Reflex, VContainer, Zenject don't avoid Reflection by default but.
+- (3) Reflex, VContainer, Zenject don't avoid Reflection by default but.
   - They do work on IL2CPP (some have some caveats).
   - Reflex only uses reflection on a few places.
   - VContainer has an optional Source Generator that can replace the reflection based execution.
@@ -288,15 +285,13 @@ c.Resolve<Implementation>() // Runtime error
 ```
 
 Use the flunt API available on the returned value of the `Bind` method, to configure the container how it should create, inject, initialize and dispose the instance.
-The specific binding configuration is done through 7 categories of methods that, by convention, should be done in the order specified below.
+The specific binding configuration is done through 6 categories of methods that, by convention, should be done in the order specified below.
 
 ```csharp
 // * means source generated
 // ** means ManualDi.Async only
-// *** means ManualDi.Sync only
 
 Bind<(TApparent,)* TConcrete>()
-    .Transient***
     .Default*
     .From[Constructor*|Instance|Method|MethodAsync**|...]  //There are many more
     .DependsOn**
@@ -318,29 +313,6 @@ Resolving a type on the container will return the first registered binding for t
 b.Bind<SomeClass>().Default().FromConstructor(); // When calling c.Resolve<SomeClass>() this one is returned
 b.Bind<SomeClass>().Default().FromConstructor();
 ```
-### Transient
-
-*** ManualDi.Sync only
-
-When this method is used on a binding, the container will create a new instance every time that Binding type is resolved.
-Bindings that use `Transient` will not be created if no one resolves them. This means that if you use a Transient binding together with some `Link` extension method, the Transient instance will never be created and thus the `Link` extension method will never be called.
-
-In the example below, both `A` and `B` will be injected with a brand new instance of `SomeTransient`.
-
-```cssharp
-[ManualDi]
-class SomeTransient;
-[ManualDi]
-class A(SomeTransient someTransient);
-[ManualDi]
-class B(SomeTransient someTransient);
-
-b.Bind<SomeTransient>().Transient().Default().FromConstructor();
-b.Bind<A>().Default().FromConstructor();
-b.Bind<B>().Default().FromConstructor();
-```
-
-
 ## Default
 
 This source generated method is where most of the "magic" of the library happens.

@@ -103,7 +103,6 @@ namespace ManualDi.Sync
             var concreteBinding = diContainerBindings.Bind<TConcrete>();
 
             var keyedBinding = new Binding<TConcrete>();
-            keyedBinding.IsTransient = true;
             keyedBinding.TryToDispose = false;
             keyedBinding.FromDelegate = (FromDelegate)(static c => c.Resolve<TConcrete>());
 
@@ -120,7 +119,6 @@ namespace ManualDi.Sync
             var concreteBinding = diContainerBindings.BindAll<TApparent, TConcrete>();
 
             var keyedBinding = new Binding<TConcrete>();
-            keyedBinding.IsTransient = true;
             keyedBinding.TryToDispose = false;
             keyedBinding.FromDelegate = (FromDelegate)(static c => c.Resolve<TConcrete>());
 

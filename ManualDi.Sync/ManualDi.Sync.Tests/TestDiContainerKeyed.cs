@@ -60,20 +60,6 @@ namespace ManualDi.Sync.Tests
         }
 
         [Test]
-        public void TestBindKeyed_TransientLifecycleCreatesNew()
-        {
-            using var container = new DiContainerBindings().Install(b =>
-            {
-                b.BindKeyed<IStorage, SqlStorage, PrimaryKey>().Transient().FromConstructor();
-            }).Build();
-
-            var instance1 = container.ResolveKeyed<IStorage, PrimaryKey>();
-            var instance2 = container.ResolveKeyed<IStorage, PrimaryKey>();
-
-            Assert.That(instance1, Is.Not.SameAs(instance2));
-        }
-
-        [Test]
         public void TestResolveKeyedNullable_ReturnsNullWhenNotBound()
         {
             using var container = new DiContainerBindings().Build();

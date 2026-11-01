@@ -31,6 +31,7 @@ jobs:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectPath: ${{ matrix.projectPath }}
           artifactsPath: artifacts
@@ -42,7 +43,7 @@ jobs:
           name: Test results ${{ matrix.projectPath }}
           path: artifacts
       - uses: actions/upload-artifact@v7
-        if: always()
+        if: always() && steps.tests.outputs.coveragePath != ''
         with:
           name: Coverage results ${{ matrix.projectPath }}
           path: ${{ steps.tests.outputs.coveragePath }}

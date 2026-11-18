@@ -162,11 +162,12 @@ namespace ManualDi.Async
             foreach (var node in bindingsByType.Values)
             {
                 var binding = node.Binding;
-                if (!binding.IsWired)
+                if (binding.WireState == WireState.Unwired)
                 {
-                    binding.IsWired = true;
+                    binding.WireState = WireState.Wiring;
                     injectedBinding = binding;
                     binding.Dependencies?.Invoke(this);
+                    binding.WireState = WireState.Wired;
                     bindings.Add(binding);
                 }
 
@@ -174,11 +175,12 @@ namespace ManualDi.Async
                 while (current is not null)
                 {
                     binding = current.Binding;
-                    if (!binding.IsWired)
+                    if (binding.WireState == WireState.Unwired)
                     {
-                        binding.IsWired = true;
+                        binding.WireState = WireState.Wiring;
                         injectedBinding = binding;
                         binding.Dependencies?.Invoke(this);
+                        binding.WireState = WireState.Wired;
                         bindings.Add(binding);
                     }
                     current = current.Next;
@@ -199,13 +201,18 @@ namespace ManualDi.Async
                 return;
             }
             
-            if (!binding.IsWired)
+            if (binding.WireState == WireState.Wiring)
             {
-                binding.IsWired = true;
+                ThrowHelper.ThrowCircularDependency(typeof(T), injectedBinding);
+            }
+            else if (binding.WireState == WireState.Unwired)
+            {
+                binding.WireState = WireState.Wiring;
                 var previousInjectedBinding = injectedBinding;
                 injectedBinding = binding;
                 binding.Dependencies?.Invoke(this);
                 injectedBinding = previousInjectedBinding;
+                binding.WireState = WireState.Wired;
                 bindings.Add(binding);
             }
         }
@@ -219,13 +226,18 @@ namespace ManualDi.Async
                 return;
             }
             
-            if (!binding.IsWired)
+            if (binding.WireState == WireState.Wiring)
             {
-                binding.IsWired = true;
+                ThrowHelper.ThrowCircularDependency(typeof(T), injectedBinding);
+            }
+            else if (binding.WireState == WireState.Unwired)
+            {
+                binding.WireState = WireState.Wiring;
                 var previousInjectedBinding = injectedBinding;
                 injectedBinding = binding;
                 binding.Dependencies?.Invoke(this);
                 injectedBinding = previousInjectedBinding;
+                binding.WireState = WireState.Wired;
                 bindings.Add(binding);
             }
         }

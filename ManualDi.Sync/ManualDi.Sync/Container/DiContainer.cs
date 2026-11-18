@@ -66,6 +66,12 @@ namespace ManualDi.Sync
             {
                 return binding.Instance;
             }
+
+            if (binding.isResolving)
+            {
+                ThrowHelper.ThrowCircularDependency(binding.ConcreteType, this);
+            }
+            binding.isResolving = true;
             
             var previousInjectedBinding = injectedBinding;
             injectedBinding = binding;

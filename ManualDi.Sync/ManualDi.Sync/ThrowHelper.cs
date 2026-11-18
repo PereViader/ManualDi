@@ -51,5 +51,13 @@ namespace ManualDi.Sync
         {
             throw new InvalidOperationException($"Type {type.FullName} is not registered for injection in ManualDiInjector.");
         }
+
+        [DoesNotReturn]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static void ThrowCircularDependency(Type type, IDiContainer? diContainer)
+        {
+            var injectedIntoType = diContainer?.InjectedBinding?.ConcreteType;
+            throw new InvalidOperationException($"Circular dependency detected when resolving type {type.FullName} from type {injectedIntoType?.FullName ?? "null"}");
+        }
     }
 }

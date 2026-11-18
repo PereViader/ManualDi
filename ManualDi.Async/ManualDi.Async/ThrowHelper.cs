@@ -52,6 +52,13 @@ namespace ManualDi.Async
 
         [DoesNotReturn]
         [MethodImpl(MethodImplOptions.NoInlining)]
+        public static void ThrowCircularDependency(Type injectedType, Binding? injectedBinding)
+        {
+            throw new InvalidOperationException($"Circular dependency detected when resolving type {injectedType.FullName} from type {injectedBinding?.ConcreteType.FullName ?? "null"}");
+        }
+
+        [DoesNotReturn]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public static void ThrowCouldNotResolveParameter(ParameterInfo parameter, IDiContainer? diContainer)
         {
             var injectedIntoType = diContainer?.InjectedBinding?.ConcreteType;

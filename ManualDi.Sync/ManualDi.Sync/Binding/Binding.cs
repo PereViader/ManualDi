@@ -15,6 +15,7 @@ namespace ManualDi.Sync
         public InstanceContainerDelegate? InitializationDelegate;
 
         internal object? Instance;
+        internal bool isResolving;
     }
 
     public sealed class Binding<TConcrete> : Binding

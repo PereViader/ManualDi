@@ -26,6 +26,13 @@ namespace ManualDi.Async
         void NullableInjectionDependency<T>();
     }
 
+    internal enum WireState : byte
+    {
+        Unwired,
+        Wiring,
+        Wired
+    }
+
     public abstract class Binding
     {
         public abstract Type ConcreteType { get; }
@@ -36,7 +43,7 @@ namespace ManualDi.Async
         internal object? InjectionDelegate;
         internal object? InitializationDelegate;
         
-        internal bool IsWired;
+        internal WireState WireState;
         internal object? Instance;
     }
 

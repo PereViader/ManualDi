@@ -21,7 +21,9 @@ jobs:
     PublishNugetPackage:
       needs: [TestCommon, TestUnity]
       uses: ./.github/workflows/PublishNugetPackage.yml
-      secrets: inherit
+      permissions:
+        contents: read
+        id-token: write
     
     PublishUnity3dPackage:
       needs: [TestCommon, TestUnity]

@@ -1,11 +1,14 @@
 name: Publish Nuget Package
 
-on: 
+on:
   workflow_call:
-    
+
 jobs:
   PublishNugetPackage:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
       - uses: actions/checkout@v6
@@ -19,39 +22,30 @@ jobs:
           source .env.shared
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Publish Sync Nuget and Tag Commit
+      - name: Build and Pack Sync NuGet
         run: |
           dotnet build ManualDi.Sync --configuration Release
           dotnet pack ManualDi.Sync --configuration Release --output ManualDi.Sync.Nuget -p:PackageVersion=${{ steps.get-version.outputs.version }}
-          
-          set +e  # Disable immediate exit on error
-          dotnet nuget push "ManualDi.Sync.Nuget/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key "${{secrets.NUGET_API_KEY}}"
-          push_result=$?
-          set -e  # Enable immediate exit on error
 
-          if [ $push_result -ne 0 ]; then
-            echo "ManualDi.Sync package could not be pushed, assuming a package with that version is already present"
-            exit 0
-          fi
-
-          echo "ManualDi.Sync NuGet package pushed successfully"
-
-      - name: Publish Async Nuget and Tag Commit
+      - name: Build and Pack Async NuGet
         run: |
           dotnet build ManualDi.Async --configuration Release
           dotnet pack ManualDi.Async --configuration Release --output ManualDi.Async.Nuget -p:PackageVersion=${{ steps.get-version.outputs.version }}
-          
-          set +e  # Disable immediate exit on error
-          dotnet nuget push "ManualDi.Async.Nuget/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key "${{secrets.NUGET_API_KEY}}"
-          push_result=$?
-          set -e  # Enable immediate exit on error
 
-          if [ $push_result -ne 0 ]; then
-            echo "ManualDi.Async package could not be pushed, assuming a package with that version is already present"
-            exit 0
-          fi
+      - name: NuGet Login
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: pere.viader
 
-          echo "ManualDi.Async NuGet package pushed successfully"
+      - name: Publish Sync NuGet
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+        run: |
+          dotnet nuget push "ManualDi.Sync.Nuget/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key "$NUGET_API_KEY" --skip-duplicate
 
-
-          
+      - name: Publish Async NuGet
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+        run: |
+          dotnet nuget push "ManualDi.Async.Nuget/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key "$NUGET_API_KEY" --skip-duplicate

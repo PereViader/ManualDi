@@ -92,8 +92,8 @@ public class TestDiContainerAsync
             initializeDelegate1.Invoke(Arg.Any<int>());
             initializeAsyncDelegate.Invoke(Arg.Any<int>(), Arg.Any<CancellationToken>());
             initializeDelegate2.Invoke(Arg.Any<int>());
-            disposeAsyncDelegate.Invoke(Arg.Any<int>());
             disposeDelegate.Invoke(Arg.Any<int>());
+            disposeAsyncDelegate.Invoke(Arg.Any<int>());
         });
     }
 }

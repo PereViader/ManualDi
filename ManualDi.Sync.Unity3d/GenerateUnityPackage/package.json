@@ -2,7 +2,7 @@
     "name": "com.pereviader.manualdi.sync.unity3d",
     "version": "$version",
     "displayName": "ManualDi.Sync",
-    "description": "Fast C# dependency injection library that uses no reflexion",
+    "description": "Fast C# dependency injection library that uses no reflection",
     "unity": "6000.0",
     "license": "MIT",
     "documentationUrl": "https://github.com/PereViader/ManualDi",

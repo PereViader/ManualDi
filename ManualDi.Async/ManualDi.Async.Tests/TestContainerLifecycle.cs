@@ -110,6 +110,12 @@ public class TestContainerLifecycle
 
             startup.Run();
             startupAsyncAction.Invoke();
+
+            startup.DisposeAsync();
+            child2.DisposeAsync();
+            child2Child.Dispose();
+            child1.Dispose();
+            child1Child.DisposeAsync();
         });
     }
 }

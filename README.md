@@ -1,4 +1,4 @@
-[![Test and publish](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml/badge.svg)](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml) [![Unity version 6000.0](https://img.shields.io/badge/Unity-6000.0-57b9d3.svg?style=flat&logo=unity)](https://github.com/PereViader/ManualDi.Unity3d) [![OpenUPM ManualDi.Sync](https://img.shields.io/npm/v/com.pereviader.manualdi.sync.unity3d?label=openupm%20sync&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.pereviader.manualdi.sync.unity3d/) [![OpenUPM ManualDi.Async](https://img.shields.io/npm/v/com.pereviader.manualdi.async.unity3d?label=openupm%20async&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.pereviader.manualdi.async.unity3d/) [![NuGet ManualDi.Sync](https://img.shields.io/nuget/v/ManualDi.Sync?label=nuget%20sync)](https://www.nuget.org/packages/ManualDi.Sync) [![NuGet ManualDi.Async](https://img.shields.io/nuget/v/ManualDi.Async?label=nuget%20async)](https://www.nuget.org/packages/ManualDi.Async) [![Release](https://img.shields.io/github/release/PereViader/ManualDi.svg?label=github%20release)](https://github.com/PereViader/ManualDi/releases/latest)
+[![Test and publish](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml/badge.svg)](https://github.com/PereViader/ManualDi/actions/workflows/TestAndPublish.yml) [![Unity version 6000.0](https://img.shields.io/badge/Unity-6000.0-57b9d3.svg?style=flat&logo=unity)](https://github.com/PereViader/ManualDi#unity3d) [![OpenUPM ManualDi.Sync](https://img.shields.io/npm/v/com.pereviader.manualdi.sync.unity3d?label=openupm%20sync&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.pereviader.manualdi.sync.unity3d/) [![OpenUPM ManualDi.Async](https://img.shields.io/npm/v/com.pereviader.manualdi.async.unity3d?label=openupm%20async&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.pereviader.manualdi.async.unity3d/) [![NuGet ManualDi.Sync](https://img.shields.io/nuget/v/ManualDi.Sync?label=nuget%20sync)](https://www.nuget.org/packages/ManualDi.Sync) [![NuGet ManualDi.Async](https://img.shields.io/nuget/v/ManualDi.Async?label=nuget%20async)](https://www.nuget.org/packages/ManualDi.Async) [![Release](https://img.shields.io/github/release/PereViader/ManualDi.svg?label=github%20release)](https://github.com/PereViader/ManualDi/releases/latest)
 
 Welcome to ManualDi – a fast and extensible C# dependency injection library
 - Unified API to create, inject, initialize and startup the application.
@@ -46,13 +46,13 @@ Unity3d [Sync](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Sync.Un
 *This table is still WIP, please open a discussion if you have any suggestion.
 
 - (1) ManualDi only works with Single scope.
-  - Transient can be achived by setting up a factory class. The factory class can be used to create the instance at runtime.
-  - Scoped can be achived by setting up the binding on the child container. That child container is effectively another scope.
+  - Transient can be achieved by setting up a factory class. The factory class can be used to create the instance at runtime.
+  - Scoped can be achieved by setting up the binding on the child container. That child container is effectively another scope.
 
 - (2) ManualDi does not support lazy binding. All bound instances will get created and injected.
   - Lazy bindings are usually a source of bugs and confusion.
 
-- (3) Reflex, VContainer, Zenject don't avoid Reflection by default but.
+- (3) Reflex, VContainer, Zenject don't avoid reflection by default:
   - They do work on IL2CPP (some have some caveats).
   - Reflex only uses reflection on a few places.
   - VContainer has an optional Source Generator that can replace the reflection based execution.
@@ -64,13 +64,13 @@ Unity3d [Sync](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Sync.Un
   - Async: https://www.nuget.org/packages/ManualDi.Async/
 
 - Unity3d [6000.0](https://github.com/PereViader/ManualDi/issues/25) or later 
-    - (Recommended) OpenUPM [(instructions)](https://openupm.com/docs/getting-started.html#google_vignette)
+    - (Recommended) OpenUPM [(instructions)](https://openupm.com/docs/getting-started.html)
         - Sync: https://openupm.com/packages/com.pereviader.manualdi.sync.unity3d/
         - Async: https://openupm.com/packages/com.pereviader.manualdi.async.unity3d/
-    - Directly from git [(instructions)](https://docs.unity3d.com/6000.1/Documentation/Manual/upm-ui-giturl.html)
-        - Git URL: https://github.com/PereViader/ManualDi.Unity3d.git
+    - From a tarball [(instructions)](https://docs.unity3d.com/6000.0/Documentation/Manual/upm-ui-tarball.html)
+        - Download the `.tgz` package from [GitHub Releases](https://github.com/PereViader/ManualDi/releases/latest)
 
-Note: \* [.Net Compact Framework](https://es.wikipedia.org/wiki/.NET_Compact_Framework) is [not compatible](https://learn.microsoft.com/en-us/dotnet/api/system.type.typehandle?view=net-8.0#system-type-typehandle) because of an [optimization](https://github.com/PereViader/ManualDi/commit/d7965d1b77b905084bb1fdf8fdad7c4f53f63fb5)
+Note: \* [.Net Compact Framework](https://en.wikipedia.org/wiki/.NET_Compact_Framework) is [not compatible](https://learn.microsoft.com/en-us/dotnet/api/system.type.typehandle?view=net-8.0#system-type-typehandle) because of an [optimization](https://github.com/PereViader/ManualDi/commit/d7965d1b77b905084bb1fdf8fdad7c4f53f63fb5)
 
 Note: Source generation will only happen in csproj that are linked both with the source generator and the library.
 - In a regular C# project, this requires referencing the library on the csproj as a nuget package
@@ -95,7 +95,7 @@ In the section below we will add two examples to see an example of the lifecycle
 
 - Creating the builder and installing the bindings is where the binding phase happens
 - Within the execution of the `Build` method both the Building and Startup phase will happen
-    - The container and object graph is be created
+    - The container and object graph are created
     - Startup callbacks of the application are invoked
 - Notice that the container variable is `using` or `await using` in order to ensure that the container is disposed of when it is no longer needed.
 
@@ -125,7 +125,7 @@ public class OtherClass : IOtherClass, IDisposable
     public void Initialize() => Console.WriteLine("OtherClass.Initialize");
 
     // Runs last because the class does not depend on anything else
-    public void Dispose() => Console.WriteLine("SomeClass.Dispose");
+    public void Dispose() => Console.WriteLine("OtherClass.Dispose");
 }
 
 [ManualDi]
@@ -146,7 +146,7 @@ public class Startup(SomeClass someClass)
     //Inject runs after the constructor
     public void Inject(IOtherClass otherClass) => this.otherClass = otherClass;
 
-    // Runs after SomeClass.Initialize and OtherClass.InitializeAsync
+    // Runs after OtherClass.Initialize and SomeClass.Initialize
     public void Execute() => Console.WriteLine("Startup.Execute");
 }
 ```
@@ -174,7 +174,7 @@ await using DiContainer diContainer = await new DiContainerBindings()
         b.Bind<Startup>().Default().FromConstructor();
 
         // Instruct the container the Startup logic to run once all dependencies created and initialized.
-        b.QueueStartup<Startup>(static async (startup, ct) => startup.Execute(ct));
+        b.QueueStartupAsync<Startup>(static (startup, ct) => startup.Execute(ct));
     })
     .Build(CancellationToken.None);
 
@@ -184,10 +184,18 @@ public interface IOtherClass { }
 public class OtherClass : IOtherClass, IAsyncDisposable
 {
     // Runs first because the class does not depend on anything else
-    public async Task InitializeAsync(CancellationToken ct) => Console.WriteLine("OtherClass.InitializeAsync");
+    public Task InitializeAsync(CancellationToken ct)
+    {
+        Console.WriteLine("OtherClass.InitializeAsync");
+        return Task.CompletedTask;
+    }
 
     // Runs last because the class does not depend on anything else
-    public async ValueTask DisposeAsync() => Console.WriteLine("OtherClass.DisposeAsync");
+    public ValueTask DisposeAsync()
+    {
+        Console.WriteLine("OtherClass.DisposeAsync");
+        return default;
+    }
 }
 
 [ManualDi]
@@ -206,10 +214,14 @@ public class Startup(SomeClass someClass)
     private IOtherClass otherClass;
 
     //Inject runs after the constructor
-    public void Inject(IOtherClass otherClass) =>this.otherClass = otherClass;
+    public void Inject(IOtherClass otherClass) => this.otherClass = otherClass;
 
     // Runs after SomeClass.Initialize and OtherClass.InitializeAsync
-    public async Task Execute(CancellationToken ct) => Console.WriteLine("Startup.Execute");
+    public Task Execute(CancellationToken ct)
+    {
+        Console.WriteLine("Startup.Execute");
+        return Task.CompletedTask;
+    }
 }
 ```
 
@@ -245,7 +257,7 @@ OtherClass.DisposeAsync
 
 - Supercharge Serialized objects: Unity has a great system to serialize data on UnityEngine.Objects. Adding a DiContainer on top means that you can easily connect that data with your code-driven implementation.
 
-- Cross-Scene Dependencies: Object dependencies are tricky to interconnect when multiple dynamically scenes and/or prefabs are loaded. ManualDi in Unity3d facilitate interconnecting those with minimal boilerplate.
+- Cross-Scene Dependencies: Object dependencies are tricky to interconnect when multiple dynamically loaded scenes and/or prefabs are loaded. ManualDi in Unity3d facilitates interconnecting those with minimal boilerplate.
 
 # Quick concepts
 
@@ -253,7 +265,7 @@ Let's briefly discuss a few concepts from the library to get a high level overvi
 
 - The container is created using a builder `DiContainerBindings`.
 - Container configuration is setup through a fluent API available through `Bind` methods.
-- Speed is achived via source generated, reflection-free, `Default` and `FromConstructor` methods.
+- Speed is achieved via source generated, reflection-free, `Default` and `FromConstructor` methods.
 - The `FromConstructor` method instructs the Binding to use `TConcrete`'s constructor, resolving parameters from the container.
 - There are more construction methods other than `FromConstructor`.
 - Method injection is accomplished by adding an `Inject` method to your Types.
@@ -280,11 +292,11 @@ class Implementation : IInterface;
 
 b.Bind<IInterface, Implementation>()...
 ...
-c.Resolve<IInterface>() // Succeeds
-c.Resolve<Implementation>() // Runtime error
+c.Resolve<IInterface>(); // Succeeds
+c.Resolve<Implementation>(); // Runtime error
 ```
 
-Use the flunt API available on the returned value of the `Bind` method, to configure the container how it should create, inject, initialize and dispose the instance.
+Use the fluent API available on the returned value of the `Bind` method, to configure the container how it should create, inject, initialize and dispose the instance.
 The specific binding configuration is done through 6 categories of methods that, by convention, should be done in the order specified below.
 
 ```csharp
@@ -375,7 +387,7 @@ b.Bind<T>().Default().FromConstructor();
 The container does not create the instance. It is provided externally and used as-is.
 
 ```csharp
-b.Bind<T>().Default().FromInstance(new T())
+b.Bind<T>().Default().FromInstance(new T());
 ```
 
 ### Method
@@ -385,7 +397,7 @@ The instance is created using the provided delegate.
 The delegate receives the container as a parameter, allowing it to resolve any required dependencies. 
 
 ```csharp
-b.Bind<T>().Default().FromMethod(c => new T(c.Resolve<SomeService>()))
+b.Bind<T>().Default().FromMethod(c => new T(c.Resolve<SomeService>()));
 ```
 
 ### MethodAsync 
@@ -402,7 +414,7 @@ b.Bind<T>().Default().FromMethodAsync(async (c, ct) => {
     // Work can be delayed for any reason
     // For example: HttpRequests, Loading from disk, etc
     await Task.Delay(300, ct); 
-    return new T(c.Resolve<SomeService>())
+    return new T(c.Resolve<SomeService>());
     });
 ```
 
@@ -410,7 +422,7 @@ b.Bind<T>().Default().FromMethodAsync(async (c, ct) => {
 
 You will rarely need to call this one.
 Used for apparent type remapping. Or in other words, used to reexpose some binding as another binding.
-Don't call `Default` when using this, otherwise you get multiple calls on `Inject`, `Initialize` and `InitializeAsync`** more than once
+Don't call `Default` when using this, otherwise you invoke `Inject`, `Initialize`, and `InitializeAsync`** more than once
 
 In the example below, there is `SomeClass` that is bound individually and then two more bindings expose the `SomeClass`
 ```csharp
@@ -441,7 +453,7 @@ Binding injection happens in reverse dependency order. Injected objects will alr
 
 The injection can be used to hook into the object creation lifecycle and run custom code. Each individual binding can have any amount of Inject calls that will be run in the order added.
 
-As stated on the `Default` section, calling that source generated method will handle the registration of the`Inject` method on `TConcrete` automatically.
+As stated on the `Default` section, calling that source generated method will handle the registration of the `Inject` method on `TConcrete` automatically.
 
 The inject method has two usecases
 1. Inject dependencies when the constructor can't be used (this happens for instance in unity3d where all UnityEngine.Object can't use the constructor)
@@ -475,7 +487,7 @@ public class B
 
 Note: When dealing with cyclic dependencies, the usual method execution order may not hold.
 Normally, Initialize is called on a type’s dependencies before being called on the type itself.
-However, with cyclic dependencies, this order cannot be guaranteed given the types are already breaking the necessary contract for this to be possible. When this happens,additional synchronization logic on those types may be required in order to ensure correct behavior.
+However, with cyclic dependencies, this order cannot be guaranteed given the types are already breaking the necessary contract for this to be possible. When this happens, additional synchronization logic on those types may be required in order to ensure correct behavior.
 That said, cyclic dependencies are often a sign of flawed design. If you encounter them, it’s usually better to refactor the architecture rather than patch around the issue.
 
 While you should always keep an eye for cyclic dependencies while designing your object graph, you will quickly notice them once you run your application given it won't be able to start and fail during the building process of the container.
@@ -507,17 +519,17 @@ In the example below, `A.Initialize` will be invoked first and then `B.Initializ
 [ManualDi]
 class A
 {
-    void Initialize() { }
+    public void Initialize() { }
 }
 
 [ManualDi]
 class B(A a)
 {    
-    void Initialize() { }
+    public void Initialize() { }
 }
 
 //This is the manual implementation without Default
-b.Bind<A>().FromConstructor().Initialize((o, c) => o.Initialize()));
+b.Bind<A>().FromConstructor().Initialize((o, c) => o.Initialize());
 b.Bind<B>().FromConstructor().Initialize((o, c) => o.Initialize());
 
 //And this is the equivalent and simpler implementation with Default
@@ -541,7 +553,7 @@ b.Bind<SomeFeature>()
 
 Imagine you have an `IFeature` interface in your project and you want to add some shared initialization code to the ones that have it. You can add this reusable code as "Link" extension method. Internally these extension methods can use the `Inject`/`Initialize` methods and add whatever extra logic the feature requires.
 
-You may find further Link examples already present in the library [here](https://github.com/PereViader/ManualDi/blob/540cb3d3155d81dc8925d9ab5769d2a18e61e81b/ManualDi.Unity3d/Assets/ManualDi.Unity3d/Runtime/Extensions/TypeBindingLinkExtensions.cs#L8)
+You may find further Link examples already present in the library [here](https://github.com/PereViader/ManualDi/blob/main/ManualDi.Sync.Unity3d/Assets/ManualDi.Sync.Unity3d/Runtime/Extensions/BindingLinkExtensions.cs)
 
 ## Dispose
 
@@ -551,9 +563,9 @@ Using the `Default` source-generated method provides a slight optimization by sk
 
 The `Dispose` extension method allows defining behavior that will run when the object is disposed.
 The container will dispose of the objects when itself is disposed.
-The objects will be disposed in reverse dependency order.
+The objects will be disposed in reverse creation order (dependents before their dependencies).
 
-Using the `Dispose` is fine when readability is preferred, however notice that this method is just a shorthand for calling `QueueDispose` within an `Inject` callback. Calling `QueueDipose` directly is preferred when you want performance. 
+Using the `Dispose` is fine when readability is preferred, however notice that this method is just a shorthand for calling `QueueDispose` within an `Inject` callback. Calling `QueueDispose` directly is preferred when you want performance. 
 
 The delegates registered on `Dispose`/`QueueDispose` methods will always be run regardless of `SkipDisposable` being used.
 
@@ -573,7 +585,7 @@ class B(A a)
 b.Bind<A>().Default().FromConstructor(); // No need to call Dispose because the object is IDisposable
 b.Bind<B>().Default().FromConstructor().Dispose((o,c) => o.DoCleanup());
 
-c.Dispose(); // A is the first object disposed, then B
+c.Dispose(); // B is the first object disposed, then A
 ```
 
 ### SkipDisposable
@@ -693,12 +705,11 @@ static class SomeFeatureInstaller
 //Installer instance 
 class SomeFeatureInstaller : IInstaller
 {
-    public static DiContainerBindings Install(DiContainerBindings b)
+    public void Install(DiContainerBindings b)
     {
         b.Bind<A>().Default().FromInstance(new A());
         b.Bind<B>().Default().FromConstructor();
         b.Bind<IC, C>().Default().FromConstructor();
-        return b;
     }
 }
 ```
@@ -729,11 +740,11 @@ static class SomeFeatureInstaller
 }
 ```
 
-This however requires adding parameters on installers which is not possible in all cases and can require undesired bolierplate.
+This however requires adding parameters on installers which is not possible in all cases and can require undesired boilerplate.
 
 Another way to do this is by resolving instances during the binding process of the container.
 
-The available resolution methods available on `DiContainerBinding` are:
+The available resolution methods available on `DiContainerBindings` are:
 - ResolveInstance
 - TryResolveInstance
 - ResolveInstanceNullable
@@ -741,17 +752,17 @@ The available resolution methods available on `DiContainerBinding` are:
 
 Bindings that are created using `FromInstance` can be resolved from `DiContainerBindings` after they have been bound. Keep in mind that instances are provided 'as is,' without any initialization or callbacks performed, because at the time of installation nothing will have been triggered yet.
 
-When `WithParentContainer` is used, all bindings on the parent can container can be resolved
+When `WithParentContainer` is used, all bindings on the parent container can be resolved
 
-When `BindSubContainer` is used, the subcontainer can access the same the base installer could
+When `BindSubContainer` is used, the subcontainer can access the same instances the base installer could
 
-Keep in mind that using this is not always necessary you can also provide parameters on extension method / instance installers. However this is not always possible and can introduce a lot of boilerplate thus adding complexity for little gain. Using this feature trades compilation safety for fewer bolierplate, thus you need to weight what is the best approach for your use case.
+Keep in mind that using this is not always necessary you can also provide parameters on extension method / instance installers. However this is not always possible and can introduce a lot of boilerplate thus adding complexity for little gain. Using this feature trades compilation safety for less boilerplate, so you need to weigh what is the best approach for your use case.
 
 This could be some sample feature implemented using this
 
 ```csharp
 //On some installer do
-b.Bind<SomeConfig>().FromInstance(new SomeConfig(IsEnabled: true))
+b.Bind<SomeConfig>().FromInstance(new SomeConfig(IsEnabled: true));
 
 //On another installer for the same container do
 var config = b.ResolveInstance<SomeConfig>();
@@ -788,7 +799,7 @@ else
 
 An async object graph might sometimes be complicated to understand the order things will run. When an exception happens during the DiContainer creation and initialization it can sometimes be difficult to understand why.
 
-The failure debug report adds more data when an exception to the exception so that you can better understand the order in which things run.
+The failure debug report adds extra data to the exception when one is thrown so that you can better understand the order in which things run.
 
 This feature is opt in and can be used by enabling it on `DiContainerBindings`
 
@@ -843,7 +854,7 @@ public class A
 
 //This will create an instance of A with an object instance and a null int
 b.Bind<A>().Default().FromConstructor();
-b.Bind<object>.Default().FromInstance();
+b.Bind<object>().Default().FromInstance(new object());
 ```
 
 ## Collection
@@ -851,7 +862,7 @@ b.Bind<object>.Default().FromInstance();
 The source generator will inject all bound instances of a type if the dependency declared is one of the following types `List<T>` `IList<T>` `IReadOnlyList<T>` `IEnumerable<T>`
 The resolved dependencies will be resolved using `ResolveAll<T>`
 
-If the collection itself is declared nullable (e.g., `List<T>?`), it will be `null` if no matching bindings are found. Otherwise (e.g. `List<T>`), an empty list will be injected if no matching bindings are found. In both cases, when no matching bindings exist, the list will contain those instances found.
+If the collection itself is declared nullable (e.g., `List<T>?`), it will be `null` if no matching bindings are found. Otherwise (e.g. `List<T>`), an empty list will be injected if no matching bindings are found. In both cases, when matching bindings exist, the list will contain those instances found.
 If the generic type argument `T` is nullable (e.g., `List<T?>`), the source generator will accommodate this. This is generally not recommended, as bindings are always expected to return non-null instances.
 
 
@@ -863,7 +874,7 @@ public class A
     public A(
         List<object> listObj,
         IList<int> iListInt,
-        IReadOnlyList<obj> iReadOnlyListObj,
+        IReadOnlyList<object> iReadOnlyListObj,
         IEnumerable<int> iEnumerableInt,
         List<object>? nullableList, //Either null or Count > 0
         List<object?> nullableGenericList //Valid but NOT recommended
@@ -879,7 +890,7 @@ public class A
 
 Notice that resolution can only be done on apparent types, not concrete types. Concrete types are there so the container can provide a type safe fluent API.
 
-You should rarely use these methods, only using them when implementing reusable Link methods or some very edge case logic. Under most circumpstances you should rely on the source generated methods that implement calling these for you.
+You should rarely use these methods, only using them when implementing reusable Link methods or some very edge case logic. Under most circumstances you should rely on the source generated methods that implement calling these for you.
 
 Resolutions can be done in the following ways:
 
@@ -917,7 +928,7 @@ bool found = container.TryResolve<SomeService>(out SomeService someService);
 
 ## ResolveAll
 
-Resolve all the registered instance from the container. If no instances are available the list is empty.
+Resolve all the registered instances from the container. If no instances are available the list is empty.
 
 ```csharp
 List<SomeService> services = container.ResolveAll<SomeService>();
@@ -1044,8 +1055,8 @@ Positive:
 Negative:
 
 - Not compile safe: Because the container is adding a dynamic layer, the compiler can't verify all the required dependencies are properly registered. 
-- Slower: Because the container is adding a dynamic layer, the indirection makes the code slower than the compile safe conuterpart.
-    - Even if slower, ManualDi is significally fast to the point where it is usually not a problem
+- Slower: Because the container is adding a dynamic layer, the indirection makes the code slower than the compile safe counterpart.
+    - Even if slower, ManualDi is significantly fast to the point where it is usually not a problem
 
 
 
@@ -1119,9 +1130,9 @@ public class SomeFeatureInstaller : MonoBehaviourInstaller
     public string ResourcePath;
     public Toggle TogglePrefab;
     public GameObject SomeGameObject;
-    public AddressableReference SceneReference;
+    public AssetReference SceneReference;
 
-    public override Install(DiContainerBindings b)
+    public override void Install(DiContainerBindings b)
     {
         b.Bind<Toggle>().FromInstantiateComponent(TogglePrefab, canvasTransform);
         b.Bind<Image>().FromInstantiateGameObjectResourceGetComponent(ResourcePath);
@@ -1133,11 +1144,11 @@ public class SomeFeatureInstaller : MonoBehaviourInstaller
 
 There is no need to remember them exactly, just use your IDE autocomplete functionality.
 
-UnityEngine.Object dependancies should be serialized on installers and bound during installation.
+UnityEngine.Object dependencies should be serialized on installers and bound during installation.
 
 Most of the From methods that do instantiation, have several optional parameters. For instance:
 - `Transform? parent = null` defines the parent transform used when instantiating new instances.
-- `bool destroyOnDispose = true` will cleanup instanciated instances upon disposal of the container
+- `bool destroyOnDispose = true` will cleanup instantiated instances upon disposal of the container
 
 ## EntryPoints
 
@@ -1182,9 +1193,9 @@ class InitialSceneEntryPoint : MonoBehaviourRootEntryPoint
 ### SubordinateEntryPoint
 
  
-Subordinate entry points cannot are entry points that can not be started by themselves. 
+Subordinate entry points are entry points that cannot be started by themselves. 
 They need to be started by some other part of your application because they depend on external data / container.
-These entry points may optionally also return some `TFacade` to the caller.
+These entry points may optionally also return some `TContext` to the caller.
 
 The data provided to the container is available on the entrypoint through the `Data` property.
 When the data implements `IInstaller` it is also installed to the container.
@@ -1283,14 +1294,14 @@ public class SceneFacade
 {
     private readonly Data _data;
 
-    public SceneFacade(Data _data) 
+    public SceneFacade(Data data) 
     {
         _data = data;
     }
 
     public void DoSomething() 
     {  
-        Console.WriteLine(data.Name);
+        Console.WriteLine(_data.Name);
     }
 }
 
@@ -1309,9 +1320,9 @@ class Example
     {
         await SceneManager.LoadSceneAsync("TheScene", LoadSceneMode.Additive);
         
-        var entryPoint = Object.FindObjectOfType<SceneEntryPoint>();
+        var entryPoint = Object.FindFirstObjectByType<SceneEntryPoint>();
         var data = new Data() { Name = "Charles" };
-        var facade = entryPoint.Initiate(data)
+        var facade = entryPoint.Initiate(data);
         
         facade.DoSomething();
     }
@@ -1331,7 +1342,7 @@ class Example : MonoBehaviour
         var data = new Data() { Name = "Charles" };
 
         var entryPoint = Instantiate(EntryPointPrefab, transform);
-        var facade = entryPoint.Initiate(data)
+        var facade = entryPoint.Initiate(data);
         
         facade.DoSomething();
     }
@@ -1377,11 +1388,11 @@ public class LevelEntryPoint : MonoBehaviourRootEntryPoint
     public override void Install(DiContainerBindings b)
     {
         // Bind your services...
-        b.Bind<IInputService>().Default().FromConstructor();
-        b.Bind<IAudioService>().Default().FromConstructor();
+        b.Bind<IInputService, InputService>().Default().FromConstructor();
+        b.Bind<IAudioService, AudioService>().Default().FromConstructor();
         
         // Inject the hierarchy after building the container
-        b.QueueStartup(() => RootInjector.Inject(Container!));
+        b.QueueStartup(c => RootInjector.Inject(c));
     }
 }
 ```
@@ -1419,9 +1430,9 @@ Note: There is a sample in the package that provides a Tickable system and a Lin
 # How and why does ManualDi help
 
 ## Comparing manual creation and injection to ManualDi 
-In order to understand how ManualDi will help you write fewer and better lines of code, let see the difference between a composition root with and without ManualDi.
+In order to understand how ManualDi will help you write fewer and better lines of code, let's see the difference between a composition root with and without ManualDi.
 
-Note: For the sake of the example, we will use an API inspired by the Unity3d engine. Keep in mind that the Unity3d engine API is not exaclty like the example below.
+Note: For the sake of the example, we will use an API inspired by the Unity3d engine. Keep in mind that the Unity3d engine API is not exactly like the example below.
 
 Imagine you have a very simple game with a gameplay scene and a player
 ```csharp
@@ -1433,17 +1444,17 @@ player.Initialize();
 
 ...
 
-Addressable.Unload(player)
+Addressable.Unload(player);
 SceneManager.UnloadScene(gameplayScene);
 ```
 
 Notice that we are doing manual creation and injection of instances followed up by the required initialization calls each component requires.
-Let's some new piece of functionality to the example and observe how it changes. 
+Let's add a new piece of functionality to the example and observe how it changes. 
 
 ```csharp
 var gameplayScene = await SceneManager.LoadSceneAsync("GameplayScene");
 var player = await Addressables.InstantiateAsync<Player>("Player");
-var saveSystem = new SaveSystem(player)
+var saveSystem = new SaveSystem(player);
 
 gameplayScene.Inject(player);
 player.Initialize();
@@ -1452,7 +1463,7 @@ gameplayScene.Initialize();
 
 ...
 
-Addressable.Unload(player)
+Addressable.Unload(player);
 SceneManager.UnloadScene(gameplayScene);
 ```
 
@@ -1464,7 +1475,7 @@ Let's change the save system to do more work and also handle storing some scene 
 ```csharp
 var gameplayScene = await SceneManager.LoadSceneAsync("GameplayScene");
 var player = await Addressables.InstantiateAsync<Player>("Player");
-var saveSystem = new SaveSystem(player, gameplayScene)
+var saveSystem = new SaveSystem(player, gameplayScene);
 
 gameplayScene.Inject(player);
 player.Initialize();
@@ -1473,14 +1484,14 @@ await saveSystem.InitializeAsync();
 
 ...
 
-Addressable.Unload(player)
+Addressable.Unload(player);
 SceneManager.UnloadScene(gameplayScene);
 ```
 
-Notice that in order to keep the rule stated above where depedencies are initialized in reverse dependency order, the initialize call has been moved some lines below.
+Notice that in order to keep the rule stated above where dependencies are initialized in reverse dependency order, the initialize call has been moved some lines below.
 Not following this rule is a common source of bugs given components can use non initialized components.
 
-ManualDI handles all of this automatically, freeing us from maintaining all of it.
+ManualDi handles all of this automatically, freeing us from maintaining all of it.
 
 Initially, when just two components were present. The equivalent code using ManualDi would be
 
@@ -1489,7 +1500,7 @@ b.Bind<GameplayScene>().Default().FromLoadSceneAsync("GameplayScene");
 b.Bind<Player>().Default().FromAddressableInstantiate("Player");
 ```
 
-Then adding the save SaveSystem
+Then adding the SaveSystem
 
 ```csharp
 b.Bind<GameplayScene>().Default().FromLoadSceneAsync("GameplayScene");
@@ -1497,6 +1508,6 @@ b.Bind<Player>().Default().FromAddressableInstantiate("Player");
 b.Bind<SaveSystem>().Default().FromConstructor();
 ```
 
-Notice that the snippet above works for both when the save system interacts with just the player and both the player and scene. This is because ManualDi alaways runs things in the proper order by taking into account the dependencies of components.
+Notice that the snippet above works for both when the save system interacts with just the player and both the player and scene. This is because ManualDi always runs things in the proper order by taking into account the dependencies of components.
 
-Also notice that all of the disposal responsabilities are also handled by ManualDi without specifying anything about it.
+Also notice that all of the disposal responsibilities are also handled by ManualDi without specifying anything about it.

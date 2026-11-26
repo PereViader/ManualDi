@@ -353,8 +353,9 @@ namespace ManualDi.Async
             cancellationTokenSource.Cancel();
             cancellationTokenSource.Dispose();
             
-            foreach (var disposable in disposables)
+            for (int i = disposables.Count - 1; i >= 0; i--)
             {
+                var disposable = disposables[i];
                 switch (disposable)
                 {
                     case IDisposable disposableDisposable:

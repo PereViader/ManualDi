@@ -13,38 +13,64 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: '8.x'
-
       - id: get-version
         run: |
           source .env.shared
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          if [ -z "${VERSION:-}" ]; then
+            echo "Error: VERSION is empty in .env.shared" >&2
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Check if packages already published
+        id: packages-exist
+        env:
+          VERSION: ${{ steps.get-version.outputs.version }}
+        run: |
+          version_lower="${VERSION,,}"
+          sync_exists=$(curl -fsSL "https://api.nuget.org/v3-flatcontainer/manualdi.sync/index.json" | jq -r --arg v "$version_lower" '(.versions | map(ascii_downcase) | index($v)) != null')
+          async_exists=$(curl -fsSL "https://api.nuget.org/v3-flatcontainer/manualdi.async/index.json" | jq -r --arg v "$version_lower" '(.versions | map(ascii_downcase) | index($v)) != null')
+          if [ "$sync_exists" = "true" ] && [ "$async_exists" = "true" ]; then
+            echo "Packages for version $VERSION already exist on NuGet.org. Skipping publish."
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Packages for version $VERSION need publishing (sync_exists=$sync_exists, async_exists=$async_exists)."
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - if: ${{ steps.packages-exist.outputs.exists == 'false' }}
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '8.x'
 
       - name: Build and Pack Sync NuGet
+        if: ${{ steps.packages-exist.outputs.exists == 'false' }}
         run: |
           dotnet build ManualDi.Sync --configuration Release
-          dotnet pack ManualDi.Sync --configuration Release --output ManualDi.Sync.Nuget -p:PackageVersion=${{ steps.get-version.outputs.version }}
+          dotnet pack ManualDi.Sync --configuration Release --no-build --output ManualDi.Sync.Nuget -p:PackageVersion=${{ steps.get-version.outputs.version }}
 
       - name: Build and Pack Async NuGet
+        if: ${{ steps.packages-exist.outputs.exists == 'false' }}
         run: |
           dotnet build ManualDi.Async --configuration Release
-          dotnet pack ManualDi.Async --configuration Release --output ManualDi.Async.Nuget -p:PackageVersion=${{ steps.get-version.outputs.version }}
+          dotnet pack ManualDi.Async --configuration Release --no-build --output ManualDi.Async.Nuget -p:PackageVersion=${{ steps.get-version.outputs.version }}
 
       - name: NuGet Login
         id: login
+        if: ${{ steps.packages-exist.outputs.exists == 'false' }}
         uses: NuGet/login@v1
         with:
           user: pere.viader
 
       - name: Publish Sync NuGet
+        if: ${{ steps.packages-exist.outputs.exists == 'false' }}
         env:
           NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
         run: |
           dotnet nuget push "ManualDi.Sync.Nuget/*.nupkg" --source "https://api.nuget.org/v3/index.json" --api-key "$NUGET_API_KEY" --skip-duplicate
 
       - name: Publish Async NuGet
+        if: ${{ steps.packages-exist.outputs.exists == 'false' }}
         env:
           NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
         run: |

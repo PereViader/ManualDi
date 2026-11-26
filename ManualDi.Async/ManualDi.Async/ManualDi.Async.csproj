@@ -4,16 +4,11 @@
     <OutputType>Library</OutputType>
     <TargetFramework>netstandard2.1</TargetFramework>
     <LangVersion>9</LangVersion> <!--Lang version must be 9 because unity3d does not support anything higher-->
-    <Nullable>enable</Nullable>
     <AssemblyName>ManualDi.Async</AssemblyName>
     <RootNamespace>ManualDi.Async</RootNamespace>
-    <Authors>Pere Viader</Authors>
     <RepositoryUrl>https://github.com/PereViader/ManualDi.Async</RepositoryUrl>
     <Product>ManualDi.Async</Product>
-    <Description>Dependency injection library for C#</Description>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/PereViader/ManualDi.Async</PackageProjectUrl>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>

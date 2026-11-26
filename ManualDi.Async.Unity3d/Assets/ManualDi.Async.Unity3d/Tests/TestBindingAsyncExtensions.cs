@@ -57,7 +57,7 @@ namespace ManualDi.Async.Unity3d.Tests.PlayMode
                 {
                 }
                 
-                var gameObject = Object.FindObjectOfType<Image>();
+                var gameObject = Object.FindFirstObjectByType<Image>();
                 Assert.IsNull(gameObject);
             });
         }

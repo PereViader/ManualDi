@@ -26,7 +26,7 @@ If applicable, add screenshots to help explain your problem.
 **Environment (please complete the following information):**
  - ManualDi Variant: [e.g. ManualDi.Sync, ManualDi.Async, ManualDi.Sync.Unity3d, ManualDi.Async.Unity3d]
  - ManualDi Version: [e.g. 5.1.1]
- - .NET / Unity Version: [e.g. .NET 8.0 / Unity 2022.3]
+ - .NET / Unity Version: [e.g. .NET 8.0 / Unity 6000.0]
  - OS: [e.g. Windows, macOS, Linux]
 
 **Additional context**

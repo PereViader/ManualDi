@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -19,10 +18,10 @@ namespace ManualDi.Async.Unity3d.Examples.Example2
             }
             
             // Get the entry point that was loaded from the scene, do this in any way you want
-            var entryPoint = Object.FindObjectOfType<Example2EntryPoint>();
+            var entryPoint = Object.FindFirstObjectByType<Example2EntryPoint>();
             
             //Create the container and get the context object out
-            var context = await entryPoint.Initiate(primitiveType, CancellationToken.None);
+            var context = await entryPoint.Initiate(primitiveType, destroyCancellationToken);
 
             // Start using the scene context
             context.Run();

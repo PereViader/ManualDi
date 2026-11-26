@@ -19,7 +19,7 @@ namespace ManualDi.Sync.Unity3d.Examples.Example2
             yield return SceneManager.LoadSceneAsync("Example2Context", LoadSceneMode.Additive);
             
             // Get the entry point that was loaded from the scene, do this in any way you want
-            var entryPoint = Object.FindObjectOfType<Example2EntryPoint>();
+            var entryPoint = Object.FindFirstObjectByType<Example2EntryPoint>();
             
             //Create the container and get the context object out
             var context = entryPoint.Initiate(primitiveType);

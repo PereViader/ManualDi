@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace ManualDi.Async.Unity3d.Examples.Example1
 {
@@ -11,7 +10,7 @@ namespace ManualDi.Async.Unity3d.Examples.Example1
         {
             var entryPointInstance = Object.Instantiate(entryPointPrefab);
             
-            var facade = await entryPointInstance.Initiate(5, CancellationToken.None);
+            var facade = await entryPointInstance.Initiate(5, destroyCancellationToken);
 
             // You can now start using the gameobject system throught the facade
             facade.DoStuff();

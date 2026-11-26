@@ -25,7 +25,6 @@ namespace ManualDi.Sync.Unity3d.Samples.Ticking
         /// Adds a tickable object to the container.
         /// </summary>
         /// <param name="tickable">The tickable object to add.</param>
-        /// <exception cref="System.Exception">Thrown when the tickable is already added to the container.</exception>
         public void Add(ITickable tickable)
         {
             _tickablesToAdd.Add(tickable);
@@ -35,18 +34,17 @@ namespace ManualDi.Sync.Unity3d.Samples.Ticking
         /// Removes a tickable object from the container.
         /// </summary>
         /// <param name="tickable">The tickable object to remove.</param>
-        /// <exception cref="System.ArgumentNullException">Thrown when the tickable parameter is null.</exception>
-
         public void Remove(ITickable tickable)
         {
-            bool contained = _tickables.Contains(tickable);
-
-            if (!contained)
+            if (_tickablesToAdd.Remove(tickable))
             {
                 return;
             }
-            
-            _tickablesToRemove.Add(tickable);
+
+            if (_tickables.Contains(tickable))
+            {
+                _tickablesToRemove.Add(tickable);
+            }
         }
 
         /// <summary>
@@ -54,6 +52,7 @@ namespace ManualDi.Sync.Unity3d.Samples.Ticking
         /// </summary>
         public void Clear()
         {
+            _tickablesToAdd.Clear();
             _tickablesToRemove.Clear();
             _tickables.Clear();
         }

@@ -12,7 +12,6 @@
 /ManualDi.*.Unity3d/UserSettings/*
 /ManualDi.*.Unity3d/*.csproj
 /ManualDi.*.Unity3d/*.sln
-/ManualDi.*.Unity3d/*.sln
 /ManualDi.*.Unity3d.Package/
 /ManualDi.*.Unity3d/Library/
 /ManualDi.*.Unity3d/Temp/
@@ -360,6 +359,4 @@ healthchecksdb
 MigrationBackup/
 
 .idea
-
-ManualDi.Sync.Unity3d/UserSettings/Layouts/default-2022.dwlt
-ManualDi.Async.Unity3d/UserSettings/Layouts/default-2022.dwlt
+.vsconfig

@@ -20,7 +20,7 @@ jobs:
           lfs: true
       - name: Setup common packages
         run: |
-          sh setup.sh
+          bash setup.sh
       - uses: actions/cache@v5
         with:
           path: ${{ matrix.projectPath }}/Library

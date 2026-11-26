@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Default values for the flags
 skip_unity3d=false
@@ -19,7 +20,7 @@ done
 
 
 # Extract version from the .env.shared file
-version=$(source .env.shared && echo $VERSION)
+version=$(source .env.shared && echo "${VERSION:-}")
 
 # Check if we extracted a version
 if [ -z "$version" ]; then
@@ -34,9 +35,8 @@ mkdir -p "ManualDi.Sync.Unity3d.Package/"
 echo Copy License
 cp "LICENSE.md" "ManualDi.Sync.Unity3d.Package/LICENSE.md"
 
-cp "ManualDi.Sync.Unity3d/GenerateUnityPackage/package.json" "ManualDi.Sync.Unity3d.Package/package.json"
 echo "Copy package files to the package root"
-sed -i "s/\"version\": \"\$version\"/\"version\": \"$version\"/g" "ManualDi.Sync.Unity3d.Package/package.json"
+sed "s/\"version\": \"\$version\"/\"version\": \"$version\"/g" "ManualDi.Sync.Unity3d/GenerateUnityPackage/package.json" > "ManualDi.Sync.Unity3d.Package/package.json"
 echo "Version in package.json updated to $version"
 
 echo Copy readme
@@ -48,10 +48,10 @@ cp "ManualDi.Sync.Unity3d/GenerateUnityPackage/ManualDi.Sync.asmdef.meta" "Manua
 cp "ManualDi.Sync.Unity3d/GenerateUnityPackage/csc.rsp" "ManualDi.Sync.Unity3d.Package/csc.rsp"
 cp "ManualDi.Sync.Unity3d/GenerateUnityPackage/ManualDi.Sync.Generators.dll.meta" "ManualDi.Sync.Unity3d.Package/ManualDi.Sync.Generators.dll.meta"
 
-sh ./ManualDi.Sync.Unity3d/GenerateUnityPackage/GenerateMainPackage.sh
+bash ./ManualDi.Sync.Unity3d/GenerateUnityPackage/GenerateMainPackage.sh
 if $skip_unity3d; then
     echo "Skipping unity3d package"
 else
-    sh ./ManualDi.Sync.Unity3d/GenerateUnityPackage/GenerateUnity3dPackage.sh
+    bash ./ManualDi.Sync.Unity3d/GenerateUnityPackage/GenerateUnity3dPackage.sh
 fi
-sh ./ManualDi.Sync.Unity3d/GenerateUnityPackage/GenerateUnity3dMetas.sh
+bash ./ManualDi.Sync.Unity3d/GenerateUnityPackage/GenerateUnity3dMetas.sh

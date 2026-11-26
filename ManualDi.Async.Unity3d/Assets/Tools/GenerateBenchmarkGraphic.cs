@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -26,54 +27,79 @@ public static class GenerateBenchmarkGraphic
     [MenuItem("Tools/Generate benchmark graphic")]
     public static async void Execute()
     {
-        if(FixZenjectNotBuilding.ApplyFix())
+        try
         {
-            UnityEngine.Debug.Log("Zenject fix applied, please re-run after recompilation is complete");
-            return;
-        }
-        
-        var testResults = await RunTest();
-
-        var parsedResults = new[]
+            if (await FixZenjectNotBuilding.ApplyFixAsync())
             {
-                "ManualDi.Async.Unity3d.Tests.ContainerPerformanceTest.ManualDi",
-                "ManualDi.Async.Unity3d.Tests.ContainerPerformanceTest.Reflex",
-                "ManualDi.Async.Unity3d.Tests.ContainerPerformanceTest.VContainer",
-                "ManualDi.Async.Unity3d.Tests.ContainerPerformanceTest.Zenject",
+                UnityEngine.Debug.Log("Zenject fix applied, please re-run after recompilation is complete");
+                return;
             }
-            .Select(x => (Name: x.Split(".").Last(), TestResult: FindByName(testResults, x)))
-            .Select(x => (x.Name, ParseMedianValuesWithRegex(x.TestResult.Output)))
-            .ToArray();
-        
-        var sb = new System.Text.StringBuilder();
-        sb.AppendLine("Container,Time,GC");
-        foreach (var (name, (gcMedian, runtimeMedian)) in parsedResults)
-        {
-            sb.AppendLine($"{name},{runtimeMedian},{gcMedian}");
+
+            var testResults = await RunTest();
+
+            var parsedResults = new[]
+                {
+                    "ManualDi.Async.Unity3d.Tests.ContainerPerformanceTest.ManualDi",
+                    "ManualDi.Async.Unity3d.Tests.ContainerPerformanceTest.Reflex",
+                    "ManualDi.Async.Unity3d.Tests.ContainerPerformanceTest.VContainer",
+                    "ManualDi.Async.Unity3d.Tests.ContainerPerformanceTest.Zenject",
+                }
+                .Select(fullName =>
+                {
+                    var testResult = FindByName(testResults, fullName)
+                        ?? throw new InvalidOperationException($"Could not find test result for '{fullName}'.");
+                    return (Name: fullName.Split('.').Last(), Result: ParseMedianValuesWithRegex(testResult.Output));
+                })
+                .ToArray();
+
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("Container,Time,GC");
+            foreach (var (name, (gcMedian, runtimeMedian)) in parsedResults)
+            {
+                sb.AppendLine($"{name},{runtimeMedian},{gcMedian}");
+            }
+
+            Debug.Log(sb.ToString());
         }
-        
-        Debug.Log(sb.ToString());
+        catch (Exception ex)
+        {
+            Debug.LogException(ex);
+        }
     }
 
     private static async Task<ITestResultAdaptor> RunTest()
     {
         var testRunnerApi = ScriptableObject.CreateInstance<TestRunnerApi>();
-        var filter = new Filter()
+        var tcs = new TaskCompletionSource<ITestResultAdaptor>();
+        var waitForTestComplete = new WaitForTestComplete(tcs);
+        testRunnerApi.RegisterCallbacks(waitForTestComplete);
+
+        try
         {
-            testMode = TestMode.PlayMode,
-            targetPlatform = BuildTarget.StandaloneWindows64,
-        };
-        testRunnerApi.Execute(new ExecutionSettings()
+            var filter = new Filter()
+            {
+                testMode = TestMode.PlayMode,
+                targetPlatform = BuildTarget.StandaloneWindows64,
+            };
+            testRunnerApi.Execute(new ExecutionSettings()
+            {
+                filters = new[] { filter },
+            });
+
+            return await tcs.Task;
+        }
+        finally
         {
-            filters = new [] { filter },
-        });
-        
-        var result = await WaitForTestComplete.Wait(testRunnerApi);
-        return result;
+            testRunnerApi.UnregisterCallbacks(waitForTestComplete);
+            UnityEngine.Object.DestroyImmediate(testRunnerApi);
+        }
     }
 
     public static (int GcMedian, int RuntimeMedian) ParseMedianValuesWithRegex(string data)
     {
+        if (string.IsNullOrEmpty(data))
+            return (0, 0);
+
         // Define the regular expression
         var regex = new Regex(
             @"\.GC\(\).*?Median:\s*(\d+),.*?" +
@@ -107,6 +133,9 @@ public static class GenerateBenchmarkGraphic
     
     private static ITestResultAdaptor FindByName(ITestResultAdaptor root, string name)
     {
+        if (root == null)
+            return null;
+
         if (root.FullName == name)
             return root;
 
@@ -131,23 +160,13 @@ public static class GenerateBenchmarkGraphic
             this.tcs = tcs;
         }
 
-        public static async Task<ITestResultAdaptor> Wait(TestRunnerApi api)
-        {
-            var tcs = new TaskCompletionSource<ITestResultAdaptor>();
-            var waitForTestComplete = new WaitForTestComplete(tcs);
-            api.RegisterCallbacks(waitForTestComplete);
-            var result = await tcs.Task;
-            api.UnregisterCallbacks(waitForTestComplete);
-            return result;
-        }
-        
         public void RunStarted(ITestAdaptor testsToRun)
         {
         }
 
         public void RunFinished(ITestResultAdaptor result)
         {
-            tcs.SetResult(result);
+            tcs.TrySetResult(result);
         }
 
         public void TestStarted(ITestAdaptor test)

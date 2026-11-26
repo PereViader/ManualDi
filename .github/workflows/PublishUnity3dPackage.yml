@@ -69,6 +69,11 @@ jobs:
             echo "$delimiter"
           } >> "$GITHUB_OUTPUT"
 
+      - if: ${{ steps.release-exists.outputs.exists == 'false' }}
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '8.x'
+
       - name: Create Sync Package
         if: ${{ steps.release-exists.outputs.exists == 'false' }}
         run: |

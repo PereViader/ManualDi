@@ -8,15 +8,15 @@ namespace ManualDi.Async
 {
     public static class DiContainerInvokeExtensions
     {
-        public static object? InvokeDelegateUsingReflexion(this IDiContainer diContainer, Delegate @delegate)
+        public static object? InvokeDelegateUsingReflection(this IDiContainer diContainer, Delegate @delegate)
         {
             var arguments = ResolveParameters(diContainer, @delegate);
             return @delegate.DynamicInvoke(arguments);
         }
 
-        public static async Task<object?> InvokeDelegateUsingReflexionAsync(this IDiContainer diContainer, Delegate @delegate)
+        public static async Task<object?> InvokeDelegateUsingReflectionAsync(this IDiContainer diContainer, Delegate @delegate)
         {
-            var result = InvokeDelegateUsingReflexion(diContainer, @delegate);
+            var result = InvokeDelegateUsingReflection(diContainer, @delegate);
             if (result is not Task task)
             {
                 return result;

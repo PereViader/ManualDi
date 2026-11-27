@@ -13,6 +13,8 @@ namespace ManualDi.Sync.Unity3d
         [SerializeField]
         private UnityEngine.Object[] objects = Array.Empty<UnityEngine.Object>();
 
+        private bool isInjecting;
+
         public UnityEngine.Object[] Objects
         {
             get => objects;
@@ -21,14 +23,27 @@ namespace ManualDi.Sync.Unity3d
 
         public void Inject(IDiContainer diContainer)
         {
-            foreach (var o in objects)
+            if (isInjecting)
             {
-                if (o == null)
-                {
-                    continue;
-                }
+                return;
+            }
 
-                ManualDiInjector.Inject(o, diContainer);
+            isInjecting = true;
+            try
+            {
+                foreach (var o in objects)
+                {
+                    if (o == null || o == this)
+                    {
+                        continue;
+                    }
+
+                    ManualDiInjector.Inject(o, diContainer);
+                }
+            }
+            finally
+            {
+                isInjecting = false;
             }
         }
 

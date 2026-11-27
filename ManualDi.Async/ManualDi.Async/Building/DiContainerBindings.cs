@@ -212,7 +212,7 @@ namespace ManualDi.Async
                 .InjectAsync(async (_, _, _) => await subContainer.InitializeInject())
                 .InitializeAsync(async (_, ct) =>
                 {
-                    await subContainer.IntiailizeInitialize();
+                    await subContainer.InitializeInitialize();
 
                     foreach (var injectDelegate in injectDelegates)
                     {
@@ -273,7 +273,7 @@ namespace ManualDi.Async
             {
                 await diContainer.InitializeCreate();
                 await diContainer.InitializeInject();
-                await diContainer.IntiailizeInitialize();
+                await diContainer.InitializeInitialize();
             
                 foreach (var injectDelegate in injectDelegates)
                 {

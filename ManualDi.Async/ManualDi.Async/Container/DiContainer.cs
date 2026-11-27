@@ -130,7 +130,7 @@ namespace ManualDi.Async
             }
         }
 
-        internal async ValueTask IntiailizeInitialize()
+        internal async ValueTask InitializeInitialize()
         {
             var ct = CancellationToken;
             var count = bindings.Count;

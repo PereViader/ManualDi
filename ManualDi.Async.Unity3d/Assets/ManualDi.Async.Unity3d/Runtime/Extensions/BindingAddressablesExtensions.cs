@@ -85,7 +85,7 @@ namespace ManualDi.Async.Unity3d
                 foreach (var gameObject in sceneInstance.Scene.GetRootGameObjects())
                 {
                     var component = gameObject.GetComponent<TConcrete>();
-                    if (component is not null)
+                    if (component != null)
                     {
                         return component;
                     }
@@ -109,7 +109,7 @@ namespace ManualDi.Async.Unity3d
                 foreach (var gameObject in sceneInstance.Scene.GetRootGameObjects())
                 {
                     var component = gameObject.GetComponent<TConcrete>();
-                    if (component is not null)
+                    if (component != null)
                     {
                         return component;
                     }

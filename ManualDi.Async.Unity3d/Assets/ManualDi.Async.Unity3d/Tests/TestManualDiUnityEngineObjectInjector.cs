@@ -325,6 +325,36 @@ namespace ManualDi.Async.Unity3d.Tests
         }
 
         [Test]
+        public void Inject_WithSelfReference_SkipsSelfWithoutStackOverflow()
+        {
+            var injector = rootGameObject.AddComponent<ManualDiUnityEngineObjectInjector>();
+            var comp = rootGameObject.AddComponent<CountingMonoBehaviour>();
+
+            injector.Objects = new UnityEngine.Object[] { injector, comp };
+            Assert.DoesNotThrow(() => injector.Inject(diContainer));
+            Assert.That(comp.InjectionCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Inject_WithCyclicInjectorReference_BreaksCycleWithoutStackOverflow()
+        {
+            var injectorA = rootGameObject.AddComponent<ManualDiUnityEngineObjectInjector>();
+            var compA = rootGameObject.AddComponent<CountingMonoBehaviour>();
+
+            var childGo = new GameObject("ChildCycle");
+            childGo.transform.SetParent(rootGameObject.transform);
+            var injectorB = childGo.AddComponent<ManualDiUnityEngineObjectInjector>();
+            var compB = childGo.AddComponent<CountingMonoBehaviour>();
+
+            injectorA.Objects = new UnityEngine.Object[] { compA, injectorB };
+            injectorB.Objects = new UnityEngine.Object[] { compB, injectorA };
+
+            Assert.DoesNotThrow(() => injectorA.Inject(diContainer));
+            Assert.That(compA.InjectionCount, Is.EqualTo(1));
+            Assert.That(compB.InjectionCount, Is.EqualTo(1));
+        }
+
+        [Test]
         public void PopulateInjectables_WhenHierarchyRestructured_RemovesStaleChildComponentFromParentAndAvoidsDuplicateInjection()
         {
             var rootInjector = rootGameObject.AddComponent<ManualDiUnityEngineObjectInjector>();

@@ -16,7 +16,7 @@ namespace ManualDi.Sync.Tests
             }).Build();
             
             int? result = null;
-            container.InvokeDelegateUsingReflexion((int value)  => result = value);
+            container.InvokeDelegateUsingReflection((int value)  => result = value);
             
             Assert.That(result, Is.EqualTo(5));
         }
@@ -30,7 +30,7 @@ namespace ManualDi.Sync.Tests
             
             Assert.Throws<InvalidOperationException>(() =>
             {
-                container.InvokeDelegateUsingReflexion((int a) => { });
+                container.InvokeDelegateUsingReflection((int a) => { });
             });
         }
 
@@ -43,7 +43,7 @@ namespace ManualDi.Sync.Tests
             }).Build();
             
             int? result = null;
-            container.InvokeDelegateUsingReflexion((int? a) => result = a);
+            container.InvokeDelegateUsingReflection((int? a) => result = a);
             
             Assert.That(result, Is.EqualTo(5));
         }
@@ -56,7 +56,7 @@ namespace ManualDi.Sync.Tests
             }).Build();
             
             int? result = 5; // Initialize with non-null
-            container.InvokeDelegateUsingReflexion((int? a) => result = a);
+            container.InvokeDelegateUsingReflection((int? a) => result = a);
             
             Assert.That(result, Is.Null);
         }
@@ -70,7 +70,7 @@ namespace ManualDi.Sync.Tests
             }).Build();
 
             string? result = null;
-            container.InvokeDelegateUsingReflexion((string s) => result = s);
+            container.InvokeDelegateUsingReflection((string s) => result = s);
             
             Assert.That(result, Is.EqualTo("hello"));
         }
@@ -84,7 +84,7 @@ namespace ManualDi.Sync.Tests
             
             Assert.Throws<InvalidOperationException>(() =>
             {
-                container.InvokeDelegateUsingReflexion((string s) => { });
+                container.InvokeDelegateUsingReflection((string s) => { });
             });
         }
 
@@ -96,7 +96,7 @@ namespace ManualDi.Sync.Tests
             }).Build();
             
             string? result = "not null";
-            container.InvokeDelegateUsingReflexion((string? s) => result = s);
+            container.InvokeDelegateUsingReflection((string? s) => result = s);
             
             Assert.That(result, Is.Null);
         }
@@ -111,7 +111,7 @@ namespace ManualDi.Sync.Tests
             
             int resInt = 0;
             string? resString = "initial";
-            container.InvokeDelegateUsingReflexion((int a, string? s) => 
+            container.InvokeDelegateUsingReflection((int a, string? s) => 
             {
                 resInt = a;
                 resString = s;
@@ -130,7 +130,7 @@ namespace ManualDi.Sync.Tests
             }).Build();
             
             int result = 0;
-            await container.InvokeDelegateUsingReflexionAsync(async (int a) => 
+            await container.InvokeDelegateUsingReflectionAsync(async (int a) => 
             {
                 await Task.CompletedTask;
                 result = a;
@@ -147,7 +147,7 @@ namespace ManualDi.Sync.Tests
                 b.Bind<int>().FromInstance(10);
             }).Build();
             
-            var result = await container.InvokeDelegateUsingReflexionAsync(async (int a) => 
+            var result = await container.InvokeDelegateUsingReflectionAsync(async (int a) => 
             {
                 await Task.CompletedTask;
                 return a * 2;
@@ -164,7 +164,7 @@ namespace ManualDi.Sync.Tests
                 b.Bind<int>().FromInstance(5);
             }).Build();
             
-            var result = await container.InvokeDelegateUsingReflexionAsync((int a) => a * 2);
+            var result = await container.InvokeDelegateUsingReflectionAsync((int a) => a * 2);
             
             Assert.That(result, Is.EqualTo(10));
         }
@@ -178,7 +178,7 @@ namespace ManualDi.Sync.Tests
             }).Build();
 
             int result = 0;
-            await container.InvokeDelegateUsingReflexionAsync((int a) => result = a);
+            await container.InvokeDelegateUsingReflectionAsync((int a) => result = a);
             
             Assert.That(result, Is.EqualTo(5));
         }
@@ -192,7 +192,7 @@ namespace ManualDi.Sync.Tests
             }).Build();
 
             CancellationToken cancellationToken = CancellationToken.None;
-            await container.InvokeDelegateUsingReflexionAsync((CancellationToken ct) => cancellationToken = ct);
+            await container.InvokeDelegateUsingReflectionAsync((CancellationToken ct) => cancellationToken = ct);
             
             Assert.That(cancellationToken.IsCancellationRequested, Is.False);
 

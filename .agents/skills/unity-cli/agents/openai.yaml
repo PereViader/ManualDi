@@ -1,4 +1,0 @@
-interface:
-  display_name: "Unity CLI"
-  short_description: "Run Unity tests, evaluate dynamic C#, and execute editor methods"
-  default_prompt: "Use $unity-cli to run Unity tests, evaluate dynamic C# expressions live in-memory, refresh/recompile scripts, or execute static editor methods through the Unity CLI wrapper."

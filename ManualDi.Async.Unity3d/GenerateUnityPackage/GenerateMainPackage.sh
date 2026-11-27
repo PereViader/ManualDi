@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 echo Copy Main folder
 cp -r "ManualDi.Async/ManualDi.Async/." "ManualDi.Async.Unity3d.Package/ManualDi.Async/"
 

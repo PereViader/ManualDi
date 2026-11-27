@@ -7,10 +7,10 @@ permissions:
   checks: write
 
 jobs:
-    TestCommon:
-      uses: ./.github/workflows/TestCommon.yml
-      secrets: inherit
+  TestCommon:
+    uses: ./.github/workflows/TestCommon.yml
 
-    TestUnity:
-      uses: ./.github/workflows/TestUnity.yml
-      secrets: inherit
+  TestUnity:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    uses: ./.github/workflows/TestUnity.yml
+    secrets: inherit

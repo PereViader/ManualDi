@@ -31,7 +31,7 @@ MonoBehaviour:
     m_Url: https://package.openupm.com
     m_Scopes:
     - com.openupm
-    - com.pereviader.unityclirunner
+    - com.pereviader.unityleanmcp
     - com.svermeulen.extenject
     m_IsDefault: 0
     m_Capabilities: 0

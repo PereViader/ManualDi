@@ -1,0 +1,16 @@
+<Project>
+  <PropertyGroup>
+    <_EnvSharedPath>$(MSBuildThisFileDirectory).env.shared</_EnvSharedPath>
+    <_EnvSharedContent Condition="Exists('$(_EnvSharedPath)')">$([System.IO.File]::ReadAllText('$(_EnvSharedPath)'))</_EnvSharedContent>
+    <_EnvSharedVersion Condition="'$(_EnvSharedContent)' != ''">$([System.Text.RegularExpressions.Regex]::Match('$(_EnvSharedContent)', '(?m)^\s*VERSION\s*=\s*([^\r\n#]+)').Groups[1].Value.Trim())</_EnvSharedVersion>
+    <Version Condition="'$(Version)' == '' and '$(_EnvSharedVersion)' != ''">$(_EnvSharedVersion)</Version>
+
+    <LangVersion>12</LangVersion>
+    <Nullable>enable</Nullable>
+
+    <Authors>Pere Viader</Authors>
+    <Description>Dependency injection library for C#</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+</Project>

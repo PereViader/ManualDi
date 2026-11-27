@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Configuration
 CSV_FILE="compilation-times.csv"
@@ -17,7 +18,7 @@ measure_build_time() {
         dotnet clean "$project_file" --verbosity quiet --nologo > /dev/null
 
         # Measure start time
-        start=$(date +%s%3N 2>/dev/null)
+        start=$(date +%s%3N 2>/dev/null || true)
         if [ -z "$start" ] || [ "$start" == "%s%3N" ]; then
             start=$(date +%s)000
         fi
@@ -26,7 +27,7 @@ measure_build_time() {
         dotnet build "$project_file" $build_args --no-incremental --nologo --verbosity quiet > /dev/null
 
         # Measure end time
-        end=$(date +%s%3N 2>/dev/null)
+        end=$(date +%s%3N 2>/dev/null || true)
         if [ -z "$end" ] || [ "$end" == "%s%3N" ]; then
             end=$(date +%s)000
         fi

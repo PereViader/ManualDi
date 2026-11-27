@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 echo Copy Main folder
 cp -r "ManualDi.Sync/ManualDi.Sync/." "ManualDi.Sync.Unity3d.Package/ManualDi.Sync/"
 

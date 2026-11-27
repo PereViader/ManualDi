@@ -87,10 +87,10 @@ public class TestContainerLifecycle
             
             resolveAfter.Run();
             
-            injectChild.Dispose();
-            initChild.Dispose();
-            startup.Dispose();
             resolveAfter.Dispose();
+            startup.Dispose();
+            initChild.Dispose();
+            injectChild.Dispose();
         });
     }
 }

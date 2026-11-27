@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Generate a lowercase GUID in the Unity format
 generate_guid() {
@@ -60,6 +61,7 @@ EOF
 traverse_and_generate() {
     local dir="$1"
     for item in "$dir"/*; do
+        [ -e "$item" ] || continue
         # Skip if the item is a .meta file
         case "$item" in
             *.meta) continue ;;

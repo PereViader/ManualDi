@@ -39,25 +39,25 @@ namespace ManualDi.Async
         bool WouldResolveContainer(Type type);
         
         /// <summary>
-        /// Queues for disposal a disposable. They will be called in order when disposing the container.
+        /// Queues for disposal a disposable. They will be called in reverse order when disposing the container.
         /// </summary>
         /// <param name="disposable">The disposable to queue</param>
         void QueueDispose(IDisposable disposable);
         
         /// <summary>
-        /// Queues for disposal an action. They will be called in order when disposing the container.
+        /// Queues for disposal an action. They will be called in reverse order when disposing the container.
         /// </summary>
         /// <param name="disposableAction">The disposable action to queue</param>
         void QueueDispose(Action disposableAction);
         
         /// <summary>
-        /// Queues for disposal an AsyncDisposable. They will be called in order when disposing the container.
+        /// Queues for disposal an AsyncDisposable. They will be called in reverse order when disposing the container.
         /// </summary>
         /// <param name="asyncDisposable">The disposable func to queue</param>
         void QueueAsyncDispose(IAsyncDisposable asyncDisposable);
         
         /// <summary>
-        /// Queues for disposal a disposable Func. They will be called in order when disposing the container.
+        /// Queues for disposal a disposable Func. They will be called in reverse order when disposing the container.
         /// </summary>
         /// <param name="asyncDisposableFunc">The disposable func to queue</param>
         void QueueAsyncDispose(Func<ValueTask> asyncDisposableFunc);

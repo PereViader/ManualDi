@@ -32,6 +32,11 @@ MonoBehaviour:
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6154248f06a88774c9abd3c4bd1f22ab
+    m_Address: Assets/ManualDi.Async.Unity3d/Tests/TestAssets/SceneAsset.unity
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: b9d9f1645a6bb0f40bafc8bb1b04fcb3, type: 2}
   m_SchemaSet:

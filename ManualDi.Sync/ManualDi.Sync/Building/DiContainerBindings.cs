@@ -133,7 +133,7 @@ namespace ManualDi.Sync
             return this;
         }
         
-        public IDiContainer Build()
+        public DiContainer Build()
         {
             var diContainer = new DiContainer(
                 bindingsByType,
@@ -148,9 +148,9 @@ namespace ManualDi.Sync
                 {
                     diContainer.QueueDispose(new ActionDisposableWrapper(() =>
                     {
-                        foreach (var action in disposeActions)
+                        for (int i = disposeActions.Count - 1; i >= 0; i--)
                         {
-                            action.Invoke();
+                            disposeActions[i].Invoke();
                         }
                     }));
                 }

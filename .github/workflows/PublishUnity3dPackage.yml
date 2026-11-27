@@ -1,4 +1,4 @@
-name: Publish Unity3d Sync Package
+name: Publish Unity3d Packages
 on: 
   workflow_call:
 
@@ -14,6 +14,8 @@ jobs:
       UPM_SERVICE_ACCOUNT_KEY_SECRET: ${{ secrets.UPM_SERVICE_ACCOUNT_KEY_SECRET }}
       UPM_ORG_ID: ${{ secrets.UPM_ORG_ID }}
       DIST_DIR: /tmp/signed-upm-dist
+      UPM_CLI_VERSION: v10.0.0
+      UPM_CLI_SHA256: 85852820608b9bb81bf112f8a9f242e06bbed0fceabb0eab24e4cabbdbec08a2
     
     steps:
       - uses: actions/checkout@v6
@@ -23,8 +25,12 @@ jobs:
       - id: get-version
         run: |
           source .env.shared
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          if [[ "$VERSION" == *preview* ]]; then
+          if [ -z "${VERSION:-}" ]; then
+            echo "Error: VERSION is empty in .env.shared" >&2
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if [[ "${VERSION,,}" =~ -(preview|alpha|beta|rc) ]]; then
             echo "isPrerelease=true" >> "$GITHUB_OUTPUT"
           else
             echo "isPrerelease=false" >> "$GITHUB_OUTPUT"
@@ -34,17 +40,39 @@ jobs:
         id: release-exists
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.get-version.outputs.version }}
         run: |
-          release_exists=$(gh release view "v${{ steps.get-version.outputs.version }}" &> /dev/null && echo "true" || echo "false")
-          echo "Release exists $release_exists"
-          echo "exists=$release_exists" >> $GITHUB_OUTPUT
+          set +e
+          output=$(gh release view "v${VERSION}" 2>&1)
+          status=$?
+          set -e
+          if [ "$status" -eq 0 ]; then
+            release_exists="true"
+          elif echo "$output" | grep -qi "release not found"; then
+            release_exists="false"
+          else
+            echo "Error checking release v${VERSION} (exit $status): $output" >&2
+            exit "$status"
+          fi
+          echo "Release exists: $release_exists"
+          echo "exists=$release_exists" >> "$GITHUB_OUTPUT"
 
       - name: Get changelog
         id: get-changelog
         if: ${{ steps.release-exists.outputs.exists == 'false' }}
         run: |
-          payload=$(git log $(git describe --tags --abbrev=0 main)..main --pretty=format:"%s%n%b")
-          echo "changelog<<EOF"$'\n'"$payload"$'\n'EOF >> "$GITHUB_OUTPUT"
+          delimiter="EOF_$(openssl rand -hex 16)"
+          {
+            echo "changelog<<$delimiter"
+            git log "$(git describe --tags --abbrev=0 HEAD)..HEAD" --pretty=format:"%s%n%b"
+            echo ""
+            echo "$delimiter"
+          } >> "$GITHUB_OUTPUT"
+
+      - if: ${{ steps.release-exists.outputs.exists == 'false' }}
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '8.x'
 
       - name: Create Sync Package
         if: ${{ steps.release-exists.outputs.exists == 'false' }}
@@ -59,9 +87,21 @@ jobs:
       - name: Install Unity UPM CLI
         if: ${{ steps.release-exists.outputs.exists == 'false' }}
         run: |
-          curl -fsSL https://cdn.packages.unity.com/upm-cli/install.sh -o install.sh
-          bash install.sh
-          echo "$HOME/.upm/bin" >> "$GITHUB_PATH"
+          tmp_dir=$(mktemp -d)
+          trap 'rm -rf "$tmp_dir"' EXIT
+          zip_path="$tmp_dir/upm-linux-x64.zip"
+          curl -fsSL "https://cdn.packages.unity.com/upm-cli/releases/${UPM_CLI_VERSION}/upm-linux-x64.zip" -o "$zip_path"
+          echo "${UPM_CLI_SHA256}  ${zip_path}" | sha256sum -c -
+          install_dir="$HOME/.upm/bin"
+          mkdir -p "$install_dir"
+          unzip -q "$zip_path" -d "$install_dir"
+          chmod +x "$install_dir/UnityPackageManager"
+          cat > "$install_dir/upm" << 'EOF'
+          #!/bin/sh
+          exec "$(dirname "$0")/UnityPackageManager" "$@"
+          EOF
+          chmod +x "$install_dir/upm"
+          echo "$install_dir" >> "$GITHUB_PATH"
 
       - name: Verify Unity UPM CLI
         if: ${{ steps.release-exists.outputs.exists == 'false' }}

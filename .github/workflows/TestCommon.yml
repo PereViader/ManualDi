@@ -14,6 +14,23 @@ jobs:
         with:
           dotnet-version: '8.x'
           
-      - run: dotnet test ManualDi.Sync
+      - name: Test ManualDi.Sync (Debug)
+        run: dotnet test ManualDi.Sync -c Debug
 
-      - run: dotnet test ManualDi.Async
+      - name: Test ManualDi.Sync (Release)
+        run: dotnet test ManualDi.Sync -c Release
+
+      - name: Test ManualDi.Async (Debug)
+        run: dotnet test ManualDi.Async -c Debug
+
+      - name: Test ManualDi.Async (Release)
+        run: dotnet test ManualDi.Async -c Release
+
+      - name: Build Compilation Benchmark (Standard)
+        run: dotnet build Benchmark/Compilation/Project/Project.csproj
+
+      - name: Build Compilation Benchmark (MANUALDI_SYNC)
+        run: dotnet build Benchmark/Compilation/Project/Project.csproj -c MANUALDI_SYNC
+
+      - name: Build Compilation Benchmark (MANUALDI_ASYNC)
+        run: dotnet build Benchmark/Compilation/Project/Project.csproj -c MANUALDI_ASYNC

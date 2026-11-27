@@ -40,9 +40,9 @@ namespace ManualDi.Sync
             }
             o.DisposedValue = true;
             
-            foreach (var disposable in o.Disposables)
+            for (int i = o.Disposables.Count - 1; i >= 0; i--)
             {
-                disposable.Dispose();
+                o.Disposables[i].Dispose();
             }
 
             o.Disposables.Clear();

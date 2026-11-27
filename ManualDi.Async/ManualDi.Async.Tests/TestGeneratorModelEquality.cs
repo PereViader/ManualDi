@@ -1,3 +1,4 @@
+using System;
 using NUnit.Framework;
 using ManualDi.Async.Generators;
 
@@ -123,6 +124,65 @@ public class TestGeneratorModelEquality
         Assert.That(arr1.GetHashCode(), Is.EqualTo(arr2.GetHashCode()));
         Assert.That(arr1, Is.Not.EqualTo(arrDifferentOrder));
         Assert.That(arr1, Is.Not.EqualTo(arrDifferentElement));
+    }
+
+    [Test]
+    public void Test_EquatableArray_DefaultVsEmpty_EqualityAndHashCode()
+    {
+        EquatableArray<ManualDiSourceGenerator.Resolution> defaultArr1 = default;
+        EquatableArray<ManualDiSourceGenerator.Resolution> defaultArr2 = default;
+        var emptyArr1 = new EquatableArray<ManualDiSourceGenerator.Resolution>(Array.Empty<ManualDiSourceGenerator.Resolution>());
+        var emptyArr2 = new EquatableArray<ManualDiSourceGenerator.Resolution>(new ManualDiSourceGenerator.Resolution[0]);
+
+        Assert.That(defaultArr1.HasValue, Is.False);
+        Assert.That(defaultArr1.Count, Is.EqualTo(0));
+        Assert.That(emptyArr1.HasValue, Is.True);
+        Assert.That(emptyArr1.Count, Is.EqualTo(0));
+
+        // default vs default
+        Assert.That(defaultArr1.Equals(defaultArr2), Is.True);
+        Assert.That(defaultArr1 == defaultArr2, Is.True);
+        Assert.That(defaultArr1 != defaultArr2, Is.False);
+        Assert.That(defaultArr1.Equals((object)defaultArr2), Is.True);
+        Assert.That(defaultArr1.GetHashCode(), Is.EqualTo(defaultArr2.GetHashCode()));
+
+        // empty vs empty
+        Assert.That(emptyArr1.Equals(emptyArr2), Is.True);
+        Assert.That(emptyArr1 == emptyArr2, Is.True);
+        Assert.That(emptyArr1 != emptyArr2, Is.False);
+        Assert.That(emptyArr1.Equals((object)emptyArr2), Is.True);
+        Assert.That(emptyArr1.GetHashCode(), Is.EqualTo(emptyArr2.GetHashCode()));
+
+        // default vs empty (both directions)
+        Assert.That(defaultArr1.Equals(emptyArr1), Is.False);
+        Assert.That(emptyArr1.Equals(defaultArr1), Is.False);
+        Assert.That(defaultArr1 == emptyArr1, Is.False);
+        Assert.That(emptyArr1 == defaultArr1, Is.False);
+        Assert.That(defaultArr1 != emptyArr1, Is.True);
+        Assert.That(emptyArr1 != defaultArr1, Is.True);
+        Assert.That(defaultArr1.Equals((object)emptyArr1), Is.False);
+        Assert.That(emptyArr1.Equals((object)defaultArr1), Is.False);
+        Assert.That(defaultArr1.GetHashCode(), Is.Not.EqualTo(emptyArr1.GetHashCode()));
+    }
+
+    [Test]
+    public void Test_ClassData_DefaultVsEmptyParameters_Inequality()
+    {
+        var baseClassData = CreateDefaultClassData() with
+        {
+            ConstructorParameters = default,
+            InjectMethodParameters = default
+        };
+
+        var emptyParams = new EquatableArray<ManualDiSourceGenerator.Resolution>(Array.Empty<ManualDiSourceGenerator.Resolution>());
+
+        var withEmptyConstructor = baseClassData with { ConstructorParameters = emptyParams };
+        Assert.That(baseClassData, Is.Not.EqualTo(withEmptyConstructor));
+        Assert.That(baseClassData.GetHashCode(), Is.Not.EqualTo(withEmptyConstructor.GetHashCode()));
+
+        var withEmptyInject = baseClassData with { InjectMethodParameters = emptyParams };
+        Assert.That(baseClassData, Is.Not.EqualTo(withEmptyInject));
+        Assert.That(baseClassData.GetHashCode(), Is.Not.EqualTo(withEmptyInject.GetHashCode()));
     }
 
     private ManualDiSourceGenerator.ClassData CreateDefaultClassData()

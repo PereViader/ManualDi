@@ -21,6 +21,11 @@ namespace ManualDi.Async.Generators
 
         public bool Equals(EquatableArray<T> other)
         {
+            if (HasValue != other.HasValue)
+            {
+                return false;
+            }
+
             if (Count != other.Count)
             {
                 return false;
@@ -42,7 +47,7 @@ namespace ManualDi.Async.Generators
 
         public override int GetHashCode()
         {
-            if (_array is null || _array.Length == 0)
+            if (_array is null)
             {
                 return 0;
             }

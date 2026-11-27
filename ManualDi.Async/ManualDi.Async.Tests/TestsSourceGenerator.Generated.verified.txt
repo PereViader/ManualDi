@@ -417,6 +417,7 @@ namespace ManualDi.Async
         public static Binding<TDefaultImpl> DefaultImpl<TDefaultImpl>(Binding<TDefaultImpl> binding) where TDefaultImpl : SomeNamespace.Subnamespace.PublicInitialize
         {
             return binding
+                .InitializeAsync(static (o, ct) => ((SomeNamespace.Subnamespace.PublicInitialize)o).InitializeAsync(ct))
                 .Inject(static (o, c) =>
                 {
                     var to = (SomeNamespace.Subnamespace.PublicInitialize)o;

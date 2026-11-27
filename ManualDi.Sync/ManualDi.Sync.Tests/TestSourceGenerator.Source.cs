@@ -124,7 +124,7 @@ namespace SomeNamespace.Subnamespace
     [ManualDi]
     public class PublicInitialize
     {
-        public Task InitailizeAsync(CancellationToken cancellationToken)
+        public Task InitializeAsync(CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }

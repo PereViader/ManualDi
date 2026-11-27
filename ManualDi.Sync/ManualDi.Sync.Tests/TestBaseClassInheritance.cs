@@ -67,10 +67,6 @@ namespace ManualDi.Sync.Tests
             var (generatedCode, diagnostics) = GeneratorTestHelper.Generate(code);
 
             var errors = diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error).ToList();
-            foreach (var error in errors)
-            {
-                Console.WriteLine(error);
-            }
             Assert.That(errors, Is.Empty);
         }
 
@@ -99,17 +95,7 @@ namespace ManualDi.Sync.Tests
             var (generatedCode, diagnostics) = GeneratorTestHelper.Generate(code);
 
             var errors = diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error).ToList();
-            foreach (var error in errors)
-            {
-                Console.WriteLine(error);
-            }
             Assert.That(errors, Is.Empty);
-
-            foreach (var generated in generatedCode)
-            {
-                Console.WriteLine("--- GENERATED FILE ---");
-                Console.WriteLine(generated);
-            }
         }
 
         [Test]
@@ -136,17 +122,7 @@ namespace ManualDi.Sync.Tests
             var (generatedCode, diagnostics) = GeneratorTestHelper.Generate(code);
 
             var errors = diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error).ToList();
-            foreach (var error in errors)
-            {
-                Console.WriteLine(error);
-            }
             Assert.That(errors, Is.Empty);
-
-            foreach (var generated in generatedCode)
-            {
-                Console.WriteLine("--- GENERATED FILE ---");
-                Console.WriteLine(generated);
-            }
         }
 
         [Test]
@@ -175,17 +151,7 @@ namespace ManualDi.Sync.Tests
             var (generatedCode, diagnostics) = GeneratorTestHelper.Generate(code);
 
             var errors = diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error).ToList();
-            foreach (var error in errors)
-            {
-                Console.WriteLine(error);
-            }
             Assert.That(errors, Is.Empty);
-
-            foreach (var generated in generatedCode)
-            {
-                Console.WriteLine("--- GENERATED FILE ---");
-                Console.WriteLine(generated);
-            }
         }
 
         [Test]
@@ -248,18 +214,7 @@ namespace AssemblyB
             driver.RunGeneratorsAndUpdateCompilation(compB, out var outputComp, out _);
 
             var errors = outputComp.GetDiagnostics().Where(x => x.Severity == DiagnosticSeverity.Error).ToList();
-            foreach (var error in errors)
-            {
-                Console.WriteLine("ERROR: " + error);
-            }
             Assert.That(errors, Is.Empty);
-
-            var generated = outputComp.SyntaxTrees.Skip(1).Select(x => x.ToString()).ToList();
-            foreach (var gen in generated)
-            {
-                Console.WriteLine("--- GENERATED ---");
-                Console.WriteLine(gen);
-            }
         }
 
         [Test]
@@ -284,17 +239,7 @@ namespace ManualDi.Sync.Tests
             var (generatedCode, diagnostics) = GeneratorTestHelper.Generate(code);
 
             var errors = diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error || x.Severity == DiagnosticSeverity.Warning).ToList();
-            foreach (var error in errors)
-            {
-                Console.WriteLine("DIAGNOSTIC: " + error);
-            }
             Assert.That(errors, Is.Empty);
-
-            foreach (var generated in generatedCode)
-            {
-                Console.WriteLine("--- GENERATED FILE ---");
-                Console.WriteLine(generated);
-            }
         }
     }
 }

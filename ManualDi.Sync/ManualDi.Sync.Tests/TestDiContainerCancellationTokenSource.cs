@@ -33,6 +33,7 @@ namespace ManualDi.Sync.Tests
             container.Dispose();
 
             Assert.That(cts.IsCancellationRequested, Is.True);
+            Assert.Throws<System.ObjectDisposedException>(() => _ = cts.Token);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 using System.Collections;
 using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
@@ -38,10 +39,13 @@ namespace ManualDi.Async.Unity3d.Tests.PlayMode
 
             var entryPoint = new GameObject().AddComponent<TestMonoBehaviourSubordinateEntryPoint>();
             
-            entryPoint.Initiate(new TestInstallerData(b =>
+            yield return TestExtensions.Async(async ct =>
             {
-                b.QueueDispose(() => disposed = true);
-            }), CancellationToken.None);
+                await entryPoint.Initiate(new TestInstallerData(b =>
+                {
+                    b.QueueDispose(() => disposed = true);
+                }), ct);
+            });
         
             GameObject.Destroy(entryPoint.gameObject);
         
@@ -55,14 +59,15 @@ namespace ManualDi.Async.Unity3d.Tests.PlayMode
         {
             var gameObject = new GameObject();
             
-            var container = new DiContainerBindings().Install(b =>
+            yield return TestExtensions.Async(async ct =>
             {
-                b.Bind<Image>().FromGameObjectAddComponent(gameObject);
-            }).Build(CancellationToken.None).Result;
-            
-            Assert.That(gameObject.GetComponent<Image>(), Is.Not.Null);
-            
-            container.DisposeAsync();
+                await using var container = await new DiContainerBindings().Install(b =>
+                {
+                    b.Bind<Image>().FromGameObjectAddComponent(gameObject);
+                }).Build(ct);
+                
+                Assert.That(gameObject.GetComponent<Image>(), Is.Not.Null);
+            });
 
             yield return null;
             
@@ -70,37 +75,33 @@ namespace ManualDi.Async.Unity3d.Tests.PlayMode
         }
         
         [Test]
-        public void FromGameObjectGetComponent_GetsComponent()
+        public async Task FromGameObjectGetComponent_GetsComponent()
         {
             var gameObject = new GameObject();
             var image = gameObject.AddComponent<Image>();
             
-            var container = new DiContainerBindings().Install(b =>
+            await using var container = await new DiContainerBindings().Install(b =>
             {
                 b.Bind<Image>().FromGameObjectGetComponent(gameObject);
-            }).Build(CancellationToken.None).Result;
+            }).Build(CancellationToken.None);
             
             Assert.That(image, Is.EqualTo(container.Resolve<Image>()));
-
-            container.DisposeAsync();
         }
         
         [Test]
-        public void FromGameObjectAddComponent_InstantiatesAndGetsComponent()
+        public async Task FromGameObjectAddComponent_InstantiatesAndGetsComponent()
         {
             var gameObject = new GameObject();
             gameObject.AddComponent<Image>();
             
-            var container = new DiContainerBindings().Install(b =>
+            await using var container = await new DiContainerBindings().Install(b =>
             {
                 b.Bind<Image>().FromInstantiateGameObjectGetComponent(gameObject, parent: gameObject.transform);
-            }).Build(CancellationToken.None).Result;
+            }).Build(CancellationToken.None);
 
             var containerInstance = container.Resolve<Image>();
             var instance = gameObject.transform.GetChild(0).GetComponent<Image>();
             Assert.That(instance, Is.EqualTo(containerInstance));
-            
-            container.DisposeAsync();
         }
     }
 }

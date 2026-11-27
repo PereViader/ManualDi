@@ -81,7 +81,7 @@ public class TestContainerLifecycle
                     d.ConstructorDependency<IChild2>();
                 })
                 .Inject((o, c) => ((IStartup)o).Inject())
-                .Initialize(o => ((IStartup)o).InitializeAsync());
+                .InitializeAsync((o, _) => ((IStartup)o).InitializeAsync());
 
             
             b.QueueStartup<IStartup>(e => e.Run());

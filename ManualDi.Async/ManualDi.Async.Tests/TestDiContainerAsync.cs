@@ -57,7 +57,9 @@ public class TestDiContainerAsync
     public async Task TestAsyncBindingOrder()
     {
         var createDelegate = Substitute.For<FromAsyncDelegate>();
-        (await createDelegate.Invoke(Arg.Any<IDiContainer>(), Arg.Any<CancellationToken>())).Returns(Task.FromResult<object?>(1));
+        createDelegate
+            .Invoke(Arg.Any<IDiContainer>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<object?>(1));
         var injectDelegate1 = Substitute.For<InjectDelegate>();
         var injectDelegate2 = Substitute.For<InjectDelegate>();
         var injectAsyncDelegate = Substitute.For<InjectAsyncDelegate>();

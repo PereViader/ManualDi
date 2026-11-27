@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
     <PackageReference Include="NSubstitute" />
     <PackageReference Include="NUnit" />
     <PackageReference Include="NUnit3TestAdapter" />
@@ -19,12 +20,6 @@
     <ProjectReference Include="..\ManualDi.Sync.Generators\ManualDi.Sync.Generators.csproj"/>
     <ProjectReference Include="..\ManualDi.Sync\ManualDi.Sync.csproj" />
     <ProjectReference Include="..\ManualDi.Sync.Generators\ManualDi.Sync.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="TestsSourceGenerator.Source.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
   <ItemGroup>

@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <None Include="..\..\README.md" Pack="true" PackagePath="" />
-    <None Include="$(SolutionDir)ManualDi.Async.Generators\bin\$(Configuration)\netstandard2.0\ManualDi.Async.Generators.dll"
+    <None Include="..\ManualDi.Async.Generators\bin\$(Configuration)\netstandard2.0\ManualDi.Async.Generators.dll"
           Pack="true"
           PackagePath="analyzers/dotnet/cs"
           Visible="false" />

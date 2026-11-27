@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -6,9 +6,9 @@
     <LangVersion>9</LangVersion> <!--Lang version must be 9 because unity3d does not support anything higher-->
     <AssemblyName>ManualDi.Async</AssemblyName>
     <RootNamespace>ManualDi.Async</RootNamespace>
-    <RepositoryUrl>https://github.com/PereViader/ManualDi.Async</RepositoryUrl>
+    <RepositoryUrl>https://github.com/PereViader/ManualDi</RepositoryUrl>
     <Product>ManualDi.Async</Product>
-    <PackageProjectUrl>https://github.com/PereViader/ManualDi.Async</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/PereViader/ManualDi</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>

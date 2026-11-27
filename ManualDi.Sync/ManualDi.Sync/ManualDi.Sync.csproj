@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -6,9 +6,9 @@
     <LangVersion>9</LangVersion> <!--Lang version must be 9 because unity3d does not support anything higher-->
     <AssemblyName>ManualDi.Sync</AssemblyName>
     <RootNamespace>ManualDi.Sync</RootNamespace>
-    <RepositoryUrl>https://github.com/PereViader/ManualDi.Sync</RepositoryUrl>
+    <RepositoryUrl>https://github.com/PereViader/ManualDi</RepositoryUrl>
     <Product>ManualDi.Sync</Product>
-    <PackageProjectUrl>https://github.com/PereViader/ManualDi.Sync</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/PereViader/ManualDi</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>

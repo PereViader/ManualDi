@@ -99,6 +99,15 @@ namespace SomeNamespace.Subnamespace
     }
 
     [ManualDi]
+    public class SomeAsyncDisposable : IAsyncDisposable
+    {
+        public ValueTask DisposeAsync()
+        {
+            return default;
+        }
+    }
+
+    [ManualDi]
     public class PublicInitialize
     {
         public Task InitializeAsync(CancellationToken cancellationToken)

@@ -82,7 +82,7 @@ namespace ManualDi.Async.Generators
             var injectParameters = GetInjectMethodParameters(symbol, wellKnownTypes);
             var hasInitializeMethod = HasInitializeMethod(symbol);
             var hasInitializeAsyncMethod = HasInitializeAsyncMethod(symbol, wellKnownTypes);
-            var isDisposable = wellKnownTypes.IsIDisposable(symbol);
+            var isDisposable = wellKnownTypes.IsDisposable(symbol);
             var baseTypeCall = GetBaseTypeCall(symbol, wellKnownTypes, context.SemanticModel.Compilation, ct);
             var typeParameterConstraints = GetTypeParameterConstraints(symbol);
 
@@ -833,6 +833,7 @@ namespace ManualDi.Async.Generators
             public readonly INamedTypeSymbol? KeyedAttribute = compilation.GetTypeByMetadataName("ManualDi.Async.KeyedAttribute");
             public readonly INamedTypeSymbol? ObsoleteAttribute = compilation.GetTypeByMetadataName("System.ObsoleteAttribute");
             public readonly INamedTypeSymbol? IDisposable = compilation.GetTypeByMetadataName("System.IDisposable");
+            public readonly INamedTypeSymbol? IAsyncDisposable = compilation.GetTypeByMetadataName("System.IAsyncDisposable");
             public readonly INamedTypeSymbol? DiContainer = compilation.GetTypeByMetadataName("ManualDi.Async.IDiContainer");
             public readonly INamedTypeSymbol? CancellationToken = compilation.GetTypeByMetadataName("System.Threading.CancellationToken");
             public readonly INamedTypeSymbol? Task = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task");
@@ -879,11 +880,12 @@ namespace ManualDi.Async.Generators
                 return false;
             }
 
-            public bool IsIDisposable(INamedTypeSymbol namedTypeSymbol)
+            public bool IsDisposable(INamedTypeSymbol namedTypeSymbol)
             {
                 foreach (var implementedInterface in namedTypeSymbol.AllInterfaces)
                 {
-                    if (SymbolEqualityComparer.Default.Equals(implementedInterface, IDisposable))
+                    if (SymbolEqualityComparer.Default.Equals(implementedInterface, IDisposable) ||
+                        (IAsyncDisposable is not null && SymbolEqualityComparer.Default.Equals(implementedInterface, IAsyncDisposable)))
                     {
                         return true;
                     }

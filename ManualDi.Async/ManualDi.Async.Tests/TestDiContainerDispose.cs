@@ -195,4 +195,31 @@ public class TestDiContainerDispose
 
         disposeAction.DidNotReceive().Invoke(Arg.Any<object>());
     }
+
+    [ManualDi]
+    public class AsyncDisposableService : IAsyncDisposable
+    {
+        public int DisposeAsyncCount { get; private set; }
+
+        public ValueTask DisposeAsync()
+        {
+            DisposeAsyncCount++;
+            return default;
+        }
+    }
+
+    [Test]
+    public async Task TestManualDiAsyncDisposableIsDisposed()
+    {
+        IDiContainer container = await new DiContainerBindings().Install(b =>
+        {
+            b.Bind<AsyncDisposableService>().Default().FromConstructor();
+        }).Build(CancellationToken.None);
+
+        var service = container.Resolve<AsyncDisposableService>();
+
+        await container.DisposeAsync();
+
+        Assert.That(service.DisposeAsyncCount, Is.EqualTo(1));
+    }
 }

@@ -1,6 +1,8 @@
 ﻿using NSubstitute;
 using NUnit.Framework;
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -162,5 +164,53 @@ public class TestDiContainerBindings
         Assert.That(resolutions2.Count, Is.EqualTo(2));
         Assert.That(resolutions2[0], Is.TypeOf<Type>());
         Assert.That(resolutions2[1], Is.TypeOf<Other>());
+    }
+
+    private static List<Binding> GetContainerBindings(DiContainer container)
+    {
+        var field = typeof(DiContainer).GetField("bindings", BindingFlags.Instance | BindingFlags.NonPublic)!;
+        return (List<Binding>)field.GetValue(container)!;
+    }
+
+    [Test]
+    public async Task TestContainerBindingsCapacityOnUnbindAll()
+    {
+        var bindings = new DiContainerBindings();
+        bindings.Bind<int>().FromInstance(1);
+        bindings.Unbind<string>();
+        bindings.Unbind<int>();
+
+        await using var container = await bindings.Build(CancellationToken.None);
+        var containerBindings = GetContainerBindings(container);
+        Assert.That(containerBindings.Count, Is.EqualTo(0));
+        Assert.That(containerBindings.Capacity, Is.EqualTo(0));
+    }
+
+    [Test]
+    public async Task TestContainerBindingsCapacityOnSingleTypeRebind()
+    {
+        var bindings = new DiContainerBindings();
+        bindings.Bind<int>().FromInstance(1);
+        bindings.Rebind<int>().FromInstance(2);
+
+        await using var container = await bindings.Build(CancellationToken.None);
+        var containerBindings = GetContainerBindings(container);
+        Assert.That(containerBindings.Count, Is.EqualTo(1));
+        Assert.That(containerBindings.Capacity, Is.EqualTo(1));
+        Assert.That(container.Resolve<int>(), Is.EqualTo(2));
+    }
+
+    [Test]
+    public async Task TestContainerBindingsCountWithMultiApparentAndChainedUnbind()
+    {
+        var bindings = new DiContainerBindings();
+        bindings.Bind<IInterface1, IInterface2, Type>().FromMethod(_ => new Type());
+        bindings.Bind<IInterface2, Other>().FromMethod(_ => new Other());
+        bindings.Unbind<IInterface2>();
+
+        await using var container = await bindings.Build(CancellationToken.None);
+        var containerBindings = GetContainerBindings(container);
+        Assert.That(containerBindings.Count, Is.EqualTo(1));
+        Assert.That(containerBindings.Capacity, Is.EqualTo(1));
     }
 }

@@ -16,7 +16,6 @@ namespace ManualDi.Async
         private readonly List<object> startupDelegates;
         private readonly List<object> disposables;
         
-        private int bindingCount;
         private bool failureDebugReportEnabled;
 
         internal IDiContainer? parentDiContainer;
@@ -41,8 +40,6 @@ namespace ManualDi.Async
         
         internal void AddBinding(Binding binding, Type type)
         {
-            bindingCount++;
-            
             var apparentType = type.TypeHandle.Value;
 #if NETSTANDARD2_1 //TryAdd is not available on netstandard2.0
             if (bindingsByType.TryAdd(apparentType, new BindingNode(binding)))
@@ -193,7 +190,6 @@ namespace ManualDi.Async
                     var cts = cancellationTokenSource ?? new CancellationTokenSource();
                     subContainer = new DiContainer(
                         bindingsByType,
-                        bindingCount,
                         c,
                         disposables,
                         cts);
@@ -258,7 +254,6 @@ namespace ManualDi.Async
             var cts = cancellationTokenSource ?? new CancellationTokenSource();
             var diContainer = new DiContainer(
                 bindingsByType,
-                bindingCount,
                 parentDiContainer,
                 disposables,
                 cts);

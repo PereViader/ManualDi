@@ -25,12 +25,13 @@ namespace ManualDi.Async
 
         internal DiContainer(
             Dictionary<IntPtr, BindingNode> bindingsByType,
-            int count,
             IDiContainer? parentDiContainer,
             List<object> disposables,
             CancellationTokenSource cancellationTokenSource)
         {
-            bindings = new (count);
+            // bindingsByType.Count counts apparent types rather than unique Binding instances, so it won't be exact
+            // for multi-interface or chained bindings, but it is good enough as an initial List<Binding> capacity hint.
+            bindings = new (bindingsByType.Count);
             this.disposables = disposables;
             disposedValue = false;
             

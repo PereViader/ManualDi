@@ -222,4 +222,36 @@ public class TestDiContainerDispose
 
         Assert.That(service.DisposeAsyncCount, Is.EqualTo(1));
     }
+
+    public interface IBothDisposable : IDisposable, IAsyncDisposable { }
+
+    [Test]
+    public async Task TestBothDisposableAndAsyncDisposablePrefersDisposeAsync()
+    {
+        var disposable = Substitute.For<IBothDisposable>();
+
+        IDiContainer container = await new DiContainerBindings().Install(b =>
+        {
+            b.Bind<IBothDisposable>().FromInstance(disposable);
+        }).Build(CancellationToken.None);
+
+        await container.DisposeAsync();
+
+        _ = disposable.Received(1).DisposeAsync();
+        disposable.DidNotReceive().Dispose();
+    }
+
+    [Test]
+    public async Task TestQueueAsyncDisposeBothDisposableAndAsyncDisposablePrefersDisposeAsync()
+    {
+        var disposable = Substitute.For<IBothDisposable>();
+
+        var container = await new DiContainerBindings().Build(CancellationToken.None);
+        container.QueueAsyncDispose(disposable);
+
+        await container.DisposeAsync();
+
+        _ = disposable.Received(1).DisposeAsync();
+        disposable.DidNotReceive().Dispose();
+    }
 }

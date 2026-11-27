@@ -359,11 +359,11 @@ namespace ManualDi.Async
                 var disposable = disposables[i];
                 switch (disposable)
                 {
-                    case IDisposable disposableDisposable:
-                        disposableDisposable.Dispose();
-                        break;
                     case IAsyncDisposable asyncDisposableDisposable:
                         await asyncDisposableDisposable.DisposeAsync();
+                        break;
+                    case IDisposable disposableDisposable:
+                        disposableDisposable.Dispose();
                         break;
                     case Action disposableAction:
                         disposableAction();

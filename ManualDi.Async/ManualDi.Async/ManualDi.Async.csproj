@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -8,11 +8,11 @@
     <AssemblyName>ManualDi.Async</AssemblyName>
     <RootNamespace>ManualDi.Async</RootNamespace>
     <Authors>Pere Viader</Authors>
-    <RepositoryUrl>https://github.com/PereViader/ManualDi.Async</RepositoryUrl>
+    <RepositoryUrl>https://github.com/PereViader/ManualDi</RepositoryUrl>
     <Product>ManualDi.Async</Product>
     <Description>Dependency injection library for C#</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/PereViader/ManualDi.Async</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/PereViader/ManualDi</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
